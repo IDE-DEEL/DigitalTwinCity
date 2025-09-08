@@ -1,18 +1,19 @@
 ---
-name: User Story - (Name the user story here)
-about: (Describe this issue template's purpose here)
+name: User Story
+about: Create a Scrum user story for the backlog
+title: "[User Story] "
+---
+
+## User Story
+As a _[user persona]_, I want _[feature/goal]_ so that _[value/outcome]_.
 
 ---
 
-**User Story Description**
-As a _[user persona]_, I want _[feature/goal]_ so that _[value/outcome]_.
+## Effort Estimate
+Story Points: _e.g. 3_
 
-**Acceptance Criteria**
-- [ ] Given [context], when [action], then [expected result]
-- [ ] ...
+---
 
-**Effort Estimate (Story Points)**
-- e.g. 3
+## Definition of Done
+- [ ] ... 
 
-**Definition of Done**
-- [ ] ...
