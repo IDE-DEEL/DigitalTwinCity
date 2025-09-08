@@ -53,3 +53,5 @@
 3. Research expected data volume and storage requirements to size the database and cloud services correctly.  
 4. Research how to host the website/simulation in a way that it is globally available (e.g., cloud hosting, VPN, containers).  
 5. Research best practices for real-time data visualization on the website.  
+
+Test
