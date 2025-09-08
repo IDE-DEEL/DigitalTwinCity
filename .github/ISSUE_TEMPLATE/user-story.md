@@ -1,19 +1,10 @@
 ---
-name: User Story
-about: Describe this issue template's purpose here.
-title: ''
-labels: ''
-assignees: ''
+name: User Story - (Name the user story here)
+about: (Describe this issue template's purpose here)
 
 ---
 
----
-User Story
-title: "[Story] "
-labels: type: user story
----
-
-**User Story**
+**User Story Description**
 As a _[user persona]_, I want _[feature/goal]_ so that _[value/outcome]_.
 
 **Acceptance Criteria**
@@ -21,7 +12,7 @@ As a _[user persona]_, I want _[feature/goal]_ so that _[value/outcome]_.
 - [ ] ...
 
 **Effort Estimate (Story Points)**
-e.g. 3
+- e.g. 3
 
 **Definition of Done**
-- [ ]
+- [ ] ...
