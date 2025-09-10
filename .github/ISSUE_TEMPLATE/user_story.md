@@ -1,11 +1,13 @@
-# Beschrijving
+---
+
+## Beschrijving
 
 (beschrijf hier de user story)
 
 ---
 
-# Definition of Ready (DoR)
+## Definition of Ready (DoR)
 - [] 
 
-# Definition of Done (DoD)
+## Definition of Done (DoD)
 - [] 
