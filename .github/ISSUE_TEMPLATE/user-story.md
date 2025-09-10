@@ -1,17 +1,11 @@
----
-name: User Story
-about: Create a Scrum user story for the backlog
-title: "[User Story] "
----
+# Beschrijving
 
-## User Story
-As a _[user persona]_, I want _[feature/goal]_ so that _[value/outcome]_.
+(beschrijf hier de user story)
 
 ---
 
-## Effort Estimate
-Story Points: _e.g. 3_
+# Definition of Ready (DoR)
+- [] 
 
---- 
-
-
+# Definition of Done (DoD)
+- [] 
