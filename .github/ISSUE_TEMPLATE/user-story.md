@@ -12,8 +12,6 @@ As a _[user persona]_, I want _[feature/goal]_ so that _[value/outcome]_.
 ## Effort Estimate
 Story Points: _e.g. 3_
 
----
+--- 
 
-## Definition of Done
-- [ ] ... 
 
