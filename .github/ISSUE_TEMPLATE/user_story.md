@@ -18,3 +18,8 @@ about: User Story
 
 ## Definition of Done (DoD)
 - [ ] ...
+
+---
+
+## Taken
+
