@@ -8,10 +8,21 @@ De functionele requirements laten duidelijk zien wat de opdrachtgever als verwac
 ## Technische Informatica
 |Nummer|Beschrijving|Prioriteit|
 |----|----|----|
-|F01|De robot kan een lijn volgen|Must have|
-|F02|De locatie van de robot wordt uitgezonden|Must have|
-|F03|De robot heeft een vorm van obstakeldetectie|Should have|
-|F04|De robot bevat een algoritme die de beste route bepaalt van startpunt naar eindpunt|Should have|
-|F05|De lijn bestaat uit magneetstrippen|Could have|
-|F06|De robot bevat een camera|Could have|
-|F07|
+|TI_F01|De robot kan een route volgen|Must have|
+|TI_F02|De locatie van de robot wordt uitgezonden|Must have|
+|TI_F03|De robot heeft een vorm van obstakeldetectie|Should have|
+|TI_F04|De robot bevat een algoritme die de beste route bepaalt van startpunt naar eindpunt|Should have|
+|TI_F05|De route bestaat uit magneetstrippen|Could have|
+|TI_F06|De robot bevat een camera|Could have|
+|TI_F07|
+
+## Software development
+|Nummer|Beschrijving|Prioriteit|
+|----|----|----|
+|SD_F01|Er is een dashboard/website waar de studenten mee kunnen communiceren|Must have|
+|SD_F02| De website bevat een simulatiepagina om verschillende scenario's te testen|Must have|
+
+## Cybersecurity & Cloud
+|Nummer|Beschrijving|Prioriteit|
+|----|----|----|
+|CSC_F01|
