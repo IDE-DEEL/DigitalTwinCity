@@ -6,23 +6,29 @@ De functionele requirements laten duidelijk zien wat de opdrachtgever als verwac
 - Could have -> Deze requirements zijn het minst belangrijk en vooral ideeën voor een later model, of latere versie. Als er tijd over is nadat de must have en should have requirements klaar zijn kan er hieraan gewerkt worden, maar dat is vaak niet het geval.
 
 ## Technische Informatica
-|Nummer|Beschrijving|Prioriteit|
-|----|----|----|
-|TI_F01|De robot kan een route volgen|Must have|
-|TI_F02|De locatie van de robot wordt uitgezonden|Must have|
-|TI_F03|De robot heeft een vorm van obstakeldetectie|Should have|
-|TI_F04|De robot bevat een algoritme die de beste route bepaalt van startpunt naar eindpunt|Should have|
-|TI_F05|De route bestaat uit magneetstrippen|Could have|
-|TI_F06|De robot bevat een camera|Could have|
-|TI_F07|
+
+| Nummer | Beschrijving                                                                 | Prioriteit   |
+|--------|-------------------------------------------------------------------------------|--------------|
+| TI_F01    | De robot kan een lijn volgen                                                 | Must have    |
+| TI_F02    | De locatie van de robot wordt uitgezonden                                    | Must have    |
+| TI_F03    | De robot kan vier rijrichtingen en rotondes nemen                            | Must have    |
+| TI_F04    | De robot heeft een vorm van obstakeldetectie                                 | Should have  |
+| TI_F05    | De robot bevat een algoritme dat de beste route bepaalt van startpunt naar eindpunt | Should have  |
+| TI_F06    | De robot kan via RFID-tags baanvlakken reserveren                            | Should have  |
+| TI_F07    | De robot kan gereserveerde baanvlakken na gebruik vrijgeven                  | Should have  |
+| TI_F08    | De lijn bestaat uit magneetstrippen                                          | Could have   |
+| TI_F09    | De robot bevat een camera                                                    | Could have   |
+| TI_F10    | De robot biedt logica voor onderhoudsoptimalisatie                           | Could have   |
+| TI_F11    | De robot houdt rekening met belangenafweging tussen meerdere robots          | Could have   |
 
 ## Software development
-|Nummer|Beschrijving|Prioriteit|
-|----|----|----|
-|SD_F01|Er is een dashboard/website waar de studenten mee kunnen communiceren|Must have|
-|SD_F02| De website bevat een simulatiepagina om verschillende scenario's te testen|Must have|
+
+| Nummer | Beschrijving| Prioriteit   |
+|--------|------------|--------------|
+|SD_F01| Beschrijving| Prio|
 
 ## Cybersecurity & Cloud
-|Nummer|Beschrijving|Prioriteit|
-|----|----|----|
-|CSC_F01|
+
+| Nummer | Beschrijving| Prioriteit   |
+|--------|------------|--------------|
+|CSC_F01| Beschrijving| Prio|
