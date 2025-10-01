@@ -29,6 +29,15 @@ De functionele requirements laten duidelijk zien wat de opdrachtgever als verwac
 
 ## Cybersecurity & Cloud
 
-| Nummer | Beschrijving| Prioriteit   |
-|--------|------------|--------------|
-|CSC_F01| Beschrijving| Prio|
+| Nummer     | Beschrijving                                                                                 | Prioriteit   |
+|------------|----------------------------------------------------------------------------------------------|--------------|
+| CSC_F01    | De cloudomgeving kan berichten ontvangen van zowel de fysieke robots als de we site          | Must have    |
+| CSC_F02    | De cloudomgeving heeft een uptime van minimaal 95%                                           | Must have    |
+| CSC_F03    | Data uit simulaties en fysieke robots wordt veilig opgeslagen in de database                 | Must have    |
+| CSC_F04    | De cloudomgeving kan real-time data doorsturen naar de website                               | Must have    |
+| CSC_F05    | Studenten kunnen vanuit huis de website bereiken en benaderen                                | Must have    |
+| CSC_F06    | Data privacy wordt gegarandeerd: geen persoonsgegevens worden opgeslagen                     | Must have    |
+| CSC_F07    | Toegang tot de cloudomgeving kan gemonitord worden                                           | Should have  |
+| CSC_F08    | Beveiliging tegen ongeautoriseerde toegang is aanwezig                                       | Should have  |
+| CSC_F09    | Mogelijkheid om alerts te versturen bij storingen of fouten in het systeem                   | Could have   |
+| CSC_F10    | Cloud kan updates en patches automatisch doorvoeren zonder downtime                          | Could have   |
