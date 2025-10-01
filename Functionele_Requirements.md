@@ -25,7 +25,15 @@ De functionele requirements laten duidelijk zien wat de opdrachtgever als verwac
 
 | Nummer | Beschrijving| Prioriteit   |
 |--------|------------|--------------|
-|SD_F01| Beschrijving| Prio|
+|SD_F01|De simulatie moet kunnen worden uitgevoerd op de website | Must Have|
+|SD_F02  | De website bevat parameters die gebruikers kunnen instellen| Must Have|
+|SD_F03| De simulatie scenario moet precies hetzelfde zijn als het fysieke gedeelte | Must Have|
+|SD_F04| De code moet leesbaar zijn door gebruik van duidelijke functienamen, variabelen en documentatie (ISO 25010 - Usability & Maintainability| Must Have|
+|SD_F05| De code moet uitbreidbaar zijn voor toekomstige ontwikkeling (ISO 25010 - Modifiability) | Must Have |
+|SD_F06| De code moet onderhoudbaar zijn doormiddel van coding standaarden en principes (SOLID, ICE, etc) (ISO 25010 - Maintainability) | Must Have|
+|SD_F07| Unit testen voor business rules (Domein) | Should Have|
+|SD_F09| Parameter gegevens en score moeten worden opgeslagen | Could Have|
+|SD_F| | |
 
 ## Cybersecurity & Cloud
 
