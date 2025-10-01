@@ -13,9 +13,9 @@ about: Learning Story
 
 ---
 
-## Definition of Done (DoD)
+## Acceptatiecriteria
 - [ ] ...
 
 ---
 
-## Taken
+## Story points

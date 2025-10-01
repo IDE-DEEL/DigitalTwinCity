@@ -13,13 +13,9 @@ about: User Story
 
 ---
 
-## Definition of Ready (DoR)
-- [ ] ...
-
-## Definition of Done (DoD)
+## Acceptatiecriteria
 - [ ] ...
 
 ---
 
-## Taken
-
+## Story points

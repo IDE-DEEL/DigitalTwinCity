@@ -13,9 +13,9 @@ about: Enabler Story
 
 ---
 
-## Definition of Done (DoD)
+## Acceptatiecriteria
 - [ ] ...
 
 ---
 
-## Taken
+## Story points
