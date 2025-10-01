@@ -16,10 +16,8 @@ De functionele requirements laten duidelijk zien wat de opdrachtgever als verwac
 | TI_F05    | De robot bevat een algoritme dat de beste route bepaalt van startpunt naar eindpunt | Should have  |
 | TI_F06    | De robot kan via RFID-tags baanvlakken reserveren                            | Should have  |
 | TI_F07    | De robot kan gereserveerde baanvlakken na gebruik vrijgeven                  | Should have  |
-| TI_F08    | De lijn bestaat uit magneetstrippen                                          | Could have   |
-| TI_F09    | De robot bevat een camera                                                    | Could have   |
-| TI_F10    | De robot biedt logica voor onderhoudsoptimalisatie                           | Could have   |
-| TI_F11    | De robot houdt rekening met belangenafweging tussen meerdere robots          | Could have   |
+| TI_F08    | De robot biedt logica voor onderhoudsoptimalisatie                           | Could have   |
+| TI_F09    | De robot houdt rekening met belangenafweging tussen meerdere robots          | Could have   |
 
 ## Software development
 
