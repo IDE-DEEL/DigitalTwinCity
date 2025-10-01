@@ -34,4 +34,16 @@ Waar de functionele requirements (FR) laten zien wat een systeem moet doen, late
 
 |Functional Nr|Nr|Beschrijving|
 |---|---|---|
-|CSC_F01|CSC_NF1.1|Beschrijving|
+|CSC_F01|CSC_NF1.1|Cloud verwerkt een bericht van een robot of website binnen 3 seconde|
+|CSC_F01|CSC_NF1.2|Cloud kan minimaal 30 berichten per seconde tegelijk verwerken|
+|CSC_F02|TI_NF2.1|Cloud heeft een uptime van minimaal 95% per maand|
+|CSC_F03|CSC_NF3.1|Alle data wordt opgeslagen met encryptie|
+|CSC_F04|CSC_NF4.1|Data-update van cloud naar website gebeurt maximaal 3 seconden vertraging|
+|CSC_F04|CSC_NF4.2|MQTT kunnen worden gebruikt voor de communicatie tussen de autos en cloud|
+|CSC_F05|CSC_NF5.1|Open website laadt volledig binnen 3 seconden bij standaard internetverbinding|
+|CSC_F06|CSC_NF6.1|Alle verzamelde data wordt anoniem opgeslagen (geen namen, e-mailadressen of student-ID’s)
+|CSC_F07|CSC_NF7.1|Toegang tot de cloud wordt gelogd met timestamp en sessie-ID|
+|CSC_F08|CSC_NF8.1|HTTPS/TLS voor alle communicatie met cloud en website|
+|CSC_F08|CSC_NF8.2|Firewall en inputvalidatie beschermen tegen ongeautoriseerde toegang|
+|CSC_F09|CSC_NF9.1|Alerts kunnen verstuurd worden bij storingen of fouten binnen 5 minuten|
+|CSC_F10|CSC_NF10.1|Updates en patches uitgevoerd met maximaal 30 minuten downtime en wordt in het weekend uitgevoerd|
