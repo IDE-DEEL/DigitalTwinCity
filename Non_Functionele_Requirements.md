@@ -27,7 +27,15 @@ Waar de functionele requirements (FR) laten zien wat een systeem moet doen, late
 
 |Functional Nr|Nr|Beschrijving|
 |---|---|---|
-|SD_F01|SD_NF1.1|Beschrijving|
+| SD_F01        | SD_NF1.1 | De simulatie moet volledig geladen zijn bij het openen van de pagina|
+| SD_F02        | SD_NF2.1 | Alle gebruikersparameters moeten real-time aangepast kunnen worden zonder dat de simulatie opnieuw geladen hoeft te worden |
+| SD_F03        | SD_NF3.1 | De simulatie moet nauwkeurigheid van minstens 95% ten opzichte van het fysieke scenario hebben    |
+| SD_F04        | SD_NF4.1 | Code moet leesbaar zijn volgens interne coding guidelines|
+| SD_F05        | SD_NF5.1 | Nieuwe functionaliteiten moeten toegevoegd kunnen worden zonder bestaande code te breken |
+| SD_F06        | SD_NF6.1 | Code onderhoudbaar met consistente naming conventions, SOLID-principes en modulaire structuur     |
+| SD_F07        | SD_NF7.1 | Unit tests dekken minimaal 75% van de business rules                                              |
+| SD_F08        | SD_NF8.1 | Parameter gegevens en scores moeten persistent opgeslagen worden|
+
 
 
 ## Cybersecurity & Cloud
