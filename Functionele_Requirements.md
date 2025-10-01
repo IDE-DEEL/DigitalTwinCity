@@ -37,7 +37,7 @@ De functionele requirements laten duidelijk zien wat de opdrachtgever als verwac
 
 | Nummer     | Beschrijving                                                                                 | Prioriteit   |
 |------------|----------------------------------------------------------------------------------------------|--------------|
-| CSC_F01    | De cloudomgeving kan berichten ontvangen van zowel de fysieke robots als de we site          | Must have    |
+| CSC_F01    | De cloudomgeving kan berichten ontvangen van zowel de fysieke robots als de website          | Must have    |
 | CSC_F02    | De cloudomgeving heeft een hoge uptime en beschikbaarheid                                    | Must have    |
 | CSC_F03    | Data uit simulaties en fysieke robots wordt veilig opgeslagen in de database                 | Must have    |
 | CSC_F04    | De cloudomgeving kan real-time data doorsturen naar de website                               | Must have    |
