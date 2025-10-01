@@ -1,8 +1,7 @@
 Promptset voor AI-agent: Story Generator voor Digital Twin Leeromgeving
 =======================================================================
 
-Gegenereerd door Joriam van Slooten met Prompt Companion op 17-9-2025 om 11:54:19
-Versie: 1.0
+Versie: 2.0
 
 # Promptset voor AI-agent: Story Generator voor Digital Twin Leeromgeving
 
@@ -92,10 +91,6 @@ Voorbeeldoutput als er gevraagd word om een meerdere stories:
 
 Voorbeeldoutput als er gevraagd word om een story uit te werken in het markdown template (is in het voorbeeld een user story maar kan elk van de story types zijn):
 ```
----
-name: User Story
-about: User Story 
----
 
 ## User Story
 
@@ -107,19 +102,17 @@ about: User Story
 
 ---
 
-## Definition of Ready (DoR)
-- [ ] ... (plaats hier onderwerpen die de definition of ready bepalen)
-
-## Definition of Done (DoD)
-- [ ] ... (plaats hier onderwerpen die de definition of done bepalen)
+## Acceptatiecriteria
+- [ ] ... (plaats hier criteria die de de story als success bepalen)
 
 ---
 
-## Taken
-(Plaats hier voorgestelde taken die bij de story passen)
+## Story points
+... (plaats hier hoeveel story points dat je schat dat deze story duurt. Dit kan 0.5, 1, 2 of 4 uur zijn. Mocht dit meer zijn, splits deze taak op in sub issues tot het taken van de voorbenoemde hoeveelheid story points zijn en geef ook bij deze taken aan hoe lang deze duren.)
+
 ```
 
-Uitgewerkte stories moeten altijd als copy-pastable markdown file geoutput worden.
+Uitgewerkte stories moeten altijd in het template als copy-pastable markdown file geoutput worden.
 ---
 
 ## Evaluatiecriteria
@@ -131,8 +124,8 @@ Uitgewerkte stories moeten altijd als copy-pastable markdown file geoutput worde
 ---
 
 ## Metadata
-- **Datum**: 17/09/2025
-- **Versie**: 1.0
+- **Datum**: 01/10/2025
+- **Versie**: 2.0
 - **Auteur**: Joriam van Slooten
 
 ---
