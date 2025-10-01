@@ -6,12 +6,17 @@ De functionele requirements laten duidelijk zien wat de opdrachtgever als verwac
 - Could have -> Deze requirements zijn het minst belangrijk en vooral ideeën voor een later model, of latere versie. Als er tijd over is nadat de must have en should have requirements klaar zijn kan er hieraan gewerkt worden, maar dat is vaak niet het geval.
 
 ## Technische Informatica
-|Nummer|Beschrijving|Prioriteit|
-|----|----|----|
-|F01|De robot kan een lijn volgen|Must have|
-|F02|De locatie van de robot wordt uitgezonden|Must have|
-|F03|De robot heeft een vorm van obstakeldetectie|Should have|
-|F04|De robot bevat een algoritme die de beste route bepaalt van startpunt naar eindpunt|Should have|
-|F05|De lijn bestaat uit magneetstrippen|Could have|
-|F06|De robot bevat een camera|Could have|
-|F07|
+
+| Nummer | Beschrijving                                                                 | Prioriteit   |
+|--------|-------------------------------------------------------------------------------|--------------|
+| F01    | De robot kan een lijn volgen                                                 | Must have    |
+| F02    | De locatie van de robot wordt uitgezonden                                    | Must have    |
+| F07    | De robot kan vier rijrichtingen en rotondes nemen                            | Must have    |
+| F03    | De robot heeft een vorm van obstakeldetectie                                 | Should have  |
+| F04    | De robot bevat een algoritme dat de beste route bepaalt van startpunt naar eindpunt | Should have  |
+| F08    | De robot kan via RFID-tags baanvlakken reserveren                            | Should have  |
+| F09    | De robot kan gereserveerde baanvlakken na gebruik vrijgeven                  | Should have  |
+| F05    | De lijn bestaat uit magneetstrippen                                          | Could have   |
+| F06    | De robot bevat een camera                                                    | Could have   |
+| F10    | De robot biedt logica voor onderhoudsoptimalisatie                           | Could have   |
+| F11    | De robot houdt rekening met belangenafweging tussen meerdere robots          | Could have   |
