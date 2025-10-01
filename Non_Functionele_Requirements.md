@@ -21,3 +21,17 @@ Waar de functionele requirements (FR) laten zien wat een systeem moet doen, late
 |TI_F08|TI_NF8.1|De code is eenvoudig gestructureerd waardoor eenvoudig extra toepassingen en sensoren kunnen worden toegevoegd|
 |TI_F09|TI_NF9.1|De robot weet waar andere robots zijn op 5 cm nauwkeurig|
 |TI_F09|TI_NF9.2|Robots kunnen hun route aanpassen op basis van de locatie van andere robots|
+
+## Software Development
+
+
+|Functional Nr|Nr|Beschrijving|
+|---|---|---|
+|SD_F01|SD_NF1.1|Beschrijving|
+
+
+## Cybersecurity & Cloud
+
+|Functional Nr|Nr|Beschrijving|
+|---|---|---|
+|SD_F01|SD_NF1.1|Beschrijving|
