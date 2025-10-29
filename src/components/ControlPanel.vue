@@ -24,7 +24,7 @@
         <!-- Scenario dropdown -->
         <div>
             <label class="block text-sm font-semibold mb-1">Scenario:</label>
-            <select class="w-full p-2 rounded-md border border-gray-300 bg-white focus:ring-2 focus:ring-blue outline-none bg-white text-dark" v-model="scenario">
+            <select class="w-full p-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue outline-none bg-white text-dark" v-model="scenario">
                 <option>Placeholder 1</option>
                 <option>Placeholder 2</option>
             </select>

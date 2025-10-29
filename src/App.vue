@@ -9,14 +9,14 @@
     <div class="flex flex-1 overflow-hidden">
 
       <!-- Simulation area + Bottom bar -->
-      <div class="flex flex-col flex-1 overflow-hidden bg-white">
-        <SimulationDisplay class="flex-1" />
-        <BottomBar class="h-20 px-6"/>
+      <div class="flex flex-col flex-1 overflow-hidden bg-white p-3">
+        <SimulationDisplay class="flex-1 pb-2.5" />
+        <BottomBar class="h-20 pt-2.5"/>
       </div>
 
       <!-- Control Panel -->
-       <div class=" pt-3">
-          <ControlPanel class="w-[340px] bg-white border border-gray-400 rounded-md overflow-y-auto text-sm" />
+       <div class="flex pt-3">
+          <ControlPanel class="flex-1 w-[340px] bg-white border border-gray-400 rounded-md overflow-y-auto text-sm" />
        </div>
        
     </div>
