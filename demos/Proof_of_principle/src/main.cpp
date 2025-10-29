@@ -1,137 +1,252 @@
 #include <Arduino.h>
 #include <ESP32Servo.h>
-#include <map>
 #include <Wire.h>
 #include "Adafruit_MLX90393.h"
+#include <math.h>
 
-#define SDA_PIN 21
-#define SCL_PIN 22
+#define SDA_LEFT 16
+#define SCL_LEFT 17
+#define SDA_RIGHT 21
+#define SCL_RIGHT 22
 
-#define motor 25 // GPIO 25 (motor)
-// create servo object to control a servo
+#define SERVO_PIN 14
+#define MOTOR_PIN 25
+#define LED_PIN 27
+#define CALC_SAMPLES 10
+#define LEFT_DEVICE_ID 0
+#define RIGHT_DEVICE_ID 1
+#define THRESHOLD 300
+#define LEFT_MAX_ANGLE 130
+#define RIGHT_MAX_ANGLE 70
+#define FORWARD_ANGLE 100
+
+
+Adafruit_MLX90393 sensorLeft;
+Adafruit_MLX90393 sensorRight;
 Servo servo;
 
-// Aantal samples voor het mediaanfilter
-#define MEDIAN_WINDOW 5
+// Twee I2C-instanties
+TwoWire I2C_Left = TwoWire(0);
+TwoWire I2C_Right = TwoWire(1);
 
-// Create sensor object
-Adafruit_MLX90393 sensor = Adafruit_MLX90393();
+struct sensor_coords
+{
+  float x = 0;
+  float y = 0;
+  float z = 0;
+  float magOffset = 0;
+  bool calibrated = false;
+  int device_id;
+};
 
-// Buffers voor medianfilter
-float xBuffer[MEDIAN_WINDOW];
-float yBuffer[MEDIAN_WINDOW];
-float zBuffer[MEDIAN_WINDOW];
-int sampleIndex = 0;
-bool bufferFilled = false;
+// Sensor coords
+static struct sensor_coords hall_left;
+static struct sensor_coords hall_right;
 
-// Functie om median te berekenen uit een float array
-float median(float *arr, int size) {
-  float temp[size];
-  memcpy(temp, arr, sizeof(float) * size);
-  // Sorteer array (eenvoudige bubblesort, voldoende voor kleine arrays)
-  for (int i = 0; i < size - 1; i++) {
-    for (int j = i + 1; j < size; j++) {
-      if (temp[j] < temp[i]) {
-        float t = temp[i];
-        temp[i] = temp[j];
-        temp[j] = t;
-      }
+// Kalibratie
+static float magOffsetLeft = 0;
+static float magOffsetRight = 0;
+static int calCountLeft = 0;
+static int calCountRight = 0;
+static bool calibratedLeft = false;
+static bool calibratedRight = false;
+
+// Servo instellingen
+static int servoAngle = 70;
+
+// Loop timing
+unsigned long lastLoopTime = 0;
+const unsigned long LOOP_INTERVAL = 20;
+
+// --- Motor functies ---
+void motorOn() { digitalWrite(MOTOR_PIN, HIGH); }
+void motorOff() { digitalWrite(MOTOR_PIN, LOW); }
+
+
+// Forward declarations
+float calculateMagValue(struct sensor_coords coords);
+int calibrateDirectionMLX90393(struct sensor_coords *direction);
+bool getSensorData(struct sensor_coords *direction);
+
+float calculateMagValue(struct sensor_coords coords)
+{
+  return sqrt(coords.x * coords.x + coords.y * coords.y + coords.z * coords.z);
+}
+
+/* Kalibreer een richting van de MLX90393 Sensor*/
+int calibrateDirectionMLX90393(struct sensor_coords *direction)
+{
+
+  // Lees eerste sensor data
+  bool directionOk;
+  
+  // Lees CALC_SAMPLES hoeveelheid om de sensor offset mee te berekenen
+  for (int i = 0; i < CALC_SAMPLES; i++)
+  {
+    // Lezen van sensoren
+    directionOk = getSensorData(direction);
+
+    if (!directionOk)
+    {
+      Serial.printf("Error reading sensor data of device %d\n", direction->device_id);
+      return -1;
+    }
+    
+    // Bereken mag offset
+    if (!direction->calibrated && directionOk)
+    {
+      direction->magOffset += calculateMagValue(*direction);
     }
   }
-  // Retourneer middelste waarde
-  return temp[size / 2];
+
+  // Bereken gemiddelde offset en geef aan dat het gecalibreerd.
+  direction->magOffset /= CALC_SAMPLES;
+  direction->calibrated = true;
+  Serial.printf("Device %d calibrated successfully.\n", direction->device_id);
+  return 0;
 }
 
-void Links(int graden) {
-  servo.write(90 + graden);
+bool getSensorData(struct sensor_coords *direction){
+  bool succes = false;
+  switch (direction->device_id)
+  {
+  case LEFT_DEVICE_ID:
+    // if (!sensorLeft.startSingleMeasurement())
+    // {
+    //   return false;
+    // }
+    // delay(100);
+    succes = sensorLeft.readData(&direction->x, &direction->y, &direction->z);
+    
+    break;
+  case RIGHT_DEVICE_ID:
+    // if (!sensorRight.startSingleMeasurement())
+    // {
+    //   return false;
+    // }
+    // delay(100);
+    succes = sensorRight.readData(&direction->x, &direction->y, &direction->z);
+    break;
+  default:
+    break;
+  }
+  return succes;
 }
 
-void Rechts(int graden) {
-  servo.write(90 - graden);
+void followLine(int threshold, float difference, float magLeft, float magRight){
+  if (magLeft > threshold && magLeft > magRight){
+    servoAngle = LEFT_MAX_ANGLE;
+    // Serial.println("Bocht links");  //debug print
+  }
+  else if (magRight > threshold && magRight > magLeft){
+    servoAngle = RIGHT_MAX_ANGLE;
+    // Serial.println("Bocht rechts"); //debug print
+  }
+  else if (difference < threshold){
+    servoAngle = FORWARD_ANGLE;
+    // Serial.println("Rechtdoor"); // debug print
+  }
+  
+  servo.write(servoAngle);
 }
 
-void Vooruit() {
-  servo.write(90);
-}
-
-void Rijden_aan() {
-  digitalWrite(motor, HIGH);
-
-}
-
-void Rijden_uit() {
-  digitalWrite(motor, LOW);
-
-}
-
-void setup(void)
+void setup()
 {
   Serial.begin(115200);
-  while (!Serial) delay(10);
-  // set servo
-  servo.setPeriodHertz(50);
-  servo.attach(26, 500, 2400); // Optional: improve servo accuracy
-  servo.write(90); // tell servo to go to base position
+  while (!Serial)
+    delay(10);
 
-  // set motor pin
-  pinMode(motor, OUTPUT);
+  // Servo test
+  servo.attach(SERVO_PIN, 500, 2400);
+  servo.write(100);
+  delay(1000);
+  servo.write(120);
+  delay(1000);
+  servo.write(80);
+  delay(1000);
+  servo.write(100);
+  delay(1000);
 
-  Serial.println("Starting Adafruit MLX90393 I2C Demo with Median Filter");
+  // led
+  pinMode(LED_PIN, OUTPUT);
 
-  Wire.begin(SDA_PIN, SCL_PIN);
+  // Motor
+  pinMode(MOTOR_PIN, OUTPUT);
+  motorOff();
 
-  if (!sensor.begin_I2C(0x0C, &Wire)) {
-    Serial.println("❌ No sensor found ... check your wiring!");
-    while (1) delay(10);
+  // --- I2C setup ---
+  I2C_Left.begin(SDA_LEFT, SCL_LEFT, 400000);
+  I2C_Right.begin(SDA_RIGHT, SCL_RIGHT, 400000);
+
+  // --- Sensoren ---
+  if (!sensorLeft.begin_I2C(0x0C, &I2C_Left))
+  {
+    Serial.println("Linker sensor niet gevonden op bus 0!");
+    // while (1)
+      delay(10);
+  }
+  if (!sensorRight.begin_I2C(0x0C, &I2C_Right))
+  {
+    Serial.println("Rechter sensor niet gevonden op bus 1!");
+    // while (1)
+      delay(10);
   }
 
-  Serial.println("✅ Found a MLX90393 sensor");
+  Serial.println("Beide sensoren gevonden op aparte I2C-bussen.");
 
-  sensor.setGain(MLX90393_GAIN_1X);
-  sensor.setResolution(MLX90393_X, MLX90393_RES_17);
-  sensor.setResolution(MLX90393_Y, MLX90393_RES_17);
-  sensor.setResolution(MLX90393_Z, MLX90393_RES_16);
-  sensor.setOversampling(MLX90393_OSR_3);
-  sensor.setFilter(MLX90393_FILTER_5);
+  Serial.printf("OSR is %d", sensorLeft.getOversampling());
+  sensorLeft.setOversampling(MLX90393_OSR_0);
+  sensorRight.setOversampling(MLX90393_OSR_0);
+  sensorLeft.setFilter(MLX90393_FILTER_3);
+  sensorRight.setFilter(MLX90393_FILTER_3);
 
-  Serial.println("Setup complete.\n");
+  digitalWrite(LED_PIN, HIGH);
+
+  hall_left.device_id = LEFT_DEVICE_ID;
+  hall_right.device_id = RIGHT_DEVICE_ID;
+  if(calibrateDirectionMLX90393(&hall_left) < 0){
+      digitalWrite(LED_PIN, LOW);
+    return;
+  }
+  if(calibrateDirectionMLX90393(&hall_right) < 0){
+    digitalWrite(LED_PIN, LOW);
+    return;
+  }
+  
+
+  servoAngle = constrain(servoAngle, 30, 130);
+  motorOn();
 }
 
-void loop(void)
+void loop()
 {
-  float x, y, z;
 
-  // Lees de sensorwaarden
-  if (sensor.readData(&x, &y, &z)) {
-
-    // Sla nieuwe waarden op in buffer
-    xBuffer[sampleIndex] = x;
-    yBuffer[sampleIndex] = y;
-    zBuffer[sampleIndex] = z;
-
-    // Update index
-    sampleIndex++;
-    if (sampleIndex >= MEDIAN_WINDOW) {
-      sampleIndex = 0;
-      bufferFilled = true;
-    }
-
-    // Bereken gefilterde waarden pas als buffer gevuld is
-    if (bufferFilled) {
-      float xMed = median(xBuffer, MEDIAN_WINDOW);
-      float yMed = median(yBuffer, MEDIAN_WINDOW);
-      float zMed = median(zBuffer, MEDIAN_WINDOW);
-
-      Serial.print("Filtered -> X: "); Serial.print(xMed, 4); Serial.print(" uT\t");
-      Serial.print("Y: "); Serial.print(yMed, 4); Serial.print(" uT\t");
-      Serial.print("Z: "); Serial.print(zMed, 4); Serial.println(" uT");
-    } else {
-      Serial.println("Collecting samples for median filter...");
-    }
-
-  } else {
-    Serial.println("⚠️ Unable to read XYZ data from sensor!");
+  // Lees linker hall sensor
+  if (!getSensorData(&hall_left))
+  {
+    Serial.println("Error reading left hall sensor");
+    digitalWrite(LED_PIN, LOW);
+    return;
   }
 
-  delay(100);
+  // Lees rechter hall sensor
+  if (!getSensorData(&hall_right))
+  {
+    Serial.println("Error reading right hall sensor");
+    digitalWrite(LED_PIN, LOW);
+    return;
+  }
+
+  // --- Berekening ---
+  float magLeft = calculateMagValue(hall_left);   // - magOffsetLeft;
+  float magRight = calculateMagValue(hall_right); // - magOffsetRight;
+  float diff = magLeft - magRight;
+
+
+  // --- print sensor waardes ---
+  Serial.printf("L: %3.f \t R: %3.f\n", magLeft, magRight);
+
+  
+  // --- Lijn volgen ---
+  followLine(THRESHOLD, diff, magLeft, magRight);
 }
