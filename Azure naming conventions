@@ -1,0 +1,9 @@
+Azure naming conventions: 
+Voorbeeld: dt-prod-vm-backend
+dt = digital twin, prod of test als omgeving, Object type, optional suffix
+
+Tags:
+Er wordt twee tags gemaakt een voor test en de andere voor productie om de kosten apart te kunnen rekenen. Zo worden de resources gestuctureerd en niet door elkaar.
+
+Resource groups:
+Er zijn twee groepen gemaakt, een voor test en de andere voor prod.
