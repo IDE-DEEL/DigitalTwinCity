@@ -1,126 +1,149 @@
 #include <WiFi.h>
-#include <WiFiClient.h>
+#include <WiFiClientSecure.h>
 #include <PubSubClient.h>
 #include <SPI.h>
 #include <MFRC522.h>
 
+// ---- Wi-Fi ----
+const char* WIFI_SSID = "WiFi_SSID";
+const char* WIFI_PASS = "WiFi_password";
+
+// ---- Broker ----
+const char* BROKER_HOST = "Broker_Location_IP";
+const uint16_t BROKER_PORT = 8883;
+
+// ---- TLS-PSK ----
+const char* PSK_IDENTITY = "PSK_IDENTITY";
+const char* PSK_HEX      = "PSK_HEX";
+
+// ---- Topics ----
+const char* SUB_TOPIC_CMD = "esp32-01/out";
+const char* PUB_TOPIC_OUT = "esp32-01/out";
+const char* PUB_TOPIC_RFID = "esp32-01/out";
+
+// ---- MQTT clientId ----
+const char* MQTT_CLIENT_ID = PSK_IDENTITY;
+
+// ---- MFRC522 SPI ----
 #define SS_PIN  21
 #define RST_PIN 22
+// ESP32 default VSPI: SCK=18, MISO=19, MOSI=23
+#define SPI_SCK   18
+#define SPI_MISO  19
+#define SPI_MOSI  23
 
+WiFiClientSecure tlsClient;
+PubSubClient mqtt(tlsClient);
 MFRC522 mfrc522(SS_PIN, RST_PIN);
 
-// WiFi
-const char *ssid = "Xiaomi 12T Pro";
-const char *password = "Test1234";
+// Debounce / anti-spam
+String lastUidHex = "";
+unsigned long lastPublishMs = 0;
+const unsigned long reannounceMs = 3000; // na 3s zelfde kaart opnieuw toestaan
 
-// MQTT Broker (TLS port 8883)
-const char *mqtt_broker = "4.235.121.171";
-const char *topic = "emqx/esp32";
-const char *mqtt_username = "Testing";
-const char *mqtt_password = "Blablabla1";
-const int mqtt_port = 1883;
-
-// secure client for TLS
-WiFiClient espClient;
-PubSubClient client(espClient);
-
-void connectWiFi() {
-  Serial.print("Connecting to Wi-Fi ");
-  Serial.print(ssid);
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println();
-  Serial.println("Wi-Fi connected");
-  Serial.print("IP: ");
-  Serial.println(WiFi.localIP());
-}
-
-void reconnectMQTT() {
-  // create client id from MAC (keeps it unique)
-  String client_id = "esp32-client-";
-  client_id += WiFi.macAddress();
-  while (!client.connected()) {
-    Serial.printf("Connecting to MQTT broker as %s ...\n", client_id.c_str());
-    if (client.connect(client_id.c_str(), mqtt_username, mqtt_password)) {
-      Serial.println("MQTT connected");
-      // If you need to subscribe to something, do it here:
-      // client.subscribe("some/topic");
-    } else {
-      Serial.print("MQTT connect failed, rc=");
-      Serial.print(client.state());
-      Serial.println(" — retrying in 2s");
-      delay(2000);
-    }
-  }
-}
-
-String readUIDString(MFRC522::Uid &uid) {
-  String s = "";
+// ---------- Helpers ----------
+static String uidToHex(const MFRC522::Uid& uid) {
+  String hex = "";
   for (byte i = 0; i < uid.size; i++) {
-    if (uid.uidByte[i] < 0x10) s += "0";
-    s += String(uid.uidByte[i], HEX);
-    if (i + 1 < uid.size) s += " ";
+    if (uid.uidByte[i] < 0x10) hex += "0";
+    hex += String(uid.uidByte[i], HEX);
   }
-  s.toUpperCase();
-  return s;
+  hex.toUpperCase();
+  return hex;
+}
+
+void onMqttMessage(char* topic, byte* payload, unsigned int len) {
+  Serial.print("MQTT <- ["); Serial.print(topic); Serial.print("] ");
+  for (unsigned int i = 0; i < len; i++) Serial.print((char)payload[i]);
+  Serial.println();
+}
+
+void ensureWifi() {
+  if (WiFi.status() == WL_CONNECTED) return;
+  Serial.printf("WiFi: connecting to %s ...\n", WIFI_SSID);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(WIFI_SSID, WIFI_PASS);
+  while (WiFi.status() != WL_CONNECTED) { delay(400); Serial.print("."); }
+  Serial.printf("\nWiFi: connected, IP=%s\n", WiFi.localIP().toString().c_str());
+}
+
+bool mqttConnect() {
+  tlsClient.setPreSharedKey(PSK_IDENTITY, PSK_HEX); // TLS-PSK
+
+  mqtt.setServer(BROKER_HOST, BROKER_PORT);
+  mqtt.setCallback(onMqttMessage);
+
+  Serial.printf("MQTT: connecting to %s:%u ...\n", BROKER_HOST, BROKER_PORT);
+  if (!mqtt.connect(MQTT_CLIENT_ID)) {
+    Serial.printf("MQTT connect failed, state=%d\n", mqtt.state());
+    return false;
+  }
+
+  Serial.println("MQTT: connected (TLS-PSK)");
+  mqtt.subscribe(SUB_TOPIC_CMD, 1);
+  mqtt.publish(PUB_TOPIC_OUT, "esp32 online (rfid ready)", true);
+  return true;
+}
+
+void publishRFID(const String& uidHex) {
+  // JSON payload: {"uid":"ABCD1234","ms":123456}
+  String payload = "{\"uid\":\"" + uidHex + "\",\"ms\":" + String(millis()) + "}";
+
+  Serial.print("RFID -> "); Serial.println(payload);
+  mqtt.publish(PUB_TOPIC_RFID, payload.c_str(), false);
 }
 
 void setup() {
   Serial.begin(115200);
-  delay(500);
+  delay(200);
 
-  // WiFi
-  connectWiFi();
-
-  // TLS setup: for quick testing use insecure. For production, replace with setCACert().
-  
-  // MQTT
-  client.setServer(mqtt_broker, mqtt_port);
-
-  // RFID init
-  SPI.begin();
+  // SPI + MFRC522 init
+  SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI, SS_PIN);
   mfrc522.PCD_Init();
-  Serial.println("RFID reader ready - present a card/tag");
+  delay(50);
+  Serial.println("MFRC522 init done");
+
+  ensureWifi();
+  mqttConnect();
 }
 
 void loop() {
-  if (WiFi.status() != WL_CONNECTED) {
-    connectWiFi();
+  if (WiFi.status() != WL_CONNECTED) ensureWifi();
+
+  if (!mqtt.connected()) {
+    static unsigned long lastRetry = 0;
+    if (millis() - lastRetry > 3000) {
+      lastRetry = millis();
+      mqttConnect();
+    }
+  } else {
+    mqtt.loop();
   }
 
-  if (!client.connected()) {
-    reconnectMQTT();
-  }
-  client.loop();
-
-  // Check for a new card
+  // RFID polling
   if (!mfrc522.PICC_IsNewCardPresent()) {
+    // Als dezelfde kaart lang blijft liggen, reset lastUid na timeout zodat opnieuw gepusht kan worden
+    if (lastUidHex.length() && (millis() - lastPublishMs > reannounceMs)) {
+      lastUidHex = "";
+    }
     return;
   }
-  if (!mfrc522.PICC_ReadCardSerial()) {
-    return;
+  if (!mfrc522.PICC_ReadCardSerial()) return;
+
+  String uidHex = uidToHex(mfrc522.uid);
+
+  // Debounce: publiceer alleen bij nieuwe UID of na timeout
+  if (uidHex != lastUidHex || (millis() - lastPublishMs > reannounceMs)) {
+    publishRFID(uidHex);
+    lastUidHex = uidHex;
+    lastPublishMs = millis();
   }
 
-  // Build UID string
-  String uidStr = readUIDString(mfrc522.uid);
-  Serial.print("UID tag: ");
-  Serial.println(uidStr);
+  // Optioneel: kaart-type loggen
+  MFRC522::PICC_Type piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
+  Serial.print("Type: "); Serial.println(mfrc522.PICC_GetTypeName(piccType));
 
-  // Build JSON payload (you can change format if you want)
-  String payload = "{\"uid\":\"" + uidStr + "\"}";
-
-  // Publish (QoS 0)
-  bool ok = client.publish(topic, payload.c_str());
-  Serial.print("Published to ");
-  Serial.print(topic);
-  Serial.print(": ");
-  Serial.print(payload);
-  Serial.print(" -> ");
-  Serial.println(ok ? "OK" : "FAILED");
-
-  // Halt PICC and small delay to avoid duplicate reads
+  // Kaart netjes stoppen
   mfrc522.PICC_HaltA();
+  mfrc522.PCD_StopCrypto1();
 }
