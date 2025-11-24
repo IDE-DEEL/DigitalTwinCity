@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <Arduino.h>
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 
@@ -107,7 +106,7 @@ void setup()
   }
 #endif // USE_MAGNETOMETER
 
-  // Wait before starting loop so initalization messages can be read.
+  // Wait before starting loop so initialization messages can be read.
   delay(5000);
 }
 

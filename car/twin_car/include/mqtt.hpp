@@ -28,7 +28,7 @@ public:
 	explicit MQTTWrapper(WiFiClientSecure &tlsClient);
 
 	/** Connect to server using TLS-PSK constants, set server/callback/subscribe/and publish initial online message.
-	 * @retval true on succes
+	 * @retval true on success
 	 * @retval false on failure
 	 */
 	bool connectWithPsk();

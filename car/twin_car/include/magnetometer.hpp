@@ -12,7 +12,7 @@
 #define MEDIAN_FILTER_ALPHA 0.3f
 
 // Do not touch this assert
-static_assert(MEDIAN_FILTER_ALPHA <= 1.0f, "MEDIAN_FILTER_SIZE must be smaller or equal to 1.0f");
+static_assert(MEDIAN_FILTER_ALPHA <= 1.0f, "MEDIAN_FILTER_ALPHA must be smaller or equal to 1.0f");
 
 struct mag_config {
     mlx90393_gain_t gain; /** Magnetometer gain */

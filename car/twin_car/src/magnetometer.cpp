@@ -13,7 +13,7 @@ Magnetometer::Magnetometer(enum mag_address device_addr, const mag_config &confi
         _name = "Magnetometer right";
         break;
     default:
-        _name = "Unknown sensor %d", _device_addr;
+        _name = String("Unknown sensor ") + String(_device_addr);
         break;
     }
     Serial.printf("%s created\n", _name.c_str());
@@ -82,7 +82,7 @@ int Magnetometer::calibrate(int samples)
     float sum = 0;
     int ret = 0;
 
-    for (unsigned i = 0; i < samples; ++i)
+    for (int i = 0; i < samples; ++i)
     {
         // Read current sample
         ret = read();

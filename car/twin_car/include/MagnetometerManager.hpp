@@ -34,12 +34,13 @@ public:
         else {
             Serial.println("I2C bus initialized.");
         }
-        for (auto* s : _sensors) { 
-            int r = s->init(); 
+        for (auto* s : _sensors) {
+            int r = s->init();
             if (r) {
                 i2c_scan();
-                return r;} 
+                return r;
             }
+        }
         return 0;
     }
 
@@ -95,7 +96,7 @@ private:
                 nDevices++;
             }
             else if (error == 4) {
-                Serial.print("Unknow error at address 0x");
+                Serial.print("Unknown error at address 0x");
                 if (address < 16) {
                     Serial.print("0");
                 }
