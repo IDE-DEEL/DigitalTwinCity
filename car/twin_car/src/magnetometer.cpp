@@ -16,57 +16,58 @@ Magnetometer::Magnetometer(enum mag_address device_addr, const mag_config &confi
         _name = "Unknown sensor %d", _device_addr;
         break;
     }
+    Serial.printf("%s created\n", _name.c_str());
 }
 
 int Magnetometer::init()
 {
     if (!_sensor.begin_I2C(_device_addr))
     {
-        Serial.printf("Sensor %s not found!\n", _name);
+        Serial.printf("Sensor %s not found!\n", _name.c_str());
         return -ENODEV;
     }
 
     // Gain
     if (!_sensor.setGain(_config.gain))
     {
-        Serial.printf("Error setting gain of %s\n", _name);
+        Serial.printf("Error setting gain of %s\n", _name.c_str());
         return -EIO;
     }
     
     // Resolution
     if (!_sensor.setResolution(MLX90393_X, _config.resolution))
     {
-        Serial.printf("Error setting resolution of %s\n", _name);
+        Serial.printf("Error setting resolution of %s\n", _name.c_str());
         return -EIO;
     }
 
     if (!_sensor.setResolution(MLX90393_Y, _config.resolution))
     {
-        Serial.printf("Error setting resolution of %s\n", _name);
+        Serial.printf("Error setting resolution of %s\n", _name.c_str());
         return -EIO;
     }
 
     if (!_sensor.setResolution(MLX90393_Z, _config.resolution))
     {
-        Serial.printf("Error setting resolution of %s\n", _name);
+        Serial.printf("Error setting resolution of %s\n", _name.c_str());
         return -EIO;
     }
 
     // Oversampling
     if (!_sensor.setOversampling(_config.osr))
     {
-        Serial.printf("Error setting oversampling of %s\n", _name);
+        Serial.printf("Error setting oversampling of %s\n", _name.c_str());
         return -EIO;
     }
 
     // Filter
     if (!_sensor.setFilter(_config.filter))
     {
-        Serial.printf("Error setting filter of %s\n", _name);
+        Serial.printf("Error setting filter of %s\n", _name.c_str());
         return -EIO;
     }
 
-    Serial.printf("Sensor %s OK\n", _name);
+    Serial.printf("Sensor %s OK\n", _name.c_str());
     return 0;
 }
 
@@ -87,7 +88,7 @@ int Magnetometer::calibrate(int samples)
         ret = read();
         if (ret)
         {
-            Serial.printf("Error %d reading %s during calibration\n", ret, _name);
+            Serial.printf("Error %d reading %s during calibration\n", ret, _name.c_str());
             return ret;
         }
         // Accumulate magnitude
@@ -148,7 +149,7 @@ int Magnetometer::update()
     int ret = read();
     if (ret)
     {
-        Serial.printf("Error %d reading %s during update", ret, _name);
+        Serial.printf("Error %d reading %s during update\n", ret, _name.c_str());
         return ret;
     }
     return process();
