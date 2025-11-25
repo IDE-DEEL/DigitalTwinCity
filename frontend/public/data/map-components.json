@@ -2,26 +2,61 @@
   {
     "id": "straight",
     "label": "straight line",
-    "imagePath": "/assets/straight.png"
+    "imagePath": "/assets/straight.png",
+    "pathConnections": ["N", "S"],
+    "pathNodes": [
+      {
+        "from": "N",
+        "to": "S", 
+        "coords": [[0.5, 0.0],[0.5, 1.0]]}
+    ]
+
   },
   {
     "id": "curve",
     "label": "curve",
-    "imagePath": "/assets/curve.png"
+    "imagePath": "/assets/curve.png",
+    "pathConnections": ["E", "S"],
+    "pathNodes": [
+      {
+        "from": "E",
+        "to": "S", 
+        "coords": [[1.0, 0.5],[0.5, 0.5],[0.5, 1.0]]}
+    ]
   },
   {
     "id": "t_split",
     "label": "t split",
-    "imagePath": "/assets/t_split.png"
+    "imagePath": "/assets/t_split.png",
+    "pathConnections": ["N", "E", "S"],
+    "pathNodes": [
+      { "from": "N", "to": "S", "coords": [ [0.5, 0.0], [0.5, 1.0] ] },
+      { "from": "E", "to": "S", "coords": [ [1.0, 0.5], [0.5, 0.5], [0.5, 1.0] ] },
+      { "from": "N", "to": "E", "coords": [ [0.5, 0.0], [0.5, 0.5], [1.0, 0.5] ] }
+    ]
   },
   {
     "id": "cross_split",
     "label": "cross split",
-    "imagePath": "/assets/cross_split.png"
+    "imagePath": "/assets/cross_split.png",
+    "pathConnections": ["N", "E", "S", "W"],
+    "pathNodes": [
+      { "from": "N", "to": "Z", "coords": [ [0.5, 0.0], [0.5, 1.0] ] },
+      { "from": "E", "to": "W", "coords": [ [1.0, 0.5], [0.0, 0.5] ] },
+      { "from": "N", "to": "E", "coords": [ [0.5, 0.0], [0.5, 0.5], [1.0, 0.5] ] },
+      { "from": "N", "to": "W", "coords": [ [0.5, 0.0], [0.5, 0.5], [0.0, 0.5] ] }
+    ]
   },
   {
     "id": "roundabout",
     "label": "roundabout",
-    "imagePath": "/assets/roundabout.png"
+    "imagePath": "/assets/roundabout.png",
+    "pathConnections": ["N", "E", "S", "W"],
+    "pathNodes": [
+      { "from": "N", "to": "E", "coords": [ [0.5, 0.0], [0.75, 0.25], [1.0, 0.5] ] },
+      { "from": "E", "to": "S", "coords": [ [1.0, 0.5], [0.75, 0.75], [0.5, 1.0] ] },
+      { "from": "S", "to": "W", "coords": [ [0.5, 1.0], [0.25, 0.75], [0.0, 0.5] ] },
+      { "from": "W", "to": "N", "coords": [ [0.0, 0.5], [0.25, 0.25], [0.5, 0.0] ] }
+    ]
   }
 ]
