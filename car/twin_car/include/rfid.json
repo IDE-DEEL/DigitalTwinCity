@@ -1,0 +1,44 @@
+{
+  "rfid_tags": [
+    {
+      "tag_id": "2A1345FF",
+      "name": "Toolbox 1",
+      "location": {
+        "x": 150,
+        "y": 420
+      }
+    },
+    {
+      "tag_id": "41F90A3E",
+      "name": "Part A25",
+      "location": {
+        "x": 210,
+        "y": 800
+      }
+    },
+    {
+      "tag_id": "4ADA0A3E",
+      "name": "First Aid Kit",
+      "location": {
+        "x": 50,
+        "y": 120
+      }
+    },
+    {
+      "tag_id": "E5F90A3E",
+      "name": "Server Rack 4",
+      "location": {
+        "x": 800,
+        "y": 600
+      }
+    },
+    {
+      "tag_id": "41F90A3E",
+      "name": "Spare Battery Pack",
+      "location": {
+        "x": 300,
+        "y": 200
+      }
+    }
+  ]
+}

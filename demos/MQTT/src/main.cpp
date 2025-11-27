@@ -3,6 +3,7 @@
 #include <PubSubClient.h>
 #include <SPI.h>
 #include <MFRC522.h>
+#include <ArduinoJson.h>
 
 // ---- Wi-Fi ----
 const char* WIFI_SSID = "WiFi_SSID";
@@ -35,6 +36,8 @@ const char* MQTT_CLIENT_ID = PSK_IDENTITY;
 WiFiClientSecure tlsClient;
 PubSubClient mqtt(tlsClient);
 MFRC522 mfrc522(SS_PIN, RST_PIN);
+
+std::string file_path = "demos/MQTT/lib/json_file/rfid.json";
 
 // Debounce / anti-spam
 String lastUidHex = "";
@@ -102,6 +105,24 @@ void setup() {
   mfrc522.PCD_Init();
   delay(50);
   Serial.println("MFRC522 init done");
+
+  const char* json =
+    "{\"sensor\":\"gps\",\"time\":1351824120,\"data\":[48.756080,2.302038]}";
+
+  // Deserialize the JSON document
+  StaticJsonDocument<256> doc;
+  DeserializationError error = deserializeJson(doc, file_path);
+  if (error) {
+    Serial.print("deserializeJson() failed: ");
+    Serial.println(error.c_str());
+  } else {
+    const char* sensor = doc["tag_id"];
+    long time = doc["segment"];
+    Serial.print("Parsed JSON sensor=");
+    Serial.print(sensor);
+    Serial.print(" time=");
+    Serial.println(time);
+  }
 
   ensureWifi();
   mqttConnect();
