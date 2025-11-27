@@ -5,8 +5,8 @@
 #include <Wire.h>
 #include "magnetometer.hpp"
 
-#define SDA 16
-#define SCL 17
+#define SDA 17
+#define SCL 16
 
 /**
  * @brief Manager for multiple Magnetometer instances.
