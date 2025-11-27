@@ -6,15 +6,26 @@
 #include "rfid.hpp"
 #include "magnetometer.hpp"
 #include "MagnetometerManager.hpp"
+#include "PID.hpp"
+#include "Motion.hpp"
 
-#define USE_MQTT 0
-#define USE_RFID 0
+#define USE_MQTT 1
+#define USE_RFID 1
 #define USE_MAGNETOMETER 1
-
+#define USE_PID 1
+#define USE_MOTION 1
 
 // ---- Wi-Fi ----
-const char* WIFI_SSID = "WiFi_SSID";
-const char* WIFI_PASS = "WiFi_password";
+const char *WIFI_SSID = "";
+const char *WIFI_PASS = "";
+
+#if USE_PID
+static PID pidController;
+#endif // USE_PID
+
+#if USE_MOTION
+static Motion motionController;
+#endif // USE_MOTION
 
 // TLS client and wrappers
 #if USE_MQTT
@@ -28,13 +39,12 @@ static RFIDReader rfid;
 #endif // USE_RFID
 
 // Magnetometer objects
-
 #if USE_MAGNETOMETER
 struct mag_config magConfig = {
     .gain = MLX90393_GAIN_1X,
     .resolution = MLX90393_RES_16,
     .osr = MLX90393_OSR_0,
-    .filter = MLX90393_FILTER_3 };
+    .filter = MLX90393_FILTER_3};
 Magnetometer magLeft(MAGNETOMETER_LEFT, magConfig);
 Magnetometer magRight(MAGNETOMETER_RIGHT, magConfig);
 MagnetometerManager magManager;
@@ -48,7 +58,9 @@ void ensureWifi()
 
   Serial.printf("WiFi: connecting to %s ...\n", WIFI_SSID);
   WiFi.mode(WIFI_STA);
+  Serial.printf("Set WiFi mode to STA\n");
   WiFi.begin(WIFI_SSID, WIFI_PASS);
+  Serial.printf("Started WiFi connection\n");
 
   while (WiFi.status() != WL_CONNECTED)
   {
@@ -106,7 +118,16 @@ void setup()
   }
 #endif // USE_MAGNETOMETER
 
+#if USE_PID
+  pidController.reset();
+#endif // USE_PID
+
+#if USE_MOTION
+  motionController.init();
+#endif // USE_MOTION
+
   // Wait before starting loop so initialization messages can be read.
+  Serial.println("Setup complete, starting main loop in 5 seconds...");
   delay(5000);
 }
 
@@ -121,7 +142,7 @@ void loop()
   // MQTT connection handling
   if (!mqtt.connected())
   {
-    // Retry connection every 3 seconds 
+    // Retry connection every 3 seconds
     static unsigned long lastRetry = 0;
     if (millis() - lastRetry > 3000)
     {
@@ -149,15 +170,40 @@ void loop()
 #endif // USE_RFID
 
   // Magnetometer updating
-#if USE_MAGNETOMETER
+#if USE_MAGNETOMETER && !USE_PID
   int ret = magManager.updateAll();
   if (ret)
   {
     Serial.printf("Magnetometer update error: %d\n", ret);
     freeze();
   }
-  Serial.printf("Mag Left: %.2f | Mag Right: %.2f\n",
-    magLeft.getFilteredMagnitude(),
-    magRight.getFilteredMagnitude());
+  // Serial.printf("Mag Left: %.2f | Mag Right: %.2f\n",
+  //               magLeft.getFilteredMagnitude(),
+  //               magRight.getFilteredMagnitude());
 #endif // USE_MAGNETOMETER
+
+#if USE_PID && USE_MAGNETOMETER
+  int ret = magManager.updateAll();
+  if (ret)
+  {
+    Serial.printf("Magnetometer update error: %d\n", ret);
+    freeze();
+  }
+  float pidOutput = pidController.compute(
+      magLeft.getProcessedSample(),
+      magRight.getProcessedSample());
+  //Serial.printf("PID Output: %.2f\n", pidOutput);
+#else
+  float pidOutput = 0.0f;
+#endif // USE_PID
+
+#if USE_MOTION && USE_PID
+  motionController.setSteeringAngle(FORWARD_ANGLE + pidOutput);
+  motionController.drive(100);
+#endif // USE_MOTION
+
+#if USE_MOTION && !USE_PID
+  motionController.setSteeringAngle(FORWARD_ANGLE + pidOutput);
+  motionController.setSpeed(100);
+#endif // USE_MOTION
 }

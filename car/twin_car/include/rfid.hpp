@@ -6,6 +6,11 @@
 #include <MFRC522.h>
 #include "mqtt.hpp"
 
+#define SPI_SCK 26
+#define SPI_MISO 33
+#define SPI_MOSI 25
+#define SPI_SS 4
+#define SPI_RST 5
 
 /**
  * @brief Simple RFID reader wrapper for MFRC522-based readers.
@@ -15,10 +20,8 @@ public:
 	
 	/**
 	 * Construct an RFIDReader with specified SS and RST pins.
-	 * @param ssPin_ Slave Select pin (default 21)
-	 * @param rstPin_ Reset pin (default 22)
 	 */
-	RFIDReader(uint8_t ssPin = 21, uint8_t rstPin = 22);
+	RFIDReader();
 
 	/**
 	 * Initialize SPI and the MFRC522 reader. Must be called from setup().
