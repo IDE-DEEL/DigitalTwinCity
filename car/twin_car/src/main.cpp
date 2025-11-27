@@ -6,7 +6,7 @@
 #include "rfid.hpp"
 #include "magnetometer.hpp"
 #include "MagnetometerManager.hpp"
-#include "readjson.hpp"
+#include <ArduinoJson.h>
 
 // Define the external symbols for the embedded JSON file
 extern const char rfid_json_start[] asm("_binary_include_rfid_json_start");
