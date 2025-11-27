@@ -1,0 +1,111 @@
+// include/Connectivity.hpp
+
+#ifndef CONNECTIVITY_HPP
+#define CONNECTIVITY_HPP
+
+#include <Arduino.h>
+#include <WiFi.h>
+#include <WiFiClientSecure.h>
+#include <PubSubClient.h>
+
+/**
+ * @brief Connectivity class
+ *
+ * Verantwoordelijk voor:
+ * - Wi-Fi initialisatie en reconnect
+ * - MQTT initialisatie en reconnect
+ * - Publiceren van berichten naar MQTT
+ *
+ * Gebruik:
+ * 1. Connectivity connectivity(WIFI_SSID, WIFI_PASS);
+ * 2. connectivity.begin() in setup()
+ * 3. connectivity.loop() in loop()
+ * 4. connectivity.publish(...) om berichten te versturen
+ */
+class Connectivity
+{
+public:
+    /**
+     * @brief Construct a new Connectivity object
+     * @param ssid Wi-Fi SSID
+     * @param pass Wi-Fi wachtwoord
+     */
+    Connectivity(const char* ssid, const char* pass);
+
+    /**
+     * @brief Initialiseer Wi-Fi en MQTT.
+     * Roept intern ensureWifi() en connectMqtt() aan.
+     */
+    void begin();
+
+    /**
+     * @brief Houd Wi-Fi en MQTT in de lucht.
+     * - Reconnect Wi-Fi indien nodig.
+     * - Reconnect MQTT met een retry-interval.
+     * - Roept mqtt.loop() aan indien verbonden.
+     */
+    void loop();
+
+    /**
+     * @brief Publiceer MQTT-bericht met C-string payload.
+     * @param topic MQTT-topic
+     * @param payload Payload (C-string)
+     * @param retained Retained-flag
+     * @return true bij succes, anders false
+     */
+    bool publish(const char* topic, const char* payload, bool retained = false);
+
+    /**
+     * @brief Publiceer MQTT-bericht met String payload.
+     * @param topic MQTT-topic
+     * @param payload Payload (String)
+     * @param retained Retained-flag
+     * @return true bij sucess, anders false
+     */
+    bool publish(const char* topic, const String& payload, bool retained = false);
+
+    /**
+     * @brief Stel standaard output-topic in.
+     * @param topic MQTT-topic wat als default gebruikt wordt.
+     */
+    void setDefaultPubTopic(const char* topic);
+
+    /**
+     * @brief Publiceer naar het standaard output-topic.
+     * @param payload Payload (String)
+     * @param retained Retained-flag
+     * @return true bij succes, anders false
+     */
+    bool publishDefault(const String& payload, bool retained = false);
+
+    /**
+     * @brief Controleer of MQTT verbonden is.
+     * @return true als MQTT verbonden is.
+     */
+    bool connected() const;
+
+    /**
+     * @brief Haal MQTT-status op.
+     * @return MQTT status code (PubSubClient::state()).
+     */
+    int state() const;
+
+private:
+    void ensureWifi();
+    bool connectMqtt();
+
+    static void onMqttMessageStatic(char* topic, byte* payload, unsigned int len);
+    void onMqttMessage(char* topic, byte* payload, unsigned int len);
+
+private:
+    const char* _ssid;
+    const char* _pass;
+
+    WiFiClientSecure _tlsClient;
+    PubSubClient     _mqtt;
+
+    const char* _defaultPubTopic = nullptr;
+    unsigned long _lastMqttRetry = 0;
+};
+
+#endif // CONNECTIVITY_HPP

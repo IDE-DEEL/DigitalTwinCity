@@ -1,4 +1,15 @@
+// src/Connectivity.cpp
+
 #include "Connectivity.hpp"
+
+// Verwacht dat deze defines ergens ander in het project aanwezig zijn:
+// #define BROKER_HOST ...
+// #define BROKER_PORT ...
+// #define PSK_IDENTITY ...
+// #define PSK_HEX ...
+// #define MQTT_CLIENT_ID ...
+// #define SUB_TOPIC_CMD ...
+// #define PUB_TOPIC_OUT ...
 
 Connectivity::Connectivity(const char* ssid, const char* pass)
     : _ssid(ssid),
@@ -41,7 +52,8 @@ bool Connectivity::connectMqtt()
 
     Serial.println("MQTT: connected (TLS-PSK)");
     _mqtt.subscribe(SUB_TOPIC_CMD, 1);
-    _mqtt.publish(PUB_TOPIC_OUT, "esp32 online (rfid ready)", true);
+    // Geen "(rfid ready)" meer, deze klasse weet niets van specifieke sensoren.
+    _mqtt.publish(PUB_TOPIC_OUT, "esp32 online", true);
 
     _defaultPubTopic = PUB_TOPIC_OUT;
 
@@ -85,6 +97,11 @@ bool Connectivity::publish(const char* topic, const String& payload, bool retain
     return _mqtt.publish(topic, payload.c_str(), retained);
 }
 
+void Connectivity::setDefaultPubTopic(const char* topic)
+{
+    _defaultPubTopic = topic;
+}
+
 bool Connectivity::publishDefault(const String& payload, bool retained)
 {
     if (!_defaultPubTopic)
@@ -104,12 +121,15 @@ int Connectivity::state() const
 
 void Connectivity::onMqttMessageStatic(char* topic, byte* payload, unsigned int len)
 {
-    // Voor nu direct loggen:
+    // default handler : loggen naar Serial.
     Serial.printf("MQTT <- [%s]\n", topic);
-    Serial.println(String((const char*)payload, len));
+    Serial.println(String(reinterpret_cast<const char*>(payload), len));
 }
 
 void Connectivity::onMqttMessage(char* topic, byte* payload, unsigned int len)
 {
-    // Niet gebruikt hier.
+    // Instance specifiek handler als deze later nodig is.
+    (void)topic;
+    (void)payload;
+    (void)len;
 }
