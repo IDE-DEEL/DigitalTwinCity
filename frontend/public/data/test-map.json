@@ -1,0 +1,15 @@
+{
+  "name": "Test Map",
+  "width": 8,
+  "height": 8,
+  "grid": [
+    [{"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 90}, {"componentId": "t_split", "rotation": 0}, {"componentId": "curve", "rotation": 0}],
+    [{"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 0}, {"componentId": "straight", "rotation": 0}],
+    [{"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 90}, {"componentId": "cross_split", "rotation": 0}, {"componentId": "straight", "rotation": 90}, {"componentId": "curve", "rotation": 90}],
+    [{"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 0}, {"componentId": "roundabout", "rotation": 0}, {"componentId": "straight", "rotation": 90}],
+    [{"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 0}, {"componentId": "straight", "rotation": 0}, {"componentId": "straight", "rotation": 0}],
+    [{"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 90}, {"componentId": "curve", "rotation": 180}, {"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 90}, {"componentId": "curve", "rotation": 270}, {"componentId": "straight", "rotation": 0}],
+    [{"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 0}, {"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 0}, {"componentId": "t_split", "rotation": 90}],
+    [{"componentId": "curve", "rotation": 180}, {"componentId": "straight", "rotation": 90}, {"componentId": "t_split", "rotation": 180}, {"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 90}, {"componentId": "straight", "rotation": 90}, {"componentId": "t_split", "rotation": 270}, {"componentId": "curve", "rotation": 270}]
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "components": [
+    {
+      "id": "straight",
+      "name": "Straight Road",
+      "image": "/assets/straight.svg"
+    },
+    {
+      "id": "curve",
+      "name": "Curve Road",
+      "image": "/assets/curve.svg"
+    },
+    {
+      "id": "t_split",
+      "name": "T-Junction",
+      "image": "/assets/t_split.svg"
+    },
+    {
+      "id": "cross_split",
+      "name": "Crossroads",
+      "image": "/assets/cross_split.svg"
+    },
+    {
+      "id": "roundabout",
+      "name": "Roundabout",
+      "image": "/assets/roundabout.svg"
+    }
+  ]
+}
