@@ -23,8 +23,8 @@ JsonDocument rfidDoc;
 #endif // USE_JSON
 
 // ---- Wi-Fi ----
-const char* WIFI_SSID = "Xiaomi 12T Pro";
-const char* WIFI_PASS = "Test1234";
+const char* WIFI_SSID = "";
+const char* WIFI_PASS = "";
 
 // TLS client and wrappers
 #if USE_MQTT
