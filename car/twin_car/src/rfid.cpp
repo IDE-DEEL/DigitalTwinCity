@@ -62,6 +62,7 @@ String RFIDReader::poll()
     // Kaart netjes stoppen
     mfrc522.PICC_HaltA();
     mfrc522.PCD_StopCrypto1();
+    Serial.printf("RFID UID detected: %s\n", uidHex.c_str());
     return uidHex;
 }
 

@@ -9,16 +9,20 @@ float PID::compute(const mag_sample_processed& magLeft, const mag_sample_process
 {
     if ((long)magLeft.min_filtered == (long)magLeft.max_filtered)
     {
-        Serial.printf("Warning: Left magnetometer min and max filtered values are equal. min:%.2f max:%.2f\n",
+        Serial.printf("Warning: Left magnetometer min and max filtered values are equal. min:%.2f max:%.2f. cast min %ld max %ld\n",
                       magLeft.min_filtered,
-                      magLeft.max_filtered); 
+                      magLeft.max_filtered,
+                      (long)magLeft.min_filtered,
+                      (long)magLeft.max_filtered); 
     }
 
     if ((long)magRight.min_filtered == (long)magRight.max_filtered)
     {
-        Serial.printf("Warning: Right magnetometer min and max filtered values are equal. min:%.2f max:%.2f\n",
+        Serial.printf("Warning: Right magnetometer min and max filtered values are equal. min:%.2f max:%.2f. cast min %ld max %ld\n",
                       magRight.min_filtered,
-                      magRight.max_filtered); 
+                      magRight.max_filtered,
+                      (long)magRight.min_filtered,
+                      (long)magRight.max_filtered); 
     }
     
 
@@ -75,8 +79,17 @@ float PID::compute_proportional(float error)
 
     Also find out if Hysteresis should and could be implemented.
     */
-    // Adaptive Kp based on error magnitude
-    float adaptiveKp = _Kp_min + (_Kp_max - _Kp_min) * min(abs(error) / ERROR_NORMALIZATION_FACTOR, 1.0f);
+
+    // Linear scaling (default)
+    //float adaptiveKp = _Kp_min + (_Kp_max - _Kp_min) * min(abs(error) / ERROR_NORMALIZATION_FACTOR, 1.0f);
+
+    // Exponential interpolation (uncomment to test)
+    float adaptiveKp = _Kp_min + (_Kp_max - _Kp_min) * (1.0f - expf(-2.0f * min(abs(error) / ERROR_NORMALIZATION_FACTOR, 1.0f)));
+
+    // Piecewise interpolation (uncomment to test)
+    // float adaptiveKp = (abs(error) < 0.1f * ERROR_NORMALIZATION_FACTOR) ? _Kp_min \
+    //                     : (abs(error) < 0.5f * ERROR_NORMALIZATION_FACTOR) ? (_Kp_min + _Kp_max) * 0.5f \
+    //                     : _Kp_max;
 
     return adaptiveKp * error;
 }

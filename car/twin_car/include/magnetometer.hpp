@@ -23,8 +23,8 @@ struct mag_config {
 };
 
 enum mag_address : uint8_t {
-    MAGNETOMETER_LEFT = 0x0E, /** I2C address of left magnetometer sensor */
-    MAGNETOMETER_RIGHT = 0x0C /** I2C address of right magnetometer sensor */
+    MAGNETOMETER_LEFT = 0x0C, /** I2C address of left magnetometer sensor */
+    MAGNETOMETER_RIGHT = 0x0E /** I2C address of right magnetometer sensor */
 };
 
 struct mag_sample_raw {

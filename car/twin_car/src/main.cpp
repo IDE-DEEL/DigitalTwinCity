@@ -9,11 +9,11 @@
 #include "PID.hpp"
 #include "Motion.hpp"
 
-#define USE_MQTT 1
+#define USE_MQTT 0
 #define USE_RFID 1
-#define USE_MAGNETOMETER 1
-#define USE_PID 1
-#define USE_MOTION 1
+#define USE_MAGNETOMETER 0
+#define USE_PID 0
+#define USE_MOTION 0
 
 // ---- Wi-Fi ----
 const char *WIFI_SSID = "";
@@ -74,6 +74,9 @@ void ensureWifi()
 void freeze()
 {
   Serial.println("Freezing...");
+#if USE_MOTION
+  motionController.drive(0);
+#endif // USE_MOTION
   while (1)
   {
     digitalWrite(LED_BUILTIN, HIGH);
@@ -102,8 +105,8 @@ void setup()
 
   // Magnetometer initialization
 #if USE_MAGNETOMETER
-  magManager.add(&magLeft);
   magManager.add(&magRight);
+  magManager.add(&magLeft);
   int ret = magManager.initAll();
   if (ret)
   {
@@ -129,6 +132,7 @@ void setup()
   // Wait before starting loop so initialization messages can be read.
   Serial.println("Setup complete, starting main loop in 5 seconds...");
   delay(5000);
+  Serial.println("Starting main loop now.");
 }
 
 void loop()
@@ -187,7 +191,14 @@ void loop()
   if (ret)
   {
     Serial.printf("Magnetometer update error: %d\n", ret);
-    freeze();
+    static int err_count = 0;
+    err_count++;
+    if (err_count >= 5)
+    {
+      freeze();
+    } else {
+      return;
+    }
   }
   float pidOutput = pidController.compute(
       magLeft.getProcessedSample(),
@@ -198,8 +209,12 @@ void loop()
 #endif // USE_PID
 
 #if USE_MOTION && USE_PID
-  motionController.setSteeringAngle(FORWARD_ANGLE + pidOutput);
+  motionController.setSteeringAngle(FORWARD_ANGLE - pidOutput);
+  static bool firstRun = true;
+  if (firstRun) {
   motionController.drive(100);
+  firstRun = false;
+  }
 #endif // USE_MOTION
 
 #if USE_MOTION && !USE_PID
