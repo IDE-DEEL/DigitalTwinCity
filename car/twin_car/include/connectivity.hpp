@@ -82,13 +82,13 @@ public:
      * @brief Controleer of MQTT verbonden is.
      * @return true als MQTT verbonden is.
      */
-    bool connected() const;
+    bool connected();
 
     /**
      * @brief Haal MQTT-status op.
      * @return MQTT status code (PubSubClient::state()).
      */
-    int state() const;
+    int state();
 
 private:
     void ensureWifi();

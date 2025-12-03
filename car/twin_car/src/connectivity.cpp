@@ -109,12 +109,12 @@ bool Connectivity::publishDefault(const String& payload, bool retained)
     return publish(_defaultPubTopic, payload, retained);
 }
 
-bool Connectivity::connected() const
+bool Connectivity::connected()
 {
     return _mqtt.connected();
 }
 
-int Connectivity::state() const
+int Connectivity::state()
 {
     return _mqtt.state();
 }
