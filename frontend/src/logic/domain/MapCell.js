@@ -1,5 +1,5 @@
 import { rotation } from '../utils/rotation.js';
-import { MapComponent } from './MapComponent.js';
+import { MapComponent } from './mapComponent.js';
 
 export class MapCell {
     constructor (row, col, rawCell, componentId) {
