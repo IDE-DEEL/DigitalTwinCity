@@ -1,8 +1,9 @@
 #include "PID.hpp"
 
-PID::PID()
+PID::PID(enum road_types road_type) : _road_type(road_type)
 {
     reset();
+    set_previous_road_type(road_type);
 }
 
 float PID::compute(const mag_sample_processed& magLeft, const mag_sample_processed& magRight)
@@ -68,6 +69,14 @@ void PID::reset()
     _lastTime = 0;
 }
 
+enum road_types PID::set_previous_road_type(enum road_types type)
+{
+
+    _previous_road_type = type;
+    
+    return _previous_road_type;
+}
+
 float PID::compute_proportional(float error)
 {
     /*
@@ -79,17 +88,38 @@ float PID::compute_proportional(float error)
 
     Also find out if Hysteresis should and could be implemented.
     */
+    float adaptiveKp;
+    switch (_road_type)
+    {
+    case STRAIGHT:
+        // Linear scaling (default)
+        // adaptiveKp = _Kp_min + (_Kp_max - _Kp_min) * min(abs(error) / ERROR_NORMALIZATION_FACTOR, 1.0f);
 
-    // Linear scaling (default)
-    //float adaptiveKp = _Kp_min + (_Kp_max - _Kp_min) * min(abs(error) / ERROR_NORMALIZATION_FACTOR, 1.0f);
+        // Exponential interpolation (uncomment to test)
+        adaptiveKp = _Kp_min + (_Kp_max - _Kp_min) * (1.0f - expf(-2.0f * min(abs(error) / ERROR_NORMALIZATION_FACTOR, 1.0f)));
 
-    // Exponential interpolation (uncomment to test)
-    float adaptiveKp = _Kp_min + (_Kp_max - _Kp_min) * (1.0f - expf(-2.0f * min(abs(error) / ERROR_NORMALIZATION_FACTOR, 1.0f)));
+        // Piecewise interpolation (uncomment to test)
+        // adaptiveKp = (abs(error) < 0.1f * ERROR_NORMALIZATION_FACTOR) ? _Kp_min \
+        //                     : (abs(error) < 0.5f * ERROR_NORMALIZATION_FACTOR) ? (_Kp_min + _Kp_max) * 0.5f \
+        //                     : _Kp_max;
+        break;
 
-    // Piecewise interpolation (uncomment to test)
-    // float adaptiveKp = (abs(error) < 0.1f * ERROR_NORMALIZATION_FACTOR) ? _Kp_min \
-    //                     : (abs(error) < 0.5f * ERROR_NORMALIZATION_FACTOR) ? (_Kp_min + _Kp_max) * 0.5f \
-    //                     : _Kp_max;
+    case CURVE:
+    case ROUNDABOUT:
+    case T_JUNCTION:
+    case CROSSROAD:
+    default:
+        // For unknown road types, use a more conservative approach
+        adaptiveKp = _Kp_min + (_Kp_max - _Kp_min) * 0.5f;
+
+        // Log a warning only when the road type changes to avoid spamming the console
+        if (_road_type != _previous_road_type)
+        {
+            Serial.printf("Warning: Unknown road type %d, using default Kp\n", _road_type);
+        }
+        
+        break;
+    }
 
     return adaptiveKp * error;
 }

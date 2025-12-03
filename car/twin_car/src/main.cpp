@@ -7,20 +7,21 @@
 #include "magnetometer.hpp"
 #include "MagnetometerManager.hpp"
 #include "PID.hpp"
+#include "PIDManager.hpp"
 #include "Motion.hpp"
 
 #define USE_MQTT 0
 #define USE_RFID 1
-#define USE_MAGNETOMETER 0
-#define USE_PID 0
-#define USE_MOTION 0
+#define USE_MAGNETOMETER 1
+#define USE_PID 1
+#define USE_MOTION 1
 
 // ---- Wi-Fi ----
-const char *WIFI_SSID = "";
-const char *WIFI_PASS = "";
+const char *WIFI_SSID = "AAA";
+const char *WIFI_PASS = "AA1";
 
 #if USE_PID
-static PID pidController;
+static PIDManager pidManager;
 #endif // USE_PID
 
 #if USE_MOTION
@@ -53,12 +54,14 @@ MagnetometerManager magManager;
 #if USE_MQTT
 void ensureWifi()
 {
+  Serial.println("Checking WiFi connection...");
   if (WiFi.status() == WL_CONNECTED)
     return;
 
   Serial.printf("WiFi: connecting to %s ...\n", WIFI_SSID);
   WiFi.mode(WIFI_STA);
-  Serial.printf("Set WiFi mode to STA\n");
+  Serial.printf("Set WiFi mode to STA: ");
+  Serial.println(WiFi.macAddress());
   WiFi.begin(WIFI_SSID, WIFI_PASS);
   Serial.printf("Started WiFi connection\n");
 
@@ -122,7 +125,7 @@ void setup()
 #endif // USE_MAGNETOMETER
 
 #if USE_PID
-  pidController.reset();
+  pidManager.reset();
 #endif // USE_PID
 
 #if USE_MOTION
@@ -200,7 +203,8 @@ void loop()
       return;
     }
   }
-  float pidOutput = pidController.compute(
+  float pidOutput = pidManager.compute(
+      STRAIGHT,
       magLeft.getProcessedSample(),
       magRight.getProcessedSample());
   //Serial.printf("PID Output: %.2f\n", pidOutput);

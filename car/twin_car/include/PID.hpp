@@ -12,13 +12,23 @@
 #define KD_DEFAULT 0.05f /** Startup derivative gain */
 #define INTEGRAL_MAX_DEFAULT 1000.0f /** Startup maximum value for integral windup prevention */
 
+
+enum road_types{
+    STRAIGHT,
+    CURVE,
+    ROUNDABOUT,
+    T_JUNCTION,
+    CROSSROAD
+};
+
+
 class PID
 {
 public:
     /**
      * @brief Construct a new PID controller for magnetometer-based line following
      */
-    PID();
+    PID(enum road_types road_type);
     
     /**
      * @brief Calculate PID output based on two magnetometer readings
@@ -32,6 +42,16 @@ public:
      * @brief Reset PID controller state (errors and timing)
      */
     void reset();
+
+    /**
+     * @brief Set the road type that the PID controller should adapt to
+     * @param type Road type enum value options: STRAIGHT, CURVE, ROUNDABOUT, T_JUNCTION, CROSSROAD
+     * @returns The set road type for convenience
+     * @note Call this method when the road type changes to adjust PID parameters accordingly
+     */
+    enum road_types set_previous_road_type(enum road_types type);
+
+    enum road_types get_previous_road_type() const { return _road_type; };
 
     private:
 
@@ -51,6 +71,10 @@ private:
     float _previousError;
     float _integralMax;
     unsigned long _lastTime;
+
+    // Current road type
+    enum road_types _road_type;
+    enum road_types _previous_road_type;
 };
 
 
