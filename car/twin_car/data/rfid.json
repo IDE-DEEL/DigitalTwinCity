@@ -18,7 +18,7 @@
     },
     {
       "tag_id": "4ADA0A3E",
-      "name": "First Aid Kit",
+      "name": "second Aid Kit",
       "location": {
         "x": 50,
         "y": 120
@@ -38,6 +38,22 @@
       "location": {
         "x": 300,
         "y": 200
+      }
+    },
+    {
+      "tag_id": "53D0F469620001",
+      "name": "Fire Extinguisher",
+      "location": {
+        "x": 100,
+        "y": 50
+      }
+    },
+    {
+      "tag_id": "D4E5F6A7",
+      "name": "Maintenance Cart",
+      "location": {
+        "x": 400,
+        "y": 350
       }
     }
   ]

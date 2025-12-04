@@ -1,16 +1,16 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
+#include <FS.h>
+#include <LittleFS.h>
+#include <ArduinoJson.h>
+// #include <json/json.h>
+// #include <json/value.h>
 
 #include "mqtt.hpp"
 #include "rfid.hpp"
 #include "magnetometer.hpp"
 #include "MagnetometerManager.hpp"
-#include <ArduinoJson.h>
-
-// Define the external symbols for the embedded JSON file
-extern const char rfid_json_start[] asm("_binary_include_rfid_json_start");
-extern const char rfid_json_end[]   asm("_binary_include_rfid_json_end");
 
 #define USE_MQTT 1
 #define USE_RFID 1
@@ -23,8 +23,8 @@ JsonDocument rfidDoc;
 #endif // USE_JSON
 
 // ---- Wi-Fi ----
-const char* WIFI_SSID = "";
-const char* WIFI_PASS = "";
+const char* WIFI_SSID = "Xiaomi 12T Pro";
+const char* WIFI_PASS = "Test1234";
 
 // TLS client and wrappers
 #if USE_MQTT
@@ -117,17 +117,28 @@ void setup()
 #endif // USE_MAGNETOMETER
 
 #if USE_JSON
-  // Load JSON data from embedded file
-  // Calculate length of the embedded file
-  const size_t len = rfid_json_end - rfid_json_start;
-  DeserializationError error = deserializeJson(rfidDoc, rfid_json_start, len);
-  
-  if(!error){
-      Serial.println("JSON Read Success");
-  } else {
-      Serial.print("JSON Read Failed: ");
-      Serial.println(error.c_str());
+  if (!LittleFS.begin(true)) {
+    Serial.println("LittleFS Mount Failed");
+    return;
   }
+  // Open the file for reading
+  File file = LittleFS.open("/rfid.json", "r");
+  if (!file) {
+    Serial.println("Failed to open file for reading");
+    return;
+  }
+
+  // Load JSON directly from the file
+  DeserializationError error = deserializeJson(rfidDoc, file);
+  file.close();
+
+  if (!error) {
+    Serial.println("JSON Read Success");
+  } else {
+    Serial.print("JSON Read Failed: ");
+    Serial.println(error.c_str());
+  }
+
 #endif // USE_JSON
 
   // Wait before starting loop so initialization messages can be read.
@@ -190,8 +201,6 @@ void loop()
         Serial.println(payload);
         if (mqtt.connected()) {
            mqtt.publish("esp32-01/out", payload.c_str());
-        
-        
         }
         #endif // USE_MQTT
         break;
