@@ -4,8 +4,6 @@
 #include <FS.h>
 #include <LittleFS.h>
 #include <ArduinoJson.h>
-// #include <json/json.h>
-// #include <json/value.h>
 
 #include "mqtt.hpp"
 #include "rfid.hpp"
@@ -17,7 +15,7 @@
 #define USE_MAGNETOMETER 0
 #define USE_JSON 1
 
-
+// JSON document for RFID tags
 #if USE_JSON
 JsonDocument rfidDoc;
 #endif // USE_JSON
@@ -121,24 +119,19 @@ void setup()
     Serial.println("LittleFS Mount Failed");
     return;
   }
-  // Open the file for reading
   File file = LittleFS.open("/rfid.json", "r");
   if (!file) {
     Serial.println("Failed to open file for reading");
     return;
   }
-
-  // Load JSON directly from the file
   DeserializationError error = deserializeJson(rfidDoc, file);
   file.close();
-
   if (!error) {
     Serial.println("JSON Read Success");
   } else {
     Serial.print("JSON Read Failed: ");
     Serial.println(error.c_str());
   }
-
 #endif // USE_JSON
 
   // Wait before starting loop so initialization messages can be read.
