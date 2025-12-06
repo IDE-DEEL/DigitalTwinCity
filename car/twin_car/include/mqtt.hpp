@@ -5,10 +5,16 @@
 #include <WiFiClientSecure.h>
 #include <PubSubClient.h>
 
-#define BROKER_HOST ""
+#ifndef CFG_BROKER_HOST
+#define CFG_BROKER_HOST ""
+#endif
+#ifndef CFG_PSK_HEX
+#define CFG_PSK_HEX ""
+#endif
+#define BROKER_HOST CFG_BROKER_HOST
 #define BROKER_PORT 8883
 #define PSK_IDENTITY "esp32-01"
-#define PSK_HEX ""
+#define PSK_HEX CFG_PSK_HEX
 
 #define SUB_TOPIC_CMD "esp32-01/out"
 #define PUB_TOPIC_OUT "esp32-01/out"
