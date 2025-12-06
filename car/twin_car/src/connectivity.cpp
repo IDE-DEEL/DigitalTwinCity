@@ -1,15 +1,7 @@
 // src/Connectivity.cpp
 
 #include "Connectivity.hpp"
-
-// Verwacht dat deze defines ergens ander in het project aanwezig zijn:
-// #define BROKER_HOST ...
-// #define BROKER_PORT ...
-// #define PSK_IDENTITY ...
-// #define PSK_HEX ...
-// #define MQTT_CLIENT_ID ...
-// #define SUB_TOPIC_CMD ...
-// #define PUB_TOPIC_OUT ...
+#include <WiFi.h>
 
 Connectivity::Connectivity(const char* ssid, const char* pass)
     : _ssid(ssid),
@@ -109,12 +101,12 @@ bool Connectivity::publishDefault(const String& payload, bool retained)
     return publish(_defaultPubTopic, payload, retained);
 }
 
-bool Connectivity::connected() const
+bool Connectivity::connected()
 {
     return _mqtt.connected();
 }
 
-int Connectivity::state() const
+int Connectivity::state()
 {
     return _mqtt.state();
 }
@@ -128,7 +120,7 @@ void Connectivity::onMqttMessageStatic(char* topic, byte* payload, unsigned int 
 
 void Connectivity::onMqttMessage(char* topic, byte* payload, unsigned int len)
 {
-    // Instance specifiek handler als deze later nodig is.
+    // Instance specifieke handler voor als dat later nodig is
     (void)topic;
     (void)payload;
     (void)len;

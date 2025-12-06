@@ -3,6 +3,17 @@
 #ifndef CONNECTIVITY_HPP
 #define CONNECTIVITY_HPP
 
+#define BROKER_HOST "IP"
+#define BROKER_PORT 8883
+#define PSK_IDENTITY "ID"
+#define PSK_HEX "PASS"
+
+#define SUB_TOPIC_CMD "test/to-web"
+#define PUB_TOPIC_OUT "test/to-web"
+#define PUB_TOPIC_RFID "test/to-web"
+
+#define MQTT_CLIENT_ID PSK_IDENTITY
+
 #include <Arduino.h>
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
@@ -82,13 +93,13 @@ public:
      * @brief Controleer of MQTT verbonden is.
      * @return true als MQTT verbonden is.
      */
-    bool connected() const;
+    bool connected();
 
     /**
      * @brief Haal MQTT-status op.
      * @return MQTT status code (PubSubClient::state()).
      */
-    int state() const;
+    int state();
 
 private:
     void ensureWifi();

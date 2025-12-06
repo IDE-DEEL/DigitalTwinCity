@@ -7,13 +7,13 @@
 #include "magnetometer.hpp"
 #include "MagnetometerManager.hpp"
 
-#define USE_MQTT         0
-#define USE_RFID         0
-#define USE_MAGNETOMETER 1
+#define USE_MQTT         1
+#define USE_RFID         1
+#define USE_MAGNETOMETER 0
 
 // ---- Wi-Fi ----
-const char* WIFI_SSID = "WiFi_SSID";
-const char* WIFI_PASS = "WiFi_password";
+const char* WIFI_SSID = "";
+const char* WIFI_PASS = "";
 
 // Connectivity (Wi-Fi + MQTT)
 #if USE_MQTT
