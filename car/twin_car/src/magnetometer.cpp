@@ -141,6 +141,15 @@ int Magnetometer::process()
     // This helps to smooth out any remaining noise after the median filter.
     _proc.filtered = MEDIAN_FILTER_ALPHA * _proc.magnitude + (1.0f - MEDIAN_FILTER_ALPHA) * _proc.filtered;
 
+    // Update min/max for diagnostics
+    _proc.max_filtered = (_proc.filtered > _proc.max_filtered) ? _proc.filtered : _proc.max_filtered - FILTER_DECAY_RATE;
+    _proc.min_filtered = (_proc.filtered < _proc.min_filtered) ? _proc.filtered : _proc.min_filtered - FILTER_DECAY_RATE;
+
+    if ((long)_proc.max_filtered <= (long)_proc.min_filtered)
+    {
+        _proc.max_filtered = _proc.min_filtered + 1.0;
+    }
+    
     return 0;
 }
 

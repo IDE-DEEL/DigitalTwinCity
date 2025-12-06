@@ -1,18 +1,17 @@
 #include "rfid.hpp"
 
-// SPI pins
-static const uint8_t SPI_SCK = 18;
-static const uint8_t SPI_MISO = 19;
-static const uint8_t SPI_MOSI = 23;
 
-RFIDReader::RFIDReader(uint8_t ssPin_, uint8_t rstPin_)
-    : ssPin(ssPin_), rstPin(rstPin_), mfrc522(ssPin_, rstPin_)
+
+RFIDReader::RFIDReader()
+    : ssPin(SPI_SS), rstPin(SPI_RST), mfrc522(SPI_SS, SPI_RST)
 {
 }
 
 void RFIDReader::begin()
 {
-    SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI, ssPin);
+    Serial.println("Initializing RFID reader...");
+    SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI, SPI_SS);
+    Serial.println("SPI initialized");
     mfrc522.PCD_Init();
     delay(50);
     Serial.println("MFRC522 init done");
@@ -34,21 +33,16 @@ String RFIDReader::uidToHex(const MFRC522::Uid &uid)
 String RFIDReader::poll()
 {
     // Als dezelfde kaart lang blijft liggen, reset lastUid na timeout zodat opnieuw gepusht kan worden
-    if (!mfrc522.PICC_IsNewCardPresent())
+    if (!mfrc522.PICC_IsNewCardPresent() && !mfrc522.PICC_ReadCardSerial())
     {
         if (lastUidHex.length() && (millis() - lastPublishMs > reannounceMs))
         {
+            Serial.println("RFID timeout, resetting lastUidHex %s" + lastUidHex);
             lastUidHex = "";
         }
         return String("");
     }
 
-    // Lees kaart uit
-    if (!mfrc522.PICC_ReadCardSerial())
-    {
-        return String("");
-    }
-    
     String uidHex = uidToHex(mfrc522.uid);
 
     if (uidHex != lastUidHex || (millis() - lastPublishMs > reannounceMs))

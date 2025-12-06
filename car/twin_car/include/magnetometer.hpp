@@ -10,6 +10,7 @@
 #define SAMPLE_AMOUNT 10
 #define MEDIAN_FILTER_SIZE 5
 #define MEDIAN_FILTER_ALPHA 0.3f
+#define FILTER_DECAY_RATE 0.5f
 
 // Do not touch this assert
 static_assert(MEDIAN_FILTER_ALPHA <= 1.0f, "MEDIAN_FILTER_ALPHA must be smaller or equal to 1.0f");
@@ -22,8 +23,8 @@ struct mag_config {
 };
 
 enum mag_address : uint8_t {
-    MAGNETOMETER_LEFT = 0x0C, /** I2C address of left magnetometer sensor */
-    MAGNETOMETER_RIGHT = 0x0E /** I2C address of right magnetometer sensor */
+    MAGNETOMETER_LEFT = 0x0E, /** I2C address of left magnetometer sensor */
+    MAGNETOMETER_RIGHT = 0x0C /** I2C address of right magnetometer sensor */
 };
 
 struct mag_sample_raw {
@@ -35,6 +36,8 @@ struct mag_sample_raw {
 struct mag_sample_processed {
     float magnitude; /** Processed magnitude */
     float filtered; /** Filtered magnitude */
+    float max_filtered; /** Maximum filtered magnitude */
+    float min_filtered; /** Minimum filtered magnitude */
 };
 
 /**
@@ -97,8 +100,16 @@ public:
     /**
      * @brief Get the latest processed magnitude.
      * @returns Processed magnitude value.
+     * @note The rest of the processed sample can be obtained via getProcessedSample(). 
+     * This one was singled out for ease of use.
      */
     float getFilteredMagnitude() const { return _proc.filtered; }
+
+    /**
+     * @brief Get the latest processed sample.
+     * @returns Struct containing processed sample data.
+     */
+    struct mag_sample_processed getProcessedSample() const { return _proc; }
 
 private:
     Adafruit_MLX90393 _sensor;
