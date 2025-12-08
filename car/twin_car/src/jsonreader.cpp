@@ -75,20 +75,12 @@ bool JsonReader::findTag(const String& uidHex, JsonDocument& resultDoc) {
             return true;
         }
     }
-    return false;
+    return addTag(uidHex, "Unnamed", "Unknown");
 }
 
 bool JsonReader::addTag(const String& uid, const String& name, const String& location) {
     // Check if tag already exists to avoid duplicates (optional but recommended)
     JsonArray tags = _doc["rfid_tags"];
-    for (JsonObject tag : tags) {
-        if (tag["tag_id"] == uid) {
-            // Update existing tag
-            tag["name"] = name;
-            tag["location"] = location;
-            return save();
-        }
-    }
 
     // Add new tag
     JsonObject newTag = tags.add<JsonObject>();
