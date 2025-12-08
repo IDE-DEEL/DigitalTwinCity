@@ -18,6 +18,7 @@
 #define USE_MAGNETOMETER 1
 #define USE_PID 1
 #define USE_MOTION 1
+#define USE_JSON 1
 
 // ---- Wi-Fi ----
 const char *WIFI_SSID = "";
