@@ -5,6 +5,7 @@
 #include <LittleFS.h>
 #include <ArduinoJson.h>
 
+#include "jsonreader.hpp"
 #include "mqtt.hpp"
 #include "rfid.hpp"
 #include "magnetometer.hpp"
@@ -15,9 +16,9 @@
 #define USE_MAGNETOMETER 0
 #define USE_JSON 1
 
-// JSON document for RFID tags
+// JSON reader instance
 #if USE_JSON
-JsonDocument rfidDoc;
+JsonReader jsonReader;
 #endif // USE_JSON
 
 // ---- Wi-Fi ----
@@ -115,22 +116,8 @@ void setup()
 #endif // USE_MAGNETOMETER
 
 #if USE_JSON
-  if (!LittleFS.begin(true)) {
-    Serial.println("LittleFS Mount Failed");
-    return;
-  }
-  File file = LittleFS.open("/rfid.json", "r");
-  if (!file) {
-    Serial.println("Failed to open file for reading");
-    return;
-  }
-  DeserializationError error = deserializeJson(rfidDoc, file);
-  file.close();
-  if (!error) {
-    Serial.println("JSON Read Success");
-  } else {
-    Serial.print("JSON Read Failed: ");
-    Serial.println(error.c_str());
+  if (!jsonReader.begin()) {
+    Serial.println("Failed to initialize JSON Reader");
   }
 #endif // USE_JSON
 
@@ -174,21 +161,11 @@ void loop()
     #endif // USE_MQTT
 
     #if USE_JSON
-    // Look up the tag in the JSON data
-    JsonArray tags = rfidDoc["rfid_tags"];
-    bool found = false;
-    for (JsonObject tag : tags) {
-      if (tag["tag_id"] == uidHex) {
-        found = true;
-        
-        // Create a new document for the payload
-        JsonDocument payloadDoc;
-        payloadDoc["tag_id"] = tag["tag_id"];
-        payloadDoc["name"] = tag["name"];
-        payloadDoc["location"] = tag["location"];
-        
+    JsonDocument resultDoc;
+    if (jsonReader.findTag(uidHex, resultDoc)) {
         String payload;
-        serializeJson(payloadDoc, payload);
+        serializeJson(resultDoc, payload);
+        
         #if USE_MQTT
         Serial.println("Tag Found in Database:");
         Serial.println(payload);
@@ -196,8 +173,6 @@ void loop()
            mqtt.publish("esp32-01/out", payload.c_str());
         }
         #endif // USE_MQTT
-        break;
-      }
     }
     #endif // USE_JSON
     #endif // USE_RFID
