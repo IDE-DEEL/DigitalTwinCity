@@ -17,8 +17,14 @@
 #define USE_MOTION 1
 
 // ---- Wi-Fi ----
-const char *WIFI_SSID = "AAA";
-const char *WIFI_PASS = "AA1";
+#ifndef CFG_WIFI_SSID
+#define CFG_WIFI_SSID ""
+#endif
+#ifndef CFG_WIFI_PSK
+#define CFG_WIFI_PSK ""
+#endif
+const char *WIFI_SSID = CFG_WIFI_SSID;
+const char *WIFI_PASS = CFG_WIFI_PSK;
 
 #if USE_PID
 static PIDManager pidManager;
