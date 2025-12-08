@@ -2,7 +2,7 @@
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 
-#include "mqtt.hpp"
+#include "Connectivity.hpp"
 #include "rfid.hpp"
 #include "magnetometer.hpp"
 #include "MagnetometerManager.hpp"
@@ -34,10 +34,9 @@ static PIDManager pidManager;
 static Motion motionController;
 #endif // USE_MOTION
 
-// TLS client and wrappers
+// Connectivity (Wi-Fi + MQTT)
 #if USE_MQTT
-static WiFiClientSecure tlsClient;
-static MQTTWrapper mqtt(tlsClient);
+static Connectivity connectivity(WIFI_SSID, WIFI_PASS);
 #endif // USE_MQTT
 
 // RFID reader
@@ -106,10 +105,9 @@ void setup()
   rfid.begin();
 #endif // USE_RFID
 
-  // MQTT initialization
+  // Connectivity (Wi-Fi + MQTT) initialization
 #if USE_MQTT
-  ensureWifi();
-  mqtt.connectWithPsk();
+  connectivity.begin();
 #endif // USE_MQTT
 
   // Magnetometer initialization
@@ -146,27 +144,9 @@ void setup()
 
 void loop()
 {
-
-  // Ensure Wi-Fi connection
+  // Wi-Fi + MQTT connection handling
 #if USE_MQTT
-  if (WiFi.status() != WL_CONNECTED)
-    ensureWifi();
-
-  // MQTT connection handling
-  if (!mqtt.connected())
-  {
-    // Retry connection every 3 seconds
-    static unsigned long lastRetry = 0;
-    if (millis() - lastRetry > 3000)
-    {
-      lastRetry = millis();
-      mqtt.connectWithPsk();
-    }
-  }
-  else
-  {
-    mqtt.loop();
-  }
+  connectivity.loop();
 #endif // USE_MQTT
 
   // RFID polling
@@ -174,11 +154,13 @@ void loop()
   String uidHex = rfid.poll();
   if (uidHex.length())
   {
-#if USE_MQTT
-    rfid.publishRFID(mqtt, uidHex);
-#else
+  #if USE_MQTT
+    // JSON payload: {"uid":"ABCD1234","ms":123456}
+    String payload = "{\"uid\":\"" + uidHex + "\",\"ms\":" + String(millis()) + "}";
+    connectivity.publish(PUB_TOPIC_RFID, payload);
+  #else
     Serial.printf("RFID UID: %s\n", uidHex.c_str());
-#endif // USE_MQTT
+  #endif // USE_MQTT
   }
 #endif // USE_RFID
 
