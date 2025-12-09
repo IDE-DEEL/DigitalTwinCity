@@ -40,21 +40,23 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { normalizeDegree } from '../logic/utils/rotation.js'; 
 import { fetchMapData } from '../logic/service/mapService.js'; 
 import { buildLane } from '../logic/service/laneBuilder.js';
 
 const mapData = ref([]); 
 const componentDefinitions = ref({}); 
 const isLoading = ref(true); 
-const MAP_DIMENSION = 5;
-const MAX_MAP_SCALE = 70;
+const mapGrid = ref(null);
 
 onMounted(async () => {
     try {
         const data = await fetchMapData(); 
         mapData.value = data.mapData;
         componentDefinitions.value = data.componentDefinitions;
+        mapGrid.value = createMapGrid(data.mapData, data.componentDefinitions, MAP_DIMENSIONS);
+
+        // TODO: websocket verbinding maken naar python backend
+
     } catch (error) {
         console.error("Fout bij het laden:", error);
     } finally {
@@ -62,41 +64,10 @@ onMounted(async () => {
     }
 });
 
-// bereken de grid stijl (ook dynamisch)
-const gridStyle = computed(() => {
-    const dynamicSize = `${MAX_MAP_SCALE}vmin`; 
-
-    return {
-        display: 'grid',
-        gridTemplateColumns: `repeat(${MAP_DIMENSION}, 1fr)`,
-        gridTemplateRows: `repeat(${MAP_DIMENSION}, 1fr)`,
-
-        width: dynamicSize,
-        height: dynamicSize,
-        
-        maxWidth: '800px', 
-        maxHeight: '800px',
-    };
-});
-
-const mapComponents = computed(() => {
-    return mapData.value.map(item => {
-        const def = componentDefinitions.value[item.type];
-        
-        if (!def) return null;
-
-        const rotation = normalizeDegree(item.rotation || 0);
-
-        return {
-            key: `${item.x}-${item.y}`, 
-            imagePath: def.imagePath,
-            label: def.label,
-            x: item.x,
-            y: item.y,
-            rotation: rotation,
-        };
-    }).filter(c => c !== null);
-});
+const { mapComponents, gridStyle, getComponentPosition } = mapRenderer(
+    mapData,
+    componentDefinitions
+);
 
 const lanePositions = computed(() => {
     return mapData.value.map(item => ({

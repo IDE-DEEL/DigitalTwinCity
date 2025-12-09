@@ -2,7 +2,15 @@
   {
     "id": "straight",
     "label": "straight line",
-    "imagePath": "/assets/straight.JPG"
+    "imagePath": "/assets/straight.JPG",
+    "pathConnections": ["N", "S"],
+    "pathNodes": [
+      {
+        "from": "N",
+        "to": "S", 
+        "coords": [[0.5, 0.0],[0.5, 1.0]]}
+    ]
+
   },
   {
     "id": "curve",
