@@ -10,9 +10,9 @@
 #define PSK_IDENTITY ""
 #define PSK_HEX ""
 
-#define SUB_TOPIC_CMD "esp32-01/out"
-#define PUB_TOPIC_OUT "esp32-01/out"
-#define PUB_TOPIC_RFID "esp32-01/out"
+#define SUB_TOPIC_CMD "test/to-web"
+#define PUB_TOPIC_OUT "test/to-web"
+#define PUB_TOPIC_RFID "test/to-web"
 
 #define MQTT_CLIENT_ID PSK_IDENTITY
 

@@ -6,7 +6,7 @@
 #include <ArduinoJson.h>
 
 #include "jsonreader.hpp"
-#include "mqtt.hpp"
+#include "Connectivity.hpp"
 #include "rfid.hpp"
 #include "magnetometer.hpp"
 #include "MagnetometerManager.hpp"
@@ -21,8 +21,8 @@
 #define USE_JSON 1
 
 // ---- Wi-Fi ----
-const char *WIFI_SSID = "";
-const char *WIFI_PASS = "";
+const char* WIFI_SSID = "";
+const char* WIFI_PASS = "";
 
 // JSON reader instance
 #if USE_JSON
@@ -37,10 +37,9 @@ static PID pidController;
 static Motion motionController;
 #endif // USE_MOTION
 
-// TLS client and wrappers
+// Connectivity (Wi-Fi + MQTT)
 #if USE_MQTT
-static WiFiClientSecure tlsClient;
-static MQTTWrapper mqtt(tlsClient);
+static Connectivity connectivity(WIFI_SSID, WIFI_PASS);
 #endif // USE_MQTT
 
 // RFID reader
@@ -104,10 +103,9 @@ void setup()
   rfid.begin();
 #endif // USE_RFID
 
-  // MQTT initialization
+  // Connectivity (Wi-Fi + MQTT) initialization
 #if USE_MQTT
-  ensureWifi();
-  mqtt.connectWithPsk();
+  connectivity.begin();
 #endif // USE_MQTT
 
   // Magnetometer initialization
@@ -148,27 +146,9 @@ void setup()
 
 void loop()
 {
-
-  // Ensure Wi-Fi connection
+  // Wi-Fi + MQTT connection handling
 #if USE_MQTT
-  if (WiFi.status() != WL_CONNECTED)
-    ensureWifi();
-
-  // MQTT connection handling
-  if (!mqtt.connected())
-  {
-    // Retry connection every 3 seconds
-    static unsigned long lastRetry = 0;
-    if (millis() - lastRetry > 3000)
-    {
-      lastRetry = millis();
-      mqtt.connectWithPsk();
-    }
-  }
-  else
-  {
-    mqtt.loop();
-  }
+  connectivity.loop();
 #endif // USE_MQTT
 
   // RFID polling
@@ -191,7 +171,7 @@ void loop()
         Serial.println("Tag Found in Database:");
         Serial.println(payload);
         if (mqtt.connected()) {
-           mqtt.publish("esp32-01/out", payload.c_str());
+           connectivity.publish(PUB_TOPIC_RFID, payload.c_str());
         }
         #endif // USE_MQTT
     }
