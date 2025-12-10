@@ -13,16 +13,16 @@
 #include "PID.hpp"
 #include "Motion.hpp"
 
-#define USE_MQTT 1
-#define USE_RFID 1
-#define USE_MAGNETOMETER 0
-#define USE_PID 0
-#define USE_MOTION 0
-#define USE_JSON 1
+#define USE_MQTT 0
+#define USE_RFID 0
+#define USE_MAGNETOMETER 1
+#define USE_PID 1
+#define USE_MOTION 1
+#define USE_JSON 0
 
 // ---- Wi-Fi ----
-const char* WIFI_SSID = "";
-const char* WIFI_PASS = "";
+const char* WIFI_SSID = "Xiaomi 12T Pro";
+const char* WIFI_PASS = "Test1234";
 
 // JSON reader instance
 #if USE_JSON
@@ -157,7 +157,7 @@ void loop()
   if (uidHex.length())
   {
     #if USE_MQTT
-    rfid.publishRFID(mqtt, uidHex);
+    rfid.publishRFID(connectivity, uidHex);
     Serial.printf("RFID UID: %s\n", uidHex.c_str());
     #endif // USE_MQTT
 
@@ -170,15 +170,15 @@ void loop()
         #if USE_MQTT
         Serial.println("Tag Found in Database:");
         Serial.println(payload);
-        if (mqtt.connected()) {
+        if (connectivity.connected()) {
            connectivity.publish(PUB_TOPIC_RFID, payload.c_str());
         }
         #endif // USE_MQTT
     }
     #endif // USE_JSON
-    #endif // USE_RFID
+    
   }
-
+#endif // USE_RFID
   // Magnetometer updating
 #if USE_MAGNETOMETER && !USE_PID
   int ret = magManager.updateAll();

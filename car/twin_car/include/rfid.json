@@ -55,6 +55,38 @@
         "x": 400,
         "y": 350
       }
+    },
+    {
+      "tag_id": "53E9D969620001",
+      "name": "bocht_links",
+      "location": {
+        "x": 400,
+        "y": 350
+      }
+    },
+    {
+      "tag_id": "5303E169620001",
+      "name": "bocht_rechts",
+      "location": {
+        "x": 400,
+        "y": 350
+      }
+    },
+    {
+      "tag_id": "53E9D969620003",
+      "name": "eindpunt",
+      "location": {
+        "x": 400,
+        "y": 350
+      }
+    },
+    {
+      "tag_id": "53E9D969620004",
+      "name": "startpunt",
+      "location": {
+        "x": 400,
+        "y": 350
+      }
     }
   ]
 }
