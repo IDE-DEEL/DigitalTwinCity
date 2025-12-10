@@ -111,17 +111,37 @@ int Connectivity::state()
     return _mqtt.state();
 }
 
-void Connectivity::onMqttMessageStatic(char* topic, byte* payload, unsigned int len)
-{
-    // default handler : loggen naar Serial.
-    Serial.printf("MQTT <- [%s]\n", topic);
-    Serial.println(String(reinterpret_cast<const char*>(payload), len));
+// Definitie van de static externe handler
+Connectivity::ExternalMqttHandler Connectivity::_externalHandler = nullptr;
+
+void Connectivity::setExternalHandler(ExternalMqttHandler h) {
+    Connectivity::_externalHandler = h;
+}
+
+bool Connectivity::subscribe(const char* topic, int qos) {
+    return _mqtt.subscribe(topic, qos);
 }
 
 void Connectivity::onMqttMessage(char* topic, byte* payload, unsigned int len)
 {
-    // Instance specifieke handler voor als dat later nodig is
+    // Default: geen instance-specifieke logica.
+    // Als je instance-gebonden verwerking wilt, voeg die hier toe.
     (void)topic;
     (void)payload;
     (void)len;
+}
+
+void Connectivity::onMqttMessageStatic(char* topic, byte* payload, unsigned int len)
+{
+    // logging (bestaande stijl)
+    Serial.printf("MQTT <- [%s]\n", topic);
+    Serial.println(String(reinterpret_cast<const char*>(payload), len));
+
+    // call instance handler? (optioneel)
+    // Als je per-instance verwerking wilt, roep die hier aan,
+    // bijvoorbeeld: someSingletonInstance.onMqttMessage(topic, payload, len);
+    // In deze code gebruiken we de externe handler mechanismen:
+    if (Connectivity::_externalHandler) {
+        Connectivity::_externalHandler(topic, payload, len);
+    }
 }

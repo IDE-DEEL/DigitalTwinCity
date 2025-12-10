@@ -89,6 +89,45 @@ public:
      */
     bool publishDefault(const String& payload, bool retained = false);
 
+       /**
+     * @brief Type voor externe MQTT-bericht handler functie.
+     *
+     * De callback wordt aangeroepen wanneer er een MQTT-bericht binnenkomt.
+     * @param topic Het MQTT-topic als C-string (null-terminated).
+     * @param payload De payload bytes.
+     * @param len Lengte van de payload in bytes.
+     *
+     * @note De functie wordt door de Connectivity-klasse in de context van de
+     * MQTT-callback aangeroepen. Implementaties moeten snel zijn en geen
+     * langlopende blocking operaties uitvoeren.
+     */
+    typedef void (*ExternalMqttHandler)(const char* topic, byte* payload, unsigned int len);
+
+    /**
+     * @brief Registreer een externe handler voor inkomende MQTT-berichten.
+     *
+     * Wanneer ingesteld wordt de meegegeven callback aangeroepen door de
+     * interne MQTT-callback (`onMqttMessageStatic`). Dit biedt een lichte
+     * extensiepunt voor andere modules (bijv. ReservationManager) zonder de
+     * bestaande MQTT-logica te wijzigen.
+     *
+     * @param h Pointer naar een functie die berichten afhandelt. Geef `nullptr`
+     *          om de handler te verwijderen.
+     */
+    static void setExternalHandler(ExternalMqttHandler h);
+
+    /**
+     * @brief Abonneer op een MQTT-topic.
+     *
+     * Wrapper rond de onderliggende PubSubClient `subscribe`-functie zodat
+     * andere modules eenvoudig topics kunnen subscriben via de `Connectivity`-instantie.
+     *
+     * @param topic Het MQTT-topic om op te abonneren (C-string).
+     * @param qos Quality of Service niveau (default 1).
+     * @return true bij succesvolle subscribe, false bij falen.
+     */
+    bool subscribe(const char* topic, int qos = 1);
+
     /**
      * @brief Controleer of MQTT verbonden is.
      * @return true als MQTT verbonden is.
@@ -114,6 +153,9 @@ private:
 
     WiFiClientSecure _tlsClient;
     PubSubClient     _mqtt;
+
+        /** Externe handler pointer (default: nullptr). */
+    static ExternalMqttHandler _externalHandler;
 
     const char* _defaultPubTopic = nullptr;
     unsigned long _lastMqttRetry = 0;
