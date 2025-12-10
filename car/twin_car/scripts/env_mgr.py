@@ -66,6 +66,7 @@ def check_and_prompt():
         # Print alle variabelen maar censureer de wachtwoord achtige variabelen
         for var in REQUIRED:
             value = current_values[var["name"]]
+            env.Append(CPPDEFINES=[(var["name"], env.StringifyMacro(value))],)
             if "password" in var["name"].lower() or "psk" in var["name"].lower():
                 print(f"  {var['name']}: *****")
             else:

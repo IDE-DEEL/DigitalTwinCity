@@ -10,21 +10,14 @@
 #include "PIDManager.hpp"
 #include "Motion.hpp"
 
-#define USE_MQTT 0
-#define USE_RFID 1
-#define USE_MAGNETOMETER 1
-#define USE_PID 1
-#define USE_MOTION 1
+#define USE_MQTT 1
+#define USE_RFID 0
+#define USE_MAGNETOMETER 0
+#define USE_PID 0
+#define USE_MOTION 0
 
-// ---- Wi-Fi ----
-#ifndef CFG_WIFI_SSID
-#define CFG_WIFI_SSID ""
-#endif
-#ifndef CFG_WIFI_PSK
-#define CFG_WIFI_PSK ""
-#endif
-const char *WIFI_SSID = CFG_WIFI_SSID;
-const char *WIFI_PASS = CFG_WIFI_PSK;
+const char *WIFI_SSID = DEEL_WIFI_SSID;
+const char *WIFI_PASS = DEEL_WIFI_PSK;
 
 #if USE_PID
 static PIDManager pidManager;
@@ -55,29 +48,6 @@ Magnetometer magLeft(MAGNETOMETER_LEFT, magConfig);
 Magnetometer magRight(MAGNETOMETER_RIGHT, magConfig);
 MagnetometerManager magManager;
 #endif // USE_MAGNETOMETER
-
-#if USE_MQTT
-void ensureWifi()
-{
-  Serial.println("Checking WiFi connection...");
-  if (WiFi.status() == WL_CONNECTED)
-    return;
-
-  Serial.printf("WiFi: connecting to %s ...\n", WIFI_SSID);
-  WiFi.mode(WIFI_STA);
-  Serial.printf("Set WiFi mode to STA: ");
-  Serial.println(WiFi.macAddress());
-  WiFi.begin(WIFI_SSID, WIFI_PASS);
-  Serial.printf("Started WiFi connection\n");
-
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    delay(400);
-    Serial.print(".");
-  }
-  Serial.printf("\nWiFi: connected, IP=%s\n", WiFi.localIP().toString().c_str());
-}
-#endif // USE_MQTT
 
 void freeze()
 {

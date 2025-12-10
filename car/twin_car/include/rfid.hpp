@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <MFRC522.h>
-#include "mqtt.hpp"
+#include "connectivity.hpp"
 
 #define SPI_SCK 26
 #define SPI_MISO 33
@@ -40,7 +40,7 @@ public:
 	 * @param mqtt Reference to an existing MQTTWrapper instance for publishing.
 	 * @param uidHex Hexadecimal string of the detected RFID UID.
 	 */
-	void publishRFID(MQTTWrapper& mqtt, const String& uidHex);
+	void publishRFID(Connectivity& mqtt, const String& uidHex);
 
 private:
 

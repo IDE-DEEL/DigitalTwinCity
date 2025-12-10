@@ -79,7 +79,7 @@ String RFIDReader::poll()
     return uidHex;
 }
 
-void RFIDReader::publishRFID(MQTTWrapper &mqtt, const String &uidHex)
+void RFIDReader::publishRFID(Connectivity &mqtt, const String &uidHex)
 {
     // JSON payload: {"uid":"ABCD1234","ms":123456}
     String payload = "{\"uid\":\"" + uidHex + "\",\"ms\":" + String(millis()) + "}";
