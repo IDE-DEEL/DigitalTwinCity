@@ -1,7 +1,11 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
+#include <FS.h>
+#include <LittleFS.h>
+#include <ArduinoJson.h>
 
+#include "jsonreader.hpp"
 #include "Connectivity.hpp"
 #include "rfid.hpp"
 #include "magnetometer.hpp"
@@ -11,13 +15,19 @@
 
 #define USE_MQTT 1
 #define USE_RFID 1
-#define USE_MAGNETOMETER 1
-#define USE_PID 1
-#define USE_MOTION 1
+#define USE_MAGNETOMETER 0
+#define USE_PID 0
+#define USE_MOTION 0
+#define USE_JSON 1
 
 // ---- Wi-Fi ----
 const char* WIFI_SSID = "";
 const char* WIFI_PASS = "";
+
+// JSON reader instance
+#if USE_JSON
+JsonReader jsonReader;
+#endif // USE_JSON
 
 #if USE_PID
 static PID pidController;
@@ -116,6 +126,12 @@ void setup()
   }
 #endif // USE_MAGNETOMETER
 
+#if USE_JSON
+  if (!jsonReader.begin()) {
+    Serial.println("Failed to initialize JSON Reader");
+  }
+#endif // USE_JSON
+
 #if USE_PID
   pidController.reset();
 #endif // USE_PID
@@ -123,7 +139,6 @@ void setup()
 #if USE_MOTION
   motionController.init();
 #endif // USE_MOTION
-
   // Wait before starting loop so initialization messages can be read.
   Serial.println("Setup complete, starting main loop in 5 seconds...");
   delay(5000);
@@ -141,15 +156,28 @@ void loop()
   String uidHex = rfid.poll();
   if (uidHex.length())
   {
-  #if USE_MQTT
-    // JSON payload: {"uid":"ABCD1234","ms":123456}
-    String payload = "{\"uid\":\"" + uidHex + "\",\"ms\":" + String(millis()) + "}";
-    connectivity.publish(PUB_TOPIC_RFID, payload);
-  #else
+    #if USE_MQTT
+    rfid.publishRFID(mqtt, uidHex);
     Serial.printf("RFID UID: %s\n", uidHex.c_str());
-  #endif // USE_MQTT
+    #endif // USE_MQTT
+
+    #if USE_JSON
+    JsonDocument resultDoc;
+    if (jsonReader.findTag(uidHex, resultDoc)) {
+        String payload;
+        serializeJson(resultDoc, payload);
+        
+        #if USE_MQTT
+        Serial.println("Tag Found in Database:");
+        Serial.println(payload);
+        if (mqtt.connected()) {
+           connectivity.publish(PUB_TOPIC_RFID, payload.c_str());
+        }
+        #endif // USE_MQTT
+    }
+    #endif // USE_JSON
+    #endif // USE_RFID
   }
-#endif // USE_RFID
 
   // Magnetometer updating
 #if USE_MAGNETOMETER && !USE_PID

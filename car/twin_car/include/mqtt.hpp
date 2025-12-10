@@ -7,8 +7,7 @@
 
 #define BROKER_HOST ""
 #define BROKER_PORT 8883
-
-#define PSK_IDENTITY "esp32-01"
+#define PSK_IDENTITY ""
 #define PSK_HEX ""
 
 #define SUB_TOPIC_CMD "test/to-web"
