@@ -75,7 +75,7 @@ bool JsonReader::findTag(const String& uidHex, JsonDocument& resultDoc) {
             return true;
         }
     }
-    return addTag(uidHex, "Unnamed", "Unknown");
+    return false;    
 }
 
 bool JsonReader::addTag(const String& uid, const String& name, const String& location) {
