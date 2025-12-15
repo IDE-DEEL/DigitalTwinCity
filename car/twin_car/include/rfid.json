@@ -1,0 +1,76 @@
+{
+  "rfid_tags": [
+    {
+      "tag_id": "2A1345FF",
+      "name": "Toolbox 1",
+      "location": {
+        "x": 150,
+        "y": 420
+      }
+    },
+    {
+      "tag_id": "41F90A3E",
+      "name": "Part A25",
+      "location": {
+        "x": 210,
+        "y": 800
+      }
+    },
+    {
+      "tag_id": "4ADA0A3E",
+      "name": "second Aid Kit",
+      "location": {
+        "x": 50,
+        "y": 120
+      }
+    },
+    {
+      "tag_id": "E5F90A3E",
+      "name": "Server Rack 4",
+      "location": {
+        "x": 800,
+        "y": 600
+      }
+    },
+    {
+      "tag_id": "41F90A3E",
+      "name": "Spare Battery Pack",
+      "location": {
+        "x": 300,
+        "y": 200
+      }
+    },
+    {
+      "tag_id": "65FD0A3E",
+      "name": "Fire Extinguisher",
+      "location": {
+        "x": 100,
+        "y": 50
+      }
+    },
+    {
+      "tag_id": "D4E5F6A7",
+      "name": "Maintenance Cart",
+      "location": {
+        "x": 400,
+        "y": 350
+      }
+    },
+    {
+      "tag_id": "E3801032",
+      "name": "CURVE",
+      "location": {
+        "x": 400,
+        "y": 350
+      }
+    },
+        {
+      "tag_id": "9333FC31",
+      "name": "STRAIGHT",
+      "location": {
+        "x": 400,
+        "y": 350
+      }
+    }
+  ]
+}

@@ -88,6 +88,7 @@ float PID::compute_proportional(float error)
 
     Also find out if Hysteresis should and could be implemented.
     */
+
     float adaptiveKp;
     switch (_road_type)
     {
@@ -105,6 +106,9 @@ float PID::compute_proportional(float error)
         break;
 
     case CURVE:
+        // Extreme exponential to test if different PID's are applied. This formale should be altered.
+        adaptiveKp = _Kp_min + (_Kp_max - _Kp_min) * (1.0f - expf(-50.0f * min(abs(error) / ERROR_NORMALIZATION_FACTOR, 1.0f)));
+        break;
     case ROUNDABOUT:
     case T_JUNCTION:
     case CROSSROAD:

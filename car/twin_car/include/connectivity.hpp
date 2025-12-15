@@ -6,7 +6,7 @@
 #define BROKER_HOST DEEL_SERVER_IP
 #define BROKER_PORT 8883
 
-#define PSK_IDENTITY "ID"
+#define PSK_IDENTITY "esp32-01"
 #define PSK_HEX DEEL_SERVER_PSK
 
 #define SUB_TOPIC_CMD "test/to-web"
