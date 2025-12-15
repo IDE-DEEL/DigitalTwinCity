@@ -1,7 +1,7 @@
 <template>
   <div class="w-full p-3">
     <div class="border border-gray-400 rounded-lg w-full h-full bg-white flex items-center justify-center overflow-hidden">
-        <div class="relative" :style="gridStyle">
+        <div class="relative aspect-square" :style="gridStyle">
             <div class="map-grid" :style="gridStyle"> 
                 <div
                     v-for="component in mapComponents"
@@ -33,6 +33,12 @@
                     stroke-linejoin="round"
                 />
             </svg>
+                <div
+                    id="live-vehicle"
+                    class="absolute bg-black rounded-full z-10"
+                    :style="vehicleStyle"
+                >
+                </div>
         </div>
     </div> 
   </div>
@@ -43,26 +49,35 @@ import { ref, computed, onMounted } from 'vue';
 import { normalizeDegree } from '../logic/utils/rotation.js'; 
 import { fetchMapData } from '../logic/service/mapService.js'; 
 import { buildLane } from '../logic/service/laneBuilder.js';
+import { useMqttVehicle } from '../composables/MqttConnection.js';
 
+const { vehiclePosition } = useMqttVehicle();
 const mapData = ref([]); 
 const componentDefinitions = ref({}); 
 const isLoading = ref(true); 
 const MAP_DIMENSION = 5;
 const MAX_MAP_SCALE = 70;
 
-onMounted(async () => {
-    try {
-        const data = await fetchMapData(); 
-        mapData.value = data.mapData;
-        componentDefinitions.value = data.componentDefinitions;
-    } catch (error) {
-        console.error("Fout bij het laden:", error);
-    } finally {
-        isLoading.value = false;
-    }
+// vehicle style
+const vehicleStyle = computed(() => {
+    const xPercent = (vehiclePosition.value.x / MAP_DIMENSION) * 100;
+    const yPercent = (vehiclePosition.value.y / MAP_DIMENSION) * 100;
+    const vehicleSize = '0.9rem';
+    const centerCorrection = '50%'; 
+    console.log(`Vehicle Position - X: ${vehiclePosition.value.x}, Y: ${vehiclePosition.value.y}, Rotation: ${vehiclePosition.value.rotation}`);
+
+    return {
+        width: vehicleSize, 
+        height: vehicleSize,
+        left: `calc(${xPercent}% - ${vehicleSize} / 2)`,
+        top: `calc(${yPercent}% - ${vehicleSize} / 2)`,
+        transform: `translate(-${centerCorrection}, -${centerCorrection}) rotate(${vehiclePosition.value.rotation}deg)`,
+        transition: 'all 0.5s linear'
+    };
 });
 
-// bereken de grid stijl (ook dynamisch)
+
+// gridstyle
 const gridStyle = computed(() => {
     const dynamicSize = `${MAX_MAP_SCALE}vmin`; 
 
@@ -73,9 +88,6 @@ const gridStyle = computed(() => {
 
         width: dynamicSize,
         height: dynamicSize,
-        
-        maxWidth: '800px', 
-        maxHeight: '800px',
     };
 });
 
@@ -115,4 +127,17 @@ const getComponentPosition = (component) => {
         gridRowStart: component.y + 1,
     };
 };
+
+onMounted(async () => {
+    try {
+        const data = await fetchMapData(); 
+        mapData.value = data.mapData;
+        componentDefinitions.value = data.componentDefinitions;
+    } catch (error) {
+        console.error("Fout bij het laden:", error);
+    } finally {
+        isLoading.value = false;
+    }
+});
+
 </script>
