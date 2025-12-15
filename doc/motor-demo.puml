@@ -1,0 +1,45 @@
+@startuml
+start
+
+:Initialize Serial;
+:Wire.begin(SDA,SCL);
+:Init sensorLeft (begin_I2C 0x0C);
+:Init sensorRight (begin_I2C 0x0E);
+:sensorLeft.setOversampling(...);
+:sensorRight.setOversampling(...);
+:sensorLeft.setFilter(...);
+:sensorRight.setFilter(...);
+:LED ON;
+
+partition Calibration {
+  :hall_left.device_id = LEFT;
+  :hall_right.device_id = RIGHT;
+  -> Calibrate left;
+  :Loop CALC_SAMPLES -> getSensorData -> calculateMagValue -> accumulate;
+  :Compute hall_left.magOffset;
+  -> Calibrate right;
+  :Loop CALC_SAMPLES -> getSensorData -> calculateMagValue -> accumulate;
+  :Compute hall_right.magOffset;
+}
+
+:lastLoopTime = millis();
+repeat
+  partition ReadSensors {
+    :getSensorData(&hall_left) -> readData(x,y,z);
+    :getSensorData(&hall_right) -> readData(x,y,z);
+  }
+  partition Processing {
+    :magLeftRaw = sqrt(x^2+y^2+z^2) - hall_left.magOffset;
+    :magRightRaw = sqrt(x^2+y^2+z^2) - hall_right.magOffset;
+    :magLeft = medianFilter(magLeftRaw);
+    :magRight = medianFilter(magRightRaw);
+    :filteredMagLeft = alpha*magLeft + (1-alpha)*filteredMagLeft;
+    :filteredMagRight = alpha*magRight + (1-alpha)*filteredMagRight;
+    :Serial.printf(...filtered values...);
+    :updateMaxMin(filteredMagLeft, filteredMagRight);
+  }
+  partition Control {
+    :followLinePID(filteredMagLeft, filteredMagRight);
+  }
+repeat while (true)
+@enduml

@@ -46,7 +46,6 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { normalizeDegree } from '../logic/utils/rotation.js'; 
 import { fetchMapData } from '../logic/service/mapService.js'; 
 import { buildLane } from '../logic/service/laneBuilder.js';
 import { useMqttVehicle } from '../composables/MqttConnection.js';
@@ -55,8 +54,7 @@ const { vehiclePosition } = useMqttVehicle();
 const mapData = ref([]); 
 const componentDefinitions = ref({}); 
 const isLoading = ref(true); 
-const MAP_DIMENSION = 5;
-const MAX_MAP_SCALE = 70;
+const mapGrid = ref(null);
 
 // vehicle style
 const vehicleStyle = computed(() => {
