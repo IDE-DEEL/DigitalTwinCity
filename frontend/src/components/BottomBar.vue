@@ -7,8 +7,53 @@
     </div>
     <!-- Start + Stop-->
     <div class="flex gap-2 p-8">
-      <button class="bg-sky-200 hover:bg-sky-700 rounded-sm w-24 h-10">Start</button>
-      <button class="bg-sky-200 hover:bg-sky-700 rounded-sm w-24 h-10">Stop</button>
+      <button 
+        @click="handleStart"
+        :disabled="isSimulating"
+        :class="[
+          'rounded-sm w-24 h-10 transition-colors',
+          isSimulating 
+            ? 'bg-gray-300 cursor-not-allowed' 
+            : 'bg-sky-200 hover:bg-sky-700'
+        ]"
+      >
+        Start
+      </button>
+     <button 
+        @click="handleStop"
+        :disabled="!isSimulating"
+        :class="[
+          'rounded-sm w-24 h-10 transition-colors',
+          !isSimulating 
+            ? 'bg-gray-300 cursor-not-allowed' 
+            : 'bg-red-200 hover:bg-red-700'
+        ]"
+      >
+        Stop
+      </button>
     </div>
   </div>
 </template>
+
+<script setup>
+import { ref, computed, onMounted } from 'vue';
+import { useMqttVehicle } from '../composables/MqttConnection';
+
+const{ isSimulating, startSimulation, stopSimulation } = useMqttVehicle();
+
+const handleStart = () => {
+  // NOTE: kan eventueel later ook timer + score bijghouden worden hier
+  startSimulation();
+  console.log('Simulation gestart');
+}
+
+const handleStop = () => {
+  stopSimulation();
+  console.log('Simulation gestopt');
+}
+
+// eventueel later nog iets bij onMounted doen, bijv cleanup van timer of score
+// onMounted(() => {
+//   
+// });
+</script>
