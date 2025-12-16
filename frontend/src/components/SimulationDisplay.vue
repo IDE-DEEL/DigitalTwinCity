@@ -1,7 +1,7 @@
 <template>
   <div class="w-full p-3">
     <div class="border border-gray-400 rounded-lg w-full h-full bg-white flex items-center justify-center overflow-hidden">
-        <div class="relative" :style="gridStyle">
+        <div class="relative aspect-square" :style="gridStyle">
             <div class="map-grid" :style="gridStyle"> 
                 <div
                     v-for="component in mapComponents"
@@ -33,6 +33,12 @@
                     stroke-linejoin="round"
                 />
             </svg>
+                <div
+                    id="live-vehicle"
+                    class="absolute bg-black rounded-full z-10"
+                    :style="vehicleStyle"
+                >
+                </div>
         </div>
     </div> 
   </div>
@@ -42,32 +48,65 @@
 import { ref, computed, onMounted } from 'vue';
 import { fetchMapData } from '../logic/service/mapService.js'; 
 import { buildLane } from '../logic/service/laneBuilder.js';
+import { useMqttVehicle } from '../composables/MqttConnection.js';
 
+const { vehiclePosition } = useMqttVehicle();
 const mapData = ref([]); 
 const componentDefinitions = ref({}); 
 const isLoading = ref(true); 
 const mapGrid = ref(null);
 
-onMounted(async () => {
-    try {
-        const data = await fetchMapData(); 
-        mapData.value = data.mapData;
-        componentDefinitions.value = data.componentDefinitions;
-        mapGrid.value = createMapGrid(data.mapData, data.componentDefinitions, MAP_DIMENSIONS);
+// vehicle style
+const vehicleStyle = computed(() => {
+    const xPercent = (vehiclePosition.value.x / MAP_DIMENSION) * 100;
+    const yPercent = (vehiclePosition.value.y / MAP_DIMENSION) * 100;
+    const vehicleSize = '0.9rem';
+    const centerCorrection = '50%'; 
+    console.log(`Vehicle Position - X: ${vehiclePosition.value.x}, Y: ${vehiclePosition.value.y}, Rotation: ${vehiclePosition.value.rotation}`);
 
-        // TODO: websocket verbinding maken naar python backend
-
-    } catch (error) {
-        console.error("Fout bij het laden:", error);
-    } finally {
-        isLoading.value = false;
-    }
+    return {
+        width: vehicleSize, 
+        height: vehicleSize,
+        left: `calc(${xPercent}% - ${vehicleSize} / 2)`,
+        top: `calc(${yPercent}% - ${vehicleSize} / 2)`,
+        transform: `translate(-${centerCorrection}, -${centerCorrection}) rotate(${vehiclePosition.value.rotation}deg)`,
+        transition: 'all 0.5s linear'
+    };
 });
 
-const { mapComponents, gridStyle, getComponentPosition } = mapRenderer(
-    mapData,
-    componentDefinitions
-);
+
+// gridstyle
+const gridStyle = computed(() => {
+    const dynamicSize = `${MAX_MAP_SCALE}vmin`; 
+
+    return {
+        display: 'grid',
+        gridTemplateColumns: `repeat(${MAP_DIMENSION}, 1fr)`,
+        gridTemplateRows: `repeat(${MAP_DIMENSION}, 1fr)`,
+
+        width: dynamicSize,
+        height: dynamicSize,
+    };
+});
+
+const mapComponents = computed(() => {
+    return mapData.value.map(item => {
+        const def = componentDefinitions.value[item.type];
+        
+        if (!def) return null;
+
+        const rotation = normalizeDegree(item.rotation || 0);
+
+        return {
+            key: `${item.x}-${item.y}`, 
+            imagePath: def.imagePath,
+            label: def.label,
+            x: item.x,
+            y: item.y,
+            rotation: rotation,
+        };
+    }).filter(c => c !== null);
+});
 
 const lanePositions = computed(() => {
     return mapData.value.map(item => ({
@@ -86,4 +125,17 @@ const getComponentPosition = (component) => {
         gridRowStart: component.y + 1,
     };
 };
+
+onMounted(async () => {
+    try {
+        const data = await fetchMapData(); 
+        mapData.value = data.mapData;
+        componentDefinitions.value = data.componentDefinitions;
+    } catch (error) {
+        console.error("Fout bij het laden:", error);
+    } finally {
+        isLoading.value = false;
+    }
+});
+
 </script>
