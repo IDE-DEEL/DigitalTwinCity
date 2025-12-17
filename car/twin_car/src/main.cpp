@@ -11,18 +11,19 @@
 #include "magnetometer.hpp"
 #include "MagnetometerManager.hpp"
 #include "PID.hpp"
+#include "PIDManager.hpp"
 #include "Motion.hpp"
 
-#define USE_MQTT 0
-#define USE_RFID 0
+#define USE_MQTT 1
+#define USE_RFID 1
 #define USE_MAGNETOMETER 1
 #define USE_PID 1
 #define USE_MOTION 1
-#define USE_JSON 0
+#define USE_JSON 1
 
 // ---- Wi-Fi ----
-const char* WIFI_SSID = "Xiaomi 12T Pro";
-const char* WIFI_PASS = "Test1234";
+const char* WIFI_SSID = DEEL_WIFI_SSID;
+const char* WIFI_PASS = DEEL_WIFI_PSK;
 
 // JSON reader instance
 #if USE_JSON
@@ -30,7 +31,8 @@ JsonReader jsonReader;
 #endif // USE_JSON
 
 #if USE_PID
-static PID pidController;
+static PIDManager pidManager;
+enum road_types current_road_type = STRAIGHT;
 #endif // USE_PID
 
 #if USE_MOTION
@@ -59,30 +61,12 @@ Magnetometer magRight(MAGNETOMETER_RIGHT, magConfig);
 MagnetometerManager magManager;
 #endif // USE_MAGNETOMETER
 
-#if USE_MQTT
-void ensureWifi()
-{
-  if (WiFi.status() == WL_CONNECTED)
-    return;
-
-  Serial.printf("WiFi: connecting to %s ...\n", WIFI_SSID);
-  WiFi.mode(WIFI_STA);
-  Serial.printf("Set WiFi mode to STA\n");
-  WiFi.begin(WIFI_SSID, WIFI_PASS);
-  Serial.printf("Started WiFi connection\n");
-
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    delay(400);
-    Serial.print(".");
-  }
-  Serial.printf("\nWiFi: connected, IP=%s\n", WiFi.localIP().toString().c_str());
-}
-#endif // USE_MQTT
-
 void freeze()
 {
   Serial.println("Freezing...");
+#if USE_MOTION
+  motionController.drive(0);
+#endif // USE_MOTION
   while (1)
   {
     digitalWrite(LED_BUILTIN, HIGH);
@@ -110,8 +94,8 @@ void setup()
 
   // Magnetometer initialization
 #if USE_MAGNETOMETER
-  magManager.add(&magLeft);
   magManager.add(&magRight);
+  magManager.add(&magLeft);
   int ret = magManager.initAll();
   if (ret)
   {
@@ -133,7 +117,7 @@ void setup()
 #endif // USE_JSON
 
 #if USE_PID
-  pidController.reset();
+  pidManager.init();
 #endif // USE_PID
 
 #if USE_MOTION
@@ -142,6 +126,7 @@ void setup()
   // Wait before starting loop so initialization messages can be read.
   Serial.println("Setup complete, starting main loop in 5 seconds...");
   delay(5000);
+  Serial.println("Starting main loop now.");
 }
 
 void loop()
@@ -166,7 +151,6 @@ void loop()
     if (jsonReader.findTag(uidHex, resultDoc)) {
         String payload;
         serializeJson(resultDoc, payload);
-        
         #if USE_MQTT
         Serial.println("Tag Found in Database:");
         Serial.println(payload);
@@ -174,6 +158,10 @@ void loop()
            connectivity.publish(PUB_TOPIC_RFID, payload.c_str());
         }
         #endif // USE_MQTT
+
+        #if USE_PID
+        current_road_type = jsonReader.get_road_type_from_tag(resultDoc["name"].as<String>());
+        #endif // USE_PID
     }
     #endif // USE_JSON
     
@@ -197,9 +185,17 @@ void loop()
   if (ret)
   {
     Serial.printf("Magnetometer update error: %d\n", ret);
-    freeze();
+    static int err_count = 0;
+    err_count++;
+    if (err_count >= 5)
+    {
+      freeze();
+    } else {
+      return;
+    }
   }
-  float pidOutput = pidController.compute(
+  float pidOutput = pidManager.compute(
+      current_road_type,
       magLeft.getProcessedSample(),
       magRight.getProcessedSample());
   //Serial.printf("PID Output: %.2f\n", pidOutput);
@@ -208,12 +204,16 @@ void loop()
 #endif // USE_PID
 
 #if USE_MOTION && USE_PID
-  motionController.setSteeringAngle(FORWARD_ANGLE + pidOutput);
+  motionController.setSteeringAngle(FORWARD_ANGLE - pidOutput);
+  static bool firstRun = true;
+  if (firstRun) {
   motionController.drive(100);
+  firstRun = false;
+  }
 #endif // USE_MOTION
 
 #if USE_MOTION && !USE_PID
-  motionController.setSteeringAngle(FORWARD_ANGLE + pidOutput);
-  motionController.setSpeed(100);
+  motionController.setSteeringAngle(FORWARD_ANGLE - pidOutput);
+  motionController.drive(100);
 #endif // USE_MOTION
 }

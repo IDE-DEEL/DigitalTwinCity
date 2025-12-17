@@ -5,6 +5,7 @@
 #include <ArduinoJson.h>
 #include <LittleFS.h>
 #include <FS.h>
+#include "PID.hpp"
 
 /**
  * @brief Handles reading and writing JSON data using LittleFS with embedded fallback.
@@ -63,6 +64,14 @@ public:
      * @return JsonDocument& 
      */
     JsonDocument& getDocument();
+
+    /**
+     * @brief Get road type enum from tag name.
+     * 
+     * @param tag_name The name of the tag.
+     * @return enum road_types Corresponding road type.
+     */
+    enum road_types get_road_type_from_tag(const String& tag_name);
 
 private:
     const char* _filePath;

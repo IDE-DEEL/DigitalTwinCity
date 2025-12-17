@@ -3,10 +3,11 @@
 #ifndef CONNECTIVITY_HPP
 #define CONNECTIVITY_HPP
 
-#define BROKER_HOST "IP"
+#define BROKER_HOST DEEL_SERVER_IP
 #define BROKER_PORT 8883
-#define PSK_IDENTITY "ID"
-#define PSK_HEX "PASS"
+
+#define PSK_IDENTITY "esp32-01"
+#define PSK_HEX DEEL_SERVER_PSK
 
 #define SUB_TOPIC_CMD "test/to-web"
 #define PUB_TOPIC_OUT "test/to-web"

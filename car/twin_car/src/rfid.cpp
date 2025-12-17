@@ -14,6 +14,19 @@ void RFIDReader::begin()
     Serial.println("SPI initialized");
     mfrc522.PCD_Init();
     delay(50);
+    Serial.printf("Resetting MFRC522\n");
+    mfrc522.PCD_DumpVersionToSerial();
+    mfrc522.PCD_Reset();
+    Serial.printf("Performing self-test\n");
+    if (!mfrc522.PCD_PerformSelfTest())
+    {
+        Serial.println("MFRC522 self-test failed!");
+    }
+    else
+    {
+        Serial.println("MFRC522 self-test passed.");
+    }
+    
     Serial.println("MFRC522 init done");
 }
 
@@ -62,6 +75,7 @@ String RFIDReader::poll()
     // Kaart netjes stoppen
     mfrc522.PICC_HaltA();
     mfrc522.PCD_StopCrypto1();
+    Serial.printf("RFID UID detected: %s\n", uidHex.c_str());
     return uidHex;
 }
 

@@ -95,6 +95,24 @@ JsonDocument& JsonReader::getDocument() {
     return _doc;
 }
 
+enum road_types JsonReader::get_road_type_from_tag(const String& tag_name) {
+    Serial.println("Getting road type from tag name: " + tag_name);
+    if (tag_name == "STRAIGHT") {
+        return STRAIGHT;
+    } else if (tag_name == "CURVE") {
+        return CURVE;
+    } else if (tag_name == "ROUNDABOUT") {
+        return ROUNDABOUT;
+    } else if (tag_name == "T_JUNCTION") {
+        return T_JUNCTION;
+    } else if (tag_name == "CROSSROAD") {
+        return CROSSROAD;
+    } else {
+        // Default case or unknown tag
+        return STRAIGHT;
+    }
+}
+
 bool JsonReader::restoreFactoryDefaults() {
     File file = LittleFS.open(_filePath, "w");
     if (!file) {
