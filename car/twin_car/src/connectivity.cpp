@@ -2,12 +2,14 @@
 
 #include "Connectivity.hpp"
 #include <WiFi.h>
+#include "jsonreader.hpp"
 
 Connectivity::Connectivity(const char* ssid, const char* pass)
     : _ssid(ssid),
       _pass(pass),
       _tlsClient(),
-      _mqtt(_tlsClient)
+      _mqtt(_tlsClient),
+      _jsonReader(nullptr)
 {
 }
 
@@ -33,7 +35,9 @@ bool Connectivity::connectMqtt()
     _tlsClient.setPreSharedKey(PSK_IDENTITY, PSK_HEX);
 
     _mqtt.setServer(BROKER_HOST, BROKER_PORT);
-    _mqtt.setCallback(Connectivity::onMqttMessageStatic);
+    _mqtt.setCallback([this](char* topic, byte* payload, unsigned int len) {
+        this->onMqttMessage(topic, payload, len);
+    });
 
     Serial.printf("MQTT: connecting to %s:%u ...\n", BROKER_HOST, BROKER_PORT);
     if (!_mqtt.connect(MQTT_CLIENT_ID))
@@ -44,7 +48,7 @@ bool Connectivity::connectMqtt()
 
     Serial.println("MQTT: connected (TLS-PSK)");
     _mqtt.subscribe(SUB_TOPIC_CMD, 1);
-    
+    Serial.printf("MQTT: subscribed to %s\n", SUB_TOPIC_CMD);
     _defaultPubTopic = PUB_TOPIC_OUT;
 
     return true;
@@ -54,6 +58,14 @@ void Connectivity::begin()
 {
     ensureWifi();
     connectMqtt();
+    
+    // Initialize JsonReader for route processing
+    _jsonReader = new JsonReader("/rfid.json");
+    if (_jsonReader->begin()) {
+        Serial.println("JsonReader initialized for route processing");
+    } else {
+        Serial.println("Warning: JsonReader failed to initialize");
+    }
 }
 
 void Connectivity::loop()
@@ -107,19 +119,30 @@ bool Connectivity::connected()
 int Connectivity::state()
 {
     return _mqtt.state();
-}
 
-void Connectivity::onMqttMessageStatic(char* topic, byte* payload, unsigned int len)
-{
-    // default handler : loggen naar Serial.
-    Serial.printf("MQTT <- [%s]\n", topic);
-    Serial.println(String(reinterpret_cast<const char*>(payload), len));
 }
 
 void Connectivity::onMqttMessage(char* topic, byte* payload, unsigned int len)
 {
-    // Instance specifieke handler voor als dat later nodig is
-    (void)topic;
-    (void)payload;
+    // default handler : loggen naar Serial.
+    Serial.printf("MQTT <- [%s]\n", topic);
+    Serial.println(String(reinterpret_cast<const char*>(payload), len));
+
+    // If payload contains json with route info call simulate_route
+    JsonDocument routeDoc;
+    DeserializationError error = deserializeJson(routeDoc, payload, len);
+    if (error) {
+        Serial.print("JSON deserialization failed: ");
+        Serial.println(error.c_str());
+        return;
+    }
+    
+    // Check if message contains a route
+    if (routeDoc["route"].is<JsonArray>() && _jsonReader != nullptr) {
+        Serial.println("Executing route from MQTT message...");
+        _jsonReader->set_connectivity(*this);
+        _jsonReader->simulate_route(routeDoc);
+    }
+    
     (void)len;
 }

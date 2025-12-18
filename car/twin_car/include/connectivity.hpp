@@ -9,7 +9,7 @@
 #define PSK_IDENTITY "esp32-01"
 #define PSK_HEX DEEL_SERVER_PSK
 
-#define SUB_TOPIC_CMD "test/to-web"
+#define SUB_TOPIC_CMD "test/web-to-esp32"
 #define PUB_TOPIC_OUT "test/to-web"
 #define PUB_TOPIC_RFID "test/to-web"
 
@@ -19,6 +19,9 @@
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <PubSubClient.h>
+
+// Forward declaration
+class JsonReader;
 
 /**
  * @brief Connectivity class
@@ -118,6 +121,8 @@ private:
 
     const char* _defaultPubTopic = nullptr;
     unsigned long _lastMqttRetry = 0;
+    
+    JsonReader* _jsonReader;
 };
 
 #endif // CONNECTIVITY_HPP

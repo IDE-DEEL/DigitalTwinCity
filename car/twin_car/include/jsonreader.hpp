@@ -6,6 +6,7 @@
 #include <LittleFS.h>
 #include <FS.h>
 #include "PID.hpp"
+#include "connectivity.hpp"
 
 /**
  * @brief Handles reading and writing JSON data using LittleFS with embedded fallback.
@@ -73,11 +74,14 @@ public:
      */
     enum road_types get_road_type_from_tag(const String& tag_name);
 
-    void simulate_route(Connectivity conn, const JsonDocument& routeDoc);
+    void simulate_route(const JsonDocument& routeDoc);
+
+    void set_connectivity(Connectivity& conn);
 
 private:
     const char* _filePath;
     JsonDocument _doc;
+    Connectivity* _connectivity;
 
     /**
      * @brief Restore the file from embedded program memory.

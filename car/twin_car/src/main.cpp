@@ -15,10 +15,10 @@
 #include "Motion.hpp"
 
 #define USE_MQTT 1
-#define USE_RFID 1
-#define USE_MAGNETOMETER 1
-#define USE_PID 1
-#define USE_MOTION 1
+#define USE_RFID 0
+#define USE_MAGNETOMETER 0
+#define USE_PID 0
+#define USE_MOTION 0
 #define USE_JSON 1
 
 // ---- Wi-Fi ----
@@ -135,6 +135,7 @@ void loop()
 #if USE_MQTT
   connectivity.loop();
 #endif // USE_MQTT
+
 
   // RFID polling
 #if USE_RFID
