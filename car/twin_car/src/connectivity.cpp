@@ -44,9 +44,7 @@ bool Connectivity::connectMqtt()
 
     Serial.println("MQTT: connected (TLS-PSK)");
     _mqtt.subscribe(SUB_TOPIC_CMD, 1);
-    // Geen "(rfid ready)" meer, deze klasse weet niets van specifieke sensoren.
-    _mqtt.publish(PUB_TOPIC_OUT, "esp32 online", true);
-
+    
     _defaultPubTopic = PUB_TOPIC_OUT;
 
     return true;
@@ -86,7 +84,7 @@ bool Connectivity::publish(const char* topic, const char* payload, bool retained
 
 bool Connectivity::publish(const char* topic, const String& payload, bool retained)
 {
-    return _mqtt.publish(topic, payload.c_str(), retained);
+    return _mqtt.publish(topic, payload.c_str(), false);
 }
 
 void Connectivity::setDefaultPubTopic(const char* topic)
@@ -98,7 +96,7 @@ bool Connectivity::publishDefault(const String& payload, bool retained)
 {
     if (!_defaultPubTopic)
         return false;
-    return publish(_defaultPubTopic, payload, retained);
+    return publish(_defaultPubTopic, payload, false);
 }
 
 bool Connectivity::connected()

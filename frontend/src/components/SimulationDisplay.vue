@@ -49,12 +49,15 @@ import { ref, computed, onMounted } from 'vue';
 import { fetchMapData } from '../logic/service/mapService.js'; 
 import { buildLane } from '../logic/service/laneBuilder.js';
 import { useMqttVehicle } from '../composables/MqttConnection.js';
+import { normalizeDegree } from '../logic/utils/rotation.js';
 
 const { vehiclePosition } = useMqttVehicle();
 const mapData = ref([]); 
 const componentDefinitions = ref({}); 
 const isLoading = ref(true); 
 const mapGrid = ref(null);
+const MAX_MAP_SCALE = 70;
+const MAP_DIMENSION = 6;
 
 // vehicle style
 const vehicleStyle = computed(() => {

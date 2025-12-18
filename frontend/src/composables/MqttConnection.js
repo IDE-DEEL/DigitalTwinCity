@@ -2,9 +2,9 @@ import { ref, onMounted, onBeforeUnmount } from 'vue';
 import {Client} from 'paho-mqtt';
 
 // --- Configuratie ---
-const MQTT_HOST = 'broker.hivemq.com'; 
-const MQTT_PORT = 8000;            
-const MQTT_TOPIC = 'simulatie/voertuig1/locatie'; 
+const MQTT_HOST = '52.136.201.33';
+const MQTT_PORT = 9001;
+const MQTT_TOPIC = 'test/to-web';
 
 export function useMqttVehicle() {
     

@@ -57,7 +57,7 @@ public:
      * @param location The location associated with the tag.
      * @return true if successful
      */
-    bool addTag(const String& uid, const String& name, const String& location);
+    bool addTag(const String& uid, int tile_nr, const char* tag_index);
 
     /**
      * @brief Get the underlying JsonDocument (for advanced usage).
@@ -72,6 +72,8 @@ public:
      * @return enum road_types Corresponding road type.
      */
     enum road_types get_road_type_from_tag(const String& tag_name);
+
+    void simulate_route(Connectivity conn, const JsonDocument& routeDoc);
 
 private:
     const char* _filePath;
