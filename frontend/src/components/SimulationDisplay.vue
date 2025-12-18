@@ -50,6 +50,7 @@ import { fetchMapData } from '../logic/service/mapService.js';
 import { buildLane } from '../logic/service/laneBuilder.js';
 import { useMqttVehicle } from '../composables/MqttConnection.js';
 import { normalizeDegree } from '../logic/utils/rotation.js';
+import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
 
 const { vehiclePosition } = useMqttVehicle();
 const mapData = ref([]); 
@@ -134,6 +135,9 @@ onMounted(async () => {
         const data = await fetchMapData(); 
         mapData.value = data.mapData;
         componentDefinitions.value = data.componentDefinitions;
+        
+        // Initialize the RFID mapper with loaded data
+        initRfidMapper(data.mapData, data.rfidData);
     } catch (error) {
         console.error("Fout bij het laden:", error);
     } finally {
