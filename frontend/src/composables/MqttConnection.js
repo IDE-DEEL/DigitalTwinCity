@@ -2,9 +2,9 @@ import { ref, onMounted, onBeforeUnmount } from 'vue';
 import {Client} from 'paho-mqtt';
 
 // --- Configuratie ---
-const MQTT_HOST = 'broker.hivemq.com'; 
-const MQTT_PORT = 8000;            
-const MQTT_TOPIC = 'simulatie/voertuig1/locatie'; 
+const MQTT_HOST = '52.136.201.33'; 
+const MQTT_PORT = 9001;            
+const MQTT_TOPIC = 'test/to-web'; 
 
 export function useMqttVehicle() {
     
@@ -17,9 +17,9 @@ export function useMqttVehicle() {
     let mqttClient = null;
 
     function setupMqttClient() {
-        const clientId = 'vue_sim_client_' + Math.random().toString(16).substr(2, 8);
-    
-        mqttClient = new Client(MQTT_HOST, MQTT_PORT, clientId);
+        const clientId =  'vue_sim_client_' + Math.random().toString(16).substr(2, 8);
+	console.log("MQTT client setup");    
+        mqttClient = new Client(MQTT_HOST, MQTT_PORT, "/", clientId);
         mqttClient.onConnectionLost = onConnectionLost;
         mqttClient.onMessageArrived = onMessageArrived;
 
