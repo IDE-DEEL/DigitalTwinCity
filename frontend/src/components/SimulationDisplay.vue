@@ -19,7 +19,7 @@
                     />
                 </div>
             </div> 
-            <!-- Lanes -->
+            <!-- Lanes (kleur kan later worden weggehaald)-->
             <svg 
                 class="absolute inset-0 pointer-events-none"
                 :viewBox="`0 0 ${MAP_DIMENSION} ${MAP_DIMENSION}`"
@@ -76,15 +76,14 @@ const containerStyle = computed(() => {
 const vehicleStyle = computed(() => {
     const xPercent = (vehiclePosition.value.x / MAP_DIMENSION) * 100;
     const yPercent = (vehiclePosition.value.y / MAP_DIMENSION) * 100;
-    const vehicleSize = '0.9rem';
-    const centerCorrection = '50%'; 
+    const vehicleSize = '12px';
 
     return {
         width: vehicleSize, 
         height: vehicleSize,
-        left: `calc(${xPercent}% - ${vehicleSize} / 2)`,
-        top: `calc(${yPercent}% - ${vehicleSize} / 2)`,
-        transform: `translate(-${centerCorrection}, -${centerCorrection}) rotate(${vehiclePosition.value.rotation}deg)`,
+        left: `calc(${xPercent}% - ${parseInt(vehicleSize)/2}px)`,
+        top: `calc(${yPercent}% - ${parseInt(vehicleSize)/2}px)`,
+        transform: `rotate(${vehiclePosition.value.rotation}deg)`,
         transition: 'all 0.5s linear'
     };
 });
