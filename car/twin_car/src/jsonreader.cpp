@@ -95,16 +95,17 @@ bool JsonReader::findTag(const String& uidHex, JsonDocument& resultDoc) {
     return false;
 }
 
-struct rawTempCoord {
-    float raw_x;
-    float raw_y;
-};
-
-struct rawTempCoord route_coords[] = {
-    {4.75, 2.8}, {4.75, 2.5}, {4.75, 2.3}, {4.75, 2.0}, {4.2, 1.45}, {3.9, 1.45}, {3.6, 1.6}, {3.45, 1.9},
-    {3.45, 2.2}, {3.45, 2.5}, {3.45, 2.9}, {3.45, 3.2}, {3.9, 3.7}, {4.2, 3.7}, {4.6, 3.5}, {4.75, 3.2},
-    {4.75, 3.0}, {4.75, 2.8}
-};
+/*
+Route format example:
+{
+  "route": {
+    "2": [6, 4, 2],
+    "3": [1, 8],
+    "7": [3, 2, 1],
+    "6": [6, 5]
+  }
+}
+*/
 
 void JsonReader::simulate_route(const JsonDocument& routeDoc){
     // Check if routeDoc has the expected structure
@@ -156,15 +157,10 @@ void JsonReader::simulate_route(const JsonDocument& routeDoc){
             Serial.printf("Step %-2d: Tile type %-11s at tile coordinate (%d,%d), RFID binding is %s\n",
                          stepIndex, template_name.c_str(), tile_nr, tag_index, binding.c_str());
             
-            // Publish hardcoded coordinates from route_coords
-            if (stepIndex < sizeof(route_coords) / sizeof(route_coords[0])) {
-                float x = route_coords[stepIndex].raw_x;
-                float y = route_coords[stepIndex].raw_y;
-
-                // Create JSON message with hardcoded coordinates
+                // Store tile number and tag index in message
                 JsonDocument msgDoc;
-                msgDoc["x"] = x;
-                msgDoc["y"] = y;
+                msgDoc["tileNumber"] = tile_nr;
+                msgDoc["tagIndex"] = tag_index;
 
                 // Serialize JSON to string
                 String jsonString;
@@ -176,9 +172,6 @@ void JsonReader::simulate_route(const JsonDocument& routeDoc){
                 } else {
                     Serial.println("Connectivity not set, cannot publish: " + jsonString);
                 }
-            } else {
-                Serial.printf("Warning: Step %d exceeds hardcoded route_coords array size\n", stepIndex);
-            }
             
             stepIndex++;
             delay(1000);

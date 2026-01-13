@@ -1,15 +1,11 @@
-// src/Connectivity.cpp
-
 #include "Connectivity.hpp"
 #include <WiFi.h>
-#include "jsonreader.hpp"
 
 Connectivity::Connectivity(const char* ssid, const char* pass)
     : _ssid(ssid),
       _pass(pass),
       _tlsClient(),
-      _mqtt(_tlsClient),
-      _jsonReader(nullptr)
+      _mqtt(_tlsClient)
 {
 }
 
@@ -58,14 +54,6 @@ void Connectivity::begin()
 {
     ensureWifi();
     connectMqtt();
-    
-    // Initialize JsonReader for route processing
-    _jsonReader = new JsonReader("/rfid.json");
-    if (_jsonReader->begin()) {
-        Serial.println("JsonReader initialized for route processing");
-    } else {
-        Serial.println("Warning: JsonReader failed to initialize");
-    }
 }
 
 void Connectivity::loop()
@@ -122,27 +110,48 @@ int Connectivity::state()
 
 }
 
+int Connectivity::getMessage(String &message)
+{
+    if (_firstMessageProcessing)
+    {
+        Serial.printf("Error: Previous message not yet marked as processed!\n");
+        return -EBUSY;
+    }
+    if (_messageQueue.empty()) {
+        return 0;
+    } else {
+        Serial.printf("First message retrieved\n");
+        _firstMessageProcessing = true;
+        message = _messageQueue.front();
+        
+        if (message.length() == 0)
+        {
+            eraseProcessedMessage();
+        }
+        
+        return message.length();
+    }
+}
+
+void Connectivity::eraseProcessedMessage(){
+    if (!_firstMessageProcessing)
+    {
+        return;
+    }
+    
+    Serial.printf("First message processed and removed from queue");
+    _messageQueue.erase(_messageQueue.begin());
+    _firstMessageProcessing = false;
+}
+
+
 void Connectivity::onMqttMessage(char* topic, byte* payload, unsigned int len)
 {
     // default handler : loggen naar Serial.
     Serial.printf("MQTT <- [%s]\n", topic);
     Serial.println(String(reinterpret_cast<const char*>(payload), len));
 
-    // If payload contains json with route info call simulate_route
-    JsonDocument routeDoc;
-    DeserializationError error = deserializeJson(routeDoc, payload, len);
-    if (error) {
-        Serial.print("JSON deserialization failed: ");
-        Serial.println(error.c_str());
-        return;
-    }
-    
-    // Check if message contains a route
-    if (routeDoc["route"].is<JsonArray>() && _jsonReader != nullptr) {
-        Serial.println("Executing route from MQTT message...");
-        _jsonReader->set_connectivity(*this);
-        _jsonReader->simulate_route(routeDoc);
-    }
+    _messageQueue.push_back(String(reinterpret_cast<const char*>(payload), len));
     
     (void)len;
 }

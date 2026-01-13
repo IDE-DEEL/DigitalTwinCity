@@ -81,6 +81,9 @@ public:
 private:
     const char* _filePath;
     JsonDocument _doc;
+
+    // Remove connectivity related functionality from this class as soon as simulate route can be removed.
+    // This does not comply with class separation standards enforced across the rest of this project.
     Connectivity* _connectivity;
 
     /**

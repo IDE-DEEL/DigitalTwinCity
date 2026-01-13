@@ -27,7 +27,7 @@ const char* WIFI_PASS = DEEL_WIFI_PSK;
 
 // JSON reader instance
 #if USE_JSON
-JsonReader jsonReader;
+static JsonReader jsonReader("/rfid.json");
 #endif // USE_JSON
 
 #if USE_PID
@@ -116,6 +116,10 @@ void setup()
   }
 #endif // USE_JSON
 
+#if USE_JSON && USE_MQTT
+jsonReader.set_connectivity(connectivity);
+#endif // USE_JSON && USE_MQTT
+
 #if USE_PID
   pidManager.init();
 #endif // USE_PID
@@ -123,9 +127,9 @@ void setup()
 #if USE_MOTION
   motionController.init();
 #endif // USE_MOTION
-  // Wait before starting loop so initialization messages can be read.
+  // Wait before starting loop so initialization messages can be read. Debugging convenience.
   Serial.println("Setup complete, starting main loop in 5 seconds...");
-  delay(5000);
+  delay(1000);
   Serial.println("Starting main loop now.");
 }
 
@@ -134,6 +138,32 @@ void loop()
   // Wi-Fi + MQTT connection handling
 #if USE_MQTT
   connectivity.loop();
+
+  #if USE_JSON
+  /*
+  For now we only simulate route (caution: blocking while loop). It is recommended to replace this 
+  with a separate function that handles different types of json instructions. To keep main clean.
+  */
+  
+  // Check if any messages are present and in need of updating in the queue.
+  String mqttMessage;
+  if (connectivity.getMessage(mqttMessage) > 0) 
+  {    
+    Serial.println("Processing newest MQTT message");
+      JsonDocument mqttMessageDoc;
+      DeserializationError error = deserializeJson(mqttMessageDoc, mqttMessage);
+      
+      if (error) 
+      {
+          Serial.printf("Failed to parse incoming MQTT message as JSON: %s\n", error.c_str());
+      } else {
+
+          jsonReader.simulate_route(mqttMessageDoc);
+          connectivity.eraseProcessedMessage();
+      }
+  }
+#endif // USE_JSON
+
 #endif // USE_MQTT
 
 

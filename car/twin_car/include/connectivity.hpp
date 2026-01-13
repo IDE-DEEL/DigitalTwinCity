@@ -19,9 +19,7 @@
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <PubSubClient.h>
-
-// Forward declaration
-class JsonReader;
+#include <vector>
 
 /**
  * @brief Connectivity class
@@ -105,6 +103,20 @@ public:
      */
     int state();
 
+    /**
+     * @brief Get the pending message payload
+     * @param message Reference to String to store the message
+     * @return Number of bytes in the message. 0 means no message available.-EBUSY means previous message was not yet processed.
+     * @note It is the user's responsibility to erase the message after processing with eraseProcessedMessage()
+     */
+    int getMessage(String &message);
+
+    /**
+     * @brief Clear the message that is currently in the front of the message queue.
+     * @note This method should always be called after successfully processing the message.
+     */
+    void eraseProcessedMessage();
+
 private:
     void ensureWifi();
     bool connectMqtt();
@@ -121,8 +133,9 @@ private:
 
     const char* _defaultPubTopic = nullptr;
     unsigned long _lastMqttRetry = 0;
-    
-    JsonReader* _jsonReader;
+
+    std::vector<String> _messageQueue;
+    bool _firstMessageProcessing;
 };
 
 #endif // CONNECTIVITY_HPP
