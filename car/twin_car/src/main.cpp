@@ -13,6 +13,7 @@
 #include "PID.hpp"
 #include "PIDManager.hpp"
 #include "Motion.hpp"
+#include "dirty_demo.hpp"
 
 #define USE_MQTT 1
 #define USE_RFID 0
@@ -116,10 +117,6 @@ void setup()
   }
 #endif // USE_JSON
 
-#if USE_JSON && USE_MQTT
-jsonReader.set_connectivity(connectivity);
-#endif // USE_JSON && USE_MQTT
-
 #if USE_PID
   pidManager.init();
 #endif // USE_PID
@@ -158,7 +155,7 @@ void loop()
           Serial.printf("Failed to parse incoming MQTT message as JSON: %s\n", error.c_str());
       } else {
 
-          jsonReader.simulate_route(mqttMessageDoc);
+          simulate_route(mqttMessageDoc, jsonReader, connectivity);
           connectivity.eraseProcessedMessage();
       }
   }

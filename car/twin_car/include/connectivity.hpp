@@ -1,5 +1,3 @@
-// include/Connectivity.hpp
-
 #ifndef CONNECTIVITY_HPP
 #define CONNECTIVITY_HPP
 

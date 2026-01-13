@@ -74,17 +74,9 @@ public:
      */
     enum road_types get_road_type_from_tag(const String& tag_name);
 
-    void simulate_route(const JsonDocument& routeDoc);
-
-    void set_connectivity(Connectivity& conn);
-
 private:
     const char* _filePath;
     JsonDocument _doc;
-
-    // Remove connectivity related functionality from this class as soon as simulate route can be removed.
-    // This does not comply with class separation standards enforced across the rest of this project.
-    Connectivity* _connectivity;
 
     /**
      * @brief Restore the file from embedded program memory.
