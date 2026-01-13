@@ -18,6 +18,9 @@ public:
     /**
      * @brief Initialize a new Magnetometer Manager object
      * @note Call this during setup()
+     * @return 0 on success or if already initialized. 
+     * 
+     * return is int type to accomodate future error handling.
      */
     int initMgr(){
         if (!_sensors.empty())
@@ -38,7 +41,7 @@ public:
         {
             _sensors.push_back(new Magnetometer(mag_address_arr[i], magConfig));
         }
-        
+        return 0;
     }
 
     /**

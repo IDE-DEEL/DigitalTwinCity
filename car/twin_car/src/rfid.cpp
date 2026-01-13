@@ -45,7 +45,7 @@ String RFIDReader::uidToHex(const MFRC522::Uid &uid)
 
 String RFIDReader::poll()
 {
-    // Als dezelfde kaart lang blijft liggen, reset lastUid na timeout zodat opnieuw gepusht kan worden
+    // If the same card remains present, reset lastUid after timeout to allow republishing
     if (!mfrc522.PICC_IsNewCardPresent() || !mfrc522.PICC_ReadCardSerial())
     {
         if (lastUidHex.length() && (millis() - lastPublishMs > reannounceMs))
@@ -72,7 +72,7 @@ String RFIDReader::poll()
         uidHex = String("");
     }
 
-    // Kaart netjes stoppen
+    // Properly stop the card
     mfrc522.PICC_HaltA();
     mfrc522.PCD_StopCrypto1();
     Serial.printf("RFID UID detected: %s\n", uidHex.c_str());

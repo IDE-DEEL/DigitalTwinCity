@@ -80,7 +80,7 @@ enum road_types PID::set_previous_road_type(enum road_types type)
 float PID::compute_proportional(float error)
 {
     /*
-    TODO: Current implementaation is a linear scaling. Find out if
+    TODO: Current implementation is a linear scaling. Find out if
     Exponential interpolation or piecewise interpolation is better.
 
     Exponential: aggressive response to large errors, smooth for small errors

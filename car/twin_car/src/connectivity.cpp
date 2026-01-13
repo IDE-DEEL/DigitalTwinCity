@@ -65,7 +65,7 @@ void Connectivity::loop()
     // MQTT
     if (!_mqtt.connected())
     {
-        if (millis() - _lastMqttRetry > 3000)
+        if (millis() - _lastMqttRetry > MQTT_RETRY_TIME_MS)
         {
             _lastMqttRetry = millis();
             (void)connectMqtt();
@@ -120,7 +120,7 @@ int Connectivity::getMessage(String &message)
     if (_messageQueue.empty()) {
         return 0;
     } else {
-        Serial.printf("First message retrieved\n");
+        Serial.printf("First message of %d retrieved\n", _messageQueue.size());
         _firstMessageProcessing = true;
         message = _messageQueue.front();
         
@@ -139,15 +139,14 @@ void Connectivity::eraseProcessedMessage(){
         return;
     }
     
-    Serial.printf("First message processed and removed from queue");
     _messageQueue.erase(_messageQueue.begin());
+    Serial.printf("First message processed and removed from queue. %d messages remaining in queue\n", _messageQueue.size());
     _firstMessageProcessing = false;
 }
 
 
 void Connectivity::onMqttMessage(char* topic, byte* payload, unsigned int len)
 {
-    // default handler : loggen naar Serial.
     Serial.printf("MQTT <- [%s]\n", topic);
     Serial.println(String(reinterpret_cast<const char*>(payload), len));
 

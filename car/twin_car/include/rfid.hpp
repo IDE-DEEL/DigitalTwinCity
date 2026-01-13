@@ -14,6 +14,15 @@
 
 /**
  * @brief Simple RFID reader wrapper for MFRC522-based readers.
+ * Responsible for:
+ * - Initializing the MFRC522 reader
+ * - Polling for new RFID cards
+ * 
+ * Usage:
+ * 1. Create instance: RFIDReader rfidReader;
+ * 2. Call rfidReader.begin() in setup()
+ * 3. Use rfidReader.poll() in loop() to check for new cards
+ * 
  */
 class RFIDReader {
 public:

@@ -5,6 +5,16 @@
 #include "PID.hpp"
 #include <vector>
 
+/**
+ * @brief Manager for multiple PID instances.
+ * Allows batch initialization, calibration, and updating.
+ * 
+ * Usage:
+ * 1. Create instance: PIDManager pidManager;
+ * 2. Call pidManager.init() in setup()
+ * 3. Use pidManager.compute(...) to get PID output for specific road type
+ * 4. Use pidManager.reset(...) to reset specific or all PID controllers
+ */
 class PIDManager
 {
 public:
@@ -12,6 +22,9 @@ public:
     /**
      * @brief Initialize a new PID Manager object
      * @note Call this during setup()
+     * @return 0 on success or if already initialized.
+     *
+     * return is int type to accomodate future error handling.
      */
     int init(){
 

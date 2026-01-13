@@ -55,6 +55,11 @@ static RFIDReader rfid;
 MagnetometerManager magManager;
 #endif // USE_MAGNETOMETER
 
+/**
+ * @brief Freeze the system, indicating error state.
+ * Blinks the built-in LED indefinitely.
+ * Useful for notifying critical errors when device is not connected to serial monitor.
+ */
 void freeze()
 {
   Serial.println("Freezing...");
@@ -70,6 +75,10 @@ void freeze()
   }
 }
 
+/**
+ * @brief Arduino setup function.
+ * Initializes serial, RFID, connectivity, magnetometers, PID, and motion controller.
+ */
 void setup()
 {
   // Serial initialization
@@ -122,6 +131,10 @@ void setup()
   Serial.println("Starting main loop now.");
 }
 
+/**
+ * @brief Arduino main loop function.
+ * Handles connectivity, RFID polling, magnetometer updates, PID computation, and motion control.
+ */
 void loop()
 {
   // Wi-Fi + MQTT connection handling

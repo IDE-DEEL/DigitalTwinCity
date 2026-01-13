@@ -31,6 +31,19 @@
 #define SERVO_DUTY_MAX 6553
 /**
  * @brief Motion control class for driving and steering
+ * 
+ * Responsible for:
+ * - Initializing motor and servo
+ * - Setting steering angle
+ * - Driving the motor at specified speed
+ * 
+ * Usage:
+ * 1. Create instance: Motion motionController;
+ * 2. Call motionController.init() in setup()
+ * 3. Use motionController.setSteeringAngle(angle) to set steering angle
+ * 4. Use motionController.drive(speed) to drive the motor
+ * 
+ * @note Uses SparkFun TB6612FNG Motor Driver Library for motor control
  */
 class Motion
 {

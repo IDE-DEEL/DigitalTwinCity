@@ -5,23 +5,36 @@
 #include "magnetometer.hpp"
 #include <algorithm>
 
-#define ERROR_NORMALIZATION_FACTOR 160.0f /** Error normalization factor for adaptive Kp calculation */
-#define KP_MIN_DEFAULT 0.5f /** Startup minimum proportional gain (small errors) */
-#define KP_MAX_DEFAULT 2.0f /** Startup maximum proportional gain (large errors) */
-#define KI_DEFAULT 0.1f /** Startup integral gain */
-#define KD_DEFAULT 0.05f /** Startup derivative gain */
-#define INTEGRAL_MAX_DEFAULT 1000.0f /** Startup maximum value for integral windup prevention */
+#define ERROR_NORMALIZATION_FACTOR 160.0f /**< Error normalization factor for adaptive Kp calculation */
+#define KP_MIN_DEFAULT 0.5f /**< Startup minimum proportional gain (small errors) */
+#define KP_MAX_DEFAULT 2.0f /**< Startup maximum proportional gain (large errors) */
+#define KI_DEFAULT 0.1f /**< Startup integral gain */
+#define KD_DEFAULT 0.05f /**< Startup derivative gain */
+#define INTEGRAL_MAX_DEFAULT 1000.0f /**< Startup maximum value for integral windup prevention */
 
-
+/** @brief Enumeration of road types for PID control */
 enum road_types{
-    STRAIGHT,
-    CURVE,
-    ROUNDABOUT,
-    T_JUNCTION,
-    CROSSROAD
+    STRAIGHT, /**< Straight road type */
+    CURVE, /**< Curve road type */
+    ROUNDABOUT, /**< Roundabout road type */
+    T_JUNCTION, /**< T-junction road type */
+    CROSSROAD /**< Crossroad road type */
 };
 
-
+/**
+ * @brief PID controller for magnetometer-based line following
+ * Responsible for:
+ * - Calculating PID output based on magnetometer readings
+ * - Adapting PID parameters based on road type
+ *
+ * Usage:
+ * 1. Create instance: PID pidController(STRAIGHT);
+ * 2. Call pidController.compute(magLeft, magRight) to get PID output
+ * 3. Use pidController.reset() to reset PID state
+ * 4. Use pidController.set_previous_road_type(type) to change road type
+ * 
+ * @note Designed for use with two magnetometers providing processed samples
+ */
 class PID
 {
 public:
@@ -51,10 +64,15 @@ public:
      */
     enum road_types set_previous_road_type(enum road_types type);
 
+    /**
+     * @brief Get the current road type of the PID controller
+     * @returns Current road type enum value
+     */
     enum road_types get_previous_road_type() const { return _road_type; };
 
     private:
 
+    // Internal methods for PID component calculations
     float compute_proportional(float error);
     float compute_integral(float error, float dt);
     float compute_derivative(float error, float dt);

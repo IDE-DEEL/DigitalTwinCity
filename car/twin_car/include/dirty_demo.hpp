@@ -15,6 +15,18 @@ Route format example:
 }
 */
 
+/**
+ * @brief Simulate following a route defined in a JsonDocument.
+ * 
+ * For each tile and tag in the route, it looks up details from the JSON reader
+ * and prints step information. It also sends MQTT messages if connectivity is provided.
+ * 
+ * This simulation is without actual hardware interaction. It demonstrates route processing logic.
+ * @param routeDoc JsonDocument containing the route definition.
+ * @param reader JsonReader instance to look up tile details.
+ * @param connectivity Optional Connectivity instance for MQTT publishing.
+ * @note This function blocks while simulating the route.
+ */
 void simulate_route(const JsonDocument& routeDoc, JsonReader& reader, Connectivity& connectivity){
 
     // Check if routeDoc has the expected structure

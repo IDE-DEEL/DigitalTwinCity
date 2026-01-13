@@ -10,6 +10,15 @@
 
 /**
  * @brief Handles reading and writing JSON data using LittleFS with embedded fallback.
+ * 
+ * Usage:
+ * 1. Create instance: JsonReader jsonReader("/rfid.json");
+ * 2. Call jsonReader.begin() in setup()
+ * 3. Use jsonReader.load() and jsonReader.save() to manage JSON data
+ * 4. Use jsonReader.findTag(...) to search for tags
+ * 5. Use jsonReader.addTag(...) to add new tags
+ * 6. Use jsonReader.getDocument() for advanced JSON manipulations
+ * 7. Uses embedded factory default JSON if the file is missing
  */
 class JsonReader {
 public:
@@ -54,8 +63,8 @@ public:
      * @brief Add a new tag to the database and save it.
      * 
      * @param uid The UID of the tag.
-     * @param name The name associated with the tag.
-     * @param location The location associated with the tag.
+     * @param tile_nr The tile where the tag is located.
+     * @param tag_index The index of the tag within the specific tile type.
      * @return true if successful
      */
     bool addTag(const String& uid, int tile_nr, const char* tag_index);
