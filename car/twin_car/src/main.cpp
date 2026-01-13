@@ -52,13 +52,6 @@ static RFIDReader rfid;
 
 // Magnetometer objects
 #if USE_MAGNETOMETER
-struct mag_config magConfig = {
-    .gain = MLX90393_GAIN_1X,
-    .resolution = MLX90393_RES_16,
-    .osr = MLX90393_OSR_0,
-    .filter = MLX90393_FILTER_3};
-Magnetometer magLeft(MAGNETOMETER_LEFT, magConfig);
-Magnetometer magRight(MAGNETOMETER_RIGHT, magConfig);
 MagnetometerManager magManager;
 #endif // USE_MAGNETOMETER
 
@@ -95,8 +88,7 @@ void setup()
 
   // Magnetometer initialization
 #if USE_MAGNETOMETER
-  magManager.add(&magRight);
-  magManager.add(&magLeft);
+  magManager.initMgr();
   int ret = magManager.initAll();
   if (ret)
   {
@@ -139,7 +131,7 @@ void loop()
   #if USE_JSON
   /*
   For now we only simulate route (caution: blocking while loop). It is recommended to replace this 
-  with a separate function that handles different types of json instructions. To keep main clean.
+  with a separate class method that handles different types of json instructions. To keep the main clean.
   */
   
   // Check if any messages are present and in need of updating in the queue.
