@@ -2,7 +2,7 @@
   {
     "id": "straight",
     "label": "straight line",
-    "imagePath": "/assets/straight.JPG",
+    "imagePath": "/assets/straight.png",
     "pathConnections": ["N", "S"],
     "pathNodes": [
       {
@@ -15,21 +15,21 @@
   {
     "id": "curve",
     "label": "curve",
-    "imagePath": "/assets/curve.JPG"
+    "imagePath": "/assets/curve.png"
   },
   {
     "id": "t_split",
     "label": "t split",
-    "imagePath": "/assets/t_split.JPG"
+    "imagePath": "/assets/t_split.png"
   },
   {
     "id": "cross_split",
     "label": "cross split",
-    "imagePath": "/assets/cross_split.JPG"
+    "imagePath": "/assets/cross_split.png"
   },
   {
     "id": "roundabout",
     "label": "roundabout",
-    "imagePath": "/assets/roundabout.JPG"
+    "imagePath": "/assets/roundabout.png"
   }
 ]

@@ -25,3 +25,4 @@ dist-ssr
 .vscode
 *.pio*
 */car_doc/*
+*.env

@@ -7,13 +7,15 @@ import { normalizeDegree } from '../utils/rotation.js';
 export async function fetchMapData() {
 
     try{
-        const [mapRes, compRes] = await Promise.all([
+        const [mapRes, compRes, rfidRes] = await Promise.all([
             fetch('/data/test-map.json'), 
-            fetch('/data/map-components.json')
+            fetch('/data/map-components.json'),
+            fetch('/data/rfid.json')
         ]);
 
         const mapData = await mapRes.json();
         const defsArray = await compRes.json();
+        const rfidData = await rfidRes.json();
         
         const componentDefinitions = defsArray.reduce((lookup, definition) => {
             lookup[definition.id] = definition;
@@ -22,7 +24,8 @@ export async function fetchMapData() {
 
         return {
             mapData,
-            componentDefinitions
+            componentDefinitions,
+            rfidData
         };
     } catch (error) {
             console.error("Fout bij laden mapdata in mapService:", error);
