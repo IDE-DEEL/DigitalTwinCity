@@ -1,19 +1,22 @@
 """
-----
-Environment manager script die controleert of alle environment variabelen ingesteld zijn.
-----
+Environment manager script that checks if all environment variables are set.
 
-Dit script wordt tijdens het compilen automatisch aangeroepen dus dit hoef je niet expliciet te doen. (Mag en kan wel)
 
-Wees wel alert dat er geen controles zitten op dat wat je invult logisch is. Als je "Boterkoek" als server IP adres meegeeft wordt dit geaccepteerd.
-Input sanitation zou dieper geïmplementeerd kunnen worden maar voor nu heb je alleen jezelf er mee als programmeur als je iets verkeerds meegeeft
-want dan gaat je software niet werken.
+This script checks for required environment variables needed for the project to run.
+If any are missing, it prompts the user to input the missing values and saves them to a .env file in the project root.
+This script is called automatically during the PlatformIO build process and does not have to be called manually, although it is possible.
+
+Be aware that there are no checks on the logic of what you input. If you provide "Boterkoek" as the server IP address, it will be accepted.
+Input sanitation could be implemented more deeply, but for now, you only have yourself to blame as a programmer if you provide something incorrect
+because then your software will not work.
+
 """
 Import("env")
 import os
 import sys
 
-# Vereiste environment variabelen. Als je meer wilt toevoegen moet je deze lijst uitbreiden.
+## Required environment variables configuration. 
+# Expand this list in case more variables are needed.
 REQUIRED = [
     {"name": "DEEL_WIFI_SSID", "prompt": "Wi-Fi SSID"},
     {"name": "DEEL_WIFI_PSK", "prompt": "Wi-Fi Password"},
@@ -21,21 +24,22 @@ REQUIRED = [
     {"name": "DEEL_SERVER_PSK", "prompt": "MQTT TLS-PSK (hex)"}
 ]
 
-# Pad naar .env bestand (relatief aan project root)
+## Path to .env file (relative to project root)
 PROJECT_DIR = env.get("PROJECT_DIR")
+## Path to .env file
 ENV_FILE = os.path.join(PROJECT_DIR, ".env")
 
 
 def load_env_file():
-    """Laad de variabelen uit .env file"""
+    """Load variables from .env file"""
     
-    # Als er geen bestand gevonden word gewoon een lege dict returnen zodat het duidelijk is dat er niks geset is.
+    # If no file is found, just return an empty dict so it's clear that nothing is set.
     if not os.path.exists(ENV_FILE):
         return {}
     
     values = {}
     with open(ENV_FILE, 'r', encoding='utf-8') as f:
-        # Loop door alle regels van het bestand en parse de waarden er uit.
+        # Loop through all lines of the file and parse the values.
         for line in f:
             line = line.strip()
             if line and not line.startswith('#') and '=' in line:
@@ -45,25 +49,25 @@ def load_env_file():
 
 
 def save_env_file(values):
-    """Sla de variabelen op in .env file"""
+    """Save variables to .env file"""
     with open(ENV_FILE, 'w', encoding='utf-8') as f:
         for key, value in values.items():
             f.write(f"{key}={value}\n")
 
 
 def check_and_prompt():
-    """Controleer of alle variabelen zijn ingesteld en prompt voor aanvulling waar nodig"""
+    """Check if all variables are set and prompt for input where needed"""
     current_values = load_env_file()
     missing = []
     
-    # Check of en zoja welke variabelen er missen
+    # Check which variables are missing
     for var in REQUIRED:
         if var["name"] not in current_values or not current_values[var["name"]]:
             missing.append(var)
     
     if not missing:
         print("All required environment variables are set in .env")
-        # Print alle variabelen maar censureer de wachtwoord achtige variabelen
+        # Print all variables but censor password like variables
         for var in REQUIRED:
             value = current_values[var["name"]]
             env.Append(CPPDEFINES=[(var["name"], env.StringifyMacro(value))],)
@@ -73,8 +77,8 @@ def check_and_prompt():
                 print(f"  {var['name']}: {value}")
         return True
     
-    # Als we op dit punt in de functie komen is de configuratie niet compleet dus moet er om aanvullig gevraagd worden.
-    # Dat moet even mooi geformat worden zodat het goed inblend in de platformio build flow.
+    # If we reach this point in the function, the configuration is not complete, so additional input is required.
+    # This should be nicely formatted so it blends well in the PlatformIO build flow.
     print("\n" + "="*60)
     print("CONFIGURATION REQUIRED")
     print("="*60)
@@ -85,20 +89,20 @@ def check_and_prompt():
     
     print("\n" + "="*60)
     
-    # Voor elk variabel dat mist wordt er gevraagd om deze aan te vullen
+    # For each missing variable, prompt the user to input a value
     for var in missing:
         print(f"Enter {var['prompt']}:")
         value = input()
         current_values[var["name"]] = value
     
-    # Sla de nieuwe waarden op in het bestand en loop recursief door deze functie tot alles op orde is. 
-    # In principe zou dit maar 1x kunnen gebeuren behalve als je .env handmatig tijdens runtime wijzigt.
+    # Save the new values to the file and recursively call this function until everything is in order.
+    # In principle, this should only happen once unless you manually change the .env during runtime.
     save_env_file(current_values)
     print("Updated .env file with missing variables.")
     check_and_prompt()
 
 
-# Run de check
+# Run the check
 print("\n[env_mgr] Checking environment configuration...")
 print(f"[env_mgr] Using python installation from {sys.prefix} and script was called by {sys.executable}")
 check_and_prompt()

@@ -15,16 +15,17 @@
 #include "Motion.hpp"
 #include "dirty_demo.hpp"
 
-#define USE_MQTT 1
-#define USE_RFID 0
-#define USE_MAGNETOMETER 0
-#define USE_PID 0
-#define USE_MOTION 0
-#define USE_JSON 1
+
+#define USE_MQTT 1 /**< Enables MQTT Related features.*/
+#define USE_RFID 0 /**< Enables RFID Related features.*/
+#define USE_MAGNETOMETER 0 /**< Enables Magnetometer Related features.*/
+#define USE_PID 0 /**< Enables PID Related features.*/
+#define USE_MOTION 0 /**< Enables Motion Control Related features.*/
+#define USE_JSON 1 /**< Enables JSON Reader Related features.*/
 
 // ---- Wi-Fi ----
-const char* WIFI_SSID = DEEL_WIFI_SSID;
-const char* WIFI_PASS = DEEL_WIFI_PSK;
+const char* WIFI_SSID = DEEL_WIFI_SSID; /**< Wi-Fi SSID, retrieved from environment manager*/
+const char* WIFI_PASS = DEEL_WIFI_PSK; /**< Wi-Fi Password, retrieved from environment manager*/
 
 // JSON reader instance
 #if USE_JSON
