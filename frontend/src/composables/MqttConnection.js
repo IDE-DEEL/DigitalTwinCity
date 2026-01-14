@@ -1,11 +1,12 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue';
-import {Client} from 'paho-mqtt';
+import {Client, Message} from 'paho-mqtt';
 import { convertTagToPosition } from '../logic/service/rfidTagMapper.js';
 
 // --- Configuratie ---
 const MQTT_HOST = '52.136.201.33'; 
 const MQTT_PORT = 9001;            
 const MQTT_TOPIC = 'test/to-web'; 
+const MAP_DIMENSION = 5.0;
 
 export function useMqttVehicle() {
     
