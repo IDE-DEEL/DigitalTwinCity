@@ -17,7 +17,7 @@
 
 
 #define USE_MQTT 1 /**< Enables MQTT Related features.*/
-#define USE_RFID 0 /**< Enables RFID Related features.*/
+#define USE_RFID 1 /**< Enables RFID Related features.*/
 #define USE_MAGNETOMETER 0 /**< Enables Magnetometer Related features.*/
 #define USE_PID 0 /**< Enables PID Related features.*/
 #define USE_MOTION 0 /**< Enables Motion Control Related features.*/
@@ -29,7 +29,7 @@ const char* WIFI_PASS = DEEL_WIFI_PSK; /**< Wi-Fi Password, retrieved from envir
 
 // JSON reader instance
 #if USE_JSON
-static JsonReader jsonReader("/rfid.json");
+static JsonReader jsonReader("/../rfid.json");
 #endif // USE_JSON
 
 #if USE_PID

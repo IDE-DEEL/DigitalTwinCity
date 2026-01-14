@@ -35,6 +35,8 @@ String RFIDReader::uidToHex(const MFRC522::Uid &uid)
     String hex = "";
     for (byte i = 0; i < uid.size; i++)
     {
+        if (i > 0)
+            hex += ":";
         if (uid.uidByte[i] < 0x10)
             hex += "0";
         hex += String(uid.uidByte[i], HEX);
@@ -56,8 +58,8 @@ String RFIDReader::poll()
         return String("");
     }
 
+    //String uidHex = mfrc522.uid;//= uidToHex(mfrc522.uid);
     String uidHex = uidToHex(mfrc522.uid);
-
     if (uidHex != lastUidHex || (millis() - lastPublishMs > reannounceMs))
     {
         lastUidHex = uidHex;

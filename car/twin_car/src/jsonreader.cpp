@@ -77,20 +77,19 @@ bool JsonReader::findTag(const String& uidHex, JsonDocument& resultDoc) {
         for (JsonPair binding : bindings) {
             const char* tag_id = binding.value().as<const char*>();
             if (String(tag_id) == uidHex) {
-                resultDoc["tag_id"] = tag_id;
-                resultDoc["tile_nr"] = tile_nr;
-                resultDoc["tag_index"] = binding.key().c_str();
-                resultDoc["template"] = template_name;
+                //resultDoc["tagid"] = tag_id;
+                resultDoc["tileNumber"] = tile_nr;
+                resultDoc["tagIndex"] = binding.key().c_str();
+                //resultDoc["template"] = template_name;
                 return true;
             }
         }
     }
     
     // Tag not found in database
-    resultDoc["tag_id"] = uidHex;
-    resultDoc["tile_nr"] = -1;
-    resultDoc["tag_index"] = "unknown";
-    resultDoc["template"] = "unknown";
+    //resultDoc["tag_id"] = uidHex;
+    resultDoc["tileNumber"] = -1;
+    resultDoc["tagIndex"] = "unknown";
     return false;
 }
 
