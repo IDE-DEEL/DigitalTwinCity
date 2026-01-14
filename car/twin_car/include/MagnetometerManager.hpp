@@ -16,10 +16,33 @@ class MagnetometerManager {
 public:
 
     /**
-     * @brief Add a Magnetometer instance to the manager.
-     * @param m Pointer to the Magnetometer instance to add.
+     * @brief Initialize a new Magnetometer Manager object
+     * @note Call this during setup()
+     * @return 0 on success or if already initialized. 
+     * 
+     * return is int type to accomodate future error handling.
      */
-    void add(Magnetometer* m) { _sensors.push_back(m); }
+    int initMgr(){
+        if (!_sensors.empty())
+        {
+            return 0; // Already initialized
+        }
+
+        struct mag_config magConfig = 
+        {
+            .gain = MLX90393_GAIN_1X,
+            .resolution = MLX90393_RES_16,
+            .osr = MLX90393_OSR_0,
+            .filter = MLX90393_FILTER_3
+        };
+        
+        enum mag_address mag_address_arr[] = {MAGNETOMETER_LEFT, MAGNETOMETER_RIGHT};
+        for (size_t i = 0; i < sizeof(mag_address_arr) / sizeof(mag_address_arr[0]); i++)
+        {
+            _sensors.push_back(new Magnetometer(mag_address_arr[i], magConfig));
+        }
+        return 0;
+    }
 
     /**
      * @brief Initialize all managed Magnetometer instances.

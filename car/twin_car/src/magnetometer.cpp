@@ -147,7 +147,7 @@ int Magnetometer::process()
 
     if ((long)_proc.max_filtered <= (long)_proc.min_filtered)
     {
-        _proc.max_filtered = _proc.min_filtered + 1.0;
+        _proc.max_filtered = _proc.min_filtered + 1.5;
     }
     
     return 0;

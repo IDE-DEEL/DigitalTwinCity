@@ -1,7 +1,9 @@
 <template>
   <div class="w-full p-3">
     <div class="border border-gray-400 rounded-lg w-full h-full bg-white flex items-center justify-center overflow-hidden">
-        <div class="relative aspect-square" :style="gridStyle">
+        <!-- Map Container -->
+        <div class="relative" :style="containerStyle">
+            <!-- Map grid -->
             <div class="map-grid" :style="gridStyle"> 
                 <div
                     v-for="component in mapComponents"
@@ -17,6 +19,7 @@
                     />
                 </div>
             </div> 
+            <!-- Lanes (kleur kan later worden weggehaald)-->
             <svg 
                 class="absolute inset-0 pointer-events-none"
                 :viewBox="`0 0 ${MAP_DIMENSION} ${MAP_DIMENSION}`"
@@ -28,11 +31,12 @@
                     :points="lane.points.map(p => `${p.x},${p.y}`).join(' ')"
                     fill="none"
                     stroke="blue"
-                    stroke-width="0.05"
+                    stroke-width="0.00"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                 />
             </svg>
+            <!-- Auto -->
                 <div
                     id="live-vehicle"
                     class="absolute bg-black rounded-full z-10"
@@ -49,27 +53,39 @@ import { ref, computed, onMounted } from 'vue';
 import { fetchMapData } from '../logic/service/mapService.js'; 
 import { buildLane } from '../logic/service/laneBuilder.js';
 import { useMqttVehicle } from '../composables/MqttConnection.js';
+import { normalizeDegree } from '../logic/utils/rotation.js';
+import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
 
-const { vehiclePosition } = useMqttVehicle();
+const { vehiclePosition,setupMqttClient } = useMqttVehicle();
 const mapData = ref([]); 
 const componentDefinitions = ref({}); 
-const isLoading = ref(true); 
-const mapGrid = ref(null);
+const isLoading = ref(true);
+// const mapGrid = ref(null); 
+const MAP_DIMENSION = 5;
+const MAX_MAP_SCALE = 70;
+
+// container style
+const containerStyle = computed(() => {
+    const dynamicSize = `${MAX_MAP_SCALE}vmin`; 
+    return {
+        width: dynamicSize,
+        height: dynamicSize,
+        position: 'relative'
+    };
+});
 
 // vehicle style
 const vehicleStyle = computed(() => {
     const xPercent = (vehiclePosition.value.x / MAP_DIMENSION) * 100;
     const yPercent = (vehiclePosition.value.y / MAP_DIMENSION) * 100;
-    const vehicleSize = '0.9rem';
-    const centerCorrection = '50%'; 
-    console.log(`Vehicle Position - X: ${vehiclePosition.value.x}, Y: ${vehiclePosition.value.y}, Rotation: ${vehiclePosition.value.rotation}`);
+    const vehicleSize = '12px';
 
     return {
         width: vehicleSize, 
         height: vehicleSize,
-        left: `calc(${xPercent}% - ${vehicleSize} / 2)`,
-        top: `calc(${yPercent}% - ${vehicleSize} / 2)`,
-        transform: `translate(-${centerCorrection}, -${centerCorrection}) rotate(${vehiclePosition.value.rotation}deg)`,
+        left: `calc(${xPercent}% - ${parseInt(vehicleSize)/2}px)`,
+        top: `calc(${yPercent}% - ${parseInt(vehicleSize)/2}px)`,
+        transform: `rotate(${vehiclePosition.value.rotation}deg)`,
         transition: 'all 0.5s linear'
     };
 });
@@ -77,15 +93,12 @@ const vehicleStyle = computed(() => {
 
 // gridstyle
 const gridStyle = computed(() => {
-    const dynamicSize = `${MAX_MAP_SCALE}vmin`; 
-
     return {
         display: 'grid',
         gridTemplateColumns: `repeat(${MAP_DIMENSION}, 1fr)`,
         gridTemplateRows: `repeat(${MAP_DIMENSION}, 1fr)`,
-
-        width: dynamicSize,
-        height: dynamicSize,
+        width: '100%',
+        height: '100%',
     };
 });
 
@@ -127,10 +140,14 @@ const getComponentPosition = (component) => {
 };
 
 onMounted(async () => {
+    setupMqttClient();
     try {
         const data = await fetchMapData(); 
         mapData.value = data.mapData;
         componentDefinitions.value = data.componentDefinitions;
+        
+        // Initialize the RFID mapper with loaded data
+        initRfidMapper(data.mapData, data.rfidData);
     } catch (error) {
         console.error("Fout bij het laden:", error);
     } finally {

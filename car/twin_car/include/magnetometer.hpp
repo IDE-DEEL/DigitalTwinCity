@@ -15,34 +15,52 @@
 // Do not touch this assert
 static_assert(MEDIAN_FILTER_ALPHA <= 1.0f, "MEDIAN_FILTER_ALPHA must be smaller or equal to 1.0f");
 
+/** @brief Configuration structure for magnetometer settings */
 struct mag_config {
-    mlx90393_gain_t gain; /** Magnetometer gain */
-    mlx90393_resolution_t resolution; /** Magnetometer resolution */
-    mlx90393_oversampling_t osr; /** Magnetometer oversampling */
-    mlx90393_filter_t filter; /** Magnetometer filter */
+    /** Magnetometer gain */
+    mlx90393_gain_t gain; 
+    /** Magnetometer resolution */
+    mlx90393_resolution_t resolution;
+    /** Magnetometer oversampling */
+    mlx90393_oversampling_t osr; 
+    /** Magnetometer filter */
+    mlx90393_filter_t filter; 
 };
 
+/** @brief Enumeration of magnetometer I2C addresses */
 enum mag_address : uint8_t {
-    MAGNETOMETER_LEFT = 0x0E, /** I2C address of left magnetometer sensor */
-    MAGNETOMETER_RIGHT = 0x0C /** I2C address of right magnetometer sensor */
+    /** I2C address of left magnetometer sensor */
+    MAGNETOMETER_LEFT = 0x0C, 
+    /** I2C address of right magnetometer sensor */
+    MAGNETOMETER_RIGHT = 0x0E 
 };
 
+/** @brief Structure for raw magnetometer sample data */
 struct mag_sample_raw {
-    float x; /** Raw X coordinate */
-    float y; /** Raw Y coordinate */
-    float z; /** Raw Z coordinate */
+    /** Raw X coordinate */
+    float x; 
+    /** Raw Y coordinate */
+    float y; 
+    /** Raw Z coordinate */
+    float z; 
 };
 
+/** @brief Structure for processed magnetometer sample data */
 struct mag_sample_processed {
-    float magnitude; /** Processed magnitude */
-    float filtered; /** Filtered magnitude */
-    float max_filtered; /** Maximum filtered magnitude */
-    float min_filtered; /** Minimum filtered magnitude */
+    /** Processed magnitude */
+    float magnitude; 
+    /** Filtered magnitude */
+    float filtered; 
+    /** Maximum filtered magnitude */
+    float max_filtered; 
+    /** Minimum filtered magnitude */
+    float min_filtered; 
 };
 
 /**
  * @brief Magnetometer class
- * \example initialization, calibration, reading, and processing of magnetometer data.
+ * 
+ * Initialization, calibration, reading, and processing of magnetometer data.
  * Uses Adafruit_MLX90393 as the underlying sensor interface.
  * Managed via MagnetometerManager for multiple sensors.
  * Class flow:

@@ -14,6 +14,19 @@ void RFIDReader::begin()
     Serial.println("SPI initialized");
     mfrc522.PCD_Init();
     delay(50);
+    Serial.printf("Resetting MFRC522\n");
+    mfrc522.PCD_DumpVersionToSerial();
+    mfrc522.PCD_Reset();
+    Serial.printf("Performing self-test\n");
+    if (!mfrc522.PCD_PerformSelfTest())
+    {
+        Serial.println("MFRC522 self-test failed!");
+    }
+    else
+    {
+        Serial.println("MFRC522 self-test passed.");
+    }
+    
     Serial.println("MFRC522 init done");
 }
 
@@ -22,6 +35,8 @@ String RFIDReader::uidToHex(const MFRC522::Uid &uid)
     String hex = "";
     for (byte i = 0; i < uid.size; i++)
     {
+        if (i > 0)
+            hex += ":";
         if (uid.uidByte[i] < 0x10)
             hex += "0";
         hex += String(uid.uidByte[i], HEX);
@@ -32,7 +47,7 @@ String RFIDReader::uidToHex(const MFRC522::Uid &uid)
 
 String RFIDReader::poll()
 {
-    // Als dezelfde kaart lang blijft liggen, reset lastUid na timeout zodat opnieuw gepusht kan worden
+    // If the same card remains present, reset lastUid after timeout to allow republishing
     if (!mfrc522.PICC_IsNewCardPresent() || !mfrc522.PICC_ReadCardSerial())
     {
         if (lastUidHex.length() && (millis() - lastPublishMs > reannounceMs))
@@ -43,8 +58,8 @@ String RFIDReader::poll()
         return String("");
     }
 
+    //String uidHex = mfrc522.uid;//= uidToHex(mfrc522.uid);
     String uidHex = uidToHex(mfrc522.uid);
-
     if (uidHex != lastUidHex || (millis() - lastPublishMs > reannounceMs))
     {
         lastUidHex = uidHex;
@@ -59,13 +74,14 @@ String RFIDReader::poll()
         uidHex = String("");
     }
 
-    // Kaart netjes stoppen
+    // Properly stop the card
     mfrc522.PICC_HaltA();
     mfrc522.PCD_StopCrypto1();
+    Serial.printf("RFID UID detected: %s\n", uidHex.c_str());
     return uidHex;
 }
 
-void RFIDReader::publishRFID(MQTTWrapper &mqtt, const String &uidHex)
+void RFIDReader::publishRFID(Connectivity &mqtt, const String &uidHex)
 {
     // JSON payload: {"uid":"ABCD1234","ms":123456}
     String payload = "{\"uid\":\"" + uidHex + "\",\"ms\":" + String(millis()) + "}";

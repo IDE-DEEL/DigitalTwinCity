@@ -1,5 +1,3 @@
-// src/Connectivity.cpp
-
 #include "Connectivity.hpp"
 #include <WiFi.h>
 
@@ -33,7 +31,9 @@ bool Connectivity::connectMqtt()
     _tlsClient.setPreSharedKey(PSK_IDENTITY, PSK_HEX);
 
     _mqtt.setServer(BROKER_HOST, BROKER_PORT);
-    _mqtt.setCallback(Connectivity::onMqttMessageStatic);
+    _mqtt.setCallback([this](char* topic, byte* payload, unsigned int len) {
+        this->onMqttMessage(topic, payload, len);
+    });
 
     Serial.printf("MQTT: connecting to %s:%u ...\n", BROKER_HOST, BROKER_PORT);
     if (!_mqtt.connect(MQTT_CLIENT_ID))
@@ -44,9 +44,7 @@ bool Connectivity::connectMqtt()
 
     Serial.println("MQTT: connected (TLS-PSK)");
     _mqtt.subscribe(SUB_TOPIC_CMD, 1);
-    // Geen "(rfid ready)" meer, deze klasse weet niets van specifieke sensoren.
-    _mqtt.publish(PUB_TOPIC_OUT, "esp32 online", true);
-
+    Serial.printf("MQTT: subscribed to %s\n", SUB_TOPIC_CMD);
     _defaultPubTopic = PUB_TOPIC_OUT;
 
     return true;
@@ -67,7 +65,7 @@ void Connectivity::loop()
     // MQTT
     if (!_mqtt.connected())
     {
-        if (millis() - _lastMqttRetry > 3000)
+        if (millis() - _lastMqttRetry > MQTT_RETRY_TIME_MS)
         {
             _lastMqttRetry = millis();
             (void)connectMqtt();
@@ -86,7 +84,7 @@ bool Connectivity::publish(const char* topic, const char* payload, bool retained
 
 bool Connectivity::publish(const char* topic, const String& payload, bool retained)
 {
-    return _mqtt.publish(topic, payload.c_str(), retained);
+    return _mqtt.publish(topic, payload.c_str(), false);
 }
 
 void Connectivity::setDefaultPubTopic(const char* topic)
@@ -98,7 +96,7 @@ bool Connectivity::publishDefault(const String& payload, bool retained)
 {
     if (!_defaultPubTopic)
         return false;
-    return publish(_defaultPubTopic, payload, retained);
+    return publish(_defaultPubTopic, payload, false);
 }
 
 bool Connectivity::connected()
@@ -109,19 +107,50 @@ bool Connectivity::connected()
 int Connectivity::state()
 {
     return _mqtt.state();
+
 }
 
-void Connectivity::onMqttMessageStatic(char* topic, byte* payload, unsigned int len)
+int Connectivity::getMessage(String &message)
 {
-    // default handler : loggen naar Serial.
-    Serial.printf("MQTT <- [%s]\n", topic);
-    Serial.println(String(reinterpret_cast<const char*>(payload), len));
+    if (_firstMessageProcessing)
+    {
+        Serial.printf("Error: Previous message not yet marked as processed!\n");
+        return -EBUSY;
+    }
+    if (_messageQueue.empty()) {
+        return 0;
+    } else {
+        Serial.printf("First message of %d retrieved\n", _messageQueue.size());
+        _firstMessageProcessing = true;
+        message = _messageQueue.front();
+        
+        if (message.length() == 0)
+        {
+            eraseProcessedMessage();
+        }
+        
+        return message.length();
+    }
 }
+
+void Connectivity::eraseProcessedMessage(){
+    if (!_firstMessageProcessing)
+    {
+        return;
+    }
+    
+    _messageQueue.erase(_messageQueue.begin());
+    Serial.printf("First message processed and removed from queue. %d messages remaining in queue\n", _messageQueue.size());
+    _firstMessageProcessing = false;
+}
+
 
 void Connectivity::onMqttMessage(char* topic, byte* payload, unsigned int len)
 {
-    // Instance specifieke handler voor als dat later nodig is
-    (void)topic;
-    (void)payload;
+    Serial.printf("MQTT <- [%s]\n", topic);
+    Serial.println(String(reinterpret_cast<const char*>(payload), len));
+
+    _messageQueue.push_back(String(reinterpret_cast<const char*>(payload), len));
+    
     (void)len;
 }

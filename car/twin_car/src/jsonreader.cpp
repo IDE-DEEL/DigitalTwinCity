@@ -5,7 +5,7 @@
 extern const char rfid_json_start[] asm("_binary_include_rfid_json_start");
 extern const char rfid_json_end[]   asm("_binary_include_rfid_json_end");
 
-JsonReader::JsonReader(const char* filePath) : _filePath(filePath) {
+JsonReader::JsonReader(const char* filePath) : _filePath(filePath){
 }
 
 bool JsonReader::begin() {
@@ -66,33 +66,71 @@ bool JsonReader::save() {
 }
 
 bool JsonReader::findTag(const String& uidHex, JsonDocument& resultDoc) {
-    JsonArray tags = _doc["rfid_tags"];
-    for (JsonObject tag : tags) {
-        if (tag["tag_id"] == uidHex) {
-            resultDoc["tag_id"] = tag["tag_id"];
-            resultDoc["name"] = tag["name"];
-            resultDoc["location"] = tag["location"];
-            return true;
+    JsonArray tiles = _doc["tiles"];
+    
+    for (JsonObject tile : tiles) {
+        int tile_nr = tile["tile_nr"];
+        const char* template_name = tile["template"];
+        JsonObject bindings = tile["bindings"];
+        
+        // Search through all bindings in this tile
+        for (JsonPair binding : bindings) {
+            const char* tag_id = binding.value().as<const char*>();
+            if (String(tag_id) == uidHex) {
+                //resultDoc["tagid"] = tag_id;
+                resultDoc["tileNumber"] = tile_nr;
+                resultDoc["tagIndex"] = binding.key().c_str();
+                //resultDoc["template"] = template_name;
+                return true;
+            }
         }
     }
-    return false;    
+    
+    // Tag not found in database
+    //resultDoc["tag_id"] = uidHex;
+    resultDoc["tileNumber"] = -1;
+    resultDoc["tagIndex"] = "unknown";
+    return false;
 }
 
-bool JsonReader::addTag(const String& uid, const String& name, const String& location) {
-    // Check if tag already exists to avoid duplicates (optional but recommended)
-    JsonArray tags = _doc["rfid_tags"];
-
-    // Add new tag
-    JsonObject newTag = tags.add<JsonObject>();
-    newTag["tag_id"] = uid;
-    newTag["name"] = name;
-    newTag["location"] = location;
-
-    return save();
+bool JsonReader::addTag(const String& uid, int tile_nr, const char* tag_index) {
+    // Find the tile and add the binding
+    JsonArray tiles = _doc["tiles"];
+    
+    for (JsonObject tile : tiles) {
+        if (tile["tile_nr"] == tile_nr) {
+            JsonObject bindings = tile["bindings"];
+            bindings[tag_index] = uid;
+            return save();
+        }
+    }
+    
+    Serial.println("Tile not found, cannot add tag");
+    return false;
 }
 
 JsonDocument& JsonReader::getDocument() {
     return _doc;
+}
+
+enum road_types JsonReader::get_road_type_from_tag(const String& template_name) {
+    Serial.println("Getting road type from template name: " + template_name);
+    if (template_name == "STRAIGHT") {
+        return STRAIGHT;
+    } else if (template_name == "CURVE") {
+        return CURVE;
+    } else if (template_name == "ROUNDABOUT") {
+        return ROUNDABOUT;
+    } else if (template_name == "T_JUNCTION") {
+        return T_JUNCTION;
+    } else if (template_name == "CROSSROAD") {
+        return CROSSROAD;
+    } else if (template_name == "START") {
+        return STRAIGHT; // Treat START as STRAIGHT
+    } else {
+        // Default case or unknown template
+        return STRAIGHT;
+    }
 }
 
 bool JsonReader::restoreFactoryDefaults() {
