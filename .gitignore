@@ -24,5 +24,6 @@ dist-ssr
 *.sw?
 .vscode
 *.pio*
-*/car_doc/*
+*/car_doc/html/*
+*/car_doc/latex/*
 *.env
