@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <MFRC522.h>
-#include "mqtt.hpp"
+#include "connectivity.hpp"
 
 #define SPI_SCK 26
 #define SPI_MISO 33
@@ -14,6 +14,15 @@
 
 /**
  * @brief Simple RFID reader wrapper for MFRC522-based readers.
+ * Responsible for:
+ * - Initializing the MFRC522 reader
+ * - Polling for new RFID cards
+ * 
+ * Usage:
+ * 1. Create instance: RFIDReader rfidReader;
+ * 2. Call rfidReader.begin() in setup()
+ * 3. Use rfidReader.poll() in loop() to check for new cards
+ * 
  */
 class RFIDReader {
 public:
@@ -37,10 +46,10 @@ public:
 
 	/**
 	 * Publish the detected RFID UID via MQTT in JSON format.
-	 * @param mqtt Reference to an existing MQTTWrapper instance for publishing.
+	 * @param mqtt Reference to an existing Connectivity instance for publishing.
 	 * @param uidHex Hexadecimal string of the detected RFID UID.
 	 */
-	void publishRFID(MQTTWrapper& mqtt, const String& uidHex);
+	void publishRFID(Connectivity& mqtt, const String& uidHex);
 
 private:
 

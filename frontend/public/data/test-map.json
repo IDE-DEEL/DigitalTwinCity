@@ -1,0 +1,25 @@
+[
+  {"x": 0, "y": 0, "type": "curve", "rotation": 270, "tileNumber": 20},    
+  {"x": 1, "y": 0, "type": "t_split", "rotation": 180, "tileNumber": 16}, 
+  {"x": 2, "y": 0, "type": "straight", "rotation": 0, "tileNumber": 12},  
+  {"x": 3, "y": 0, "type": "straight", "rotation": 0, "tileNumber": 8}, 
+  {"x": 4, "y": 0, "type": "curve", "rotation": 0, "tileNumber": 4},   
+
+  {"x": 0, "y": 1, "type": "t_split", "rotation": 90, "tileNumber": 19},
+  {"x": 1, "y": 1, "type": "roundabout", "rotation": 0, "tileNumber": 15}, 
+  {"x": 2, "y": 1, "type": "curve", "rotation": 0, "tileNumber": 11}, 
+  {"x": 3, "y": 1, "type": "curve", "rotation": 270, "tileNumber": 7},
+  {"x": 4, "y": 1, "type": "t_split", "rotation": 270, "tileNumber": 3},
+
+  {"x": 0, "y": 2, "type": "straight", "rotation": 90, "tileNumber": 18},
+  {"x": 1, "y": 2, "type": "curve", "rotation": 180, "tileNumber": 14},
+  {"x": 2, "y": 2, "type": "cross_split", "rotation": 0, "tileNumber": 10},
+  {"x": 3, "y": 2, "type": "t_split", "rotation": 270, "tileNumber": 6},
+  {"x": 4, "y": 2, "type": "straight", "rotation": 90, "tileNumber": 2},
+
+  {"x": 0, "y": 3, "type": "curve", "rotation": 180, "tileNumber": 17},
+  {"x": 1, "y": 3, "type": "straight", "rotation": 180, "tileNumber": 13},
+  {"x": 2, "y": 3, "type": "t_split", "rotation": 0, "tileNumber": 9},
+  {"x": 3, "y": 3, "type": "t_split", "rotation": 0, "tileNumber": 5},
+  {"x": 4, "y": 3, "type": "curve", "rotation": 90, "tileNumber": 1}
+]

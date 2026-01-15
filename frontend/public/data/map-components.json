@@ -1,0 +1,35 @@
+[
+  {
+    "id": "straight",
+    "label": "straight line",
+    "imagePath": "/assets/straight.png",
+    "pathConnections": ["N", "S"],
+    "pathNodes": [
+      {
+        "from": "N",
+        "to": "S", 
+        "coords": [[0.5, 0.0],[0.5, 1.0]]}
+    ]
+
+  },
+  {
+    "id": "curve",
+    "label": "curve",
+    "imagePath": "/assets/curve.png"
+  },
+  {
+    "id": "t_split",
+    "label": "t split",
+    "imagePath": "/assets/t_split.png"
+  },
+  {
+    "id": "cross_split",
+    "label": "cross split",
+    "imagePath": "/assets/cross_split.png"
+  },
+  {
+    "id": "roundabout",
+    "label": "roundabout",
+    "imagePath": "/assets/roundabout.png"
+  }
+]
