@@ -1,6 +1,7 @@
 ---
 name: Learning Story
 about: Learning Story 
+label: learning story
 ---
 
 ## Learning Story
@@ -13,9 +14,21 @@ about: Learning Story
 
 ---
 
+<!-- Voer hier je taken in en converteer naar sub issues -->
+- []
+
 ## Acceptatiecriteria
-- [ ] ...
+
+- ...
 
 ---
 
-## Story points
+## Definition of Done 
+
+- Requiremets zijn geïmplementeerd
+- Documentatie is bijgewerkt in Nederlandse taal
+- Comments in code zijn Engels 
+- Acceptatiecriteria zijn voldaan
+- Je werk is gereviewd door een peer
+
+--- 

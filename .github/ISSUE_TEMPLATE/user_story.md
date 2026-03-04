@@ -1,6 +1,7 @@
 ---
 name: User Story
 about: User Story 
+label: user story
 ---
 
 ## User Story
@@ -13,10 +14,26 @@ about: User Story
 
 ---
 
+<!-- Voer hier je taken in en converteer naar sub issues -->
+- []
+
 ## Acceptatiecriteria
-- [ ] ...
+
+- ...
 
 ---
+
+## Definition of Done 
+
+- Requiremets zijn geïmplementeerd
+- Documentatie is bijgewerkt in Nederlandse taal
+- Comments in code zijn Engels 
+- Acceptatiecriteria zijn voldaan
+- Je werk is gereviewd door een peer
+
+--- 
+
+
 
 ## SDG
 (Verwijder alle SDG's uit deze lijst behalve de SDG's van toepassing, en deze tekst)

@@ -1,16 +1,16 @@
 ---
-name: Enabler Story
-about: Enabler Story
-label: enabler story
+name: Research Story
+about: Research Story 
+label: research story
 ---
 
-## Enabler Story
+## Research Story
 
-(Enabler story)
+(Research story)
 
 ## Beschrijving
 
-(beschrijf hier de enabler story)
+(beschrijf hier de research story)
 
 ---
 
