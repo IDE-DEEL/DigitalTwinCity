@@ -25,8 +25,8 @@ label: enabler story
 
 ## Definition of Done 
 
-- Requiremets zijn geïmplementeerd
-- Documentatie is bijgewerkt in Nederlandse taal
+- Requirements zijn geïmplementeerd
+- Documentatie is bijgewerkt in de Nederlandse taal
 - Comments in code zijn Engels 
 - Acceptatiecriteria zijn voldaan
 - Je werk is gereviewd door een peer
