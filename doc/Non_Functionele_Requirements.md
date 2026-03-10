@@ -16,8 +16,8 @@ Waar de functionele requirements (FR) laten zien wat een systeem moet doen, late
 | FR_N04 | NFR_N4.2 | De robot stopt automatisch als een obstakel binnen **5 cm** komt. |
 | FR_N05 | NFR_N5.1 | Het route-algoritme bepaalt de optimale route binnen **3 seconden**. |
 | FR_N06 | NFR_N6.1 | De RFID-scanner bevindt zich aan de onderzijde van de robot voor optimale detectie. |
-| FR_N06 | NFR_N6.2 | Wanneer de robot over een RFID-tag rijdt, wordt deze **1 seconde** gereserveerd. |
-| FR_N07 | NFR_N7.1 | Een gereserveerd baanvlak wordt vrijgegeven als het niet binnen **1 seconde** opnieuw wordt gescand. |
+| FR_N06 | NFR_N6.2 | Wanneer de robot over een RFID-tag rijdt, wordt deze **3 seconde** gereserveerd. |
+| FR_N07 | NFR_N7.1 | Een gereserveerd baanvlak wordt vrijgegeven als het niet binnen **3 seconde** opnieuw wordt gescand. |
 | FR_N08 | NFR_N8.1 | De robotsoftware is modulair opgebouwd zodat extra sensoren en toepassingen eenvoudig kunnen worden toegevoegd. |
 | FR_N09 | NFR_N9.1 | De robot weet waar andere robots zich bevinden met een nauwkeurigheid van **≤5 cm**. |
 | FR_N09 | NFR_N9.2 | Robots kunnen hun route aanpassen op basis van de realtime locatie van andere robots. |
