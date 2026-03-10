@@ -35,7 +35,7 @@ De functionele requirements laten duidelijk zien wat de opdrachtgever als verwac
 | FR_S06 | De code is onderhoudbaar volgens coding standaarden en principes (SOLID, ICE, etc.) (ISO 25010 - Maintainability) | Must have |
 | FR_S07 | Er zijn unit tests voor business rules, bijvoorbeeld het berekenen van snelheid | Should have |
 | FR_S08 | De website toont resultaten zoals een score of prestatie-indicatoren op basis van simulatie-uitkomsten | Should have |
-| FR_S09 | Parametergegevens en scores worden opgeslagen voor latere analyse | Could have |
+| FR_S09 | Parametergegevens en scores worden opgeslagen voor latere analyse | Should have |
 
 ---
 
