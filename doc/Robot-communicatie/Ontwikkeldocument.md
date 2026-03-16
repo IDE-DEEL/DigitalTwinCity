@@ -79,34 +79,63 @@ Dit project richt zich op het opzetten van betrouwbare communicatie tussen de *
 | Rationale           |                                                                                             |
 | Business prioriteit | Must have                                                                                   |
 
-| Naam                | ``F02 - Aansturing``                                       |
+| Naam                | `F02 - Multi-robot identificatie & adressering`                                                                       |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Omschrijving        | Het systeem moet meerdere robots uniek kunnen identificeren en per robot aparte MQTT topics/kanalen kunnen gebruiken. |
+| Rationale           | Voorkomt dat commando’s/data van verschillende robots door elkaar lopen en maakt gerichte aansturing mogelijk.        |
+| Business prioriteit | Must have                                                                                                             |
+
+| Naam                | ``F03 - Aansturing``                                       |
 | ------------------- | ---------------------------------------------------------- |
 | Omschrijving        | De robot moet aangestuurd kunnen worden vanaf de frontend. |
 | Rationale           |                                                            |
 | Business prioriteit | Must have                                                  |
 
-| Naam                | ``F03 - data feedback``                                                                                                                    |
+| Naam                | ``F04 - data feedback``                                                                                                                    |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | Omschrijving        | De robot moet data kunnen sturen naar de backand zodat deze opgeslagen kan worden in de database en kan worden weergegeven op de frontend. |
 | Rationale           |                                                                                                                                            |
 | Business prioriteit | Must have                                                                                                                                  |
 
+| Naam                | `F05 - Verbinding bewaken & automatisch herverbinden`                                                                            |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Omschrijving        | De robot moet de MQTT/connectiviteit continu bewaken (heartbeat/status) en bij verbindingsverlies automatisch opnieuw verbinden. |
+| Rationale           | Zorgt voor betrouwbaarheid tijdens tests en beperkt uitval door tijdelijke netwerkproblemen.                                     |
+| Business prioriteit | Must have                                                                                                                        |
 
+| Naam                | `F06 - Security (authenticatie + encryptie)`                                                                 |
+| ------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Omschrijving        | De communicatie tussen robot, backend en MQTT broker moet beveiligd zijn met authenticatie en versleuteling. |
+| Rationale           | Voorkomt ongeautoriseerde toegang en manipulatie van robots/telemetrie.                                      |
+| Business prioriteit | Must have                                                                                                    |
+
+| Naam                | `F7 - Configuratie op afstand (parameters updaten)`                                                                                                               |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Omschrijving        | De robot moet configuratieparameters (bijv. snelheid-limieten, update-frequentie, topic-namen) op afstand kunnen ontvangen en toepassen via de communicatie-laag. |
+| Rationale           | Maakt snelle iteratie tijdens testen mogelijk zonder telkens fysiek in te grijpen.                                                                                |
+| Business prioriteit | Should have                                                                                                                                                       |
+
+| Naam                | `F8 - Rate limiting & flood protection`                                                                                                   |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Omschrijving        | De communicatie-laag moet rate limiting toepassen op commando’s en telemetrie om overbelasting van robot, broker of netwerk te voorkomen. |
+| Rationale           | Voorkomt vertragingen/packet loss wanneer meerdere robots tegelijk veel data sturen.                                                      |
+| Business prioriteit | Could have                                                                                                                                |
 ### Niet-Functionele Requirements
 
-``Beschrijf de relevante Niet-Functionele Requirements``
+| Naam                | ``NF01 - Locatie update``                              |
+| ------------------- | ------------------------------------------------------ |
+| Omschrijving        | De robot stuurt minimaal 1x per seconden zijn locatie. |
+| Rationale           | Zo is altijd bekend waar de robot zich bevind.         |
+| Business prioriteit | Must have                                              |
 
-| Naam                | ``NF03 - Betrouwbaarheid``                                                                                                           |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Omschrijving        | ``quantificeerbare of anderszins meetbare omschrijving ``                                                                            |
-| Rationale           | ``reden: wat zou er anders mis gaan?``                                                                                               |
-| Business prioriteit | ``MoSCoW. Deze regel alleen gebruiken bij niet quantificeerbare opdrachtgever-bepaalde ontwerp/realisatie keuzes, anders weglaten.`` |
-
-``etc..``
 
 ### Constraints
 
-Op dit moment zijn er geen constraints.
+| Naam         | ``C02 - Gebruik MQTT``                  |
+| ------------ | --------------------------------------- |
+| Omschrijving | Het systeem moet mqtt gebruiken.        |
+| Rationale    | Dit is al opgezet door de vorige groep. |
+
 ### Use Cases
 
 `` Een of meerdere use case diagram(men) met bijbehorende use case beschrijvingen ``
