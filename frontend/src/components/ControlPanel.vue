@@ -1,5 +1,3 @@
-<!-- All the elements will be responsive later, for now only visual -->
-
 <template>
     <aside class="w-[320px] bg-cream text-dark p-6 flex flex-col gap-6 text-sm rounded-tl-2xl">
 
@@ -67,13 +65,59 @@
                 </div>
             </div>
         </div>
+
+        <!-- Simulation controls -->
+        <div class="mt-auto pt-4 border-t border-gray-200">
+            <!-- Score & time -->
+            <div class="flex items-center gap-4 mb-2 justify-center">
+                <div class="flex items-center gap-2"><span>Score:</span><span>0</span></div>
+                <div class="flex items-center gap-2"><span>Tijd:</span><span>00:00</span></div>
+            </div>
+            <!-- Start/Stop buttons -->
+            <div class="flex gap-2 justify-center">
+                <button 
+                    @click="handleStart"
+                    :disabled="isSimulating"
+                    :class="[
+                      'rounded-sm w-24 h-10 transition-colors',
+                      isSimulating 
+                        ? 'bg-gray-300 cursor-not-allowed' 
+                        : 'bg-sky-200 hover:bg-sky-700'
+                    ]"
+                >
+                    Start
+                </button>
+                <button 
+                    @click="handleStop"
+                    :disabled="!isSimulating"
+                    :class="[
+                      'rounded-sm w-24 h-10 transition-colors',
+                      !isSimulating 
+                        ? 'bg-gray-300 cursor-not-allowed' 
+                        : 'bg-red-200 hover:bg-red-700'
+                    ]"
+                >
+                    Stop
+                </button>
+            </div>
+        </div>
     </aside>
 </template>   
 
 <script setup>
 import { ref } from 'vue'
 
-const speed = ref(60)
+const speed = ref(50)
 const turn = ref(10)
 const scenario = ref('Scenario 1')
+
+const handleStart = () => {
+    // TODO: implement start logic, update isSimulating state if connection websocket is made and simulation actually starts
+    console.log('Simulation gestart');
+}
+
+const handleStop = () => {
+    // TODO: implement stop logic, update isSimulating state
+    console.log('Simulation gestopt');
+}
 </script>
