@@ -1,9 +1,10 @@
 FROM python:3.14.3-slim
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-WORKDIR /app
+WORKDIR /app/backend
 
 ENV UV_LINK_MODE=copy
+ENV PYTHONPATH=/app
 
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-cache
