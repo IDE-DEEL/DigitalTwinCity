@@ -11,7 +11,6 @@
       <!-- Simulation area + Bottom bar -->
       <div class="flex flex-col flex-1 overflow-hidden bg-white p-3">
         <SimulationDisplay class="flex-1 pb-2.5" />
-        <BottomBar class="h-20 pt-2.5"/>
       </div>
 
       <!-- Control Panel -->
@@ -28,5 +27,4 @@
 import TopBar from './components/TopBar.vue'
 import SimulationDisplay from './components/SimulationDisplay.vue'
 import ControlPanel from './components/ControlPanel.vue'
-import BottomBar from './components/BottomBar.vue'
 </script>
