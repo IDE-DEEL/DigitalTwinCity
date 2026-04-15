@@ -145,9 +145,30 @@ function removeCar() {
 }
 // --- end of car management logic ---
 
+// --- start gathering parameter settings for simulation start logic ---
+const collectParameters = () => {
+    const carSettings = cars.value.map(car => ({
+        id: car.id,
+        packageCount: car.packageCount,
+        route: car.route,
+    }));
+
+    const simulationSettings = {
+        carSpeed: carSpeed.value,
+        scenario: scenario.value,
+    };
+
+    return {
+        carSettings,
+        simulationSettings
+    };
+}
+// --- end gathering parameter settings for simulation start logic ---
+
 const handleStart = () => {
     // TODO: implement start logic, update isSimulating state if connection websocket is made and simulation actually starts
     console.log('Simulation gestart');
+    console.log('Parameters:', collectParameters());
 }
 
 const handleStop = () => {
