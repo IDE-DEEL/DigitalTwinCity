@@ -2,7 +2,6 @@ from typing import Optional
 from sqlalchemy.orm import Session
 from backend.domain.results import Results
 
-
 class ResultsRepository:
     def __init__(self, db: Session):
         self.db = db
