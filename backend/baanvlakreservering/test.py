@@ -43,6 +43,33 @@ def log_car_rfid(db: Database, car_id: str, rfid_tag: str) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Read function (RFID)
+# ---------------------------------------------------------------------------
+
+def read_rfid(db: Database, car_id: str) -> str | None:
+    """
+    Fetch the most recent RFID tag scanned by a given car.
+    Returns the RFID tag or None if no records exist.
+    """
+    row = db.fetch_one(
+        """
+        SELECT rfid_tag
+        FROM car_logs
+        WHERE car_id = %s
+        ORDER BY created_at DESC
+        LIMIT 1
+        """,
+        (car_id,),
+    )
+
+    if row is None:
+        return None
+
+    (rfid_tag,) = row
+    return rfid_tag
+
+
+# ---------------------------------------------------------------------------
 # Read function (car commands)
 # ---------------------------------------------------------------------------
 
@@ -66,6 +93,27 @@ def get_car_command(db: Database, car_id: str) -> tuple[int, bool] | None:
     direction, allowed = row
     return direction, allowed
 
+# ---------------------------------------------------------------------------
+# Write function (set car command)
+# ---------------------------------------------------------------------------
+
+def set_car_command(db: Database, car_id: str, direction: int, allowed_to_drive: bool) -> None:
+    """
+    Insert or update the command for a given car.
+    """
+    db.execute(
+        """
+        INSERT INTO car_commands (car_id, direction, allowed_to_drive, updated_at)
+        VALUES (%s, %s, %s, CURRENT_TIMESTAMP)
+        ON CONFLICT (car_id)
+        DO UPDATE SET
+            direction = EXCLUDED.direction,
+            allowed_to_drive = EXCLUDED.allowed_to_drive,
+            updated_at = CURRENT_TIMESTAMP
+        """,
+        (car_id, direction, allowed_to_drive),
+    )
+
 
 # ---------------------------------------------------------------------------
 # Main usage
@@ -75,20 +123,21 @@ with Database(DB_CONFIG) as db:
     # Ensure tables exist
     create_tables(db)
 
-    # Example: log RFID scan
-    log_car_rfid(db, "car_1", "RFID_ABC123")
+    # Log an RFID scan (write example)
+    log_car_rfid(db, car_id="car_1", rfid_tag="TAG8")
 
-    # Example: read command for car
-    command = get_car_command(db, "car_1")
+    rfid = read_rfid(db, "car_1")
+    print("Latest RFID:", rfid)
 
-    if command is None:
-        print("No command found for this car")
+    # Set command for a car
+    set_car_command(db, car_id="car_1", direction=2, allowed_to_drive=False)
+
+    # Read command for a carTrue
+    result = get_car_command(db, car_id="car_1")
+
+    # Print result
+    if result is None:
+        print("No command found for this car.")
     else:
-        direction, allowed = command
+        direction, allowed = result
         print(f"Direction: {direction}, Allowed to drive: {allowed}")
-
-    # Show recent logs
-    print("\nRecent car_logs:")
-    rows = db.fetch_all("SELECT * FROM car_logs ORDER BY id DESC LIMIT 5")
-    for row in rows:
-        print(row)
