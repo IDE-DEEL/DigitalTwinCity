@@ -1,3 +1,7 @@
+from fastapi import Depends
+from sqlalchemy.orm import Session
+
+from backend.data.db.database import get_db
 from backend.data.repositories.results_repo import ResultsRepository
 from backend.domain.results import Results
 
@@ -13,3 +17,7 @@ class ResultsService:
 
     def create_results(self):
         return self.results_repo.add_results()
+
+def get_results_service(db: Session = Depends(get_db)) -> ResultsService:
+    repo = ResultsRepository(db)
+    return ResultsService(repo)
