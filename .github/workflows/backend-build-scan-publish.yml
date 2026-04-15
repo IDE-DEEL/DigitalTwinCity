@@ -3,6 +3,7 @@ name: Backend Build, Scan and Publish Docker Image
 on:
   push:
     branches:
+      - main
       - dev
     paths:
       - "backend/**"
