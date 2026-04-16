@@ -82,6 +82,19 @@ turn_WN = [
     [[0],[0],[0],[0]]
 ]
 
+
+
+'''
+bereken alle commandos van te voren gebasseerd op wat de route is vanuit de front end, dan een lijst vullen met de commandos en per rfid tag het volgende commando doorsturen.
+
+
+voor het genereren van de commandos of gewoon een variabele string die je elke keer weer in de lijst append of aan een variable +=
+'''
+
+
+
+
+
 # all zeros are for empty space to create a kind of x and y coordinates
 # matrix has 4 rows and 5 columns.
 # each
@@ -91,6 +104,4 @@ matrix = [
     [[straight_vertical],  [turn_NE],               [crossroad_roundabout],  [t_junction_left],      [straight_vertical]],
     [[turn_NE],            [straight_horizontal],   [t_junction_up],         [t_junction_up],        [turn_WN]]
 ]
-
-
 
