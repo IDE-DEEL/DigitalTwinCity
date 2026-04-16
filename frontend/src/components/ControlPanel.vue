@@ -55,7 +55,7 @@
         <!-- List of cars -->
         <div>
             <label class="block text-sm font-semibold mb-1">Auto's:</label>
-            <div class="bg-white border border-gray-300 rounded-md max-h-64 overflow-y-auto text-sm">
+            <div class="bg-white border border-gray-300 rounded-md max-h-70 overflow-y-auto text-sm">
                 <table class="w-full text-left">
                     <thead>
                         <tr class="border-b border-gray-200">
@@ -66,19 +66,36 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <!-- TODO: implement v-for: generate rows for each car in 'cars' list -->
+                        <tr v-for="car in cars" :key="car.id">
                             <td class="px-3 py-1">
-                                <!-- TODO: Implement car ID display -->
+                                {{ car.id }}
                             </td>
                             <td class="px-3 py-1">
-                                <!-- TODO: Implement package count input -->
+                                 <input 
+                                    type="number" 
+                                    min="1" 
+                                    max="10"
+                                    v-model.number="car.packageCount" 
+                                    class="w-16 p-1 border border-gray-300 rounded-md text-sm"
+                                />
                             </td>
                             <td class="px-3 py-1">
-                                <!-- TODO: Implement route selection dropdown -->
+                                    <select 
+                                        v-model="car.route" 
+                                        class="w-full p-1 border border-gray-300 rounded-md text-sm"
+                                    >
+                                        <option value="0">Route 1</option>
+                                        <option value="1">Route 2</option>
+                                        <option value="2">Route 3</option>
+                                    </select>
                             </td>
                             <td class="px-3 py-1">
-                                <!-- TODO: implement route visualization button -->
+                                    <button 
+                                        class="bg-sky-200 hover:bg-sky-700 text-inherit rounded-sm p-1 w-full h-8 text-xs"
+                                        @click="toggleRouteVisibility(car)"
+                                    >
+                                        {{ car.routeVisibility ? 'Verberg' : 'Toon' }}
+                                    </button>
                             </td>
                         </tr>
                     </tbody>
@@ -143,17 +160,20 @@ function addCar() {
             id: `${cars.value.length + 1}`,
             packageCount: 1,
             route: 0,
+            routeVisibility: false,
         };
         cars.value.push(newCar);
-        console.log('Car added:', newCar);
     }
 }
 
 function removeCar() {
     if (cars.value.length > 0) {
         cars.value.pop();
-        console.log('Car removed!');
     }
+}
+
+function toggleRouteVisibility(car) {
+    car.routeVisibility = !car.routeVisibility;
 }
 // --- end of car management logic ---
 
