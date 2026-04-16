@@ -31,5 +31,10 @@
     "id": "roundabout",
     "label": "roundabout",
     "imagePath": "/assets/roundabout.png"
+  },
+  {
+    "id": "depot",
+    "label": "depot",
+    "imagePath": "/assets/depot.png"
   }
 ]
