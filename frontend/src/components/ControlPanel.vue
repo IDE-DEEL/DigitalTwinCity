@@ -35,8 +35,8 @@
                 <button 
                     class="bg-sky-200 hover:bg-sky-700 rounded-sm p-2 w-full h-10"
                     @click="addCar"
-                    :disabled="cars.length >= 5"
-                    :class="{'opacity-50 cursor-not-allowed': cars.length >= 5}"
+                    :disabled="cars.length >= MAX_CARS"
+                    :class="{'opacity-50 cursor-not-allowed': cars.length >= MAX_CARS}"
                 >
                     Auto toevoegen
                 </button>
@@ -49,7 +49,7 @@
                     Auto verwijderen
                 </button>
             </div>
-            <div v-if="cars.length >= 5" class="text-xs text-red-500 mt-1">Maximaal 5 auto's toegestaan</div>
+            <div v-if="cars.length >= MAX_CARS" class="text-xs text-red-500 mt-1">Maximaal {{ MAX_CARS }} auto's toegestaan</div>
         </div>
 
         <!-- List of cars -->
@@ -131,17 +131,29 @@ const carSpeed = ref(50)
 // const turn = ref(10) <-- used in the disabled turn degree slider
 const scenario = ref('Scenario 1')
 
+// constants
+const MAX_CARS = 5;
+
 // --- start of car management logic ---
 const cars = ref([]);
 
 function addCar() {
-    // TODO: implement logic
-    console.log('Car added!');
+    if (cars.value.length < MAX_CARS) {
+        const newCar = {
+            id: `${cars.value.length + 1}`,
+            packageCount: 1,
+            route: 0,
+        };
+        cars.value.push(newCar);
+        console.log('Car added:', newCar);
+    }
 }
 
 function removeCar() {
-    // TODO: implement logic
-    console.log('Car removed!');
+    if (cars.value.length > 0) {
+        cars.value.pop();
+        console.log('Car removed!');
+    }
 }
 // --- end of car management logic ---
 
