@@ -147,6 +147,7 @@ import { ref } from 'vue'
 const carSpeed = ref(50)
 // const turn = ref(10) <-- used in the disabled turn degree slider
 const scenario = ref('Scenario 1')
+const isSimulating = ref(false);
 
 // constants
 const MAX_CARS = 5;
