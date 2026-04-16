@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full p-3">
+  <div class="w-full">
     <div class="border border-gray-400 rounded-lg w-full h-full bg-white flex items-center justify-center overflow-hidden">
         <!-- Map Container -->
         <div class="relative" :style="containerStyle">
@@ -22,7 +22,7 @@
             <!-- Lanes (kleur kan later worden weggehaald)-->
             <svg 
                 class="absolute inset-0 pointer-events-none"
-                :viewBox="`0 0 ${MAP_DIMENSION} ${MAP_DIMENSION}`"
+                :viewBox="`0 0 ${MAP_COLUMNS} ${MAP_ROWS}`"
                 :preserveAspectRatio="`none`"
             >
                 <polyline
@@ -62,15 +62,17 @@ const componentDefinitions = ref({});
 const isLoading = ref(true);
 // const mapGrid = ref(null); 
 const MAP_DIMENSION = 5;
+// TODO: move to constants file
+const MAP_COLUMNS = 5;
+const MAP_ROWS = 4;
 const MAX_MAP_SCALE = 70;
 
 // container style
 const containerStyle = computed(() => {
-    const dynamicSize = `${MAX_MAP_SCALE}vmin`; 
     return {
-        width: dynamicSize,
-        height: dynamicSize,
-        position: 'relative'
+        maxHeight: '100%',
+        aspectRatio: `${MAP_COLUMNS} / ${MAP_ROWS}`,
+        position: 'relative',
     };
 });
 
@@ -95,10 +97,9 @@ const vehicleStyle = computed(() => {
 const gridStyle = computed(() => {
     return {
         display: 'grid',
-        gridTemplateColumns: `repeat(${MAP_DIMENSION}, 1fr)`,
-        gridTemplateRows: `repeat(${MAP_DIMENSION}, 1fr)`,
+        gridTemplateColumns: `repeat(${MAP_COLUMNS}, 1fr)`,
+        gridTemplateRows: `repeat(${MAP_ROWS}, 1fr)`,
         width: '100%',
-        height: '100%',
     };
 });
 

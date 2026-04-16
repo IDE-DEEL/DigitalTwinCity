@@ -9,9 +9,8 @@
     <div class="flex flex-1 overflow-hidden">
 
       <!-- Simulation area + Bottom bar -->
-      <div class="flex flex-col flex-1 overflow-hidden bg-white p-3">
-        <SimulationDisplay class="flex-1 pb-2.5" />
-        <BottomBar class="h-20 pt-2.5"/>
+      <div class="flex flex-col flex-1 overflow-hidden bg-white p-3 pb-0 pl-0">
+        <SimulationDisplay class="flex-1 min-h-0" />
       </div>
 
       <!-- Control Panel -->
@@ -28,5 +27,4 @@
 import TopBar from './components/TopBar.vue'
 import SimulationDisplay from './components/SimulationDisplay.vue'
 import ControlPanel from './components/ControlPanel.vue'
-import BottomBar from './components/BottomBar.vue'
 </script>
