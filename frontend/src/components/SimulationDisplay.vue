@@ -3,6 +3,16 @@
     <div class="border border-gray-400 rounded-lg w-full h-full bg-white flex items-center justify-center overflow-hidden">
         <!-- Map Container -->
         <div class="relative" :style="containerStyle">
+            <div class="absolute top-2 right-2 z-20">
+                <button
+                    type="button"
+                    class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
+                    @click="toggleLaneDebug"
+                    >
+                    {{ showDevLaneDebug ? 'Hide lane debug' : 'Show lane debug' }}
+                </button>
+            </div>
+
             <!-- Map grid -->
             <div class="map-grid" :style="gridStyle"> 
                 <div
@@ -35,6 +45,13 @@
                     stroke-linecap="round"
                     stroke-linejoin="round"
                 />
+
+                <devLaneDebugOverlay
+                    v-if="showDevLaneDebug"
+                    :lanes="lanes"
+                    :map-columns="MAP_COLUMNS"
+                    :map-rows="MAP_ROWS"
+                />
             </svg>
             <!-- Auto -->
                 <div
@@ -55,11 +72,21 @@ import { buildLane } from '../logic/service/laneBuilder.js';
 import { useMqttVehicle } from '../composables/MqttConnection.js';
 import { normalizeDegree } from '../logic/utils/rotation.js';
 import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
+import devLaneDebugOverlay from '../development/devLaneDebugOverlay.vue';
 
 const { vehiclePosition,setupMqttClient } = useMqttVehicle();
 const mapData = ref([]); 
 const componentDefinitions = ref({}); 
 const isLoading = ref(true);
+
+// --- lane debug devtool start ---
+const showDevLaneDebug = ref(false);
+
+const toggleLaneDebug = () => {
+    showDevLaneDebug.value = !showDevLaneDebug.value;
+};
+// --- lane debug devtool end ---
+
 // const mapGrid = ref(null); 
 const MAP_DIMENSION = 5;
 // TODO: move to constants file
