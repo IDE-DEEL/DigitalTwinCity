@@ -6,8 +6,28 @@
     Deze coordinaten zijn gebaseerd op hoe de tile standaard als png in assets zit.
     Als de plaatjes worden veranderd en de ligging ligt anders, moet dit hier bijgwerkt worden.
 */
-const TOP = 0.45;
-const BOTTOM = 0.55;
+
+const NORTHBOUND_LANE_CENTER = 0.625;
+const SOUTHBOUND_LANE_CENTER = 0.375;
+const WESTBOUND_LANE_CENTER = 0.375;
+const EASTBOUND_LANE_CENTER = 0.625;
+const EDGE_OFFSET_LOWER = 0.1;
+const EDGE_OFFSET_UPPER = 0.9;
+
+/*
+    SVG goes:
+    x = horizontal: higher x → more to the right
+    y = vertical: higher y → more downwards
+
+    (0,0)           (1,0)
+      +---------------+
+      |               |
+      |               |
+      |               |
+      |               |
+      +---------------+
+    (0,1)           (1,1)
+*/
 
 export const TILE_LANES = {
   straight: {
@@ -16,16 +36,16 @@ export const TILE_LANES = {
         from: 'W',
         to: 'E',
         points: [
-          { x: 0.0, y: TOP },
-          { x: 1.0, y: TOP },
+          { x: EDGE_OFFSET_LOWER, y: EASTBOUND_LANE_CENTER },
+          { x: EDGE_OFFSET_UPPER, y: EASTBOUND_LANE_CENTER },
         ],
       },
       {
         from: 'E',
         to: 'W',
         points: [
-          { x: 1.0, y: BOTTOM },
-          { x: 0.0, y: BOTTOM },
+          { x: EDGE_OFFSET_UPPER, y: WESTBOUND_LANE_CENTER },
+          { x: EDGE_OFFSET_LOWER, y: WESTBOUND_LANE_CENTER },
         ],
       },
     ],
@@ -269,4 +289,72 @@ export const TILE_LANES = {
       },
     ],
   },
+  depot: {
+    lanes: [
+      {
+        from: 'N',
+        to: 'S',
+        points: [
+          { x: SOUTHBOUND_LANE_CENTER, y: EDGE_OFFSET_LOWER },
+          { x: SOUTHBOUND_LANE_CENTER, y: EDGE_OFFSET_UPPER },
+        ],
+      },
+      {
+        from: 'S',
+        to: 'N',
+        points: [
+          { x: NORTHBOUND_LANE_CENTER, y: EDGE_OFFSET_UPPER },
+          { x: NORTHBOUND_LANE_CENTER, y: EDGE_OFFSET_LOWER },
+        ],
+      },
+      {
+        from: 'N',
+        to: 'E',
+        points: [
+          { x: SOUTHBOUND_LANE_CENTER, y: EDGE_OFFSET_LOWER },
+          { x: 0.38, y: 0.28 },
+          { x: 0.44, y: 0.4 },
+          { x: 0.52, y: 0.5 },
+          { x: 0.63, y: 0.58 },
+          { x: 0.75, y: 0.62 },
+          { x: EDGE_OFFSET_UPPER, y: EASTBOUND_LANE_CENTER },
+        ],
+      },
+      {
+        from: 'S',
+        to: 'E',
+        points: [
+            { x: NORTHBOUND_LANE_CENTER, y: EDGE_OFFSET_UPPER },
+            { x: 0.63, y: 0.76 },
+            { x: 0.7, y: 0.67 },
+            { x: 0.79, y: 0.63 },
+            { x: EDGE_OFFSET_UPPER, y: EASTBOUND_LANE_CENTER },
+        ],
+      },
+      {
+        from: 'E',
+        to: 'N',
+        points: [
+            { x: EDGE_OFFSET_UPPER, y: WESTBOUND_LANE_CENTER },
+            { x: 0.76, y: 0.36 },
+            { x: 0.67, y: 0.29 },
+            { x: 0.63, y: 0.2 },
+            { x: NORTHBOUND_LANE_CENTER, y: EDGE_OFFSET_LOWER },
+        ],
+      },
+      {
+        from: 'E',
+        to: 'S',
+        points: [
+            { x: EDGE_OFFSET_UPPER, y: WESTBOUND_LANE_CENTER },
+            { x: 0.75, y: 0.36 },
+            { x: 0.65, y: 0.39 },
+            { x: 0.55, y: 0.45 },
+            { x: 0.44, y: 0.56 },
+            { x: 0.38, y: 0.7 },
+            { x: SOUTHBOUND_LANE_CENTER, y: EDGE_OFFSET_UPPER },
+        ],
+      }
+    ],
+  }
 }
