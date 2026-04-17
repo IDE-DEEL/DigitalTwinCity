@@ -80,47 +80,70 @@ export const TILE_LANES = {
     ],
   },
 
-
   t_split: {
     lanes: [
-
-      {
-        from: 'N',
-        to: 'E',
-        points: [
-          { x: 0.5, y: 0.0 },
-          { x: 0.5, y: 0.35 },
-          { x: 0.85, y: 0.5 },
-          { x: 1.0, y: 0.5 },
-        ],
-      },
-
-      {
-        from: 'N',
-        to: 'W',
-        points: [
-          { x: 0.5, y: 0.0 },
-          { x: 0.5, y: 0.35 },
-          { x: 0.15, y: 0.5 },
-          { x: 0.0, y: 0.5 },
-        ],
-      },
-
-      {
-        from: 'E',
-        to: 'W',
-        points: [
-          { x: 1.0, y: 0.55 },
-          { x: 0.0, y: 0.55 },
-        ],
-      },
-
       {
         from: 'W',
         to: 'E',
         points: [
-          { x: 0.0, y: 0.45 },
-          { x: 1.0, y: 0.45 },
+          { x: EDGE_OFFSET_LOWER, y: EASTBOUND_LANE_CENTER },
+          { x: EDGE_OFFSET_UPPER, y: EASTBOUND_LANE_CENTER },
+        ],
+      },
+      {
+        from: 'E',
+        to: 'W',
+        points: [
+          { x: EDGE_OFFSET_UPPER, y: WESTBOUND_LANE_CENTER },
+          { x: EDGE_OFFSET_LOWER, y: WESTBOUND_LANE_CENTER },
+        ],
+      },
+      {
+        from: 'W',
+        to: 'N',
+        points: [
+          { x: EDGE_OFFSET_LOWER, y: EASTBOUND_LANE_CENTER },
+          { x: 0.26, y: 0.62 },
+          { x: 0.4, y: 0.57 },
+          { x: 0.5, y: 0.5 },
+          { x: 0.58, y: 0.38 },
+          { x: 0.62, y: 0.26 },
+          { x: NORTHBOUND_LANE_CENTER, y: EDGE_OFFSET_LOWER },
+        ],
+      },
+      {
+        from: 'E',
+        to: 'N',
+        points: [
+          { x: EDGE_OFFSET_UPPER, y: WESTBOUND_LANE_CENTER },
+          { x: 0.78, y: 0.36 },
+          { x: 0.68, y: 0.33 },
+          { x: 0.64, y: 0.25 },
+          { x: NORTHBOUND_LANE_CENTER, y: EDGE_OFFSET_LOWER },
+        ],
+      },
+      {
+        from: 'N',
+        to: 'W',
+        points: [
+          { x: SOUTHBOUND_LANE_CENTER, y: EDGE_OFFSET_LOWER },
+          { x: 0.36, y: 0.24 },
+          { x: 0.31, y: 0.32 },
+          { x: 0.22, y: 0.36 },
+          { x: EDGE_OFFSET_LOWER, y: WESTBOUND_LANE_CENTER },
+        ],
+      },
+      {
+        from: 'N',
+        to: 'E',
+        points: [
+          { x: SOUTHBOUND_LANE_CENTER, y: EDGE_OFFSET_LOWER },
+          { x: 0.37, y: 0.26 },
+          { x: 0.41, y: 0.38 },
+          { x: 0.5, y: 0.5 },
+          { x: 0.6, y: 0.57 },
+          { x: 0.74, y: 0.61 },
+          { x: EDGE_OFFSET_UPPER, y: EASTBOUND_LANE_CENTER },
         ],
       },
     ],
