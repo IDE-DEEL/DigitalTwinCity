@@ -151,61 +151,132 @@ export const TILE_LANES = {
 
   cross_split: {
     lanes: [
-    
-      {
-        from: 'N',
-        to: 'S',
-        points: [
-          { x: 0.5, y: 0.0 },
-          { x: 0.5, y: 1.0 },
-        ],
-      },
-    
       {
         from: 'S',
         to: 'N',
         points: [
-          { x: 0.55, y: 1.0 },
-          { x: 0.55, y: 0.0 },
+          { x: NORTHBOUND_LANE_CENTER, y: EDGE_OFFSET_UPPER },
+          { x: NORTHBOUND_LANE_CENTER, y: EDGE_OFFSET_LOWER },
         ],
       },
-    
+      {
+        from: 'S',
+        to: 'E',
+        points: [
+          { x: NORTHBOUND_LANE_CENTER, y: EDGE_OFFSET_UPPER },
+          { x: 0.63, y: 0.76 },
+          { x: 0.68, y: 0.66 },
+          { x: 0.78, y: 0.63 },
+          { x: EDGE_OFFSET_UPPER, y: EASTBOUND_LANE_CENTER },
+        ],
+      },
+      {
+        from: 'S',
+        to: 'W',
+        points: [
+          { x: NORTHBOUND_LANE_CENTER, y: EDGE_OFFSET_UPPER },
+          { x: 0.61, y: 0.73 },
+          { x: 0.57, y: 0.61 },
+          { x: 0.5, y: 0.5 },
+          { x: 0.4, y: 0.41 },
+          { x: 0.26, y: 0.38 },
+          { x: EDGE_OFFSET_LOWER, y: WESTBOUND_LANE_CENTER },
+        ],
+      },
       {
         from: 'E',
         to: 'W',
         points: [
-          { x: 1.0, y: 0.45 },
-          { x: 0.0, y: 0.45 },
+          { x: EDGE_OFFSET_UPPER, y: WESTBOUND_LANE_CENTER },
+          { x: EDGE_OFFSET_LOWER, y: WESTBOUND_LANE_CENTER },
         ],
       },
-
       {
-        from: 'W',
-        to: 'E',
+        from: 'E',
+        to: 'N',
         points: [
-          { x: 0.0, y: 0.55 },
-          { x: 1.0, y: 0.55 },
+          { x: EDGE_OFFSET_UPPER, y: WESTBOUND_LANE_CENTER },
+          { x: 0.78, y: 0.36 },
+          { x: 0.68, y: 0.31 },
+          { x: 0.64, y: 0.22 },
+          { x: NORTHBOUND_LANE_CENTER, y: EDGE_OFFSET_LOWER },
         ],
       },
-
+      {
+        from: 'E',
+        to: 'S',
+        points: [
+          { x: EDGE_OFFSET_UPPER, y: WESTBOUND_LANE_CENTER },
+          { x: 0.74, y: 0.38 },
+          { x: 0.61, y: 0.42 },
+          { x: 0.5, y: 0.5 },
+          { x: 0.43, y: 0.59 },
+          { x: 0.38, y: 0.73 },
+          { x: SOUTHBOUND_LANE_CENTER, y: EDGE_OFFSET_UPPER },
+        ],
+      },
       {
         from: 'N',
-        to: 'E',
+        to: 'S',
         points: [
-          { x: 0.45, y: 0.0 },
-          { x: 0.45, y: 0.35 },
-          { x: 0.8,  y: 0.45 },
-          { x: 1.0,  y: 0.5 },
+          { x: SOUTHBOUND_LANE_CENTER, y: EDGE_OFFSET_LOWER },
+          { x: SOUTHBOUND_LANE_CENTER, y: EDGE_OFFSET_UPPER },
         ],
       },
       {
         from: 'N',
         to: 'W',
         points: [
-          { x: 0.55, y: 0.0 },
-          { x: 0.55, y: 0.35 },
-          { x: 0.2,  y: 0.45 },
-          { x: 0.0,  y: 0.5 },
+          { x: SOUTHBOUND_LANE_CENTER, y: EDGE_OFFSET_LOWER },
+          { x: 0.36, y: 0.22 },
+          { x: 0.3, y: 0.32 },
+          { x: 0.22, y: 0.36 },
+          { x: EDGE_OFFSET_LOWER, y: WESTBOUND_LANE_CENTER },
+        ],
+      },
+      {
+        from: 'N',
+        to: 'E',
+        points: [
+          { x: SOUTHBOUND_LANE_CENTER, y: EDGE_OFFSET_LOWER },
+          { x: 0.38, y: 0.27 },
+          { x: 0.42, y: 0.4 },
+          { x: 0.5, y: 0.5 },
+          { x: 0.61, y: 0.58 },
+          { x: 0.74, y: 0.62 },
+          { x: EDGE_OFFSET_UPPER, y: EASTBOUND_LANE_CENTER },
+        ],
+      },
+      {
+        from: 'W',
+        to: 'E',
+        points: [
+          { x: EDGE_OFFSET_LOWER, y: EASTBOUND_LANE_CENTER },
+          { x: EDGE_OFFSET_UPPER, y: EASTBOUND_LANE_CENTER },
+        ],
+      },
+      {
+        from: 'W',
+        to: 'S',
+        points: [
+          { x: EDGE_OFFSET_LOWER, y: EASTBOUND_LANE_CENTER },
+          { x: 0.22, y: 0.64 },
+          { x: 0.33, y: 0.69 },
+          { x: 0.36, y: 0.78 },
+          { x: SOUTHBOUND_LANE_CENTER, y: EDGE_OFFSET_UPPER },
+        ],
+      },
+      {
+        from: 'W',
+        to: 'N',
+        points: [
+          { x: EDGE_OFFSET_LOWER, y: EASTBOUND_LANE_CENTER },
+          { x: 0.28, y: 0.61 },
+          { x: 0.4, y: 0.57 },
+          { x: 0.5, y: 0.5 },
+          { x: 0.58, y: 0.4 },
+          { x: 0.62, y: 0.27 },
+          { x: NORTHBOUND_LANE_CENTER, y: EDGE_OFFSET_LOWER },
         ],
       },
     ],
