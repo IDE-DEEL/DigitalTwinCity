@@ -27,8 +27,8 @@
     <text
       v-for="point in laneDebugPoints"
       :key="`label-${point.id}`"
-      :x="point.x + 0.03"
-      :y="point.y - 0.03"
+      :x="point.x - 0.02"
+      :y="point.y + 0.03"
       font-size="0.08"
       fill="black"
     >
