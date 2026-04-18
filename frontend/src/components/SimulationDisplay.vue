@@ -3,7 +3,7 @@
     <div class="border border-gray-400 rounded-lg w-full h-full bg-white flex items-center justify-center overflow-hidden">
         <!-- Map Container -->
         <div class="relative" :style="containerStyle">
-            <div class="absolute top-2 right-2 z-20">
+            <div class="absolute top-2 right-2 z-40">
                 <button
                     type="button"
                     class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
