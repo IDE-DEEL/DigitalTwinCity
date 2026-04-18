@@ -84,9 +84,13 @@
                                         v-model="car.route" 
                                         class="w-full p-1 border border-gray-300 rounded-md text-sm"
                                     >
-                                        <option value="0">Route 1</option>
-                                        <option value="1">Route 2</option>
-                                        <option value="2">Route 3</option>
+                                        <option
+                                            v-for="routeOption in ROUTE_OPTIONS"
+                                            :key="routeOption.key"
+                                            :value="routeOption.value"
+                                        >
+                                            {{ routeOption.label }}
+                                        </option>
                                     </select>
                             </td>
                             <td class="px-3 py-1">
@@ -143,6 +147,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import { ROUTE_OPTIONS } from '../logic/domain/routes';
 
 const carSpeed = ref(50)
 // const turn = ref(10) <-- used in the disabled turn degree slider
@@ -160,7 +165,7 @@ function addCar() {
         const newCar = {
             id: `${cars.value.length + 1}`,
             packageCount: 1,
-            route: 0,
+            route: ROUTE_OPTIONS[0]?.value ?? '', // default to first route option if available, part of ROUTE_OPTIONS logic
             routeVisibility: false,
         };
         cars.value.push(newCar);

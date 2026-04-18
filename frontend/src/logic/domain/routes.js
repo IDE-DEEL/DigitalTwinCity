@@ -60,3 +60,8 @@ export const ROUTES_TILES = {
     DEPOT_TILE,
   ],
 };
+
+export const ROUTE_OPTIONS = Object.keys(ROUTES_TILES).map((routeName) => ({
+  value: routeName,
+  label: routeName,
+}));
