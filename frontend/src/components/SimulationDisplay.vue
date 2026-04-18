@@ -192,7 +192,7 @@ const getComponentPosition = (component) => {
 };
 
 onMounted(async () => {
-    setupMqttClient();
+    // setupMqttClient();
     try {
         const data = await fetchMapData(); 
         mapData.value = data.mapData;
