@@ -11,6 +11,14 @@
                     >
                     {{ showDevLaneDebug ? 'Hide lane debug' : 'Show lane debug' }}
                 </button>
+
+                <button
+                    type="button"
+                    class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
+                    @click="toggleTileCoordDebug"
+                >
+                    {{ showDevTileCoordDebug ? 'Hide tile coords' : 'Show tile coords' }}
+                </button>
             </div>
 
             <!-- Map grid -->
@@ -28,6 +36,13 @@
                     :style="{ transform:`rotate(${component.rotation}deg)`}"
                     />
                 </div>
+
+                <devTileCoordinateOverlay
+                    v-if="showDevTileCoordDebug"
+                    :map-columns="MAP_COLUMNS"
+                    :map-rows="MAP_ROWS"
+                    :map-data="mapData"
+                />
             </div> 
             <!-- Lanes (kleur kan later worden weggehaald)-->
             <svg 
@@ -73,6 +88,7 @@ import { useMqttVehicle } from '../composables/MqttConnection.js';
 import { normalizeDegree } from '../logic/utils/rotation.js';
 import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
 import devLaneDebugOverlay from '../development/devLaneDebugOverlay.vue';
+import devTileCoordinateOverlay from '../development/devTileCoordinateOverlay.vue';
 
 const { vehiclePosition,setupMqttClient } = useMqttVehicle();
 const mapData = ref([]); 
@@ -86,6 +102,14 @@ const toggleLaneDebug = () => {
     showDevLaneDebug.value = !showDevLaneDebug.value;
 };
 // --- lane debug devtool end ---
+
+// --- tile coordinate devtool start ---
+const showDevTileCoordDebug = ref(false);
+
+const toggleTileCoordDebug = () => {
+    showDevTileCoordDebug.value = !showDevTileCoordDebug.value;
+};
+// --- tile coordinate devtool end ---
 
 // const mapGrid = ref(null); 
 const MAP_DIMENSION = 5;
