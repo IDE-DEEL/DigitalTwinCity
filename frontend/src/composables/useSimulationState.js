@@ -146,3 +146,35 @@ const simulationStartPayload = computed(() => {
 function collectParameters() {
     return simulationStartPayload.value;
 }
+
+// ---
+// exporting composable
+// ---
+export function useSimulationState() {
+    return {
+        cars,
+        carSpeed,
+        scenario,
+        isSimulating,
+        mapData,
+        MAX_CARS,
+        routeOptions: ROUTE_OPTIONS,
+
+        addCar,
+        removeCar,
+        updateCarPackageCount,
+        updateCarRoute,
+        toggleCarRouteVisibility,
+        setCarSpeed,
+        setScenario,
+        setMapData,
+        startSimulation,
+        stopSimulation,
+        collectParameters,
+
+        visibleCars,
+        visibleCarsWithRoutes,
+        carsWithRoutes,
+        simulationStartPayload,
+    };
+}
