@@ -9,7 +9,6 @@ app = FastAPI(title="DEEL - Digital Twin",
               version="0.1.0",
               docs_url="/docs",
               redoc_url="/redoc",
-              prefix="/api/v1"
 )
 
 app.add_middleware(
@@ -19,7 +18,9 @@ app.add_middleware(
   allow_headers = ["*"]
 )
 
-app.include_router(results_api.router)
+api_v1_prefix = "/api/v1"
+app.include_router(results_api.router, prefix=api_v1_prefix)
+
 Base.metadata.create_all(bind=engine)
 
 if __name__ == "__main__":

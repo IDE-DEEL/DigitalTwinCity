@@ -1,19 +1,10 @@
 from typing import List
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
-from backend.data.db.database import get_db
-from backend.data.repositories.results_repo import ResultsRepository
 from backend.schemas.results import ResultsResponse
-from backend.services.results_service import ResultsService
+from backend.services.results_service import ResultsService, get_results_service
 
 router = APIRouter(prefix="/results", tags=["results"])
-
-
-def get_results_service(db: Session = Depends(get_db)) -> ResultsService:
-    repo = ResultsRepository(db)
-    return ResultsService(repo)
-
 
 @router.get("/{id}", response_model=ResultsResponse)
 async def read_result(id: int, service: ResultsService = Depends(get_results_service)):
