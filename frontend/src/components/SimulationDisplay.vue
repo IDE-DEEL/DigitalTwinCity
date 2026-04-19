@@ -66,7 +66,7 @@
                     :key="`route-${car.id}`"
                     :points="car.waypoints.map(p => `${p.x},${p.y}`).join(' ')"
                     fill="none"
-                    stroke="blue"
+                    :stroke="getRouteColorForCar(car.id)"
                     stroke-width="0.01"
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -127,6 +127,20 @@ const toggleTileCoordDebug = () => {
     showDevTileCoordDebug.value = !showDevTileCoordDebug.value;
 };
 // --- tile coordinate devtool end ---
+
+// --- custom colors for car routes start ---
+const CAR_ROUTE_COLORS = {
+    '1': 'blue',
+    '2': 'red',
+    '3': 'green',
+    '4': 'yellow',
+    '5': 'purple',
+};
+
+const getRouteColorForCar = (carId) => {
+    return CAR_ROUTE_COLORS[carId] ?? 'blue';
+};
+// --- custom colors for car routes end ---
 
 const MAP_DIMENSION = 5;
 // TODO: move to constants file
