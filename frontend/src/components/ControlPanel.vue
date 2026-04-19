@@ -155,32 +155,32 @@ const scenario = ref('Scenario 1')
 const isSimulating = ref(false);
 
 // constants
-const MAX_CARS = 5;
+// const MAX_CARS = 5;
 
 // --- start of car management logic ---
-const cars = ref([]);
+// const cars = ref([]);
 
-function addCar() {
-    if (cars.value.length < MAX_CARS) {
-        const newCar = {
-            id: `${cars.value.length + 1}`,
-            packageCount: 1,
-            route: ROUTE_OPTIONS[0]?.value ?? '', // default to first route option if available, part of ROUTE_OPTIONS logic
-            routeVisibility: false,
-        };
-        cars.value.push(newCar);
-    }
-}
+// function addCar() {
+//     if (cars.value.length < MAX_CARS) {
+//         const newCar = {
+//             id: `${cars.value.length + 1}`,
+//             packageCount: 1,
+//             route: ROUTE_OPTIONS[0]?.value ?? '', // default to first route option if available, part of ROUTE_OPTIONS logic
+//             routeVisibility: false,
+//         };
+//         cars.value.push(newCar);
+//     }
+// }
 
-function removeCar() {
-    if (cars.value.length > 0) {
-        cars.value.pop();
-    }
-}
+// function removeCar() {
+//     if (cars.value.length > 0) {
+//         cars.value.pop();
+//     }
+// }
 
-function toggleRouteVisibility(car) {
-    car.routeVisibility = !car.routeVisibility;
-}
+// function toggleRouteVisibility(car) {
+//     car.routeVisibility = !car.routeVisibility;
+// }
 // --- end of car management logic ---
 
 // --- start gathering parameter settings for simulation start logic ---
