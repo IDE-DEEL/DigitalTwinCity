@@ -122,3 +122,27 @@ const carsWithRoutes = computed(() => {
         return [];
     }
 });
+
+// ---
+// collecting simulation parameters to build payload
+// ---
+const simulationStartPayload = computed(() => {
+    if (!mapData.value.length) {
+        return null;
+    }
+
+    return {
+        carSettings: carsWithRoutes.valuemap((car) => ({
+            id: car.id,
+            packageCount: car.packageCount,
+            routeName: car.route,
+            routeWaypoints: car.waypoints,
+        })),
+        carSpeed: carSpeed.value,
+        scenario: scenario.value,
+    };
+});
+
+function collectParameters() {
+    return simulationStartPayload.value;
+}
