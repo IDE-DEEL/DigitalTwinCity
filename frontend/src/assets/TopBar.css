@@ -1,0 +1,13 @@
+header {
+    background-color: var(--color-primary-gray1);
+    max-width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+h1 {
+    color: var(--color-primary-blue);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 58px;
+}

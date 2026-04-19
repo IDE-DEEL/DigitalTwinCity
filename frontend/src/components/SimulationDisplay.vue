@@ -1,6 +1,6 @@
 <template>
   <div class="w-full p-3">
-    <div class="border border-gray-400 rounded-lg w-full h-full bg-white flex items-center justify-center overflow-hidden">
+    <div>
         <!-- Map Container -->
         <div class="relative" :style="containerStyle">
             <!-- Map grid -->

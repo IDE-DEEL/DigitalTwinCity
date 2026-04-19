@@ -1,7 +1,14 @@
 <!-- All the elements will be responsive later, for now only visual -->
+<script setup>
+import { ref } from 'vue'
+
+const speed = ref(60)
+const turn = ref(10)
+const scenario = ref('Scenario 1')
+</script>
 
 <template>
-    <aside class="w-[320px] bg-cream text-dark p-6 flex flex-col gap-6 text-sm rounded-tl-2xl">
+    <aside>
 
         <!-- Speed parameter -->
          <div>
@@ -69,11 +76,3 @@
         </div>
     </aside>
 </template>   
-
-<script setup>
-import { ref } from 'vue'
-
-const speed = ref(60)
-const turn = ref(10)
-const scenario = ref('Scenario 1')
-</script>
