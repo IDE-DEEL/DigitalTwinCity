@@ -149,10 +149,10 @@
 import { ref } from 'vue'
 import { ROUTE_OPTIONS } from '../logic/domain/routes';
 
-const carSpeed = ref(50)
+// const carSpeed = ref(50)
 // const turn = ref(10) <-- used in the disabled turn degree slider
-const scenario = ref('Scenario 1')
-const isSimulating = ref(false);
+// const scenario = ref('Scenario 1')
+// const isSimulating = ref(false);
 
 // constants
 // const MAX_CARS = 5;

@@ -1,9 +1,13 @@
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { ROUTE_OPTIONS } from "../logic/domain/routes";
 import { buildCarsWithRoutes } from "../logic/service/routeService";
 
 // refs
 const cars = ref([]);
+const carSpeed = ref(50);
+const scenario = ref('Rustig');
+const isSimulating = ref(false);
+const mapData = ref([]);
 
 // constants
 const MAX_CARS = 5;
@@ -62,3 +66,59 @@ function toggleCarRouteVisibility(carId) {
 
     car.routeVisibility = !car.routeVisibility;
 }
+
+// ---
+// simulation logic
+// ---
+function setCarSpeed(value) {
+    carSpeed.value = value;
+}
+
+function setScenario(value) {
+    scenario.value = value;
+}
+
+function startSimulation() {
+    isSimulating.value = true;
+}
+
+function stopSimulation() {
+    isSimulating.value = false;
+}
+
+// ---
+// map and routes
+// ---
+function setMapData(mapData) {
+    mapData.value = mapData;
+}
+
+const visibleCars = computed(() => {
+    return cars.value.filter((car) => car.routeVisibility);
+});
+
+const visibleCarsWithRoutes = computed(() => {
+    if (!mapData.value.length) {
+        return [];
+    }
+
+    try {
+        return buildCarsWithRoutes(visibleCars.value, mapData.value);
+    } catch (error) {
+        console.error("Error building visible car routes:", error);
+        return [];
+    }
+});
+
+const carsWithRoutes = computed(() => {
+    if (!mapData.value.length) {
+        return [];
+    }
+
+    try {
+        return buildCarsWithRoutes(cars.value, mapData.value);
+    } catch (error) {
+        console.error("Error building configured car routes:", error);
+        return [];
+    }
+});
