@@ -89,8 +89,8 @@ function stopSimulation() {
 // ---
 // map and routes
 // ---
-function setMapData(mapData) {
-    mapData.value = mapData;
+function setMapData(loadedMapData) {
+    mapData.value = loadedMapData;
 }
 
 const visibleCars = computed(() => {
@@ -132,7 +132,7 @@ const simulationStartPayload = computed(() => {
     }
 
     return {
-        carSettings: carsWithRoutes.valuemap((car) => ({
+        carSettings: carsWithRoutes.value.map((car) => ({
             id: car.id,
             packageCount: car.packageCount,
             routeName: car.route,

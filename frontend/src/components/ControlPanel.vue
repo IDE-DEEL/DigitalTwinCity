@@ -110,7 +110,7 @@
                             <td class="px-3 py-1">
                                     <button 
                                         class="bg-sky-200 hover:bg-sky-700 text-inherit rounded-sm p-1 w-full h-8 text-xs"
-                                        @click="toggleRouteVisibility(car.id)"
+                                        @click="toggleCarRouteVisibility(car.id)"
                                     >
                                         {{ car.routeVisibility ? 'Verberg' : 'Toon' }}
                                     </button>
@@ -174,7 +174,7 @@ const {
     removeCar,
     updateCarPackageCount,
     updateCarRoute,
-    toggleRouteVisibility,
+    toggleCarRouteVisibility,
     setCarSpeed,
     setScenario,
     startSimulation,
