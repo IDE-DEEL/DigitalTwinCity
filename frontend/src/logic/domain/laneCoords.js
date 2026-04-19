@@ -39,7 +39,6 @@ const ROUNDABOUT_POINTS = {
       +---------------+
     (0,1)           (1,1)
 */
-
 export const TILE_LANES = {
   straight: {
     lanes: [
