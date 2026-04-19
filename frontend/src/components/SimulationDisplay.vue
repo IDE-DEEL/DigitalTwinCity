@@ -61,15 +61,16 @@
                     stroke-linejoin="round"
                 /> -->
 
-                <!-- <polyline
-                    v-if="builtRouteWaypoints.length > 0"
-                    :points="builtRouteWaypoints.map(p => `${p.x},${p.y}`).join(' ')"
+                <polyline
+                    v-for="car in visibleCarsWithRoutes"
+                    :key="`route-${car.id}`"
+                    :points="car.waypoints.map(p => `${p.x},${p.y}`).join(' ')"
                     fill="none"
                     stroke="blue"
                     stroke-width="0.01"
                     stroke-linecap="round"
                     stroke-linejoin="round"
-                /> -->
+                />
 
                 <devLaneDebugOverlay
                     v-if="showDevLaneDebug"
@@ -97,14 +98,19 @@ import { buildLane } from '../logic/service/laneBuilder.js';
 import { useMqttVehicle } from '../composables/MqttConnection.js';
 import { normalizeDegree } from '../logic/utils/rotation.js';
 import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
+import { useSimulationState } from '../composables/useSimulationState.js';
 import devLaneDebugOverlay from '../development/devLaneDebugOverlay.vue';
 import devTileCoordinateOverlay from '../development/devTileCoordinateOverlay.vue';
-// import { getWaypointRouteByName } from '../logic/service/routeService.js';
 
-const { vehiclePosition,setupMqttClient } = useMqttVehicle();
 const mapData = ref([]); 
 const componentDefinitions = ref({}); 
 const isLoading = ref(true);
+
+const { vehiclePosition,setupMqttClient } = useMqttVehicle();
+const {
+    visibleCarsWithRoutes,
+    setMapData,
+} = useSimulationState();
 
 // --- lane debug devtool start ---
 const showDevLaneDebug = ref(false);
@@ -122,25 +128,6 @@ const toggleTileCoordDebug = () => {
 };
 // --- tile coordinate devtool end ---
 
-// // --- route helper start ---
-// const selectedRouteName = ref('routeC');
-// const builtRouteWaypoints = ref([]);
-
-// const buildSelectedRoute = () => {
-//     try {
-//         builtRouteWaypoints.value = getWaypointRouteByName(
-//             selectedRouteName.value,
-//             mapData.value
-//         );
-
-//         console.log('Built route waypoints:', builtRouteWaypoints.value); // TODO: remove log later
-//     } catch (error) {
-//         console.error('Error while building route:', error);
-//     }
-// };
-// // --- route helper end ---
-
-// const mapGrid = ref(null); 
 const MAP_DIMENSION = 5;
 // TODO: move to constants file
 const MAP_COLUMNS = 5;
@@ -226,11 +213,12 @@ onMounted(async () => {
         const data = await fetchMapData(); 
         mapData.value = data.mapData;
         componentDefinitions.value = data.componentDefinitions;
+
+        setMapData(data.mapData);
         
         // Initialize the RFID mapper with loaded data
         initRfidMapper(data.mapData, data.rfidData);
 
-        // buildSelectedRoute();
     } catch (error) {
         console.error("Fout bij het laden:", error);
     } finally {
