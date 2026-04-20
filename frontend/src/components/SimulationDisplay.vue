@@ -1,8 +1,8 @@
 <template>
   <div class="w-full">
     <div class="border border-gray-400 rounded-lg w-full h-full bg-white flex items-center justify-center overflow-hidden">
-        <!-- Developer tool buttons -->
-        <div class="absolute top-6 left-1/2 -translate-x-1/2 z-40">
+        <div v-if="isDevelopment" class="absolute top-6 left-1/2 -translate-x-1/2 z-40">
+            <!-- Developer tool buttons (only in development mode) -->
             <button
                 type="button"
                 class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
@@ -119,6 +119,8 @@ import { useSimulationState } from '../composables/useSimulationState.js';
 import devLaneDebugOverlay from '../development/devLaneDebugOverlay.vue';
 import devTileCoordinateOverlay from '../development/devTileCoordinateOverlay.vue';
 import devRouteBuilder from '../development/devRouteBuilder.vue';
+
+const isDevelopment = import.meta.env.DEV;
 
 const mapData = ref([]); 
 const componentDefinitions = ref({}); 
