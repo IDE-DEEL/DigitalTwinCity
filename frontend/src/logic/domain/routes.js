@@ -1,4 +1,4 @@
-const DEPOT_TILE = { x: 4, y: 2 };
+export const DEPOT_TILE = { x: 4, y: 2 }; // TODO: consider moving to a constants file in sprint 6
 
 /**
  * routes are pre-defined sequences of tiles
