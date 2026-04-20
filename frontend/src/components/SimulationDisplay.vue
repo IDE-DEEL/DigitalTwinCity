@@ -19,6 +19,14 @@
                 >
                     {{ showDevTileCoordDebug ? 'Hide tile coords' : 'Show tile coords' }}
                 </button>
+    
+                <button
+                    type="button"
+                    class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
+                    @click="toggleRouteBuilder"
+                >
+                    {{ showDevRouteBuilder ? 'Hide route builder' : 'Show route builder' }}
+                </button>
             </div>
 
             <!-- Map grid -->
@@ -79,6 +87,14 @@
                     :map-rows="MAP_ROWS"
                 />
             </svg>
+
+            <devRouteBuilder
+                v-model:isActive="showDevRouteBuilder"
+                :map-columns="MAP_COLUMNS"
+                :map-rows="MAP_ROWS"
+                :map-data="mapData"
+            />
+
             <!-- Auto -->
                 <div
                     id="live-vehicle"
@@ -101,6 +117,7 @@ import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
 import { useSimulationState } from '../composables/useSimulationState.js';
 import devLaneDebugOverlay from '../development/devLaneDebugOverlay.vue';
 import devTileCoordinateOverlay from '../development/devTileCoordinateOverlay.vue';
+import devRouteBuilder from '../development/devRouteBuilder.vue';
 
 const mapData = ref([]); 
 const componentDefinitions = ref({}); 
@@ -127,6 +144,14 @@ const toggleTileCoordDebug = () => {
     showDevTileCoordDebug.value = !showDevTileCoordDebug.value;
 };
 // --- tile coordinate devtool end ---
+
+// --- route builder devtool start ---
+const showDevRouteBuilder = ref(false);
+
+const toggleRouteBuilder = () => {
+    showDevRouteBuilder.value = !showDevRouteBuilder.value;
+};
+// --- route builder devtool end ---
 
 // --- custom colors for car routes start ---
 const CAR_ROUTE_COLORS = {
