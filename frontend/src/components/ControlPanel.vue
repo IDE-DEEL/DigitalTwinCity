@@ -1,5 +1,5 @@
 <template>
-    <aside class="w-[320px] bg-cream text-dark p-6 flex flex-col gap-6 text-sm rounded-tl-2xl">
+    <aside class="w-[320px] bg-cream text-dark p-6 flex flex-col gap-6 text-sm">
 
         <!-- Car speed parameter -->
          <div>
