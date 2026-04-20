@@ -3,29 +3,24 @@ import { ref } from 'vue'
 import '../assets/Switch.css'
 
 const isOn = ref(true)
-
-function switchToPage() {
-    isOn.value = !isOn.value
-}
-
 </script>
 
 <template>
   <div class="switch-container">
-    <button 
+    <router-link to="/digital_twin" 
       class="switch-button switch-button-left" 
       :class="{ 'is-active': isOn }" 
       @click="isOn = true"
     >
       Digital Twin
-    </button>
+    </router-link>
     
-    <button 
+    <router-link to="/simulation" 
       class="switch-button switch-button-right" 
       :class="{ 'is-active': !isOn }" 
       @click="isOn = false"
     >
       Simulatie
-    </button>
+    </router-link>
   </div>
 </template>

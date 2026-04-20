@@ -1,0 +1,15 @@
+.main-content {
+  display: flex;
+  height: 100%;
+}
+
+.display-field {
+  flex: 3;
+  background-color: var(--color-primary-gray3);
+}
+
+.control-panel {
+  padding: 24px;
+  background-color: var(--color-primary-gray2);
+  flex: 0 1 400px;
+}

@@ -11,17 +11,7 @@ import './assets/App.css'
 
     <!-- Topbar -->
     <TopBar class="topbar"/>
-
-    <!-- Main area -->
-    <div class="main-content">
-
-      <!-- Simulation area + Bottom bar -->
-      <SimulationDisplay class="display-field" />
-
-      <!-- Control Panel -->
-      <ControlPanel class="control-panel" />
-       
-    </div>
+    <router-view></router-view>
 
   </div>
 </template>
