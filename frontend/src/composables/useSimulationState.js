@@ -16,7 +16,7 @@ const MAX_CARS = 5;
 // adding and removing cars
 // ---
 function addCar() {
-    // TODO: refactor to use early return
+    // TODO: potentially refactor to use early return in sprint 6
     if (cars.value.length < MAX_CARS) {
         const newCar = {
             id: `${cars.value.length + 1}`,

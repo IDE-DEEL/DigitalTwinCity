@@ -143,7 +143,7 @@ const getRouteColorForCar = (carId) => {
 // --- custom colors for car routes end ---
 
 const MAP_DIMENSION = 5;
-// TODO: move to constants file
+// TODO: move to constants file in sprint 6
 const MAP_COLUMNS = 5;
 const MAP_ROWS = 4;
 const MAX_MAP_SCALE = 70;

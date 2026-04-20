@@ -291,7 +291,7 @@ export const TILE_LANES = {
       },
     ],
   },
-//   replaced loop with similar entry/exit logic as other tiles -- TODO: remove later if not needed
+//   replaced loop with similar entry/exit logic as other tiles -- TODO: remove in sprint 6 if not needed
 //   roundabout: {
 //     lanes: [
 //       // Loop
