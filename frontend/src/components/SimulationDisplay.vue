@@ -1,34 +1,35 @@
 <template>
   <div class="w-full">
     <div class="border border-gray-400 rounded-lg w-full h-full bg-white flex items-center justify-center overflow-hidden">
+        <!-- Developer tool buttons -->
+        <div class="absolute top-6 left-1/2 -translate-x-1/2 z-40">
+            <button
+                type="button"
+                class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
+                @click="toggleLaneDebug"
+                >
+                {{ showDevLaneDebug ? 'Hide lane debug' : 'Show lane debug' }}
+            </button>
+
+            <button
+                type="button"
+                class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
+                @click="toggleTileCoordDebug"
+            >
+                {{ showDevTileCoordDebug ? 'Hide tile coords' : 'Show tile coords' }}
+            </button>
+
+            <button
+                type="button"
+                class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
+                @click="toggleRouteBuilder"
+            >
+                {{ showDevRouteBuilder ? 'Hide route builder' : 'Show route builder' }}
+            </button>
+        </div>
+
         <!-- Map Container -->
         <div class="relative" :style="containerStyle">
-            <div class="absolute top-2 right-2 z-40">
-                <button
-                    type="button"
-                    class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
-                    @click="toggleLaneDebug"
-                    >
-                    {{ showDevLaneDebug ? 'Hide lane debug' : 'Show lane debug' }}
-                </button>
-
-                <button
-                    type="button"
-                    class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
-                    @click="toggleTileCoordDebug"
-                >
-                    {{ showDevTileCoordDebug ? 'Hide tile coords' : 'Show tile coords' }}
-                </button>
-    
-                <button
-                    type="button"
-                    class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
-                    @click="toggleRouteBuilder"
-                >
-                    {{ showDevRouteBuilder ? 'Hide route builder' : 'Show route builder' }}
-                </button>
-            </div>
-
             <!-- Map grid -->
             <div class="map-grid" :style="gridStyle"> 
                 <div
