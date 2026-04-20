@@ -1,4 +1,4 @@
-name: Backend Build, Scan and Publish Docker Image
+name: Frontend Build, Scan and Publish Docker Image
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main
       - dev
     paths:
-      - "backend/**"
+      - "frontend/**"
   workflow_dispatch:
 
 permissions:
@@ -41,7 +41,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ steps.repo.outputs.name }}/backend
+          images: ghcr.io/${{ steps.repo.outputs.name }}/frontend
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
             type=raw,value=dev,enable=${{ github.ref == 'refs/heads/dev' }}
@@ -53,17 +53,17 @@ jobs:
           DOCKER_BUILD_SUMMARY: false
           DOCKER_BUILD_RECORD_UPLOAD: false
         with:
-          context: ./backend
-          file: ./backend/Dockerfile
+          context: ./frontend
+          file: ./frontend/Dockerfile
           load: true
-          tags: ghcr.io/${{ steps.repo.outputs.name }}/backend:scan-${{ github.sha }}
+          tags: ghcr.io/${{ steps.repo.outputs.name }}/frontend:scan-${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Run Trivy scan JSON report
         uses: aquasecurity/trivy-action@v0.35.0
         with:
-          image-ref: "ghcr.io/${{ steps.repo.outputs.name }}/backend:scan-${{ github.sha }}"
+          image-ref: "ghcr.io/${{ steps.repo.outputs.name }}/frontend:scan-${{ github.sha }}"
           format: "json"
           output: "trivy-report.json"
           exit-code: "0"
@@ -83,9 +83,9 @@ jobs:
           medium_count=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "MEDIUM")] | length' trivy-report.json)
 
           {
-            echo "# Backend image vulnerability overview"
+            echo "# Frontend image vulnerability overview"
             echo
-            echo "- Image: ghcr.io/${{ steps.repo.outputs.name }}/backend:scan-${{ github.sha }}"
+            echo "- Image: ghcr.io/${{ steps.repo.outputs.name }}/frontend:scan-${{ github.sha }}"
             echo "- Critical: ${critical_count}"
             echo "- High: ${high_count}"
             echo "- Medium: ${medium_count}"
@@ -118,7 +118,7 @@ jobs:
       - name: Upload Trivy reports and overview
         uses: actions/upload-artifact@v4
         with:
-          name: backend-trivy-reports-${{ github.run_number }}
+          name: frontend-trivy-reports-${{ github.run_number }}
           path: |
             trivy-report.json
             trivy-overview.md
@@ -128,14 +128,14 @@ jobs:
         if: steps.overview.outputs.critical_count != '0'
         run: |
           echo "Critical vulnerabilities found: ${{ steps.overview.outputs.critical_count }}"
-          echo "See artifact backend-trivy-reports-${{ github.run_number }} and the job summary for details."
+          echo "See artifact frontend-trivy-reports-${{ github.run_number }} and the job summary for details."
           exit 1
 
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          context: ./backend
-          file: ./backend/Dockerfile
+          context: ./frontend
+          file: ./frontend/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
