@@ -8,7 +8,7 @@
                 class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
                 @click="toggleLaneDebug"
                 >
-                {{ showDevLaneDebug ? 'Hide lane debug' : 'Show lane debug' }}
+                {{ showDevLaneDebug ? 'Hide lane overlay' : 'Show lane overlay' }}
             </button>
 
             <button
@@ -16,7 +16,7 @@
                 class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
                 @click="toggleTileCoordDebug"
             >
-                {{ showDevTileCoordDebug ? 'Hide tile coords' : 'Show tile coords' }}
+                {{ showDevTileCoordDebug ? 'Hide tile coords overlay' : 'Show tile coords overlay' }}
             </button>
 
             <button
