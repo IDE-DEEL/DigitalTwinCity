@@ -213,7 +213,7 @@ export function buildLaneSequenceFromTilePath(tilePath, mapData) {
       findConnectingLane(rotatedLanes, incomingDirection, outgoingDirection)
     );
   }
-  console.log('Chosen lane sequence:', laneSequence);
+
   return laneSequence;
 }
 
