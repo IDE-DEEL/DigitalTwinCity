@@ -1,6 +1,7 @@
-import { ref, computed } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { ROUTE_OPTIONS } from "../logic/domain/routes";
 import { buildCarsWithRoutes } from "../logic/service/carService";
+import { useWebSocketSimulation } from "./useWebSocketSimulation";
 
 // refs
 const cars = ref([]);
@@ -11,6 +12,9 @@ const mapData = ref([]);
 
 // constants
 const MAX_CARS = 5;
+
+// websocket composable
+const { isWebSocketConnected, connectWebSocket, disconnectWebSocket, sendWebSocketMessage } = useWebSocketSimulation();
 
 // ---
 // adding and removing cars
@@ -79,10 +83,35 @@ function setScenario(value) {
 }
 
 function startSimulation() {
+    if (!isWebSocketConnected.value) {
+        console.error("WebSocket not connected. Cannot start simulation.");
+        return;
+    }
+    
+    const parameters = collectParameters();
+    if (!parameters) {
+        console.error("Parameters not available. Cannot start simulation.");
+        return;
+    }
+    
+    sendWebSocketMessage({
+        command: "start",
+        parameters: parameters
+    });
+    
     isSimulating.value = true;
 }
 
 function stopSimulation() {
+    if (!isWebSocketConnected.value) {
+        console.error("WebSocket not connected. Cannot stop simulation.");
+        return;
+    }
+    
+    sendWebSocketMessage({
+        command: "stop"
+    });
+    
     isSimulating.value = false;
 }
 
@@ -151,6 +180,14 @@ function collectParameters() {
 // exporting composable
 // ---
 export function useSimulationState() {
+    onMounted(() => {
+        connectWebSocket();
+    });
+
+    onBeforeUnmount(() => {
+        disconnectWebSocket();
+    });
+
     return {
         cars,
         carSpeed,
@@ -159,6 +196,7 @@ export function useSimulationState() {
         mapData,
         MAX_CARS,
         routeOptions: ROUTE_OPTIONS,
+        isWebSocketConnected,
 
         addCar,
         removeCar,
