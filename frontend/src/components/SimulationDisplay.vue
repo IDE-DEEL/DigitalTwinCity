@@ -59,16 +59,6 @@
                 :viewBox="`0 0 ${MAP_COLUMNS} ${MAP_ROWS}`"
                 :preserveAspectRatio="`none`"
             >
-                <!-- <polyline
-                    v-for="lane in lanes"
-                    :key="lane.id"
-                    :points="lane.points.map(p => `${p.x},${p.y}`).join(' ')"
-                    fill="none"
-                    stroke="blue"
-                    stroke-width="0.00"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                /> -->
 
                 <polyline
                     v-for="car in visibleCarsWithRoutes"
