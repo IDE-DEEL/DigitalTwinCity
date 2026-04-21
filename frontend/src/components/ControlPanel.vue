@@ -1,6 +1,14 @@
 <template>
     <aside class="w-[320px] bg-cream text-dark p-6 flex flex-col gap-6 text-sm">
 
+        <!-- WebSocket Status Indicator -->
+        <div v-if="!isWebSocketConnected" class="flex items-center gap-2 pb-4 border-b border-red-300 p-3">
+            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+            <span class="text-xs font-medium text-red-700">
+                Niet verbonden met backend
+            </span>
+        </div>
+
         <!-- Car speed parameter -->
          <div>
             <label class="block text-sm font-semibold mb-1">Snelheid:</label>
@@ -168,6 +176,7 @@ const {
     carSpeed,
     scenario,
     isSimulating,
+    isWebSocketConnected,
     MAX_CARS,
     routeOptions,
     addCar,
@@ -183,13 +192,16 @@ const {
 } = useSimulationState();
 
 const handleStart = () => {
-    console.log('Simulation gestart');
-    console.log('Parameters:', collectParameters());
+    if (!isWebSocketConnected.value) {
+        console.warn('WebSocket niet verbonden. Simulatie kan niet starten.');
+        return;
+    }
+    console.log('Requested simulation start with parameters: ', collectParameters());
     startSimulation();
 }
 
 const handleStop = () => {
-    console.log('Simulation gestopt');
+    console.log('Requested simulation stop');
     stopSimulation();
 }
 </script>
