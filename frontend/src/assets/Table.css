@@ -1,0 +1,41 @@
+.table-container {
+    --container-radius: 10px;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: var(--container-radius);
+    background-color: var(--color-primary-gray1);
+    overflow: hidden;
+}
+
+.title-row th {
+    background-color: var(--color-table-gray1);
+    height: 15%;
+    text-align: center;
+    border: none;
+}
+
+tr {
+    text-align: center
+}
+
+tbody:nth-child(even) {
+    background-color: var(--color-table-gray2);
+}
+
+.circle {
+    appearance: none;
+    -webkit-appearance: none;
+    display: inline-grid;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    cursor: pointer;
+    place-content: center;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    background-color: var(--color-primary-red);
+}
+
+.circle:checked {
+    background-color: var(--color-primary-green);
+}

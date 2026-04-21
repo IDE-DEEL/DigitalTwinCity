@@ -1,20 +1,30 @@
 <script setup>
-const props = defineProps(['data']);
+import "../assets/Table.css"
+const props = defineProps(['name', 'data']);
 </script>
 
 <template>
   <div>
-    <label class="block text-sm font-semibold mb-1">Auto's:</label>
-      <div class="bg-white border border-gray-300 rounded-md h-32 overflow-y-auto text-sm">
-        <div class="flex justify-between px-3 py-2 border-b border-gray-100 font-semibold text-gray-700">
-          <span>ID</span><span>Pakketjes</span>
-        </div>
-        <div class="flex justify-between px-3 py-1 border-b text-gray-600">
-          <span>Auto 1</span><span>2</span>
-        </div>
-          <div class="flex justify-between px-3 py-1 text-gray-600">
-            <span>Auto 2</span><span>0</span>
-          </div>
-      </div>
+    <label class="block text-sm font-semibold mb-1">{{ name }}:</label>
+      <table class="table-container">
+        <thead>
+          <tr class="title-row">
+            <th>Auto ID</th>
+            <th>Pakketjes</th>
+            <th>Route</th>
+            <th>Visueel</th>
+          </tr>
+        </thead>
+        <tbody v-for="car in data">
+          <tr>
+            <td>{{ car.auto_id }}</td>
+            <td>{{ car.pakketje }}</td>
+            <td>{{ car.route }}</td>
+            <td>
+              <input type="checkbox" class="circle" :checked="car.visueel"></input>
+            </td>
+          </tr>
+        </tbody>
+      </table>
   </div>
 </template>
