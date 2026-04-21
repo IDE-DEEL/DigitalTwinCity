@@ -32,5 +32,38 @@ export const store = reactive({
       .then(data => result.value = data)
 
     return result
-  }
+  },
+
+  socket: null
 })
+
+export const connect = () => {
+// Methode om de socket te verbinden
+  store.socket = new WebSocket("ws://localhost:8000/digital_twin/ws");
+  
+  store.socket.onopen = () => console.log("WebSocket verbonden!");
+  store.socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      // Optioneel: update de store met data van FastAPI
+      store.table_data = data.table_data;
+      store.routes = data.routes;
+      store.scenarios = data.scenarios;
+      store.chosen_scenario = data.scenario;
+      store.speed = data.speed;
+  };
+}
+
+export const send_data = () => {
+  if (store.socket && store.socket.readyState === WebSocket.OPEN) {
+      const payload = {
+        table_data: store.table_data,
+        routes: store.routes,
+        scenarios: store.scenarios,
+        scenario: store.chosen_scenario,
+        speed: store.speed
+      };
+      store.socket.send(JSON.stringify(payload));
+    } else {
+      console.error("Socket is niet open!");
+    }
+}

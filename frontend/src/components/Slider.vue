@@ -1,6 +1,13 @@
 <script setup>
+import { watch } from 'vue'
+import { send_data } from '../store.js'
+
 const model = defineModel({ type: Number, default: 0 });
 const props = defineProps({ name: String });
+
+watch(model, () => {
+  send_data()
+})
 </script>
 
 <template>
