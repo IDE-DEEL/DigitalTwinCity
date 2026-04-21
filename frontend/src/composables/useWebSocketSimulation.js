@@ -4,7 +4,7 @@ const isWebSocketConnected = ref(false);
 let websocket = null;
 let isConnecting = false;
 
-const WS_URL = "ws://localhost:8000/api/v1/digital-sim/ws/simulation";
+const WS_URL = "ws://localhost:8000/api/v1/digital-sim/ws/simulation"; // TODO: switch URL based on environmnent (dev vs prod)
 
 function connectWebSocket() {
     // Prevent duplicate connection attempts
