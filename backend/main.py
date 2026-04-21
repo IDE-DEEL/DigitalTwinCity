@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 
 from api.v1 import results_api
+from backend.api.v1 import digital_twin
 from backend.data.db.database import Base, engine
 
 app = FastAPI(title="DEEL - Digital Twin",
@@ -20,6 +21,7 @@ app.add_middleware(
 
 api_v1_prefix = "/api/v1"
 app.include_router(results_api.router, prefix=api_v1_prefix)
+app.include_router(digital_twin.router, prefix=api_v1_prefix)
 
 Base.metadata.create_all(bind=engine)
 
