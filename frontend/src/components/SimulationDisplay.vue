@@ -63,7 +63,7 @@
                 <polyline
                     v-for="car in visibleCarsWithRoutes"
                     :key="`route-${car.id}`"
-                    :points="car.waypoints.map(p => `${p.x},${p.y}`).join(' ')"
+                    :points="car.waypoints.map(point => `${point.x},${point.y}`).join(' ')"
                     fill="none"
                     :stroke="getRouteColorForCar(car.id)"
                     stroke-width="0.01"
