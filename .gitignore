@@ -27,3 +27,4 @@ dist-ssr
 */car_doc/html/*
 */car_doc/latex/*
 *.env
+__pycache__/
