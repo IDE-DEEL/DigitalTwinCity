@@ -1,3 +1,8 @@
+
+
+auto_1 = "auto_1"
+auto_2 = "auto_2"
+
 start = [
     [[0],[1],[2],[0]],
     [[0],[3],[4],[0]],
@@ -85,13 +90,11 @@ turn_WN = [
 
 
 '''
-bereken alle commandos van te voren gebasseerd op wat de route is vanuit de front end, dan een lijst vullen met de commandos en per rfid tag het volgende commando doorsturen.
+bereken alle commandos van te voren gebaseerd op wat de route is vanuit de front end, dan een lijst vullen met de commandos en per rfid tag het volgende commando doorsturen.
 
 
 voor het genereren van de commandos of gewoon een variabele string die je elke keer weer in de lijst append of aan een variable +=
 '''
-
-
 
 
 
@@ -105,3 +108,50 @@ matrix = [
     [[turn_NE],            [straight_horizontal],   [t_junction_up],         [t_junction_up],        [turn_WN]]
 ]
 
+
+auto_1 = "auto_1"
+auto_2 = "auto_2"
+
+
+
+def find_index():
+
+
+index_current_auto_1 = matrix.index("auto_1")
+index_current_auto_2 = matrix.index("auto_2")
+index_next_auto_1 = matrix.index("auto_1")
+index_next_auto_2 = matrix.index("auto_2")
+
+
+
+# this is a list of routes with the commands and tags
+
+route_1 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
+route_2 = ["left", "forward", "right", "right", "forward", "left", "right", "right", "forward"]
+route_1 = ["left", "forward", "right", "right", "forward", "left", "right", "right", "forward"]
+route_1 = ["left", "forward", "right", "right", "forward", "left", "right", "right", "forward"]
+route_1 = ["left", "forward", "right", "right", "forward", "left", "right", "right", "forward"]
+route_1 = ["left", "forward", "right", "right", "forward", "left", "right", "right", "forward"]
+route_1 = ["left", "forward", "right", "right", "forward", "left", "right", "right", "forward"]
+route_1 = ["left", "forward", "right", "right", "forward", "left", "right", "right", "forward"]
+route_1 = ["left", "forward", "right", "right", "forward", "left", "right", "right", "forward"]
+route_1 = ["left", "forward", "right", "right", "forward", "left", "right", "right", "forward"]
+route_1 = ["left", "forward", "right", "right", "forward", "left", "right", "right", "forward"]
+route_1 = ["left", "forward", "right", "right", "forward", "left", "right", "right", "forward"]
+route_1 = ["left", "forward", "right", "right", "forward", "left", "right", "right", "forward"]
+
+
+
+
+while True:
+    if matrix[index_current_auto_1] == matrix[index_next_auto_2]:
+        # hold car for a second and follow traffic laws
+        break
+
+    elif matrix[index_current_auto_2] == matrix[index_next_auto_1]:
+        # hold car for a second and follow traffic laws
+        break
+
+    else:
+        # follow the path
+        break
