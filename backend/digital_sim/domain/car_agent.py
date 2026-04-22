@@ -1,10 +1,16 @@
 import mesa
 
+from backend.digital_sim.domain.route import Route
+
+
 class CarAgent(mesa.Agent):
-    def __init__(self, model):
+    def __init__(self, model, car_speed: int = 50, route: Route = None):
         super().__init__(model)
 
-        self.packages = 1
+        self.car_speed = car_speed
+        self.route = route
     
-    def say_hi(self):
-        print(f"Hi, I am an agent, you can call me {self.unique_id!s}.")
+    def step(self):
+        """Execute one step of the car agent."""
+        # TODO: implement car movement logic
+        pass
