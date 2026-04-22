@@ -1,6 +1,6 @@
 <script setup>
 import "../assets/Table.css"
-const props = defineProps(['name', 'data']);
+const props = defineProps({ name: String, key: String, data: Array})
 </script>
 
 <template>

@@ -22,8 +22,11 @@ export const store = reactive({
     "Placeholder 2",
     "Placeholder 3"
   ],
+  
   chosen_scenario: '',
   speed: 50,
+  score: 0,
+  time: "00:00",
 
   fetch_speed() {
     const result = null;
@@ -43,24 +46,29 @@ export const connect = () => {
   
   store.socket.onopen = () => console.log("WebSocket verbonden!");
   store.socket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      // Optioneel: update de store met data van FastAPI
-      //store.table_data = data.table_data;
-      //store.routes = data.routes;
-      //store.scenarios = data.scenarios;
-      //store.chosen_scenario = data.scenario;
-      //store.speed = data.speed;
+      const { type, payload } = JSON.parse(event.data);
+      //update de store met data van FastAPI
+      switch(type) {
+        case "speed":
+            store.speed = payload;
+        break;
+
+        case "scenario":
+            store.scenario = payload;
+        break;
+
+        case "car_table":
+            store.table_data = payload;
+        break;
+      }
   };
 }
 
-export const send_data = () => {
+export const send_data = (data_type, data_value) => {
   if (store.socket && store.socket.readyState === WebSocket.OPEN) {
       const payload = {
-        table_data: store.table_data,
-        routes: store.routes,
-        scenarios: store.scenarios,
-        scenario: store.chosen_scenario,
-        speed: store.speed
+        type: data_type,
+        payload: data_value,
       };
       store.socket.send(JSON.stringify(payload));
     } else {
