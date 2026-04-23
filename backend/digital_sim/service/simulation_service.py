@@ -32,7 +32,7 @@ class SimulationService:
         Execute one step of the simulation.
         
         Returns:
-            Dictionary with step information
+            Dictionary with step information and agent status
         """
         if not self.is_running or not self.model:
             return {"status": "simulation_not_running"}
@@ -40,7 +40,10 @@ class SimulationService:
         # Execute one step in the simulation
         self.model.step()
         
-        return {"step": self.model.step_count}
+        return {
+            "step": self.model.step_count,
+            "agents": self.model.get_agents_status()
+        }
     
     def stop_simulation(self):
         """Stop the current simulation."""

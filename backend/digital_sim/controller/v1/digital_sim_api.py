@@ -28,6 +28,12 @@ async def websocket_simulation_endpoint(websocket: WebSocket):
                 
                 result = simulation_service.start_simulation(parameters)
                 
+                # Send confirmation that simulation has started
+                await websocket.send_json({
+                    "command": "simulation_started",
+                    "result": result
+                })
+                
                 # Create simulation loop to advance simulation steps
                 simulation_task = asyncio.create_task(
                     _run_simulation_loop(websocket, simulation_service)
@@ -78,6 +84,7 @@ async def _run_simulation_loop(websocket: WebSocket, simulation_service: Simulat
                 await websocket.send_json({
                     "command": "simulation_update",
                     "step": step_result.get("step"),
+                    "agents": step_result.get("agents", [])
                 })
             except Exception as e:
                 print(f"Error sending simulation update: {e}")
