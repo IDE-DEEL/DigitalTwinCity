@@ -26,11 +26,18 @@ function connectWebSocket() {
             try {
                 const data = JSON.parse(event.data);
                 
-                // TODO: update logic for handling response from backend when backend simulation logic is implemented
-                if (data.command === "simulation_started") {
-                    console.log("Simulation started on backend with parameters:", data.parameters);
-                } else if (data.command === "simulation_stopped") {
-                    console.log("Simulation stopped on backend");
+                switch (data.command) {
+                    case "simulation_started":
+                        console.log("simulation started on backend", data.result);
+                        break;
+                    case "simulation_update":
+                        console.log("simulation update - step:", data.step, "agents:", data.agents);
+                        break;
+                    case "simulation_stopped":
+                        console.log("simulation stopped on backend", data.result);
+                        break;
+                    default:
+                        console.warn("Unknown command received:", data.command);
                 }
             } catch (error) {
                 console.error("Error parsing WebSocket message:", error);
