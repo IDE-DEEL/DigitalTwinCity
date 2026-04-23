@@ -19,6 +19,23 @@ class CarModel(mesa.Model):
     def step(self):
         self.agents.shuffle_do("step")
         self.step_count += 1
+    
+    def get_agents_status(self):
+        """
+        Get the current status of all agents.
+        
+        Returns:
+            List of dictionaries containing agent status (id, position, speed, finished)
+        """
+        agents_status = []
+        for agent in self.agents:
+            agents_status.append({
+                "id": agent.unique_id,
+                "position": agent.position,
+                "speed": agent.actual_speed,
+                "finished": agent.is_finished
+            })
+        return agents_status
 
     def _setup_cars_and_routes(self, car_settings: list[dict], car_speed: int):
         """Create routes and agents based on car settings from frontend."""
