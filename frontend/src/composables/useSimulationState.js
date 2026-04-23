@@ -9,6 +9,7 @@ const carSpeed = ref(50);
 const scenario = ref('Rustig');
 const isSimulating = ref(false);
 const mapData = ref([]);
+const agentsState = ref([]);
 
 // constants
 const MAX_CARS = 5;
@@ -113,6 +114,11 @@ function stopSimulation() {
     });
     
     isSimulating.value = false;
+    agentsState.value = [];
+}
+
+function updateAgentsState(agents) {
+    agentsState.value = agents;
 }
 
 // ---
@@ -181,7 +187,7 @@ function collectParameters() {
 // ---
 export function useSimulationState() {
     onMounted(() => {
-        connectWebSocket();
+        connectWebSocket(updateAgentsState);
     });
 
     onBeforeUnmount(() => {
@@ -194,6 +200,7 @@ export function useSimulationState() {
         scenario,
         isSimulating,
         mapData,
+        agentsState,
         MAX_CARS,
         routeOptions: ROUTE_OPTIONS,
         isWebSocketConnected,
@@ -208,6 +215,7 @@ export function useSimulationState() {
         setMapData,
         startSimulation,
         stopSimulation,
+        updateAgentsState,
         collectParameters,
 
         visibleCars,

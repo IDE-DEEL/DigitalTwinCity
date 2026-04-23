@@ -3,10 +3,14 @@ import { ref } from "vue";
 const isWebSocketConnected = ref(false);
 let websocket = null;
 let isConnecting = false;
+let onSimulationUpdateCallback = null;
 
 const WS_URL = "ws://localhost:8000/api/v1/digital-sim/ws/simulation"; // TODO: switch URL based on environmnent (dev vs prod)
 
-function connectWebSocket() {
+function connectWebSocket(onSimulationUpdate) {
+    // Store the callback for simulation updates
+    onSimulationUpdateCallback = onSimulationUpdate;
+    
     // Prevent duplicate connection attempts
     if (isConnecting || websocket !== null) {
         return;
@@ -32,6 +36,9 @@ function connectWebSocket() {
                         break;
                     case "simulation_update":
                         console.log("simulation update - step:", data.step, "agents:", data.agents);
+                        if (data.agents && onSimulationUpdateCallback) {
+                            onSimulationUpdateCallback(data.agents);
+                        }
                         break;
                     case "simulation_stopped":
                         console.log("simulation stopped on backend", data.result);
@@ -67,6 +74,7 @@ function disconnectWebSocket() {
         websocket = null;
         isWebSocketConnected.value = false;
     }
+    onSimulationUpdateCallback = null;
 }
 
 function sendWebSocketMessage(message) {
