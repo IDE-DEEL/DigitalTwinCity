@@ -46,7 +46,7 @@ class CarModel(mesa.Model):
 
             # prevent duplicate route objects
             if route_name not in routes_added:
-                waypoints = car_config.get("waypoints")
+                waypoints = car_config.get("routeWaypoints")
                 self.routes[route_name] = Route(name=route_name, waypoints=waypoints, houses=[])
                 routes_added.add(route_name)
             
