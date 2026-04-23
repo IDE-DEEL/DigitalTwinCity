@@ -86,13 +86,23 @@
                 :map-data="mapData"
             />
 
-            <!-- Auto -->
-                <div
+            <!-- Auto (digital simulation) -->
+            <div
+                v-for="agent in agentsState"
+                :key="`agent-${agent.id}`"
+                class="absolute bg-red-500 rounded-full z-10"
+                :style="agentVehicleStyle(agent)"
+                :title="`Agent ${agent.id} - Speed: ${agent.speed?.toFixed(2)}`"
+            >
+            </div>
+
+            <!-- Auto (MQTT)-->
+                <!-- <div
                     id="live-vehicle"
                     class="absolute bg-black rounded-full z-10"
                     :style="vehicleStyle"
                 >
-                </div>
+                </div> -->
         </div>
     </div> 
   </div>
@@ -120,6 +130,7 @@ const { vehiclePosition,setupMqttClient } = useMqttVehicle();
 const {
     visibleCarsWithRoutes,
     setMapData,
+    agentsState,
 } = useSimulationState();
 
 // --- lane debug devtool start ---
@@ -175,10 +186,12 @@ const containerStyle = computed(() => {
     };
 });
 
-// vehicle style
-const vehicleStyle = computed(() => {
-    const xPercent = (vehiclePosition.value.x / MAP_DIMENSION) * 100;
-    const yPercent = (vehiclePosition.value.y / MAP_DIMENSION) * 100;
+// vehicle style - now for simulated agents
+const agentVehicleStyle = (agent) => {
+    if (!agent || !agent.position) return {};
+    
+    const xPercent = (agent.position[0] / MAP_COLUMNS) * 100;
+    const yPercent = (agent.position[1] / MAP_ROWS) * 100;
     const vehicleSize = '12px';
 
     return {
@@ -186,10 +199,25 @@ const vehicleStyle = computed(() => {
         height: vehicleSize,
         left: `calc(${xPercent}% - ${parseInt(vehicleSize)/2}px)`,
         top: `calc(${yPercent}% - ${parseInt(vehicleSize)/2}px)`,
-        transform: `rotate(${vehiclePosition.value.rotation}deg)`,
-        transition: 'all 0.5s linear'
+        // transition: 'all 0.1s linear'
     };
-});
+};
+
+// // vehicle style - MQTT
+// const vehicleStyle = computed(() => {
+//     const xPercent = (vehiclePosition.value.x / MAP_DIMENSION) * 100;
+//     const yPercent = (vehiclePosition.value.y / MAP_DIMENSION) * 100;
+//     const vehicleSize = '12px';
+
+//     return {
+//         width: vehicleSize, 
+//         height: vehicleSize,
+//         left: `calc(${xPercent}% - ${parseInt(vehicleSize)/2}px)`,
+//         top: `calc(${yPercent}% - ${parseInt(vehicleSize)/2}px)`,
+//         transform: `rotate(${vehiclePosition.value.rotation}deg)`,
+//         transition: 'all 0.5s linear'
+//     };
+// });
 
 
 // gridstyle
