@@ -11,10 +11,10 @@ class CarModel(mesa.Model):
 
         self.num_agents = len(car_settings)
         self.step_count = 0
-        self.car_speed = car_speed
+        self.car_speed = car_speed / 100
         self.routes = {}
         
-        self._setup_cars_and_routes(car_settings, car_speed)
+        self._setup_cars_and_routes(car_settings, self.car_speed)
     
     def step(self):
         self.agents.shuffle_do("step")
@@ -32,7 +32,11 @@ class CarModel(mesa.Model):
             agents_status.append({
                 "id": agent.unique_id,
                 "position": agent.position,
+                "heading_radial": agent.heading,
+                "heading_deg": agent.heading_deg,
+                "target_speed": agent.target_speed,
                 "speed": agent.actual_speed,
+                "distance_travelled": agent.distance_travelled,
                 "finished": agent.is_finished
             })
         return agents_status
