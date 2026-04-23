@@ -1,7 +1,7 @@
 import mesa
 
 from backend.digital_sim.domain.route import Route
-from backend.digital_sim.domain.movement import MovementController
+from backend.digital_sim.domain.movement_controller import MovementController
 
 
 class CarAgent(mesa.Agent):
