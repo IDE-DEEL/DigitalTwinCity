@@ -90,7 +90,7 @@
             <div
                 v-for="agent in agentsState"
                 :key="`agent-${agent.id}`"
-                class="absolute bg-red-500 rounded-full z-10"
+                class="absolute bg-black z-10 border-2"
                 :style="agentVehicleStyle(agent)"
                 :title="`Agent ${agent.id} - Speed: ${agent.speed?.toFixed(2)}`"
             >
@@ -192,14 +192,19 @@ const agentVehicleStyle = (agent) => {
     
     const xPercent = (agent.position[0] / MAP_COLUMNS) * 100;
     const yPercent = (agent.position[1] / MAP_ROWS) * 100;
-    const vehicleSize = '12px';
+    const width = '36px';
+    const height = '18px';
+
+    const rotation = (agent.heading_deg || 0) - 90;
 
     return {
-        width: vehicleSize, 
-        height: vehicleSize,
-        left: `calc(${xPercent}% - ${parseInt(vehicleSize)/2}px)`,
-        top: `calc(${yPercent}% - ${parseInt(vehicleSize)/2}px)`,
-        // transition: 'all 0.1s linear'
+        width: width, 
+        height: height,
+        left: `calc(${xPercent}% - ${parseInt(width)/2}px)`,
+        top: `calc(${yPercent}% - ${parseInt(height)/2}px)`,
+        background: getRouteColorForCar(agent.id),
+        borderRadius: '2px',
+        transform: `rotate(${rotation}deg)`
     };
 };
 
