@@ -116,6 +116,7 @@ import { useMqttVehicle } from '../composables/MqttConnection.js';
 import { normalizeDegree } from '../logic/utils/rotation.js';
 import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
 import { useSimulationState } from '../composables/useSimulationState.js';
+import { MAP_COLUMNS, MAP_ROWS } from '../constants/mapConstants.js';
 import devLaneDebugOverlay from '../development/devLaneDebugOverlay.vue';
 import devTileCoordinateOverlay from '../development/devTileCoordinateOverlay.vue';
 import devRouteBuilder from '../development/devRouteBuilder.vue';
@@ -170,12 +171,6 @@ const getRouteColorForCar = (carId) => {
     return CAR_ROUTE_COLORS[carId] ?? 'blue';
 };
 // --- custom colors for car routes end ---
-
-const MAP_DIMENSION = 5;
-// TODO: move to constants file in sprint 6
-const MAP_COLUMNS = 5;
-const MAP_ROWS = 4;
-const MAX_MAP_SCALE = 70;
 
 // container style
 const containerStyle = computed(() => {
