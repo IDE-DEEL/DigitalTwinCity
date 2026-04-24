@@ -97,7 +97,7 @@ class MovementController:
     def _update_position(self) -> None:
         """Beweeg de auto langs de route."""
         # Find dichtstbijzijnde punt op route
-        best_seg, proj_point, dist_to_route = self._find_closest_point_on_route()
+        best_seg, proj_point, proj_t, dist_to_route = self._find_closest_point_on_route()
 
         if dist_to_route > self.off_route_threshold:
             self.off_route = True
@@ -108,8 +108,8 @@ class MovementController:
         # Bepaal dynamische lookahead (snelheid-afhankelijk)
         lookahead_distance = self.base_lookahead + (self.actual_speed * self.lookahead_speed_factor)
         
-        # Bepaal target point (lookahead)
-        target_point = self._get_lookahead_point(best_seg, proj_point, lookahead_distance)
+        # Bepaal target point (lookahead) - gebruik t parameter voor nauwkeurige berekening
+        target_point = self._point_along_route(best_seg, proj_t, lookahead_distance)
 
         # Bereken gewenste heading naar target
         pos_tuple = (self.position[0], self.position[1])
@@ -142,12 +142,12 @@ class MovementController:
         new_pos = (self.position[0], self.position[1])
         self.distance_travelled += math.hypot(new_pos[0] - prev_pos[0], new_pos[1] - prev_pos[1])
 
-    def _find_closest_point_on_route(self) -> Tuple[int, Point, float]:
+    def _find_closest_point_on_route(self) -> Tuple[int, Point, float, float]:
         """
         Vind het dichtstbijzijnde punt op de route.
 
         Returns:
-            (segment_index, projection_point, distance_to_projection)
+            (segment_index, projection_point, t_on_segment, distance_to_projection)
         """
         pos = (self.position[X_COORD_IDX], self.position[Y_COORD_IDX])
         waypoints = self.waypoints
@@ -155,6 +155,7 @@ class MovementController:
         # Zoek in huidige en volgende segmenten
         best_seg = self.segment_index
         best_point = None
+        best_t = 0.0
         best_dist = float("inf")
 
         search_end = min(self.segment_index + 5, len(waypoints) - 1)
@@ -163,56 +164,61 @@ class MovementController:
             p1 = (waypoints[i][X_COORD_IDX], waypoints[i][Y_COORD_IDX])
             p2 = (waypoints[i + 1][X_COORD_IDX], waypoints[i + 1][Y_COORD_IDX])
 
-            proj, dist = self._project_point_on_segment(pos, p1, p2)
+            proj, t, dist = self._project_point_on_segment(pos, p1, p2)
 
             if dist < best_dist:
                 best_dist = dist
                 best_seg = i
                 best_point = proj
+                best_t = t
 
-        return best_seg, best_point, best_dist
+        return best_seg, best_point, best_t, best_dist
 
-    def _get_lookahead_point(self, seg_index: int, start_point: Point, lookahead_distance: float) -> Point:
+    def _point_along_route(self, seg_index: int, start_t: float, distance_ahead: float) -> Point:
         """
-        Get een punt verder langs de route voor steering.
+        Geef een punt terug dat 'distance_ahead' verder ligt op de polyline-route,
+        beginnend op segment 'seg_index' op relatieve positie 'start_t' (0-1).
+        
+        Dit is de bewezen methode uit car_agent_OLD.py die goed werkt met grote gaten
+        tussen waypoints.
         
         Args:
-            seg_index: Huidge segment index
-            start_point: Startpunt voor lookahead
-            lookahead_distance: Hoe ver vooruit te kijken
+            seg_index: Huige segment index
+            start_t: Positie op segment (0-1)
+            distance_ahead: Hoe ver vooruit te kijken
+            
+        Returns:
+            Point op de route dat distance_ahead ver is
         """
         waypoints = self.waypoints
-        current_dist = 0.0
+        n = len(waypoints)
 
-        for i in range(seg_index, len(waypoints) - 1):
-            p1 = (waypoints[i][X_COORD_IDX], waypoints[i][Y_COORD_IDX])
-            p2 = (waypoints[i + 1][X_COORD_IDX], waypoints[i + 1][Y_COORD_IDX])
+        seg = seg_index
+        t = start_t
+        remaining = distance_ahead
 
-            seg_length = math.hypot(p2[X_COORD_IDX] - p1[X_COORD_IDX], p2[Y_COORD_IDX] - p1[Y_COORD_IDX])
+        while seg < n - 1:
+            a = (waypoints[seg][X_COORD_IDX], waypoints[seg][Y_COORD_IDX])
+            b = (waypoints[seg + 1][X_COORD_IDX], waypoints[seg + 1][Y_COORD_IDX])
 
-            if i == seg_index:
-                dist_on_seg = math.hypot(
-                    start_point[X_COORD_IDX] - p1[X_COORD_IDX],
-                    start_point[Y_COORD_IDX] - p1[Y_COORD_IDX]
-                )
-                remaining_on_seg = seg_length - dist_on_seg
-            else:
-                dist_on_seg = 0.0
-                remaining_on_seg = seg_length
+            dx = b[0] - a[0]
+            dy = b[1] - a[1]
+            seg_len = math.hypot(dx, dy)
 
-            if current_dist + remaining_on_seg >= lookahead_distance:
-                # Target ligt op dit segment
-                dist_needed = lookahead_distance - current_dist
-                t = dist_needed / remaining_on_seg if remaining_on_seg > 0 else 0
-                t = max(0, min(1, t))
+            if seg_len == 0:
+                seg += 1
+                t = 0.0
+                continue
 
-                result = (
-                    p1[X_COORD_IDX] + t * (p2[X_COORD_IDX] - p1[X_COORD_IDX]),
-                    p1[Y_COORD_IDX] + t * (p2[Y_COORD_IDX] - p1[Y_COORD_IDX])
-                )
-                return result
+            remaining_on_seg = (1.0 - t) * seg_len
 
-            current_dist += remaining_on_seg
+            if remaining <= remaining_on_seg:
+                new_t = t + (remaining / seg_len)
+                return (a[0] + new_t * dx, a[1] + new_t * dy)
+
+            remaining -= remaining_on_seg
+            seg += 1
+            t = 0.0
 
         # Eindpunt bereikt
         return (waypoints[-1][X_COORD_IDX], waypoints[-1][Y_COORD_IDX])
@@ -238,8 +244,13 @@ class MovementController:
         return math.atan2(p2[Y_COORD_IDX] - p1[Y_COORD_IDX], p2[X_COORD_IDX] - p1[X_COORD_IDX])
 
     @staticmethod
-    def _project_point_on_segment(p: Point, a: Point, b: Point) -> Tuple[Point, float]:
-        """Project punt op segment."""
+    def _project_point_on_segment(p: Point, a: Point, b: Point) -> Tuple[Point, float, float]:
+        """
+        Project punt op segment.
+        
+        Returns:
+            (projected_point, t_on_segment, distance_from_p_to_projection)
+        """
         ax, ay = a
         bx, by = b
         px, py = p
@@ -249,14 +260,14 @@ class MovementController:
         seg_len_sq = dx * dx + dy * dy
 
         if seg_len_sq == 0:
-            return a, math.hypot(px - ax, py - ay)
+            return a, 0.0, math.hypot(px - ax, py - ay)
 
         t = ((px - ax) * dx + (py - ay) * dy) / seg_len_sq
         t = max(0.0, min(1.0, t))
 
         proj = (ax + t * dx, ay + t * dy)
         dist = math.hypot(px - proj[0], py - proj[1])
-        return proj, dist
+        return proj, t, dist
 
     def _segment_heading(self, seg_index: int) -> float:
         """Geef de richting van een segment terug in radialen."""
