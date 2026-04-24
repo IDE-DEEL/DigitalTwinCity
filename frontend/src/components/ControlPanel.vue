@@ -23,11 +23,11 @@
                     type="range" 
                     min="0" 
                     max="100" 
-                    :value="carSpeed"
-                    @input="setCarSpeed(Number($event.target.value))"
+                    :value="carTargetSpeed"
+                    @input="setCarTargetSpeed(Number($event.target.value))"
                     class="w-full accent-blue-200" 
                 />
-                <span class="text-sm font-mono w-10">{{ carSpeed }}</span>
+                <span class="text-sm font-mono w-10">{{ carTargetSpeed }}</span>
             </div>
          </div>
 
@@ -179,7 +179,7 @@ import { useSimulationState } from '../composables/useSimulationState';
 
 const {
     cars,
-    carSpeed,
+    carTargetSpeed,
     scenario,
     isSimulating,
     isWebSocketConnected,
@@ -190,7 +190,7 @@ const {
     updateCarPackageCount,
     updateCarRoute,
     toggleCarRouteVisibility,
-    setCarSpeed,
+    setCarTargetSpeed,
     setScenario,
     startSimulation,
     stopSimulation,

@@ -7,15 +7,15 @@ from backend.digital_sim.constants import ROUTE_NAME_KEY, ROUTE_WAYPOINTS_KEY
 
 class CarModel(mesa.Model):
 
-    def __init__(self, car_settings: list[dict], car_speed: int, rng=None):
+    def __init__(self, car_settings: list[dict], car_target_speed: int, rng=None):
         super().__init__(rng=rng)
 
         self.num_agents = len(car_settings)
         self.step_count = 0
-        self.car_speed = car_speed / 100
+        self.car_target_speed = car_target_speed / 100
         self.routes = {}
         
-        self._setup_cars_and_routes(car_settings, self.car_speed)
+        self._setup_cars_and_routes(car_settings, self.car_target_speed)
     
     def step(self):
         self.agents.shuffle_do("step")

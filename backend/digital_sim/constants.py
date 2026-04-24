@@ -1,5 +1,5 @@
 CAR_SETTINGS_KEY = "carSettings"
-CAR_SPEED_KEY = "carSpeed"
+CAR_TARGET_SPEED_KEY = "carTargetSpeed"
 SCENARIO_KEY = "scenario"
 
 ROUTE_NAME_KEY = "routeName"

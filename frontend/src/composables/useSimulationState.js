@@ -5,7 +5,7 @@ import { useWebSocketSimulation } from "./useWebSocketSimulation";
 
 // refs
 const cars = ref([]);
-const carSpeed = ref(50);
+const carTargetSpeed = ref(50);
 const scenario = ref('Rustig');
 const isSimulating = ref(false);
 const mapData = ref([]);
@@ -75,8 +75,8 @@ function toggleCarRouteVisibility(carId) {
 // ---
 // simulation logic
 // ---
-function setCarSpeed(value) {
-    carSpeed.value = value;
+function setCarTargetSpeed(value) {
+    carTargetSpeed.value = value;
 }
 
 function setScenario(value) {
@@ -178,7 +178,7 @@ const simulationStartPayload = computed(() => {
             routeName: car.route,
             routeWaypoints: car.waypoints,
         })),
-        carSpeed: carSpeed.value,
+        carTargetSpeed: carTargetSpeed.value,
         scenario: scenario.value,
     };
 });
@@ -201,7 +201,7 @@ export function useSimulationState() {
 
     return {
         cars,
-        carSpeed,
+        carTargetSpeed: carTargetSpeed,
         scenario,
         isSimulating,
         mapData,
@@ -215,7 +215,7 @@ export function useSimulationState() {
         updateCarPackageCount,
         updateCarRoute,
         toggleCarRouteVisibility,
-        setCarSpeed,
+        setCarTargetSpeed,
         setScenario,
         setMapData,
         startSimulation,
