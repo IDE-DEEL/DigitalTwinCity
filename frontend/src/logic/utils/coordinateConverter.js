@@ -1,0 +1,32 @@
+import { MAP_ROWS } from '../../constants/mapConstants';
+/**
+ * Coordinate system conversion utilities
+ * 
+ * Frontend (SVG): Y=0 at top, increases downward
+ * Backend (Math): Y=0 at bottom, increases upward
+ */
+
+/**
+ * Convert waypoints from SVG coordinates (frontend) to mathematical coordinates (backend)
+ * Used when sending waypoints to backend for simulation
+ * 
+ * @param {Array<Object>} waypoints - Array of waypoint objects with x, y properties
+ * @returns {Array<Object>} Converted waypoints in mathematical coordinate system
+ */
+export function convertWaypointsSvgToMath(waypoints) {
+  return waypoints.map(point => ({
+    x: point.x,
+    y: MAP_ROWS - point.y
+  }));
+}
+
+/**
+ * Convert position from mathematical coordinates (backend) to SVG coordinates (frontend)
+ * Used when receiving agent positions from backend for display
+ * 
+ * @param {Array<number>} position - Position [x, y] in mathematical coordinates
+ * @returns {Array<number>} Position [x, y] in SVG coordinates
+ */
+export function convertPositionMathToSvg(position) {
+  return [position[0], MAP_ROWS - position[1]];
+}

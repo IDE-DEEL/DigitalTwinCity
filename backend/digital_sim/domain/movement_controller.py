@@ -29,7 +29,7 @@ class MovementController:
         self.dt = dt
 
         # Positie en richting
-        start = waypoints[0]
+        start = self.waypoints[0]
         self.position = [float(start[X_COORD_IDX]), float(start[Y_COORD_IDX])]
         self.heading = self._initial_heading()
         self.segment_index = 0

@@ -1,6 +1,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { ROUTE_OPTIONS } from "../logic/domain/routes";
 import { buildCarsWithRoutes } from "../logic/service/carService";
+import { convertWaypointsSvgToMath, convertPositionMathToSvg } from "../logic/utils/coordinateConverter";
 import { useWebSocketSimulation } from "./useWebSocketSimulation";
 
 // refs
@@ -118,7 +119,12 @@ function stopSimulation() {
 }
 
 function updateAgentsState(agents) {
-    agentsState.value = agents;
+    // ensure we convert agent positions back from mathematical coordinates (backend) to SVG coordinates (frontend)
+    const convertedAgents = agents.map(agent => ({
+        ...agent,
+        position: convertPositionMathToSvg(agent.position)
+    }));
+    agentsState.value = convertedAgents;
 }
 
 function reconnectWebSocket() {
@@ -176,7 +182,7 @@ const simulationStartPayload = computed(() => {
             id: car.id,
             packageCount: car.packageCount,
             routeName: car.route,
-            routeWaypoints: car.waypoints,
+            routeWaypoints: convertWaypointsSvgToMath(car.waypoints),
         })),
         carTargetSpeed: carTargetSpeed.value,
         scenario: scenario.value,
