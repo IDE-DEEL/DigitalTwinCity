@@ -1,6 +1,9 @@
 import math
 from typing import Tuple
 
+from backend.digital_sim.constants import X_COORD_IDX, Y_COORD_IDX
+
+
 Point = Tuple[float, float]
 
 # DISCLAIMER: this controller is made by AI based on an earlier prototype.
@@ -27,7 +30,7 @@ class MovementController:
 
         # Positie en richting
         start = waypoints[0]
-        self.position = [float(start[0]), float(start[1])]
+        self.position = [float(start[X_COORD_IDX]), float(start[Y_COORD_IDX])]
         self.heading = self._initial_heading()
         self.segment_index = 0
 
@@ -43,15 +46,15 @@ class MovementController:
         self.distance_travelled = 0.0
 
         # Tuning parameters
-        self.max_steer = 0.2  # radians per step
+        self.max_steer = 0.18  # radians per step
         self.acceleration = 0.2  # units/s² voor snelheidsverandering
         self.deceleration = 0.3  # units/s² voor remmen
-        self.base_lookahead = 0.2  # base lookahead distance
+        self.base_lookahead = 0.1  # base lookahead distance
         self.lookahead_speed_factor = 0.1  # lookahead groeit met snelheid
-        self.goal_tolerance = 0.2
+        self.goal_tolerance = 0.12
         self.off_route_threshold = 3.0
-        self.target_heading_gain = 0.9  # steering naar lookahead point
-        self.path_heading_gain = 0.3  # steering naar pad richting
+        self.target_heading_gain = 1.0  # steering naar lookahead point
+        self.path_heading_gain = 0.35  # steering naar pad richting
 
     def update(self) -> None:
         """
@@ -146,7 +149,7 @@ class MovementController:
         Returns:
             (segment_index, projection_point, distance_to_projection)
         """
-        pos = (self.position[0], self.position[1])
+        pos = (self.position[X_COORD_IDX], self.position[Y_COORD_IDX])
         waypoints = self.waypoints
 
         # Zoek in huidige en volgende segmenten
@@ -157,8 +160,8 @@ class MovementController:
         search_end = min(self.segment_index + 5, len(waypoints) - 1)
 
         for i in range(self.segment_index, search_end):
-            p1 = (waypoints[i][0], waypoints[i][1])
-            p2 = (waypoints[i + 1][0], waypoints[i + 1][1])
+            p1 = (waypoints[i][X_COORD_IDX], waypoints[i][Y_COORD_IDX])
+            p2 = (waypoints[i + 1][X_COORD_IDX], waypoints[i + 1][Y_COORD_IDX])
 
             proj, dist = self._project_point_on_segment(pos, p1, p2)
 
@@ -182,15 +185,15 @@ class MovementController:
         current_dist = 0.0
 
         for i in range(seg_index, len(waypoints) - 1):
-            p1 = (waypoints[i][0], waypoints[i][1])
-            p2 = (waypoints[i + 1][0], waypoints[i + 1][1])
+            p1 = (waypoints[i][X_COORD_IDX], waypoints[i][Y_COORD_IDX])
+            p2 = (waypoints[i + 1][X_COORD_IDX], waypoints[i + 1][Y_COORD_IDX])
 
-            seg_length = math.hypot(p2[0] - p1[0], p2[1] - p1[1])
+            seg_length = math.hypot(p2[X_COORD_IDX] - p1[X_COORD_IDX], p2[Y_COORD_IDX] - p1[Y_COORD_IDX])
 
             if i == seg_index:
                 dist_on_seg = math.hypot(
-                    start_point[0] - p1[0],
-                    start_point[1] - p1[1]
+                    start_point[X_COORD_IDX] - p1[X_COORD_IDX],
+                    start_point[Y_COORD_IDX] - p1[Y_COORD_IDX]
                 )
                 remaining_on_seg = seg_length - dist_on_seg
             else:
@@ -204,35 +207,35 @@ class MovementController:
                 t = max(0, min(1, t))
 
                 result = (
-                    p1[0] + t * (p2[0] - p1[0]),
-                    p1[1] + t * (p2[1] - p1[1])
+                    p1[X_COORD_IDX] + t * (p2[X_COORD_IDX] - p1[X_COORD_IDX]),
+                    p1[Y_COORD_IDX] + t * (p2[Y_COORD_IDX] - p1[Y_COORD_IDX])
                 )
                 return result
 
             current_dist += remaining_on_seg
 
         # Eindpunt bereikt
-        return (waypoints[-1][0], waypoints[-1][1])
+        return (waypoints[-1][X_COORD_IDX], waypoints[-1][Y_COORD_IDX])
 
     def _check_route_finished(self) -> None:
         """Controleer of eindpunt bereikt is."""
-        final = (self.waypoints[-1][0], self.waypoints[-1][1])
+        final = (self.waypoints[-1][X_COORD_IDX], self.waypoints[-1][Y_COORD_IDX])
         dist_to_goal = math.hypot(
-            self.position[0] - final[0],
-            self.position[1] - final[1]
+            self.position[X_COORD_IDX] - final[X_COORD_IDX],
+            self.position[Y_COORD_IDX] - final[Y_COORD_IDX]
         )
 
         # Alleen als we op het laatste segment zijn
         if self.segment_index >= len(self.waypoints) - 2:
             if dist_to_goal <= self.goal_tolerance:
-                self.position = [final[0], final[1]]
+                self.position = [final[X_COORD_IDX], final[Y_COORD_IDX]]
                 self.finished = True
 
     def _initial_heading(self) -> float:
         """Bepaal initiële heading van eerste segment."""
         p1 = self.waypoints[0]
         p2 = self.waypoints[1]
-        return math.atan2(p2[1] - p1[1], p2[0] - p1[0])
+        return math.atan2(p2[Y_COORD_IDX] - p1[Y_COORD_IDX], p2[X_COORD_IDX] - p1[X_COORD_IDX])
 
     @staticmethod
     def _project_point_on_segment(p: Point, a: Point, b: Point) -> Tuple[Point, float]:
@@ -261,13 +264,13 @@ class MovementController:
         n = len(waypoints)
 
         if seg_index >= n - 1:
-            a = (waypoints[-2][0], waypoints[-2][1])
-            b = (waypoints[-1][0], waypoints[-1][1])
+            a = (waypoints[-2][X_COORD_IDX], waypoints[-2][Y_COORD_IDX])
+            b = (waypoints[-1][X_COORD_IDX], waypoints[-1][Y_COORD_IDX])
         else:
-            a = (waypoints[seg_index][0], waypoints[seg_index][1])
-            b = (waypoints[seg_index + 1][0], waypoints[seg_index + 1][1])
+            a = (waypoints[seg_index][X_COORD_IDX], waypoints[seg_index][Y_COORD_IDX])
+            b = (waypoints[seg_index + 1][X_COORD_IDX], waypoints[seg_index + 1][Y_COORD_IDX])
 
-        return math.atan2(b[1] - a[1], b[0] - a[0])
+        return math.atan2(b[Y_COORD_IDX] - a[Y_COORD_IDX], b[X_COORD_IDX] - a[X_COORD_IDX])
 
     @staticmethod
     def _wrap_angle(angle: float) -> float:
@@ -276,7 +279,7 @@ class MovementController:
 
     @property
     def position_tuple(self) -> Point:
-        return (self.position[0], self.position[1])
+        return (self.position[X_COORD_IDX], self.position[Y_COORD_IDX])
     
     @property
     def heading_deg(self) -> float:
