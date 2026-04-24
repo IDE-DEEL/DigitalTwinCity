@@ -2,11 +2,17 @@
     <aside class="w-[320px] bg-cream text-dark p-6 flex flex-col gap-6 text-sm">
 
         <!-- WebSocket Status Indicator -->
-        <div v-if="!isWebSocketConnected" class="flex items-center gap-2 pb-4 border-b border-red-300 p-3">
+        <div v-if="!isWebSocketConnected" class="flex items-center gap-2 border-b border-red-300 p-3 bg-red-100 rounded-sm">
             <div class="w-3 h-3 rounded-full bg-red-500"></div>
             <span class="text-xs font-medium text-red-700">
                 Niet verbonden met backend
             </span>
+            <button 
+                class="ml-auto bg-sky-200 hover:bg-sky-700 text-inherit rounded-sm w-12 h-8 text-lg"
+                @click="handleReconnect"
+            >
+                ⟳
+            </button>
         </div>
 
         <!-- Car speed parameter -->
@@ -188,6 +194,7 @@ const {
     setScenario,
     startSimulation,
     stopSimulation,
+    reconnectWebSocket,
     collectParameters,
 } = useSimulationState();
 
@@ -203,5 +210,10 @@ const handleStart = () => {
 const handleStop = () => {
     console.log('Requested simulation stop');
     stopSimulation();
+}
+
+const handleReconnect = () => {
+    console.log("Attempting to reconnect WebSocket...");
+    reconnectWebSocket();
 }
 </script>

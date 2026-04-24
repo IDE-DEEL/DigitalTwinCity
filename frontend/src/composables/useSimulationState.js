@@ -121,6 +121,11 @@ function updateAgentsState(agents) {
     agentsState.value = agents;
 }
 
+function reconnectWebSocket() {
+    disconnectWebSocket();
+    connectWebSocket(updateAgentsState);
+}
+
 // ---
 // map and routes
 // ---
@@ -216,6 +221,7 @@ export function useSimulationState() {
         startSimulation,
         stopSimulation,
         updateAgentsState,
+        reconnectWebSocket,
         collectParameters,
 
         visibleCars,
