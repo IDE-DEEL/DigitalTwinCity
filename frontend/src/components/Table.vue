@@ -27,7 +27,11 @@ function remove_car(index) {
       <table class="table-container">
         <thead>
           <tr class="title-row">
-            <th><button class="add-car" @click="add_car">+</button></th>
+            <th>
+              <button class="add-car" @click="add_car">
+                <img style="transform: scale(0.6, 0.6);" src="/assets/plus-sign.png" alt="Auto" />
+              </button>
+            </th>
             <th>Auto ID</th>
             <th>Pakketjes</th>
             <th>Route</th>

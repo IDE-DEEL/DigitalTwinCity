@@ -10,13 +10,16 @@
 
 .title-row th {
     background-color: var(--color-table-gray1);
-    height: 20%;
     text-align: center;
     border: none;
 }
 
-tr {
+table {
     text-align: center;
+}  
+
+tr {
+    line-height: 16px;
 }
 
 tbody:nth-child(even) {
@@ -44,11 +47,13 @@ tbody:nth-child(even) {
 }
 
 .add-car {
-    width: 24px;
+    width: 48px;
     height: 24px;
     position: relative;
     font-size: 14px;
     font-weight: bold;
+    border-color: black;
+    background-color: var(--color-table-gray1);
 }
 
 .remove-car {

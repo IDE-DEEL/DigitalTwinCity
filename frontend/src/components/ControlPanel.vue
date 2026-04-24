@@ -7,12 +7,18 @@ import Table from './Table.vue'
 import { store } from '../store.js'
 import '../assets/Button.css'
 import '../assets/ControlPanel.css'
+
+function start(event) {
+}
+
+function stop(event) {
+}
 </script>
 
 <template>
   <aside>
     <div class="parameter-container">
-      <Slider class="slider-area" name="Snelheid" type="speed" v-model="store.speed"></Slider>
+      <Slider class="slider-area" name="Auto snelheid" type="speed" v-model="store.speed"></Slider>
       <DropDown class="scenario-area" name="Scenario's" type="scenario" :list="store.scenarios" v-model="store.chosen_scenario"></DropDown>
     </div>
 
@@ -20,10 +26,10 @@ import '../assets/ControlPanel.css'
 
     <div class="simulation-container">
       <div class="state">
-        <Slider class="slider-area" name="Simulatie snelheid"></Slider>
+        <Slider class="slider-area" name="Simulatie snelheid" v-model="store.sim_speed"></Slider>
         <div class="button-area">
-          <button>Start</button>
-          <button>Stop</button>
+          <button @click="start">Start</button>
+          <button @click="stop">Stop</button>
         </div>
       </div>
     

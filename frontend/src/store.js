@@ -24,6 +24,7 @@ export const store = reactive({
   
   chosen_scenario: '',
   speed: 50,
+  sim_speed: 20,
   max_packages: 12,
   score: 0,
   time: "00:00",
