@@ -3,8 +3,8 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from backend.digital_sim.service.simulation_service import SimulationService
 
-router = APIRouter(prefix="/api/v1/digital-sim")
 
+router = APIRouter(prefix="/api/v1/digital-sim")
 
 @router.get("/status")
 async def get_status():
@@ -22,36 +22,36 @@ async def websocket_simulation_endpoint(websocket: WebSocket):
     try:
         while True:
             data = await websocket.receive_json()
-            
-            if data.get("command") == "start":
-                parameters = data.get("parameters", {})
+            command = data.get("command")
+
+            match command:
+                case "start":
+                    parameters = data.get("parameters", {})
+                    result = simulation_service.start_simulation(parameters)
                 
-                result = simulation_service.start_simulation(parameters)
+                    # Send confirmation that simulation has started
+                    await websocket.send_json({
+                        "command": "simulation_started",
+                        "result": result
+                    })
+                    
+                    # Create simulation loop to advance simulation steps
+                    simulation_task = asyncio.create_task(
+                        _run_simulation_loop(websocket, simulation_service)
+                    )
                 
-                # Send confirmation that simulation has started
-                await websocket.send_json({
-                    "command": "simulation_started",
-                    "result": result
-                })
+                case "stop":
+                    result = simulation_service.stop_simulation()
                 
-                # Create simulation loop to advance simulation steps
-                simulation_task = asyncio.create_task(
-                    _run_simulation_loop(websocket, simulation_service)
-                )
-                
-            elif data.get("command") == "stop":
-                result = simulation_service.stop_simulation()
-                
-                if simulation_task and not simulation_task.done():
-                    simulation_task.cancel()
-                
-                await websocket.send_json({
-                    "command": "simulation_stopped",
-                    "result": result
-                })
+                    if simulation_task and not simulation_task.done():
+                        simulation_task.cancel()
+                    
+                    await websocket.send_json({
+                        "command": "simulation_stopped",
+                        "result": result
+                    })
     
     except WebSocketDisconnect:
-        print("Client disconnected")
         simulation_service.stop_simulation()
         if simulation_task and not simulation_task.done():
             simulation_task.cancel()
