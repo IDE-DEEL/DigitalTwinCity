@@ -1,8 +1,10 @@
+import { HOUSE_ID_STRAIGHT, HOUSE_ID_CURVE, HOUSE_ID_T_SPLIT, HOUSE_ID_DEPOT } from "../../constants/mapConstants"
+
 export const TILE_HOUSES = {
     straight: {
         houses: [
             {
-                id: 'house-blue',
+                id: HOUSE_ID_STRAIGHT,
                 supportedLanes: [
                     { from: 'E', to: 'W' },
                 ],
@@ -14,7 +16,7 @@ export const TILE_HOUSES = {
     curve: {
         houses: [
             {
-                id: 'house-pool',
+                id: HOUSE_ID_CURVE,
                 supportedLanes: [
                     { from: 'S', to: 'W' },
                 ],
@@ -26,7 +28,7 @@ export const TILE_HOUSES = {
     t_split: {
         houses: [
             {
-                id: 'house-green',
+                id: HOUSE_ID_T_SPLIT,
                 supportedLanes: [
                     { from: 'W', to: 'E' },
                 ],
@@ -44,7 +46,7 @@ export const TILE_HOUSES = {
     depot: {
         houses: [
             {
-                id: 'depot',
+                id: HOUSE_ID_DEPOT,
                 supportedLanes: [
                     { from: 'S', to: 'E' },
                     { from: 'N', to: 'E' },
