@@ -27,7 +27,7 @@ class MovementController:
 
         # Positie en richting
         start = waypoints[0]
-        self.position = [float(start["x"]), float(start["y"])]
+        self.position = [float(start[0]), float(start[1])]
         self.heading = self._initial_heading()
         self.segment_index = 0
 
@@ -157,8 +157,8 @@ class MovementController:
         search_end = min(self.segment_index + 5, len(waypoints) - 1)
 
         for i in range(self.segment_index, search_end):
-            p1 = (waypoints[i]["x"], waypoints[i]["y"])
-            p2 = (waypoints[i + 1]["x"], waypoints[i + 1]["y"])
+            p1 = (waypoints[i][0], waypoints[i][1])
+            p2 = (waypoints[i + 1][0], waypoints[i + 1][1])
 
             proj, dist = self._project_point_on_segment(pos, p1, p2)
 
@@ -182,8 +182,8 @@ class MovementController:
         current_dist = 0.0
 
         for i in range(seg_index, len(waypoints) - 1):
-            p1 = (waypoints[i]["x"], waypoints[i]["y"])
-            p2 = (waypoints[i + 1]["x"], waypoints[i + 1]["y"])
+            p1 = (waypoints[i][0], waypoints[i][1])
+            p2 = (waypoints[i + 1][0], waypoints[i + 1][1])
 
             seg_length = math.hypot(p2[0] - p1[0], p2[1] - p1[1])
 
@@ -212,11 +212,11 @@ class MovementController:
             current_dist += remaining_on_seg
 
         # Eindpunt bereikt
-        return (waypoints[-1]["x"], waypoints[-1]["y"])
+        return (waypoints[-1][0], waypoints[-1][1])
 
     def _check_route_finished(self) -> None:
         """Controleer of eindpunt bereikt is."""
-        final = (self.waypoints[-1]["x"], self.waypoints[-1]["y"])
+        final = (self.waypoints[-1][0], self.waypoints[-1][1])
         dist_to_goal = math.hypot(
             self.position[0] - final[0],
             self.position[1] - final[1]
@@ -232,7 +232,7 @@ class MovementController:
         """Bepaal initiële heading van eerste segment."""
         p1 = self.waypoints[0]
         p2 = self.waypoints[1]
-        return math.atan2(p2["y"] - p1["y"], p2["x"] - p1["x"])
+        return math.atan2(p2[1] - p1[1], p2[0] - p1[0])
 
     @staticmethod
     def _project_point_on_segment(p: Point, a: Point, b: Point) -> Tuple[Point, float]:
@@ -261,11 +261,11 @@ class MovementController:
         n = len(waypoints)
 
         if seg_index >= n - 1:
-            a = (waypoints[-2]["x"], waypoints[-2]["y"])
-            b = (waypoints[-1]["x"], waypoints[-1]["y"])
+            a = (waypoints[-2][0], waypoints[-2][1])
+            b = (waypoints[-1][0], waypoints[-1][1])
         else:
-            a = (waypoints[seg_index]["x"], waypoints[seg_index]["y"])
-            b = (waypoints[seg_index + 1]["x"], waypoints[seg_index + 1]["y"])
+            a = (waypoints[seg_index][0], waypoints[seg_index][1])
+            b = (waypoints[seg_index + 1][0], waypoints[seg_index + 1][1])
 
         return math.atan2(b[1] - a[1], b[0] - a[0])
 
