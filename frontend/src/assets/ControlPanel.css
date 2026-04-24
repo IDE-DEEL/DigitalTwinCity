@@ -1,0 +1,54 @@
+aside {
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  padding: 20px;
+}
+
+.parameter-container {
+  display: flex;
+  flex-direction: row;
+  gap: 100px;
+  width: 100%;
+}
+
+.simulation-container {
+  display: flex;
+  margin-top: auto;
+  flex-direction: column;
+  gap: 30px;
+  width: 100%;
+}
+
+.state {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 20px;
+  width: 100%;
+}
+
+.slider-area {
+  flex: 2;
+}
+
+.scenario-area {
+  flex: 2;
+}
+
+.button-area {
+  flex: 1;
+  display: flex;
+  gap: 10px; 
+}
+
+/* De Score & Tijd box */
+.stats-box {
+  display: flex;
+  flex-direction: row;
+  font-size: 24px;
+  gap: 200px;
+  padding: 12px;
+  border-radius: 6px;
+  width: 100%;
+}

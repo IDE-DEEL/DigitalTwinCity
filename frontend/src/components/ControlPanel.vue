@@ -16,7 +16,7 @@ import '../assets/ControlPanel.css'
       <DropDown class="scenario-area" name="Scenario's" type="scenario" :list="store.scenarios" v-model="store.chosen_scenario"></DropDown>
     </div>
 
-    <Table name="Auto's" type="car_table" :data="store.table_data"></Table>
+    <Table></Table>
 
     <div class="simulation-container">
       <div class="state">

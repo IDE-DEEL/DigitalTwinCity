@@ -1,5 +1,4 @@
 import { reactive } from 'vue'
-import axios from 'axios'
 
 export const store = reactive({
   // De gedeelde data
@@ -25,17 +24,9 @@ export const store = reactive({
   
   chosen_scenario: '',
   speed: 50,
+  max_packages: 12,
   score: 0,
   time: "00:00",
-
-  fetch_speed() {
-    const result = null;
-    
-    axios.get('localhost:8000/api/v1/car/speed')
-      .then(data => result.value = data)
-
-    return result
-  },
 
   socket: null
 })
