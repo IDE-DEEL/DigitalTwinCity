@@ -9,6 +9,7 @@ class AccessCode(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, index=True)
     name: Mapped[str] = mapped_column(String(255), index=True)
     code_hash: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    code_lookup_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     
     # Timestamp when the code expires
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

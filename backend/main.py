@@ -2,7 +2,7 @@ import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 
-from api.v1 import results_api
+from backend.api.v1 import results_api
 from backend.api.v1 import access_codes_api
 from backend.api.v1 import auth_api
 from backend.data.db.database import Base, engine

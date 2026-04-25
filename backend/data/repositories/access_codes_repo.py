@@ -10,12 +10,13 @@ class AccessCodesRepository:
     def find_all(self) -> List[AccessCode]:
         return self.db.query(AccessCode).order_by(AccessCode.created_at.desc()).all()
 
-    def find_active_codes(self) -> List[AccessCode]:
+    def find_active_code_by_lookup_hash(self, code_lookup_hash: str) -> Optional[AccessCode]:
         now = datetime.now(timezone.utc)
         return self.db.query(AccessCode).filter(
-            AccessCode.is_revoked == False,
-            AccessCode.expires_at > now
-        ).all()
+            AccessCode.is_revoked.is_(False),
+            AccessCode.expires_at > now,
+            AccessCode.code_lookup_hash == code_lookup_hash,
+        ).one_or_none()
 
     def find_by_id(self, code_id: int) -> Optional[AccessCode]:
         return self.db.get(AccessCode, code_id)

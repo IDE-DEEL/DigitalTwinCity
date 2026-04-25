@@ -5,6 +5,7 @@ import DigitalTwinPage from './components/pages/DigitalTwinPage.vue'
 import SimulationPage from './components/pages/SimulationPage.vue'
 import Login from './components/Login.vue'
 import AdminPage from './components/pages/AdminPage.vue'
+import { apiUrl } from './config/api'
 import './index.css'
 
 const page_router = createRouter({
@@ -19,6 +20,7 @@ const page_router = createRouter({
 });
 
 let sessionExpiryTimer = null;
+let verifiedSessionToken = null;
 
 function decodeJwtPayload(token) {
     try {
@@ -55,9 +57,39 @@ function isTokenExpired(token) {
     return !expiryTime || expiryTime <= Date.now();
 }
 
+function hasUnexpiredSessionHint(token) {
+    return Boolean(token && !isTokenExpired(token));
+}
+
+async function verifyStoredSession(token) {
+    if (!hasUnexpiredSessionHint(token)) {
+        return false;
+    }
+
+    if (verifiedSessionToken === token) {
+        return true;
+    }
+
+    try {
+        const response = await fetch(apiUrl('/api/v1/auth/session'), {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) {
+            return false;
+        }
+
+        verifiedSessionToken = token;
+        return true;
+    } catch {
+        return false;
+    }
+}
+
 function clearSession() {
     localStorage.removeItem('deel_access_token');
     localStorage.removeItem('deel_session_name');
+    verifiedSessionToken = null;
 
     if (sessionExpiryTimer) {
         clearTimeout(sessionExpiryTimer);
@@ -85,25 +117,25 @@ function scheduleSessionExpiry(token) {
     }, Math.max(expiryTime - Date.now(), 0));
 }
 
-page_router.beforeEach((to) => {
+page_router.beforeEach(async (to) => {
     const token = localStorage.getItem('deel_access_token');
     const publicPaths = ['/login', '/admin'];
     const requiresAuth = !publicPaths.includes(to.path);
-    const hasValidToken = token && !isTokenExpired(token);
+    const hasVerifiedSession = await verifyStoredSession(token);
 
-    if (token && !hasValidToken) {
+    if (token && !hasVerifiedSession) {
         clearSession();
     }
 
-    if (hasValidToken) {
+    if (hasVerifiedSession) {
         scheduleSessionExpiry(token);
     }
 
-    if (requiresAuth && !hasValidToken) {
+    if (requiresAuth && !hasVerifiedSession) {
         return '/login';
     }
 
-    if (to.path === '/login' && hasValidToken) {
+    if (to.path === '/login' && hasVerifiedSession) {
         return '/digital_twin';
     }
 

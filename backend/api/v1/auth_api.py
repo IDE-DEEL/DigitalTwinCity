@@ -5,6 +5,7 @@ import jwt
 from backend.schemas.auth import LoginRequest, AdminLoginRequest, TokenResponse
 from backend.services.auth_service import AuthService, get_auth_service
 from backend.core.config import settings
+from backend.api.v1.auth_dependencies import verify_access_token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -12,6 +13,10 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 @router.post("/verify-code", response_model=TokenResponse)
 async def verify_code(request: LoginRequest, service: AuthService = Depends(get_auth_service)):
     return service.verify_and_login(request)
+
+@router.get("/session")
+async def get_session(payload: dict = Depends(verify_access_token)):
+    return {"session_name": payload.get("name")}
 
 # -- Admin login --
 @router.post("/admin-login", response_model=TokenResponse)

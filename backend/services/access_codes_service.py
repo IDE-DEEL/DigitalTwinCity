@@ -9,6 +9,7 @@ from backend.data.db.database import get_db
 from backend.data.repositories.access_codes_repo import AccessCodesRepository
 from backend.domain.access_codes import AccessCode
 from backend.schemas.access_codes import AccessCodeCreate
+from backend.services.access_code_lookup import build_access_code_lookup_hash
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +30,7 @@ class AccessCodesService:
         new_code = AccessCode(
             name=data.name,
             code_hash=hashed_code_str,
+            code_lookup_hash=build_access_code_lookup_hash(raw_code),
             expires_at=data.expires_at,
             is_revoked=False
         )

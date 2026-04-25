@@ -20,7 +20,7 @@ services:
       - VITE_API_URL=http://localhost:8000
 
   db:
-    image: postgres:18-alpine
+    image: postgres:16
     restart: always
     env_file: backend/.env
     ports:

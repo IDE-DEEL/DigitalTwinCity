@@ -1,28 +1,13 @@
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, Security, Response, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-import jwt
-from backend.core.config import settings
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from backend.schemas.access_codes import (
     AccessCodeResponse, AccessCodeCreate, AccessCodeCreateResponse, AccessCodeUpdate
 )
+from backend.api.v1.auth_dependencies import verify_admin
 from backend.services.access_codes_service import AccessCodesService, get_access_codes_service
 
 router = APIRouter(prefix="/admin/access-codes", tags=["admin-access-codes"])
-security = HTTPBearer()
-
-def verify_admin(credentials: HTTPAuthorizationCredentials = Security(security)):
-    try:
-        # Decode the token and verify if the role is "admin"
-        payload = jwt.decode(credentials.credentials, settings.SECRET_KEY, algorithms=["HS256"])
-        if payload.get("role") != "admin":
-            raise HTTPException(status_code=403, detail="Niet geautoriseerd")
-        return payload
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Sessie is verlopen")
-    except jwt.InvalidTokenError:
-        raise HTTPException(status_code=401, detail="Ongeldige token")
 
 @router.get("/", response_model=List[AccessCodeResponse], dependencies=[Depends(verify_admin)])
 async def get_all_codes(service: AccessCodesService = Depends(get_access_codes_service)):
