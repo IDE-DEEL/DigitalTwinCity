@@ -123,12 +123,12 @@ import devRouteBuilder from '../development/devRouteBuilder.vue';
 
 const isDevelopment = import.meta.env.DEV;
 
-const mapData = ref([]); 
 const componentDefinitions = ref({}); 
 const isLoading = ref(true);
 
 const { vehiclePosition,setupMqttClient } = useMqttVehicle();
 const {
+    mapData,
     visibleCarsWithRoutes,
     setMapData,
     agentsState,
@@ -271,7 +271,6 @@ onMounted(async () => {
     // setupMqttClient();
     try {
         const data = await fetchMapData(); 
-        mapData.value = data.mapData;
         componentDefinitions.value = data.componentDefinitions;
 
         setMapData(data.mapData);
