@@ -19,6 +19,23 @@ function getTileMetadata(mapData, tileX, tileY) {
 }
 
 /**
+ * retrieves the local coordinates for a house on a tile based on the tile type.
+ */
+function getLocalHouseCoordinates(tileType) {
+    const tileHouses = TILE_HOUSES[tileType];
+    if (!tileHouses || !tileHouses.houses[0]) { // TODO: update this index later with the house id
+        throw new Error(`No house coordinates found for tile type "${tileType}".`);
+    }
+
+    const house = tileHouses.houses[0]; // TODO: update this index later with the house id
+    return {
+        roadCoords: house.roadCoords,
+        labelCoords: house.labelCoords,
+        supportedLanes: house.supportedLanes
+    };
+}
+
+/**
  * Builds necessary house data for the simulation payload based on the selected scenario and map data.
  */
 export function getScenarioPayload(scenarioKey, mapData) {
@@ -27,7 +44,9 @@ export function getScenarioPayload(scenarioKey, mapData) {
     return Object.entries(houses).map(([houseInstanceId, packageCount]) => {
         const instance = HOUSE_INSTANCES.find(house => house.id === houseInstanceId);
         const tileMetadata = getTileMetadata(mapData, instance.tileX, instance.tileY);
-        // const coords = TILE_HOUSES[instance.tileType].roadCoords;
+
+        const localCoords = getLocalHouseCoordinates(tileMetadata.type);
+        // TODO: transform local coordinates to global coordinates, and ensure rotation is applied correctly to keep label/road-coords accurate
 
         return {
             houseInstanceId,
