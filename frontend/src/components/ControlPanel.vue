@@ -48,9 +48,13 @@
                 @change="setScenario($event.target.value)"
                 class="w-full p-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue outline-none bg-white text-dark"
             >
-                <option>Rustig</option>
-                <option>Gemiddeld</option>
-                <option>Druk</option>
+                <option 
+                    v-for="scenarioOption in scenarioOptions"
+                    :key="scenarioOption.value"
+                    :value="scenarioOption.value"
+                >
+                    {{ scenarioOption.label }}
+                </option>
             </select>
         </div> 
 
@@ -185,6 +189,7 @@ const {
     isWebSocketConnected,
     MAX_CARS,
     routeOptions,
+    scenarioOptions,
     addCar,
     removeCar,
     updateCarPackageCount,
@@ -199,10 +204,6 @@ const {
 } = useSimulationState();
 
 const handleStart = () => {
-    if (!isWebSocketConnected.value) {
-        console.warn('WebSocket niet verbonden. Simulatie kan niet starten.');
-        return;
-    }
     console.log('Requested simulation start with parameters: ', collectParameters());
     startSimulation();
 }

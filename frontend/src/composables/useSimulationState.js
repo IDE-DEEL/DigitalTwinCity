@@ -1,5 +1,6 @@
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { ROUTE_OPTIONS } from "../logic/domain/routes";
+import { SCENARIO_OPTIONS, getHousesForScenarioByValue } from "../logic/domain/scenarios";
 import { buildCarsWithRoutes } from "../logic/service/carService";
 import { convertWaypointsSvgToMath, convertPositionMathToSvg } from "../logic/utils/coordinateConverter";
 import { useWebSocketSimulation } from "./useWebSocketSimulation";
@@ -7,7 +8,7 @@ import { useWebSocketSimulation } from "./useWebSocketSimulation";
 // refs
 const cars = ref([]);
 const carTargetSpeed = ref(50);
-const scenario = ref('Rustig');
+const scenario = ref('rustig');
 const isSimulating = ref(false);
 const mapData = ref([]);
 const agentsState = ref([]);
@@ -168,7 +169,6 @@ const carsWithRoutes = computed(() => {
         return [];
     }
 });
-
 // ---
 // collecting simulation parameters to build payload
 // ---
@@ -185,7 +185,7 @@ const simulationStartPayload = computed(() => {
             routeWaypoints: convertWaypointsSvgToMath(car.waypoints),
         })),
         carTargetSpeed: carTargetSpeed.value,
-        scenario: scenario.value,
+        scenario: getHousesForScenarioByValue(scenario.value),
     };
 });
 
@@ -214,6 +214,7 @@ export function useSimulationState() {
         agentsState,
         MAX_CARS,
         routeOptions: ROUTE_OPTIONS,
+        scenarioOptions: SCENARIO_OPTIONS,
         isWebSocketConnected,
 
         addCar,
