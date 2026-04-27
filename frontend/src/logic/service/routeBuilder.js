@@ -75,7 +75,8 @@ export function getRotatedLanesForTile(tile) {
     to: rotateCardinalDirection(lane.to, rotation),
     points: lane.points.map((point) => {
       const rotatedPoint = rotatePointNormalized(point, rotation);
-
+    //   adjust the local waypoint coordinates by the tile's global position to get global waypoint coordinates
+    // TODO: move this specific logic to a separate function in sprint 6
       return {
         x: tile.x + rotatedPoint.x,
         y: tile.y + rotatedPoint.y,
