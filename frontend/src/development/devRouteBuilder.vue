@@ -99,7 +99,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import { DEPOT_TILE } from '../logic/domain/routes.js';
+import { DEPOT_TILE } from '../constants/constants';
 import {
   getDirectionBetweenTiles,
   getMapTile,
