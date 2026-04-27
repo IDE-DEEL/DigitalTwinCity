@@ -186,7 +186,7 @@ const simulationStartPayload = computed(() => {
             routeWaypoints: convertWaypointsSvgToMath(car.waypoints),
         })),
         carTargetSpeed: carTargetSpeed.value,
-        scenario: getScenarioPayload(scenario.value),
+        scenario: getScenarioPayload(scenario.value, mapData.value),
     };
 });
 
