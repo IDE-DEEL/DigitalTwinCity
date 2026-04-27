@@ -3,6 +3,7 @@ import { ROUTE_OPTIONS } from "../logic/domain/routes";
 import { SCENARIO_OPTIONS, getHousesForScenarioByValue } from "../logic/domain/scenarios";
 import { buildCarsWithRoutes } from "../logic/service/carService";
 import { convertWaypointsSvgToMath, convertPositionMathToSvg } from "../logic/utils/coordinateConverter";
+import { getScenarioPayload } from "../logic/service/houseService";
 import { useWebSocketSimulation } from "./useWebSocketSimulation";
 
 // refs
@@ -185,7 +186,7 @@ const simulationStartPayload = computed(() => {
             routeWaypoints: convertWaypointsSvgToMath(car.waypoints),
         })),
         carTargetSpeed: carTargetSpeed.value,
-        scenario: getHousesForScenarioByValue(scenario.value),
+        scenario: getScenarioPayload(scenario.value),
     };
 });
 
