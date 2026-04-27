@@ -1,4 +1,4 @@
-import { MAP_ROWS } from '../../constants/mapConstants';
+import { MAP_ROWS } from '../../constants/constants';
 /**
  * Coordinate system conversion utilities
  * 

@@ -14,9 +14,6 @@ const isSimulating = ref(false);
 const mapData = ref([]);
 const agentsState = ref([]);
 
-// constants
-const MAX_CARS = 5;
-
 // websocket composable
 const { isWebSocketConnected, connectWebSocket, disconnectWebSocket, sendWebSocketMessage } = useWebSocketSimulation();
 
@@ -213,7 +210,6 @@ export function useSimulationState() {
         isSimulating,
         mapData,
         agentsState,
-        MAX_CARS,
         routeOptions: ROUTE_OPTIONS,
         scenarioOptions: SCENARIO_OPTIONS,
         isWebSocketConnected,

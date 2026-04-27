@@ -180,6 +180,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useSimulationState } from '../composables/useSimulationState';
+import { MAX_CARS } from '../constants/constants';
 
 const {
     cars,
@@ -187,7 +188,6 @@ const {
     scenario,
     isSimulating,
     isWebSocketConnected,
-    MAX_CARS,
     routeOptions,
     scenarioOptions,
     addCar,

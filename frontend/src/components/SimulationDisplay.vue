@@ -116,7 +116,7 @@ import { useMqttVehicle } from '../composables/MqttConnection.js';
 import { normalizeDegree } from '../logic/utils/rotation.js';
 import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
 import { useSimulationState } from '../composables/useSimulationState.js';
-import { MAP_COLUMNS, MAP_ROWS } from '../constants/mapConstants.js';
+import { MAP_COLUMNS, MAP_ROWS } from '../constants/constants.js';
 import devLaneDebugOverlay from '../development/devLaneDebugOverlay.vue';
 import devTileCoordinateOverlay from '../development/devTileCoordinateOverlay.vue';
 import devRouteBuilder from '../development/devRouteBuilder.vue';

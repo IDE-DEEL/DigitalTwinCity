@@ -1,4 +1,4 @@
-import { HOUSE_ID_STRAIGHT, HOUSE_ID_CURVE, HOUSE_ID_T_SPLIT, HOUSE_ID_DEPOT } from "../../constants/mapConstants"
+import { HOUSE_ID_STRAIGHT, HOUSE_ID_CURVE, HOUSE_ID_T_SPLIT, HOUSE_ID_DEPOT } from "../../constants/constants"
 
 export const HOUSE_INSTANCES = [
     // first/top row of the map, from left to right
