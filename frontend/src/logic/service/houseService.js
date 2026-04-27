@@ -36,6 +36,16 @@ function getLocalHouseCoordinates(tileType) {
 }
 
 /**
+ * Transforms local coordinates to global coordinates based on tile position.
+ */
+function localToGlobalCoords(labelCoords, tileX, tileY) {
+    return {
+        x: tileX + labelCoords.x,
+        y: tileY + labelCoords.y,
+    };
+}
+
+/**
  * Builds necessary house data for the simulation payload based on the selected scenario and map data.
  */
 export function getScenarioPayload(scenarioKey, mapData) {
@@ -46,15 +56,17 @@ export function getScenarioPayload(scenarioKey, mapData) {
         const tileMetadata = getTileMetadata(mapData, instance.tileX, instance.tileY);
 
         const localCoords = getLocalHouseCoordinates(tileMetadata.type);
-        // TODO: transform local coordinates to global coordinates, and ensure rotation is applied correctly to keep label/road-coords accurate
+        // TODO: ensure rotation is applied correctly to keep label/road-coords accurate
+        const globalRoadCoords = localToGlobalCoords(localCoords.roadCoords, instance.tileX, instance.tileY);
+        const globalLabelCoords = localToGlobalCoords(localCoords.labelCoords, instance.tileX, instance.tileY);
 
         return {
             houseInstanceId,
             tileX: instance.tileX,
             tileY: instance.tileY,
             packageCount,
-            // roadCoords: coords,
-            packageCount
+            roadCoords: globalRoadCoords,
+            labelCoords: globalLabelCoords,
         };
     });
 }
