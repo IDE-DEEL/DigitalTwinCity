@@ -5,6 +5,7 @@ import { buildCarsWithRoutes } from "../logic/service/carService";
 import { convertWaypointsSvgToMath, convertPositionMathToSvg } from "../logic/utils/coordinateConverter";
 import { getScenarioPayload } from "../logic/service/houseService";
 import { useWebSocketSimulation } from "./useWebSocketSimulation";
+import { MAX_CARS } from "../constants/constants";
 
 // refs
 const cars = ref([]);
