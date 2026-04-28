@@ -5,7 +5,7 @@ import { getTileMetadata, getRotatedHouseCoordinatesForTile } from "./houseBuild
 /**
  * Builds necessary house data for the simulation payload based on the selected scenario and map data.
  */
-export function getScenarioPayload(scenarioKey, mapData) {
+export function getHousesByScenarioKey(scenarioKey, mapData) {
     const houses = getHousesForScenarioByValue(scenarioKey);
 
     return Object.entries(houses).map(([houseInstanceId, packageCount]) => {

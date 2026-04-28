@@ -3,7 +3,7 @@ import { ROUTE_OPTIONS } from "../logic/domain/routes";
 import { SCENARIO_OPTIONS, getHousesForScenarioByValue } from "../logic/domain/scenarios";
 import { buildCarsWithRoutes } from "../logic/service/carService";
 import { convertWaypointsSvgToMath, convertPositionMathToSvg } from "../logic/utils/coordinateConverter";
-import { getScenarioPayload } from "../logic/service/houseService";
+import { getHousesByScenarioKey } from "../logic/service/houseService";
 import { useWebSocketSimulation } from "./useWebSocketSimulation";
 import { MAX_CARS } from "../constants/constants";
 
@@ -175,7 +175,7 @@ const housesFromScenario = computed(() => {
     }
 
     try {
-        return getScenarioPayload(scenario.value, mapData.value);
+        return getHousesByScenarioKey(scenario.value, mapData.value);
     } catch (error) {
         console.error("Error building scenario payload:", error);
         return [];
