@@ -168,6 +168,20 @@ const carsWithRoutes = computed(() => {
         return [];
     }
 });
+
+const housesFromScenario = computed(() => {
+    if (!mapData.value.length) {
+        return [];
+    }
+
+    try {
+        return getScenarioPayload(scenario.value, mapData.value);
+    } catch (error) {
+        console.error("Error building scenario payload:", error);
+        return [];
+    }
+});
+
 // ---
 // collecting simulation parameters to build payload
 // ---
@@ -184,7 +198,10 @@ const simulationStartPayload = computed(() => {
             routeWaypoints: convertWaypointsSvgToMath(car.waypoints),
         })),
         carTargetSpeed: carTargetSpeed.value,
-        scenario: getScenarioPayload(scenario.value, mapData.value),
+        scenario: {
+            name: scenario.value,
+            houses: housesFromScenario.value,
+        },
     };
 });
 
@@ -232,6 +249,7 @@ export function useSimulationState() {
         visibleCars,
         visibleCarsWithRoutes,
         carsWithRoutes,
+        housesFromScenario: housesFromScenario,
         simulationStartPayload,
     };
 }
