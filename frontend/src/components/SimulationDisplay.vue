@@ -53,13 +53,14 @@
                     :map-data="mapData"
                 />
             </div> 
-            <!-- Lanes (kleur kan later worden weggehaald)-->
+            <!-- Lanes -->
             <svg 
                 class="absolute inset-0 pointer-events-none"
                 :viewBox="`0 0 ${MAP_COLUMNS} ${MAP_ROWS}`"
                 :preserveAspectRatio="`none`"
             >
 
+                <!-- Route polyline -->
                 <polyline
                     v-for="car in visibleCarsWithRoutes"
                     :key="`route-${car.id}`"
@@ -76,6 +77,11 @@
                     :lanes="lanes"
                     :map-columns="MAP_COLUMNS"
                     :map-rows="MAP_ROWS"
+                />
+
+                <!-- House labels for packages -->
+                <HouseLabelsOverlay
+                    :houses="housesFromScenario"
                 />
             </svg>
 
@@ -117,6 +123,7 @@ import { normalizeDegree } from '../logic/utils/rotation.js';
 import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
 import { useSimulationState } from '../composables/useSimulationState.js';
 import { MAP_COLUMNS, MAP_ROWS } from '../constants/constants.js';
+import HouseLabelsOverlay from './HouseLabelsOverlay.vue';
 import devLaneDebugOverlay from '../development/devLaneDebugOverlay.vue';
 import devTileCoordinateOverlay from '../development/devTileCoordinateOverlay.vue';
 import devRouteBuilder from '../development/devRouteBuilder.vue';
@@ -132,6 +139,7 @@ const {
     visibleCarsWithRoutes,
     setMapData,
     agentsState,
+    housesFromScenario,
 } = useSimulationState();
 
 // --- lane debug devtool start ---
