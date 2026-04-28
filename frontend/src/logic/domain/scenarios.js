@@ -1,16 +1,8 @@
 import { HOUSE_INSTANCES } from "./houseInstances";
 
 /**
- * Possible tiles that contain houses:
- * - tileType   - # of houses   - houseIDs
- * - straight   - 1 house       - HOUSE_ID_STRAIGHT,
- * - curve      - 1 house       - HOUSE_ID_CURVE,
- * - t_split    - 1 house       - HOUSE_ID_T_SPLIT,
- * - depot      - 1 house       - HOUSE_ID_DEPOT,
- * 
- * Tiles without houses (DO NOT USE THESE):
- * - cross_split
- * - roundabout
+ * All houses are defined in houseInstances.js.
+ * House ID's are linked to their tile type plus x-y coordinates, for example: 'curve-0-0' or 'tsplit-1-0'.
  * 
  * Use the coordinate overlay devtool to quickly find the tiles (X,Y) as well as tile types to add houses to the scenario.
  */
@@ -30,11 +22,34 @@ const SCENARIOS = {
         value: 'gemiddeld',
         label: 'Gemiddeld',
         houses: {
-            'straight-3-0': 9,
-            'tsplit-1-0': 9,
-            'straight-0-2': 9,
-            'tsplit-2-3': 9,
-            'curve-4-3': 9,
+            'tsplit-4-1': 2,
+            'curve-3-1': 2,
+            'tsplit-2-3': 3,
+            'tsplit-3-3': 1,
+            'curve-0-0': 5,
+            'tsplit-0-1': 2,
+            'straight-2-0': 3,
+        }
+    },
+    druk: {
+        value: 'druk',
+        label: 'Druk',
+        houses: {
+            'curve-0-0': 2,
+            'tsplit-1-0': 4,
+            'straight-2-0': 3,
+            'straight-3-0': 7,
+            'curve-4-0': 1,
+            'tsplit-0-1': 5,
+            'curve-2-1': 3,
+            'curve-3-1': 2,
+            'straight-0-2': 3,
+            'curve-1-2': 5,
+            'tsplit-3-2': 3,
+            'curve-0-3': 6,
+            'tsplit-2-3': 2,
+            'tsplit-3-3': 9,
+            'curve-4-3': 4, 
         }
     },
 }
