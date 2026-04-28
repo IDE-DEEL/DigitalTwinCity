@@ -1,6 +1,7 @@
 import { getHousesForScenarioByValue } from "../domain/scenarios";
 import { HOUSE_INSTANCES } from "../domain/houseInstances";
 import { TILE_HOUSES } from "../domain/houseCoords";
+import { rotatePointNormalized, normalizeDegree } from "../utils/rotation.js";
 
 /**
  * Retrieves the metadata for a tile based on its coordinates from the map data.
@@ -38,11 +39,23 @@ function getLocalHouseCoordinates(tileType) {
 /**
  * Transforms local coordinates to global coordinates based on tile position.
  */
-function localToGlobalCoords(labelCoords, tileX, tileY) {
+function localToGlobalCoords(rotatedCoords, tileX, tileY) {
     return {
-        x: tileX + labelCoords.x,
-        y: tileY + labelCoords.y,
+        x: tileX + rotatedCoords.x,
+        y: tileY + rotatedCoords.y,
     };
+}
+
+/**
+ * Rotates local coordinates within the tile based on the tile's rotation.
+ */
+function rotateLocalCoords(localCoords, rotationDegree) {
+    const rotation = normalizeDegree(rotationDegree);
+
+    return {
+        roadCoords: rotatePointNormalized(localCoords.roadCoords, rotation),
+        labelCoords: rotatePointNormalized(localCoords.labelCoords, rotation),
+    }
 }
 
 /**
@@ -54,11 +67,11 @@ export function getScenarioPayload(scenarioKey, mapData) {
     return Object.entries(houses).map(([houseInstanceId, packageCount]) => {
         const instance = HOUSE_INSTANCES.find(house => house.id === houseInstanceId);
         const tileMetadata = getTileMetadata(mapData, instance.tileX, instance.tileY);
-
         const localCoords = getLocalHouseCoordinates(tileMetadata.type);
-        // TODO: ensure rotation is applied correctly to keep label/road-coords accurate
-        const globalRoadCoords = localToGlobalCoords(localCoords.roadCoords, instance.tileX, instance.tileY);
-        const globalLabelCoords = localToGlobalCoords(localCoords.labelCoords, instance.tileX, instance.tileY);
+
+        const rotatedCoords = rotateLocalCoords(localCoords, tileMetadata.rotation);
+        const globalRoadCoords = localToGlobalCoords(rotatedCoords.roadCoords, instance.tileX, instance.tileY);
+        const globalLabelCoords = localToGlobalCoords(rotatedCoords.labelCoords, instance.tileX, instance.tileY);
 
         return {
             houseInstanceId,
