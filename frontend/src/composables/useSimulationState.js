@@ -3,7 +3,7 @@ import { ROUTE_OPTIONS } from "../logic/domain/routes";
 import { SCENARIO_OPTIONS, getHousesForScenarioByValue } from "../logic/domain/scenarios";
 import { buildCarsWithRoutes } from "../logic/service/carService";
 import { convertWaypointsSvgToMath, convertPositionMathToSvg } from "../logic/utils/coordinateConverter";
-import { getHousesByScenarioKey } from "../logic/service/houseService";
+import { getHousesByScenarioKey, getHousesLinkedToRoutesByScenarioKey } from "../logic/service/houseService";
 import { useWebSocketSimulation } from "./useWebSocketSimulation";
 import { MAX_CARS } from "../constants/constants";
 
@@ -182,6 +182,19 @@ const housesFromScenario = computed(() => {
     }
 });
 
+const housesLinkedToRoutesFromScenario = computed(() => {
+    if (!mapData.value.length) {
+        return [];
+    }
+
+    try {
+        return getHousesLinkedToRoutesByScenarioKey(scenario.value, mapData.value);
+    } catch (error) {
+        console.error("Error building scenario payload with routes:", error);
+        return [];
+    }
+});
+
 // ---
 // collecting simulation parameters to build payload
 // ---
@@ -200,7 +213,7 @@ const simulationStartPayload = computed(() => {
         carTargetSpeed: carTargetSpeed.value,
         scenario: {
             name: scenario.value,
-            houses: housesFromScenario.value,
+            houses: housesLinkedToRoutesFromScenario.value,
         },
     };
 });
@@ -249,7 +262,8 @@ export function useSimulationState() {
         visibleCars,
         visibleCarsWithRoutes,
         carsWithRoutes,
-        housesFromScenario: housesFromScenario,
+        housesFromScenario,
+        housesLinkedToRoutesFromScenario,
         simulationStartPayload,
     };
 }
