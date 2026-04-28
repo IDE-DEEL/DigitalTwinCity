@@ -101,6 +101,12 @@ function findRoutesForHouse(house, mapData) {
  * @returns {Array<Object>} An array of rotated lane objects.
  */
 function getRotatedSupportedLanes(house, mapData) {
+    if (!house.supportedLanes) {
+        throw new Error(
+            `House ${house.houseInstanceId} missing supportedLanes`
+        );
+    }
+
     const tile = mapData.find(t => t.x === house.tileX && t.y === house.tileY);
     const rotation = normalizeDegree(tile.rotation || 0);
 
