@@ -2,7 +2,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { ROUTE_OPTIONS } from "../logic/domain/routes";
 import { SCENARIO_OPTIONS, getHousesForScenarioByValue } from "../logic/domain/scenarios";
 import { buildCarsWithRoutes } from "../logic/service/carService";
-import { convertWaypointsSvgToMath, convertPositionMathToSvg } from "../logic/utils/coordinateConverter";
+import { convertWaypointsArrayFromSvgToMath, convertWaypointFromSvgToMath, convertPositionMathToSvg } from "../logic/utils/coordinateConverter";
 import { getHousesByScenarioKey, getHousesLinkedToRoutesByScenarioKey } from "../logic/service/houseService";
 import { useWebSocketSimulation } from "./useWebSocketSimulation";
 import { MAX_CARS } from "../constants/constants";
@@ -195,6 +195,14 @@ const housesLinkedToRoutesFromScenario = computed(() => {
     }
 });
 
+const housesWithConvertedCoordinates = computed (() => {
+    return housesLinkedToRoutesFromScenario.value.map((house) => ({
+        ...house,
+        labelCoords: convertWaypointFromSvgToMath(house.labelCoords),
+        roadCoords: convertWaypointFromSvgToMath(house.roadCoords),
+    }));
+});
+
 // ---
 // collecting simulation parameters to build payload
 // ---
@@ -208,12 +216,12 @@ const simulationStartPayload = computed(() => {
             id: car.id,
             maxPackages: car.maxPackages,
             routeName: car.route,
-            routeWaypoints: convertWaypointsSvgToMath(car.waypoints),
+            routeWaypoints: convertWaypointsArrayFromSvgToMath(car.waypoints),
         })),
         carTargetSpeed: carTargetSpeed.value,
         scenario: {
             name: scenario.value,
-            houses: housesLinkedToRoutesFromScenario.value,
+            houses: housesWithConvertedCoordinates.value,
         },
     };
 });
