@@ -199,7 +199,7 @@ const housesWithConvertedCoordinates = computed (() => {
     return housesLinkedToRoutesFromScenario.value.map((house) => ({
         ...house,
         labelCoords: convertWaypointFromSvgToMath(house.labelCoords),
-        roadCoords: convertWaypointFromSvgToMath(house.roadCoords),
+        roadCoords: convertWaypointsArrayFromSvgToMath(house.roadCoords),
     }));
 });
 

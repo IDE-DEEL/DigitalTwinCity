@@ -45,31 +45,71 @@ export function getLocalHouseCoordinates(tileType) {
 }
 
 /**
+ * Helper function to rotate an array of points
+ * 
+ * @param {Array<Object>} pointsArray - Array of points with x, y properties
+ * @param {number} rotation - The rotation in degrees (0, 90, 180, 270)
+ * @returns {Array<Object>} Array of rotated points
+ */
+function rotatePointsArray(pointsArray, rotation) {
+    return pointsArray.map(point => rotatePointNormalized(point, rotation));
+}
+
+/**
  * Rotates local coordinates within a tile based on the tile's rotation.
  * Each coordinate is rotated around the center of the tile (0.5, 0.5).
+ * Handles both single points and arrays of points.
  *
- * @param {Object} localCoords - Object with roadCoords and labelCoords.
+ * @param {Object} localCoords - Object with roadCoords (array or single) and labelCoords (single point).
  * @param {number} rotationDegree - The rotation in degrees (0, 90, 180, 270).
  * @returns {Object} An object with rotated roadCoords and labelCoords.
  */
 export function rotateLocalCoords(localCoords, rotationDegree) {
     const rotation = normalizeDegree(rotationDegree);
 
+    // Handle roadCoords as array (new) or single point (legacy)
+    let rotatedRoadCoords;
+    if (Array.isArray(localCoords.roadCoords)) {
+        rotatedRoadCoords = rotatePointsArray(localCoords.roadCoords, rotation);
+    } else {
+        rotatedRoadCoords = rotatePointNormalized(localCoords.roadCoords, rotation);
+    }
+
     return {
-        roadCoords: rotatePointNormalized(localCoords.roadCoords, rotation),
+        roadCoords: rotatedRoadCoords,
         labelCoords: rotatePointNormalized(localCoords.labelCoords, rotation),
     };
 }
 
 /**
+ * Helper function to convert an array of local coordinates to global
+ * 
+ * @param {Array<Object>} coordsArray - Array of coordinates in tile space (0-1)
+ * @param {number} tileX - The x-coordinate of the tile
+ * @param {number} tileY - The y-coordinate of the tile
+ * @returns {Array<Object>} Array of global coordinates
+ */
+function localToGlobalCoordsArray(coordsArray, tileX, tileY) {
+    return coordsArray.map(coord => ({
+        x: tileX + coord.x,
+        y: tileY + coord.y,
+    }));
+}
+
+/**
  * Transforms local coordinates to global coordinates based on tile position.
+ * Handles both single points and arrays of points.
  *
- * @param {Object} rotatedCoords - Coordinates within the tile (0-1 range).
+ * @param {Object|Array} rotatedCoords - Coordinate(s) within the tile (0-1 range).
  * @param {number} tileX - The x-coordinate of the tile within the map.
  * @param {number} tileY - The y-coordinate of the tile within the map.
- * @returns {Object} An object with x and y as global coordinates.
+ * @returns {Object|Array} Global coordinate(s).
  */
 export function localToGlobalCoords(rotatedCoords, tileX, tileY) {
+    if (Array.isArray(rotatedCoords)) {
+        return localToGlobalCoordsArray(rotatedCoords, tileX, tileY);
+    }
+    
     return {
         x: tileX + rotatedCoords.x,
         y: tileY + rotatedCoords.y,
