@@ -69,7 +69,7 @@ class CarAgent(mesa.Agent):
     def distance_travelled(self):
         """Get total distance travelled."""
         if self.controller:
-            return self.controller.distance_travelled
+            return self.controller.total_distance_travelled
         return 0.0
 
     @property
