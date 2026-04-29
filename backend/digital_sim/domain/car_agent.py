@@ -19,15 +19,19 @@ class CarAgent(mesa.Agent):
         self.route = route
         self.max_packages = max_packages
         self.controller = MovementController(waypoints=route.waypoints, target_speed=self.target_speed)
+        self.packages_in_cargo = []
 
     def step(self):
-        """Execute one step of the car agent."""
+        """Execute one step of the car agent.
+        
+        Movement is executed along the route. Package assignment is handled
+        by the CarModel before agents step (see PackageAssigner).
+        """
         if not self.controller:
             return
 
         dt = getattr(self.model, "delta_time", 0.1)
         self.controller.dt = dt
-
         self.controller.update()
 
     @property
@@ -73,11 +77,24 @@ class CarAgent(mesa.Agent):
         return 0.0
 
     @property
+    def has_started_route(self):
+        """Check if the car has started moving along its route."""
+        if self.controller:
+            return self.controller.total_distance_travelled > 0
+        return False
+
+    @property
     def status(self):
         """
-        Get the current status of the car based on its movement.
-        Returns DRIVING if actual_speed > 0, otherwise IDLE.
+        Get the current status of the car based on its movement and route progress.
+        
+        - PARKED: Not started (total_distance_travelled=0) OR finished route (is_finished=True) AND actual_speed=0
+        - IDLE: Underway on route AND actual_speed=0
+        - DRIVING: actual_speed > 0
         """
         if self.actual_speed > 0:
             return CarStatus.DRIVING
-        return CarStatus.PARKED
+        elif not self.has_started_route or self.is_finished:
+            return CarStatus.PARKED
+        else:
+            return CarStatus.IDLE

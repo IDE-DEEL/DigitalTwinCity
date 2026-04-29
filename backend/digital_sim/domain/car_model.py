@@ -4,6 +4,7 @@ from backend.digital_sim.domain.car_agent import CarAgent
 from backend.digital_sim.domain.route import Route
 from backend.digital_sim.domain.package import Package, PackageStatus
 from backend.digital_sim.domain.house import House
+from backend.digital_sim.service.package_assigner import PackageAssigner
 from backend.digital_sim.constants import CAR_ROUTE_NAME_KEY, CAR_ROUTE_WAYPOINTS_KEY, CAR_MAX_PACKAGES_KEY, HOUSE_PACKAGE_COUNT_KEY, HOUSE_ID_KEY, HOUSE_ROAD_COORDS_KEY, HOUSE_ROUTE_NAMES_LIST_KEY
 
 
@@ -23,6 +24,13 @@ class CarModel(mesa.Model):
         self._setup_houses(houses or [])
     
     def step(self):
+        """Execute one simulation step.
+        
+        First: assign packages to parked agents.
+        Then: execute movement for all agents.
+        """
+        PackageAssigner.assign_packages_to_parked_agents(self.agents)
+
         self.agents.shuffle_do("step")
         self.step_count += 1
     
@@ -62,7 +70,14 @@ class CarModel(mesa.Model):
                 "distance_travelled": agent.distance_travelled,
                 "finished": agent.is_finished,
                 "maxPackages": agent.max_packages,
-                "status": agent.status.name
+                "status": agent.status.name,
+                "packages_in_cargo": [
+                    {
+                        "id": package.id,
+                        "status": package.status.name
+                    }
+                    for package in agent.packages_in_cargo
+                ]
             })
 
         return agents_status
