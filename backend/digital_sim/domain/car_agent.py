@@ -20,19 +20,27 @@ class CarAgent(mesa.Agent):
         self.max_packages = max_packages
         self.controller = MovementController(waypoints=route.waypoints, target_speed=self.target_speed)
         self.packages_in_cargo = []
+        
+        # Delivery state
+        self.current_delivery_house = None
+        self.delivery_time_remaining = 0.0
+        self.delivery_duration = 0.0
 
     def step(self):
         """Execute one step of the car agent.
         
-        Movement is executed along the route. Package assignment is handled
-        by the CarModel before agents step (see PackageAssigner).
+        Handles movement along the route. Package assignment and delivery logic is handled by 
+        PackageAssigner andDeliveryManager in CarModel before agents step.
         """
         if not self.controller:
             return
 
         dt = getattr(self.model, "delta_time", 0.1)
         self.controller.dt = dt
-        self.controller.update()
+        
+        # Only move if not delivering
+        if self.current_delivery_house is None:
+            self.controller.update()
 
     @property
     def position(self):
@@ -91,8 +99,11 @@ class CarAgent(mesa.Agent):
         - PARKED: Not started (total_distance_travelled=0) OR finished route (is_finished=True) AND actual_speed=0
         - IDLE: Underway on route AND actual_speed=0
         - DRIVING: actual_speed > 0
+        - DELIVERING: Currently at a delivery location
         """
-        if self.actual_speed > 0:
+        if self.current_delivery_house is not None:
+            return CarStatus.DELIVERING
+        elif self.actual_speed > 0:
             return CarStatus.DRIVING
         elif (not self.has_started_route) or (self.is_finished):
             return CarStatus.PARKED

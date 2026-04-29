@@ -5,6 +5,7 @@ from backend.digital_sim.domain.route import Route
 from backend.digital_sim.domain.package import Package, PackageStatus
 from backend.digital_sim.domain.house import House
 from backend.digital_sim.service.package_assigner import PackageAssigner
+from backend.digital_sim.service.delivery_manager import DeliveryManager
 from backend.digital_sim.constants import CAR_ROUTE_NAME_KEY, CAR_ROUTE_WAYPOINTS_KEY, CAR_MAX_PACKAGES_KEY, HOUSE_PACKAGE_COUNT_KEY, HOUSE_ID_KEY, HOUSE_ROAD_COORDS_KEY, HOUSE_ROUTE_NAMES_LIST_KEY
 
 
@@ -27,9 +28,11 @@ class CarModel(mesa.Model):
         """Execute one simulation step.
         
         First: assign packages to parked agents.
+        Second: process deliveries.
         Then: execute movement for all agents.
         """
         PackageAssigner.assign_packages_to_parked_agents(self.agents)
+        DeliveryManager.process_deliveries(self.agents)
 
         self.agents.shuffle_do("step")
         self.step_count += 1
