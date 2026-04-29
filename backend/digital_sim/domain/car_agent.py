@@ -5,11 +5,12 @@ from backend.digital_sim.domain.movement_controller import MovementController
 
 
 class CarAgent(mesa.Agent):
-    def __init__(self, model, car_target_speed: int = 50, route: Route = None):
+    def __init__(self, model, car_target_speed: int = 50, route: Route = None, max_packages: int = 1):
         super().__init__(model)
 
         self.target_speed = car_target_speed
         self.route = route
+        self.max_packages = max_packages
         self.controller = MovementController(waypoints=route.waypoints, target_speed=self.target_speed)
 
     def step(self):

@@ -4,7 +4,7 @@ from backend.digital_sim.domain.car_agent import CarAgent
 from backend.digital_sim.domain.route import Route
 from backend.digital_sim.domain.package import Package, PackageStatus
 from backend.digital_sim.domain.house import House
-from backend.digital_sim.constants import CAR_ROUTE_NAME_KEY, CAR_ROUTE_WAYPOINTS_KEY, HOUSE_PACKAGE_COUNT_KEY, HOUSE_ID_KEY, HOUSE_ROAD_COORDS_KEY, HOUSE_ROUTE_NAMES_LIST_KEY
+from backend.digital_sim.constants import CAR_ROUTE_NAME_KEY, CAR_ROUTE_WAYPOINTS_KEY, CAR_MAX_PACKAGES_KEY, HOUSE_PACKAGE_COUNT_KEY, HOUSE_ID_KEY, HOUSE_ROAD_COORDS_KEY, HOUSE_ROUTE_NAMES_LIST_KEY
 
 
 class CarModel(mesa.Model):
@@ -60,7 +60,8 @@ class CarModel(mesa.Model):
                 "target_speed": agent.target_speed,
                 "speed": agent.actual_speed,
                 "distance_travelled": agent.distance_travelled,
-                "finished": agent.is_finished
+                "finished": agent.is_finished,
+                "maxPackages": agent.max_packages,
             })
 
         return agents_status
@@ -97,6 +98,7 @@ class CarModel(mesa.Model):
 
         for car in cars:
             route_name = car.get(CAR_ROUTE_NAME_KEY)
+            max_packages = car.get(CAR_MAX_PACKAGES_KEY, 1)
 
             # prevent duplicate route objects
             if route_name not in routes_added:
@@ -105,7 +107,7 @@ class CarModel(mesa.Model):
                 routes_added.add(route_name)
             
             route = self.routes[route_name]
-            CarAgent(model=self, car_target_speed=car_target_speed, route=route)
+            CarAgent(model=self, car_target_speed=car_target_speed, route=route, max_packages=max_packages)
     
     def _setup_houses(self, houses: list[dict]):
         """Create house objects and link them to routes and packages."""
