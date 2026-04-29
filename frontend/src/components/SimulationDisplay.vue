@@ -26,6 +26,14 @@
             >
                 {{ showDevRouteBuilder ? 'Hide route builder' : 'Show route builder' }}
             </button>
+
+            <button
+                type="button"
+                class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
+                @click="toggleHouseDetectionZones"
+            >
+                {{ showDevHouseDetectionZones ? 'Hide house zones' : 'Show house zones' }}
+            </button>
         </div>
 
         <!-- Map Container -->
@@ -79,6 +87,14 @@
                     :map-rows="MAP_ROWS"
                 />
 
+                <devHouseDetectionZonesOverlay
+                    v-if="showDevHouseDetectionZones"
+                    :map-columns="MAP_COLUMNS"
+                    :map-rows="MAP_ROWS"
+                    :map-data="mapData"
+                    :scenario="scenario"
+                />
+
                 <!-- House labels for packages -->
                 <HouseLabelsOverlay
                     :houses="housesFromScenario"
@@ -127,6 +143,7 @@ import HouseLabelsOverlay from './HouseLabelsOverlay.vue';
 import devLaneDebugOverlay from '../development/devLaneDebugOverlay.vue';
 import devTileCoordinateOverlay from '../development/devTileCoordinateOverlay.vue';
 import devRouteBuilder from '../development/devRouteBuilder.vue';
+import devHouseDetectionZonesOverlay from '../development/devHouseDetectionZonesOverlay.vue';
 
 const isDevelopment = import.meta.env.DEV;
 
@@ -140,6 +157,7 @@ const {
     setMapData,
     agentsState,
     housesFromScenario,
+    scenario,
 } = useSimulationState();
 
 // --- lane debug devtool start ---
@@ -165,6 +183,14 @@ const toggleRouteBuilder = () => {
     showDevRouteBuilder.value = !showDevRouteBuilder.value;
 };
 // --- route builder devtool end ---
+
+// --- house detection zones devtool start ---
+const showDevHouseDetectionZones = ref(false);
+
+const toggleHouseDetectionZones = () => {
+    showDevHouseDetectionZones.value = !showDevHouseDetectionZones.value;
+};
+// --- house detection zones devtool end ---
 
 // --- custom colors for car routes start ---
 const CAR_ROUTE_COLORS = {
