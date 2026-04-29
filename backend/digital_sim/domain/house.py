@@ -1,8 +1,8 @@
 from backend.digital_sim.domain.package import Package
 
 class House:
-    def __init__(self, id: str, packages: list[Package], waypoint_label: dict[int, int], waypoint_detection: dict[int, int]):
+    def __init__(self, id: str, packages: list[Package], road_coords: dict[int, int], num_undelivered_packages: int):
         self.id = id
         self.packages = packages
-        self.waypoint_label = waypoint_label
-        self.waypoint_detection = waypoint_detection
+        self.road_coords = road_coords
+        self.num_undelivered_packages = num_undelivered_packages

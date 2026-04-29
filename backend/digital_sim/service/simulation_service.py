@@ -1,5 +1,5 @@
 from backend.digital_sim.domain.car_model import CarModel
-from backend.digital_sim.constants import CAR_ROUTE_WAYPOINTS_KEY, CARS_KEY, CAR_TARGET_SPEED_KEY, SCENARIO_KEY
+from backend.digital_sim.constants import CAR_ROUTE_WAYPOINTS_KEY, CARS_KEY, CAR_TARGET_SPEED_KEY, SCENARIO_KEY, SCENARIO_NAME_KEY, SCENARIO_HOUSES_LIST_KEY
 
 
 class SimulationService:
@@ -18,7 +18,10 @@ class SimulationService:
         """
         cars = parameters.get(CARS_KEY, [])  # TODO: throw error if missing/empty
         car_target_speed = parameters.get(CAR_TARGET_SPEED_KEY, 50)
-        scenario = parameters.get(SCENARIO_KEY, "rustig") # TODO: pass scenario to model later
+        
+        scenario = parameters.get(SCENARIO_KEY, {})
+        scenario_name = scenario.get(SCENARIO_NAME_KEY, "unknown")
+        houses = scenario.get(SCENARIO_HOUSES_LIST_KEY, [])
 
         # Convert route waypoints from dicts to tuples for each car configuration
         for car in cars:
@@ -28,6 +31,8 @@ class SimulationService:
         self.model = CarModel(
             cars=cars,
             car_target_speed=car_target_speed,
+            scenario_name=scenario_name,
+            houses=houses
         )
         self.is_running = True
         return {"status": "simulation_started", "agents": len(self.model.agents)}

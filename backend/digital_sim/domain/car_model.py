@@ -2,20 +2,25 @@ import mesa
 
 from backend.digital_sim.domain.car_agent import CarAgent
 from backend.digital_sim.domain.route import Route
-from backend.digital_sim.constants import CAR_ROUTE_NAME_KEY, CAR_ROUTE_WAYPOINTS_KEY
+from backend.digital_sim.domain.package import Package
+from backend.digital_sim.domain.house import House
+from backend.digital_sim.constants import CAR_ROUTE_NAME_KEY, CAR_ROUTE_WAYPOINTS_KEY, HOUSE_PACKAGE_COUNT_KEY, HOUSE_ID_KEY, HOUSE_ROAD_COORDS_KEY, HOUSE_ROUTE_NAMES_LIST_KEY
 
 
 class CarModel(mesa.Model):
 
-    def __init__(self, cars: list[dict], car_target_speed: int, rng=None):
+    def __init__(self, cars: list[dict], car_target_speed: int, scenario_name: str, houses: list[dict], rng=None):
         super().__init__(rng=rng)
 
         self.num_agents = len(cars)
         self.step_count = 0
         self.car_target_speed = car_target_speed / 100
         self.routes = {}
+        self.houses = {}
+        self.scenario_name = scenario_name
         
         self._setup_cars_and_routes(cars, self.car_target_speed)
+        self._setup_houses(houses or [])
     
     def step(self):
         self.agents.shuffle_do("step")
@@ -57,3 +62,21 @@ class CarModel(mesa.Model):
             
             route = self.routes[route_name]
             CarAgent(model=self, car_target_speed=car_target_speed, route=route)
+    
+    def _setup_houses(self, houses: list[dict]):
+        """Create house objects and link them to routes and packages."""
+        # instantiate houses
+        for house_data in houses:
+            expected_num_packages = house_data.get(HOUSE_PACKAGE_COUNT_KEY)
+            packages = [Package(id=i) for i in range(expected_num_packages)]
+            house = House(
+                id=house_data.get(HOUSE_ID_KEY),
+                packages=packages,
+                road_coords=house_data.get(HOUSE_ROAD_COORDS_KEY),
+                num_undelivered_packages=len(packages),
+            )
+            # link house to routes
+            for route_name in house_data.get(HOUSE_ROUTE_NAMES_LIST_KEY, []):
+                if route_name in self.routes:
+                    self.routes[route_name].houses.append(house)
+            self.houses[house.id] = house
