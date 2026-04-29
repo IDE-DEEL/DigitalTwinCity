@@ -6,6 +6,6 @@ class PackageStatus(Enum):
     DELIVERED = "delivered"
 
 class Package:
-    def __init__(self, id: int, status: PackageStatus = PackageStatus.IN_DEPOT):
+    def __init__(self, id: str, status: PackageStatus = PackageStatus.IN_DEPOT):
         self.id = id
         self.status = status

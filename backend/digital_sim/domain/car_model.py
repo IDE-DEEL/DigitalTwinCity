@@ -114,10 +114,11 @@ class CarModel(mesa.Model):
         """Create house objects and link them to routes and packages."""
         # instantiate houses
         for house_data in houses:
+            house_id = house_data.get(HOUSE_ID_KEY)
             expected_num_packages = house_data.get(HOUSE_PACKAGE_COUNT_KEY)
-            packages = [Package(id=i) for i in range(expected_num_packages)]
+            packages = [Package(id=house_id + f"-{i}") for i in range(expected_num_packages)]
             house = House(
-                id=house_data.get(HOUSE_ID_KEY),
+                id=house_id,
                 packages=packages,
                 road_coords=house_data.get(HOUSE_ROAD_COORDS_KEY),
                 num_undelivered_packages=len(packages),
