@@ -1,5 +1,5 @@
 from backend.digital_sim.domain.car_model import CarModel
-from backend.digital_sim.constants import CAR_ROUTE_WAYPOINTS_KEY, CARS_KEY, CAR_TARGET_SPEED_KEY, SCENARIO_KEY, SCENARIO_NAME_KEY, SCENARIO_HOUSES_LIST_KEY
+from backend.digital_sim.constants import CAR_ROUTE_WAYPOINTS_KEY, CARS_KEY, CAR_TARGET_SPEED_KEY, SCENARIO_KEY, SCENARIO_NAME_KEY, SCENARIO_HOUSES_LIST_KEY, HOUSE_ROAD_COORDS_KEY
 
 
 class SimulationService:
@@ -23,9 +23,13 @@ class SimulationService:
         scenario_name = scenario.get(SCENARIO_NAME_KEY, "unknown")
         houses = scenario.get(SCENARIO_HOUSES_LIST_KEY, [])
 
-        # Convert route waypoints from dicts to tuples for each car configuration
+        # Convert route waypoints from dicts to tuples for each car
         for car in cars:
             car[CAR_ROUTE_WAYPOINTS_KEY] = self._convert_waypoint_dicts_to_tuples(car.get(CAR_ROUTE_WAYPOINTS_KEY, []))
+        
+        # Convert house roadCoords from dicts to tuples for each house
+        for house in houses:
+            house[HOUSE_ROAD_COORDS_KEY] = self._convert_waypoint_dicts_to_tuples(house.get(HOUSE_ROAD_COORDS_KEY, []))
         
         # Create model with configuration
         self.model = CarModel(
@@ -70,6 +74,8 @@ class SimulationService:
         """Convert list of waypoints from dict format to list of (x, y) tuples.
         Example input: [{"x": 1.0, "y": 2.0}, {"x": 3.0, "y": 4.0}]
         Output: [(1.0, 2.0), (3.0, 4.0)]
+        
+        Used for both car route waypoints and house detection zone coordinates.
 
         Args:
             waypoints: List of dictionaries with 'x' and 'y' keys
