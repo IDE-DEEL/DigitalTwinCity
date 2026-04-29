@@ -1,5 +1,6 @@
 import random
 
+from backend.digital_sim.constants import MAX_DELIVERY_TIME_IN_SECONDS, MIN_DELIVERY_TIME_IN_SECONDS
 from backend.digital_sim.domain.package import PackageStatus
 
 
@@ -44,7 +45,7 @@ class DeliveryManager:
             if DeliveryManager._point_in_polygon(current_pos, house.road_coords):
                 # Start delivery
                 agent.current_delivery_house = house
-                agent.delivery_duration = random.uniform(5.0, 15.0)
+                agent.delivery_duration = random.uniform(MIN_DELIVERY_TIME_IN_SECONDS, MAX_DELIVERY_TIME_IN_SECONDS)
                 agent.delivery_time_remaining = agent.delivery_duration
                 return
     

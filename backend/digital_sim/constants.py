@@ -21,3 +21,7 @@ HOUSE_ROUTE_NAMES_LIST_KEY = "routeNames"
 # coordinates indices for waypoints
 X_COORD_IDX = 0
 Y_COORD_IDX = 1
+
+# package delivery
+MIN_DELIVERY_TIME_IN_SECONDS = 5.0
+MAX_DELIVERY_TIME_IN_SECONDS = 15.0
