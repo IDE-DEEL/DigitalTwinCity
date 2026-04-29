@@ -18,7 +18,7 @@ class SimulationService:
         """
         cars = parameters.get(CARS_KEY, [])  # TODO: throw error if missing/empty
         car_target_speed = parameters.get(CAR_TARGET_SPEED_KEY, 50)
-        
+
         scenario = parameters.get(SCENARIO_KEY, {})
         scenario_name = scenario.get(SCENARIO_NAME_KEY, "unknown")
         houses = scenario.get(SCENARIO_HOUSES_LIST_KEY, [])
@@ -35,14 +35,17 @@ class SimulationService:
             houses=houses
         )
         self.is_running = True
-        return {"status": "simulation_started", "agents": len(self.model.agents)}
+        return {
+            "status": "simulation_started",
+            **self.model.get_simulation_state()
+        }
     
     def step(self):
         """
         Execute one step of the simulation.
         
         Returns:
-            Dictionary with step information and agent status
+            Dictionary with complete simulation state (agents, houses, packages)
         """
         if not self.is_running or not self.model:
             return {"status": "simulation_not_running"}
@@ -51,10 +54,10 @@ class SimulationService:
         self.model.step()
         
         return {
-            "step": self.model.step_count,
-            "agents": self.model.get_agents_status()
+            "status": "simulation_update",
+            **self.model.get_simulation_state()
         }
-    
+
     def stop_simulation(self):
         """Stop the current simulation."""
         self.is_running = False

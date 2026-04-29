@@ -29,19 +29,20 @@ function connectWebSocket(onSimulationUpdate) {
         websocket.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
+                const result = data.result;
                 
                 switch (data.command) {
                     case "simulation_started":
-                        console.log("simulation started on backend", data.result);
+                        console.log("simulation started on backend", result);
                         break;
                     case "simulation_update":
-                        console.log("simulation update - step:", data.step, "agents:", data.agents);
-                        if (data.agents && onSimulationUpdateCallback) {
-                            onSimulationUpdateCallback(data.agents);
+                        console.log("simulation update - step", result);
+                        if (result.agents && onSimulationUpdateCallback) {
+                            onSimulationUpdateCallback(result.agents);
                         }
                         break;
                     case "simulation_stopped":
-                        console.log("simulation stopped on backend", data.result);
+                        console.log("simulation stopped on backend", result);
                         break;
                     default:
                         console.warn("Unknown command received:", data.command);

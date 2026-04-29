@@ -2,7 +2,7 @@ import mesa
 
 from backend.digital_sim.domain.car_agent import CarAgent
 from backend.digital_sim.domain.route import Route
-from backend.digital_sim.domain.package import Package
+from backend.digital_sim.domain.package import Package, PackageStatus
 from backend.digital_sim.domain.house import House
 from backend.digital_sim.constants import CAR_ROUTE_NAME_KEY, CAR_ROUTE_WAYPOINTS_KEY, HOUSE_PACKAGE_COUNT_KEY, HOUSE_ID_KEY, HOUSE_ROAD_COORDS_KEY, HOUSE_ROUTE_NAMES_LIST_KEY
 
@@ -26,7 +26,44 @@ class CarModel(mesa.Model):
         self.agents.shuffle_do("step")
         self.step_count += 1
     
-    def get_agents_status(self):
+    def get_simulation_state(self):
+        """
+        Get the complete state of the simulation including agents and houses with package delivery info.
+        
+        Returns:
+            Dictionary containing:
+            - agents: list of agent status
+            - houses: list of houses with package delivery statistics
+            - step: current simulation step
+        """
+        houses_status = []
+        for house in self.houses.values():
+            delivered_count = sum(1 for pkg in house.packages if pkg.status == PackageStatus.DELIVERED)
+            total_count = len(house.packages)
+            undelivered_count = total_count - delivered_count
+            
+            houses_status.append({
+                "id": house.id,
+                "road_coords": house.road_coords,
+                "total_packages": total_count,
+                "delivered_packages": delivered_count,
+                "undelivered_packages": undelivered_count,
+                "packages": [
+                    {
+                        "id": package.id,
+                        "status": package.status.name
+                    }
+                    for package in house.packages
+                ]
+            })
+        
+        return {
+            "step": self.step_count,
+            "agents": self._get_agents_status(),
+            "houses": houses_status
+        }
+
+    def _get_agents_status(self):
         """
         Get the current status of all agents.
         
@@ -46,6 +83,8 @@ class CarModel(mesa.Model):
                 "finished": agent.is_finished
             })
         return agents_status
+    
+    def _get_houses_status(self):
 
     def _setup_cars_and_routes(self, cars: list[dict], car_target_speed: int):
         """Create routes and agents based on car settings from frontend."""
