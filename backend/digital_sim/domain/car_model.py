@@ -35,8 +35,40 @@ class CarModel(mesa.Model):
             - agents: list of agent status
             - houses: list of houses with package delivery statistics
             - step: current simulation step
+        """        
+        return {
+            "step": self.step_count,
+            "agents": self._get_agents_status(),
+            "houses": self._get_houses_status()
+        }
+
+    def _get_agents_status(self):
         """
+        Get the current status of all agents.
+        
+        Returns:
+            List of dictionaries containing agent status (id, position, speed, finished)
+        """
+        agents_status = []
+
+        for agent in self.agents:
+            agents_status.append({
+                "id": agent.unique_id,
+                "position": agent.position,
+                "heading_radial": agent.heading,
+                "heading_deg": agent.heading_deg,
+                "target_speed": agent.target_speed,
+                "speed": agent.actual_speed,
+                "distance_travelled": agent.distance_travelled,
+                "finished": agent.is_finished
+            })
+
+        return agents_status
+    
+    def _get_houses_status(self):
+        """List of dictionaries containing house status (id, road_coords, total_packages, delivered_packages, undelivered_packages, package details)"""
         houses_status = []
+
         for house in self.houses.values():
             delivered_count = sum(1 for pkg in house.packages if pkg.status == PackageStatus.DELIVERED)
             total_count = len(house.packages)
@@ -56,35 +88,8 @@ class CarModel(mesa.Model):
                     for package in house.packages
                 ]
             })
-        
-        return {
-            "step": self.step_count,
-            "agents": self._get_agents_status(),
-            "houses": houses_status
-        }
 
-    def _get_agents_status(self):
-        """
-        Get the current status of all agents.
-        
-        Returns:
-            List of dictionaries containing agent status (id, position, speed, finished)
-        """
-        agents_status = []
-        for agent in self.agents:
-            agents_status.append({
-                "id": agent.unique_id,
-                "position": agent.position,
-                "heading_radial": agent.heading,
-                "heading_deg": agent.heading_deg,
-                "target_speed": agent.target_speed,
-                "speed": agent.actual_speed,
-                "distance_travelled": agent.distance_travelled,
-                "finished": agent.is_finished
-            })
-        return agents_status
-    
-    def _get_houses_status(self):
+        return houses_status
 
     def _setup_cars_and_routes(self, cars: list[dict], car_target_speed: int):
         """Create routes and agents based on car settings from frontend."""
