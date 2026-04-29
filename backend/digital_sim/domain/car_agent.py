@@ -1,16 +1,23 @@
+from enum import Enum
 import mesa
 
 from backend.digital_sim.domain.route import Route
 from backend.digital_sim.domain.movement_controller import MovementController
 
 
+class CarStatus(Enum):
+    IDLE = "idle"
+    DRIVING = "driving"
+    DELIVERING = "delivering"
+
 class CarAgent(mesa.Agent):
-    def __init__(self, model, car_target_speed: int = 50, route: Route = None, max_packages: int = 1):
+    def __init__(self, model, car_target_speed: int = 50, route: Route = None, max_packages: int = 1, status: CarStatus = CarStatus.IDLE):
         super().__init__(model)
 
         self.target_speed = car_target_speed
         self.route = route
         self.max_packages = max_packages
+        self.status = status
         self.controller = MovementController(waypoints=route.waypoints, target_speed=self.target_speed)
 
     def step(self):

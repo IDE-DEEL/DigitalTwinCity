@@ -1,9 +1,9 @@
 from enum import Enum
 
 class PackageStatus(Enum):
-    IN_DEPOT = 1
-    IN_TRANSIT = 2
-    DELIVERED = 3
+    IN_DEPOT = "in_depot"
+    IN_TRANSIT = "in_transit"
+    DELIVERED = "delivered"
 
 class Package:
     def __init__(self, id: int, status: PackageStatus = PackageStatus.IN_DEPOT):

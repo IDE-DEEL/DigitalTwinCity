@@ -62,6 +62,7 @@ class CarModel(mesa.Model):
                 "distance_travelled": agent.distance_travelled,
                 "finished": agent.is_finished,
                 "maxPackages": agent.max_packages,
+                "status": agent.status.name
             })
 
         return agents_status
