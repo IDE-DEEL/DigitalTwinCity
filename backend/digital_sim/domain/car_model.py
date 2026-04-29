@@ -67,7 +67,7 @@ class CarModel(mesa.Model):
                 "heading_deg": agent.heading_deg,
                 "target_speed": agent.target_speed,
                 "speed": agent.actual_speed,
-                "distance_travelled": agent.distance_travelled,
+                "total_distance_travelled": agent.total_distance_travelled,
                 "finished": agent.is_finished,
                 "maxPackages": agent.max_packages,
                 "status": agent.status.name,
