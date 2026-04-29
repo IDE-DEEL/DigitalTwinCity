@@ -90,7 +90,7 @@
                     <thead>
                         <tr class="border-b border-gray-200">
                             <th class="px-3 py-2 font-semibold text-gray-700">ID</th>
-                            <th class="px-3 py-2 font-semibold text-gray-700">Aantal pakketten</th>
+                            <th class="px-3 py-2 font-semibold text-gray-700">Max. pakketten</th>
                             <th class="px-3 py-2 font-semibold text-gray-700">Route</th>
                             <th class="px-3 py-2 font-semibold text-gray-700">Visualiseren</th>
                         </tr>
@@ -105,8 +105,8 @@
                                     type="number" 
                                     min="1" 
                                     max="10"
-                                    :value="car.packageCount"
-                                    @input="updateCarPackageCount(car.id, Number($event.target.value))"
+                                    :value="car.maxPackages"
+                                    @input="updateCarMaxPackageCount(car.id, Number($event.target.value))"
                                     class="w-16 p-1 border border-gray-300 rounded-md text-sm"
                                 />
                             </td>
@@ -192,7 +192,7 @@ const {
     scenarioOptions,
     addCar,
     removeCar,
-    updateCarPackageCount,
+    updateCarMaxPackageCount,
     updateCarRoute,
     toggleCarRouteVisibility,
     setCarTargetSpeed,

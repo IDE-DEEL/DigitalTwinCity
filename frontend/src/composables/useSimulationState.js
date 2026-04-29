@@ -26,7 +26,7 @@ function addCar() {
     if (cars.value.length < MAX_CARS) {
         const newCar = {
             id: `${cars.value.length + 1}`,
-            packageCount: 1,
+            maxPackages: 1,
             route: ROUTE_OPTIONS[0]?.value ?? '',
             routeVisibility: false,
         };
@@ -43,14 +43,14 @@ function removeCar() {
 // ---
 // updating package count and route for a car
 // ---
-function updateCarPackageCount(carId, packageCount) {
+function updateCarMaxPackageCount(carId, maxPackages) {
     const car = cars.value.find((c) => c.id === carId);
 
     if (!car) {
         return;
     }
 
-    car.packageCount = packageCount;
+    car.maxPackages = maxPackages;
 }
 
 function updateCarRoute(carId, routeName) {
@@ -204,9 +204,9 @@ const simulationStartPayload = computed(() => {
     }
 
     return {
-        carSettings: carsWithRoutes.value.map((car) => ({
+        cars: carsWithRoutes.value.map((car) => ({
             id: car.id,
-            packageCount: car.packageCount,
+            maxPackages: car.maxPackages,
             routeName: car.route,
             routeWaypoints: convertWaypointsSvgToMath(car.waypoints),
         })),
@@ -247,7 +247,7 @@ export function useSimulationState() {
 
         addCar,
         removeCar,
-        updateCarPackageCount,
+        updateCarMaxPackageCount,
         updateCarRoute,
         toggleCarRouteVisibility,
         setCarTargetSpeed,
