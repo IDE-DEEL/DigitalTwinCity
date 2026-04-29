@@ -26,7 +26,7 @@ class SimulationService:
         
         # Create model with configuration
         self.model = CarModel(
-            car_settings=cars,
+            cars=cars,
             car_target_speed=car_target_speed,
         )
         self.is_running = True
