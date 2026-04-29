@@ -6,6 +6,7 @@ from backend.digital_sim.domain.movement_controller import MovementController
 
 
 class CarStatus(Enum):
+    PARKED = "parked"
     IDLE = "idle"
     DRIVING = "driving"
     DELIVERING = "delivering"
@@ -79,4 +80,4 @@ class CarAgent(mesa.Agent):
         """
         if self.actual_speed > 0:
             return CarStatus.DRIVING
-        return CarStatus.IDLE
+        return CarStatus.PARKED
