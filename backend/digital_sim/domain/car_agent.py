@@ -11,13 +11,12 @@ class CarStatus(Enum):
     DELIVERING = "delivering"
 
 class CarAgent(mesa.Agent):
-    def __init__(self, model, car_target_speed: int = 50, route: Route = None, max_packages: int = 1, status: CarStatus = CarStatus.IDLE):
+    def __init__(self, model, car_target_speed: int = 50, route: Route = None, max_packages: int = 1):
         super().__init__(model)
 
         self.target_speed = car_target_speed
         self.route = route
         self.max_packages = max_packages
-        self.status = status
         self.controller = MovementController(waypoints=route.waypoints, target_speed=self.target_speed)
 
     def step(self):
@@ -71,3 +70,13 @@ class CarAgent(mesa.Agent):
         if self.controller:
             return self.controller.distance_travelled
         return 0.0
+
+    @property
+    def status(self):
+        """
+        Get the current status of the car based on its movement.
+        Returns DRIVING if actual_speed > 0, otherwise IDLE.
+        """
+        if self.actual_speed > 0:
+            return CarStatus.DRIVING
+        return CarStatus.IDLE
