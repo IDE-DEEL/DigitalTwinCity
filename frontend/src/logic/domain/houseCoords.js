@@ -31,6 +31,7 @@ export const TILE_HOUSES = {
                 id: HOUSE_ID_T_SPLIT,
                 supportedLanes: [
                     { from: 'W', to: 'E' },
+                    { from: 'W', to: 'N' },
                 ],
                 labelCoords: { x: 0.3, y: 0.88 },
                 roadCoords: { x: 0.09, y: 0.64 },
