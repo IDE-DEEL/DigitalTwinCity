@@ -94,7 +94,7 @@ class CarAgent(mesa.Agent):
         """
         if self.actual_speed > 0:
             return CarStatus.DRIVING
-        elif not self.has_started_route or self.is_finished:
+        elif (not self.has_started_route) or (self.is_finished):
             return CarStatus.PARKED
         else:
             return CarStatus.IDLE
