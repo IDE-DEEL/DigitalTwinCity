@@ -1,6 +1,6 @@
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { ROUTE_OPTIONS } from "../logic/domain/routes";
-import { SCENARIO_OPTIONS, getHousesForScenarioByValue } from "../logic/domain/scenarios";
+import { SCENARIO_OPTIONS } from "../logic/domain/scenarios";
 import { buildCarsWithRoutes } from "../logic/service/carService";
 import { convertWaypointsArrayFromSvgToMath, convertWaypointFromSvgToMath, convertPositionMathToSvg } from "../logic/utils/coordinateConverter";
 import { getHousesByScenarioKey, getHousesLinkedToRoutesByScenarioKey } from "../logic/service/houseService";
@@ -244,7 +244,7 @@ export function useSimulationState() {
 
     return {
         cars,
-        carTargetSpeed: carTargetSpeed,
+        carTargetSpeed,
         scenario,
         isSimulating,
         mapData,
