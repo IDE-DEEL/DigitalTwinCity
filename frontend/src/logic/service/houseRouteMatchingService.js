@@ -16,8 +16,8 @@ export function findRoutesForHouse(house, mapData) {
 
     const rotatedSupportedLanes = getRotatedSupportedLanes(house, mapData);
 
-    for (const [routeName, tilePath] of Object.entries(ROUTES_TILES)) {
-        const laneSequence = buildLaneSequenceFromTilePath(tilePath, mapData);
+    for (const [routeName, route] of Object.entries(ROUTES_TILES)) {
+        const laneSequence = buildLaneSequenceFromTilePath(route.tiles, mapData);
 
         const hasMatchingLane = laneSequence.some(lane => {
             const sameTile =

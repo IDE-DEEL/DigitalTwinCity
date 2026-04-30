@@ -10,11 +10,11 @@ import { buildWaypointRouteFromTilePath } from './routeBuilder.js';
  * @throws {Error} If the route name is unknown.
  */
 export function getWaypointRouteByName(routeName, mapData) {
-  const tilePath = ROUTES_TILES[routeName];
+  const route = ROUTES_TILES[routeName];
 
-  if (!tilePath) {
+  if (!route) {
     throw new Error(`Unknown route "${routeName}".`);
   }
 
-  return buildWaypointRouteFromTilePath(tilePath, mapData);
+  return buildWaypointRouteFromTilePath(route.tiles, mapData);
 }
