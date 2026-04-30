@@ -8,7 +8,6 @@ import { HOUSE_INSTANCES } from "./houseInstances";
  */
 const SCENARIOS = {
     rustig: {
-        value: 'rustig',
         label: 'Rustig',
         houses: {
             'straight-3-0': 2,
@@ -19,7 +18,6 @@ const SCENARIOS = {
         }
     },
     gemiddeld: {
-        value: 'gemiddeld',
         label: 'Gemiddeld',
         houses: {
             'tsplit-4-1': 2,
@@ -32,7 +30,6 @@ const SCENARIOS = {
         }
     },
     druk: {
-        value: 'druk',
         label: 'Druk',
         houses: {
             'curve-0-0': 2,
@@ -55,7 +52,7 @@ const SCENARIOS = {
 }
 
 export const SCENARIO_OPTIONS = Object.keys(SCENARIOS).map((scenarioKey) => ({
-    value: SCENARIOS[scenarioKey].value,
+    value: scenarioKey,
     label: SCENARIOS[scenarioKey].label,
 }));
 
