@@ -91,7 +91,7 @@
         v-if="copyFeedback"
         class="text-xs text-green-600 mt-1"
       >
-        Copied!
+        {{ copyFeedback }}
       </div>
     </div>
   </div>
@@ -258,23 +258,32 @@ function resetRoute() {
  * Prompts the user for a route name and formats the route tiles into code that can be pasted into the routes.js file.
  */
 function copyRoute() {
-  const routeName = prompt('Enter route name (e.g., routeD):');
-  if (!routeName) return;
+  const inputName = prompt('Enter route name (e.g., routeD):');
+  if (!inputName) return;
+
+  const label = inputName.trim();
+  const routeKey = label
+    .toLowerCase()
+    .replace(/\s+/g, '_')
 
   const tilesStr = routeTiles.value
-    // .map(t => `    { x: ${t.x}, y: ${t.y} }`) <-- use this if we simply want coordinates for all tiles including the depot
     .map(tile => {
       if (tile.x === DEPOT_TILE.x && tile.y === DEPOT_TILE.y) {
-        return '    DEPOT_TILE';
+        return '          DEPOT_TILE';
       }
-      return `    { x: ${tile.x}, y: ${tile.y} }`;
+      return `            { x: ${tile.x}, y: ${tile.y} }`;
     })
     .join(',\n');
 
-  const code = `  ${routeName}: [\n${tilesStr}\n  ],`;
+  const code = `${routeKey}: {
+        label: '${label}',
+        tiles: [
+  ${tilesStr}
+        ],
+    },`;
 
   navigator.clipboard.writeText(code);
-  copyFeedback.value = '✓ Copied to clipboard!';
+  copyFeedback.value = 'Copied to clipboard!';
 
   setTimeout(() => {
     copyFeedback.value = '';
