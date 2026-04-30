@@ -258,33 +258,35 @@ function resetRoute() {
  * Prompts the user for a route name and formats the route tiles into code that can be pasted into the routes.js file.
  */
 function copyRoute() {
-  const inputName = prompt('Enter route name (e.g., routeD):');
+  const inputName = prompt('Enter route name (e.g., Route D):');
   if (!inputName) return;
 
   const label = inputName.trim();
   const routeKey = label
     .toLowerCase()
-    .replace(/\s+/g, '_')
+    .replace(/\s+/g, '_');
+
+  const indent = '            '; // 12 spaces
 
   const tilesStr = routeTiles.value
     .map(tile => {
       if (tile.x === DEPOT_TILE.x && tile.y === DEPOT_TILE.y) {
-        return '          DEPOT_TILE';
+        return `${indent}DEPOT_TILE`;
       }
-      return `            { x: ${tile.x}, y: ${tile.y} }`;
+      return `${indent}{ x: ${tile.x}, y: ${tile.y} }`;
     })
     .join(',\n');
 
   const code = `${routeKey}: {
         label: '${label}',
         tiles: [
-  ${tilesStr}
+${tilesStr}
         ],
     },`;
 
   navigator.clipboard.writeText(code);
-  copyFeedback.value = 'Copied to clipboard!';
 
+  copyFeedback.value = 'Copied to clipboard!';
   setTimeout(() => {
     copyFeedback.value = '';
   }, 2000);
