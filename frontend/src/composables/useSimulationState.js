@@ -14,6 +14,7 @@ const scenario = ref('rustig');
 const isSimulating = ref(false);
 const mapData = ref([]);
 const agentsState = ref([]);
+const housesState = ref([]);
 
 // websocket composable
 const { isWebSocketConnected, connectWebSocket, disconnectWebSocket, sendWebSocketMessage } = useWebSocketSimulation();
@@ -119,12 +120,17 @@ function stopSimulation() {
 }
 
 function updateAgentsState(agents) {
+function updateAgentsState(agents, houses) {
     // ensure we convert agent positions back from mathematical coordinates (backend) to SVG coordinates (frontend)
     const convertedAgents = agents.map(agent => ({
         ...agent,
         position: convertPositionMathToSvg(agent.position)
     }));
     agentsState.value = convertedAgents;
+
+    if (houses) {
+        housesState.value = houses;
+    }
 }
 
 function reconnectWebSocket() {
