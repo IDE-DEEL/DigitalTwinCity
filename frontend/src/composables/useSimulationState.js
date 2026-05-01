@@ -119,7 +119,6 @@ function stopSimulation() {
     agentsState.value = [];
 }
 
-function updateAgentsState(agents) {
 function updateAgentsState(agents, houses) {
     // ensure we convert agent positions back from mathematical coordinates (backend) to SVG coordinates (frontend)
     const convertedAgents = agents.map(agent => ({
@@ -186,6 +185,31 @@ const housesFromScenario = computed(() => {
         console.error("Error building scenario payload:", error);
         return [];
     }
+});
+
+const housesWithLivePackageData = computed(() => {
+    const baseHouses = housesFromScenario.value;
+
+    // use scenario defaults when there is no live data
+    if (housesState.value.length === 0 ) {
+        return baseHouses;
+    }
+
+    // use live data for remaining packages when available
+    return baseHouses.map(house => {
+        const liveHouseData = housesState.value.find(
+            h => h.id === house.houseInstanceId // TODO: houseInstanceId needs better name
+        );
+
+        if (liveHouseData) {
+            return {
+                ...house,
+                packageCount: liveHouseData.undelivered_packages // TODO: packageCount needs better name like "undeliveredPackageCount", or "remainingPackages"
+            };
+        }
+
+        return house;
+    });
 });
 
 const housesLinkedToRoutesFromScenario = computed(() => {
@@ -276,8 +300,8 @@ export function useSimulationState() {
         visibleCars,
         visibleCarsWithRoutes,
         carsWithRoutes,
-        housesFromScenario,
         housesLinkedToRoutesFromScenario,
         simulationStartPayload,
+        housesWithLivePackageData,
     };
 }

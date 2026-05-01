@@ -97,7 +97,7 @@
 
                 <!-- House labels for packages -->
                 <HouseLabelsOverlay
-                    :houses="housesFromScenario"
+                    :houses="housesWithLivePackageData"
                 />
             </svg>
 
@@ -156,7 +156,7 @@ const {
     visibleCarsWithRoutes,
     setMapData,
     agentsState,
-    housesFromScenario,
+    housesWithLivePackageData,
     scenario,
 } = useSimulationState();
 
