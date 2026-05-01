@@ -13,8 +13,10 @@ const carTargetSpeed = ref(50);
 const scenario = ref('rustig');
 const isSimulating = ref(false);
 const mapData = ref([]);
-const agentsState = ref([]);
-const housesState = ref([]);
+const simulationState = ref({
+    agents: [],
+    houses: []
+});
 
 // websocket composable
 const { isWebSocketConnected, connectWebSocket, disconnectWebSocket, sendWebSocketMessage } = useWebSocketSimulation();
@@ -116,25 +118,28 @@ function stopSimulation() {
     });
     
     isSimulating.value = false;
-    agentsState.value = [];
+    simulationState.value = {
+        agents: [],
+        houses: []
+    };
 }
 
-function updateAgentsState(agents, houses) {
+function updateSimulationState(result) {
     // ensure we convert agent positions back from mathematical coordinates (backend) to SVG coordinates (frontend)
-    const convertedAgents = agents.map(agent => ({
+    const convertedAgents = (result.agents || []).map(agent => ({
         ...agent,
         position: convertPositionMathToSvg(agent.position)
     }));
-    agentsState.value = convertedAgents;
-
-    if (houses) {
-        housesState.value = houses;
-    }
+    
+    simulationState.value = {
+        agents: convertedAgents,
+        houses: result.houses || []
+    };
 }
 
 function reconnectWebSocket() {
     disconnectWebSocket();
-    connectWebSocket(updateAgentsState);
+    connectWebSocket(updateSimulationState);
 }
 
 // ---
@@ -191,13 +196,13 @@ const housesWithLivePackageData = computed(() => {
     const baseHouses = housesFromScenario.value;
 
     // use scenario defaults when there is no live data
-    if (housesState.value.length === 0 ) {
+    if (simulationState.value.houses.length === 0 ) {
         return baseHouses;
     }
 
     // use live data for remaining packages when available
     return baseHouses.map(house => {
-        const liveHouseData = housesState.value.find(
+        const liveHouseData = simulationState.value.houses.find(
             h => h.id === house.houseInstanceId // TODO: houseInstanceId needs better name
         );
 
@@ -265,7 +270,7 @@ function collectParameters() {
 // ---
 export function useSimulationState() {
     onMounted(() => {
-        connectWebSocket(updateAgentsState);
+        connectWebSocket(updateSimulationState);
     });
 
     onBeforeUnmount(() => {
@@ -278,7 +283,7 @@ export function useSimulationState() {
         scenario,
         isSimulating,
         mapData,
-        agentsState,
+        simulationState,
         routeOptions: ROUTE_OPTIONS,
         scenarioOptions: SCENARIO_OPTIONS,
         isWebSocketConnected,
@@ -293,7 +298,7 @@ export function useSimulationState() {
         setMapData,
         startSimulation,
         stopSimulation,
-        updateAgentsState,
+        updateSimulationState,
         reconnectWebSocket,
         collectParameters,
 

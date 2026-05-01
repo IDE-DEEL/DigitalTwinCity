@@ -110,7 +110,7 @@
 
             <!-- Auto (digital simulation) -->
             <div
-                v-for="agent in agentsState"
+                v-for="agent in simulationState.agents"
                 :key="`agent-${agent.id}`"
                 class="absolute bg-black z-10 border-2"
                 :style="agentVehicleStyle(agent)"
@@ -155,7 +155,7 @@ const {
     mapData,
     visibleCarsWithRoutes,
     setMapData,
-    agentsState,
+    simulationState,
     housesWithLivePackageData,
     scenario,
 } = useSimulationState();

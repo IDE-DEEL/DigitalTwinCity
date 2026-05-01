@@ -37,8 +37,8 @@ function connectWebSocket(onSimulationUpdate) {
                         break;
                     case "simulation_update":
                         console.log("simulation update - step", result);
-                        if (result.agents && onSimulationUpdateCallback) {
-                            onSimulationUpdateCallback(result.agents, result.houses);
+                        if (onSimulationUpdateCallback) {
+                            onSimulationUpdateCallback(result);
                         }
                         break;
                     case "simulation_stopped":
