@@ -15,3 +15,12 @@ class Package:
     def mark_delivered(self):
         """Mark this package as delivered."""
         self.status = PackageStatus.DELIVERED
+
+    def assign_to_agent(self, agent_id):
+        """Assign this package to an agent and mark it as in transit.
+        
+        Args:
+            agent_id: Unique ID of the CarAgent to assign this package to
+        """
+        self.assigned_car_id = agent_id
+        self.status = PackageStatus.IN_TRANSIT

@@ -31,15 +31,20 @@ class CarAgent(mesa.Agent):
     def step(self):
         """Execute one step of the car agent.
         
-        First: process any delivery logic.
-        Then: handle movement along the route.
+        First: pick up available packages if parked and has capacity.
+        Second: process any delivery logic.
+        Third: handle movement along the route.
         """
         dt = getattr(self.model, "delta_time", 0.1)
 
-        # First: handle delivery logic
+        # First: pick up packages if parked
+        if self.status == CarStatus.PARKED:
+            self._pick_up_available_packages()
+
+        # Second: handle delivery logic
         self._process_delivery(dt)
         
-        # Then: handle movement
+        # Third: handle movement
         if not self.controller:
             return
 
@@ -174,3 +179,23 @@ class CarAgent(mesa.Agent):
         self.current_delivery_house = None
         self.delivery_time_remaining = 0.0
         self.delivery_duration = 0.0
+
+    def _pick_up_available_packages(self):
+        """Pick up available packages from the route while parked.
+        
+        Gets packages from the route and assigns them to this agent if there's cargo space.
+        """
+        if not self.route or len(self.packages_in_cargo) >= self.max_packages:
+            return
+        
+        # Get all available packages from the route
+        available_packages = self.route.get_available_packages()
+        
+        for package in available_packages:
+            # Check if we still have capacity
+            if len(self.packages_in_cargo) >= self.max_packages:
+                break
+            
+            # Assign package to this agent
+            package.assign_to_agent(self.unique_id)
+            self.packages_in_cargo.append(package)
