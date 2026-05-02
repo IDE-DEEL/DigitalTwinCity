@@ -1,8 +1,10 @@
 from enum import Enum
+import random
 import mesa
 
 from backend.digital_sim.domain.route import Route
 from backend.digital_sim.domain.movement_controller import MovementController
+from backend.digital_sim.constants import MAX_DELIVERY_TIME_IN_SECONDS, MIN_DELIVERY_TIME_IN_SECONDS
 
 
 class CarStatus(Enum):
@@ -29,13 +31,18 @@ class CarAgent(mesa.Agent):
     def step(self):
         """Execute one step of the car agent.
         
-        Handles movement along the route. Package assignment and delivery logic is handled by 
-        PackageAssigner andDeliveryManager in CarModel before agents step.
+        First: process any delivery logic.
+        Then: handle movement along the route.
         """
+        dt = getattr(self.model, "delta_time", 0.1)
+
+        # First: handle delivery logic
+        self._process_delivery(dt)
+        
+        # Then: handle movement
         if not self.controller:
             return
 
-        dt = getattr(self.model, "delta_time", 0.1)
         self.controller.dt = dt
         
         # Only move if not delivering
@@ -109,3 +116,61 @@ class CarAgent(mesa.Agent):
             return CarStatus.PARKED
         else:
             return CarStatus.IDLE
+        
+    def _process_delivery(self, dt: float):
+        """Process delivery logic: check if in delivery zones and handle ongoing deliveries."""        
+        if self.current_delivery_house is not None:
+            self._process_ongoing_delivery(dt)
+        else:
+            self._check_for_delivery_zone()
+
+    def _check_for_delivery_zone(self):
+        """Check if the car has entered a delivery zone of any house on its route."""
+        if not self.position or not self.packages_in_cargo:
+            return
+        
+        for house in self.route.houses:
+            # Check if we have packages for this house
+            packages_for_house = [p for p in self.packages_in_cargo if p.destination_house_id == house.id]
+            
+            if not packages_for_house:
+                continue
+            
+            # Check if current position is in the delivery zone
+            if house.is_in_delivery_zone(self.position):
+                # Start delivery
+                self.current_delivery_house = house
+                self.delivery_duration = random.uniform(MIN_DELIVERY_TIME_IN_SECONDS, MAX_DELIVERY_TIME_IN_SECONDS)
+                self.delivery_time_remaining = self.delivery_duration
+                return
+
+    def _process_ongoing_delivery(self, dt: float):
+        """
+        Process the ongoing delivery: count down timer and complete delivery when done.
+        
+        Args:
+            dt: Time delta for this step
+        """
+        self.delivery_time_remaining -= dt
+        
+        if self.delivery_time_remaining <= 0:
+            self._complete_delivery()
+
+    def _complete_delivery(self):
+        """Complete the delivery at current house and remove delivered packages from cargo."""
+        if not self.current_delivery_house:
+            return
+        
+        house = self.current_delivery_house
+        
+        # Find and complete delivery of all packages for this house
+        packages_to_remove = [p for p in self.packages_in_cargo if p.destination_house_id == house.id]
+        
+        for package in packages_to_remove:
+            package.mark_delivered()
+            self.packages_in_cargo.remove(package)
+        
+        # Resume movement
+        self.current_delivery_house = None
+        self.delivery_time_remaining = 0.0
+        self.delivery_duration = 0.0

@@ -5,7 +5,6 @@ from backend.digital_sim.domain.route import Route
 from backend.digital_sim.domain.package import Package, PackageStatus
 from backend.digital_sim.domain.house import House
 from backend.digital_sim.service.package_assigner import PackageAssigner
-from backend.digital_sim.service.delivery_manager import DeliveryManager
 from backend.digital_sim.constants import CAR_ROUTE_NAME_KEY, CAR_ROUTE_WAYPOINTS_KEY, CAR_MAX_PACKAGES_KEY, HOUSE_PACKAGE_COUNT_KEY, HOUSE_ID_KEY, HOUSE_ROAD_COORDS_KEY, HOUSE_ROUTE_NAMES_LIST_KEY
 
 
@@ -28,12 +27,9 @@ class CarModel(mesa.Model):
         """Execute one simulation step.
         
         First: assign packages to parked agents.
-        Second: process deliveries.
-        Then: execute movement for all agents.
+        Then: execute step for all agents (each agent handles its own delivery and movement logic).
         """
         PackageAssigner.assign_packages_to_parked_agents(self.agents)
-        DeliveryManager.process_deliveries(self.agents)
-
         self.agents.shuffle_do("step")
         self.step_count += 1
     
@@ -86,7 +82,8 @@ class CarModel(mesa.Model):
         return agents_status
     
     def _get_houses_status(self):
-        """List of dictionaries containing house status (id, road_coords, total_packages, delivered_packages, undelivered_packages, package details)"""
+        """List of dictionaries containing house status;
+        (id, road_coords, total_packages, delivered_packages, undelivered_packages, package details)."""
         houses_status = []
 
         for house in self.houses.values():
@@ -119,7 +116,7 @@ class CarModel(mesa.Model):
             route_name = car.get(CAR_ROUTE_NAME_KEY)
             max_packages = car.get(CAR_MAX_PACKAGES_KEY, 1)
 
-            # prevent duplicate route objects
+            # Prevent duplicate route objects
             if route_name not in routes_added:
                 waypoints = car.get(CAR_ROUTE_WAYPOINTS_KEY)
                 self.routes[route_name] = Route(name=route_name, waypoints=waypoints, houses=[])
@@ -130,7 +127,7 @@ class CarModel(mesa.Model):
     
     def _setup_houses(self, houses: list[dict]):
         """Create house objects and link them to routes and packages."""
-        # instantiate houses
+        # Instantiate houses
         for house_data in houses:
             house_id = house_data.get(HOUSE_ID_KEY)
             expected_num_packages = house_data.get(HOUSE_PACKAGE_COUNT_KEY)
@@ -141,7 +138,7 @@ class CarModel(mesa.Model):
                 road_coords=house_data.get(HOUSE_ROAD_COORDS_KEY),
                 num_undelivered_packages=len(packages),
             )
-            # link house to routes
+            # Link house to routes
             for route_name in house_data.get(HOUSE_ROUTE_NAMES_LIST_KEY, []):
                 if route_name in self.routes:
                     self.routes[route_name].houses.append(house)
