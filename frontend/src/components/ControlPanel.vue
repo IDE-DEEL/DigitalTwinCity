@@ -179,7 +179,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useDashboardParametersStore } from '../stores/dashboardParametersStore';
+import { useDashboardParametersStore } from '../stores';
 import { useDigitalSimulation } from '../composables/useDigitalSimulation';
 import { MAX_CARS } from '../constants/constants';
 
