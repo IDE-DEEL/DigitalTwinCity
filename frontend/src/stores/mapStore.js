@@ -6,7 +6,7 @@ function setMapData(loadedMapData) {
     mapData.value = loadedMapData;
 }
 
-export function useMap() {
+export function useMapStore() {
     return {
         mapData,
         setMapData,

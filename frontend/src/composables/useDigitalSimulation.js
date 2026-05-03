@@ -1,15 +1,15 @@
 import { onMounted, onBeforeUnmount } from "vue";
 import { useWebSocketSimulation } from "./useWebSocketSimulation";
-import { useDashboardParameters } from "./useDashboardParameters";
-import { useSimulationState } from "./useSimulationState";
+import { useDashboardParametersStore } from "../stores/dashboardParametersStore";
+import { useSimulationStateStore } from "../stores/simulationStateStore";
 
 // ---
 // orchestrator composable
 // ---
 export function useDigitalSimulation() {
     const { isWebSocketConnected, connectWebSocket, disconnectWebSocket, sendWebSocketMessage } = useWebSocketSimulation();
-    const { isSimulating, simulationStartPayload } = useDashboardParameters();
-    const { updateSimulationState, resetSimulationState } = useSimulationState();
+    const { isSimulating, simulationStartPayload } = useDashboardParametersStore();
+    const { updateSimulationState, resetSimulationState } = useSimulationStateStore();
 
     // ---
     // WebSocket lifecycle management

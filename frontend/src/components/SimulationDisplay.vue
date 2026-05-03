@@ -137,9 +137,9 @@ import { buildLane } from '../logic/service/laneBuilder.js';
 import { useMqttVehicle } from '../composables/MqttConnection.js';
 import { normalizeDegree } from '../logic/utils/rotation.js';
 import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
-import { useMap } from '../composables/useMap.js';
-import { useDashboardParameters } from '../composables/useDashboardParameters.js';
-import { useSimulationState } from '../composables/useSimulationState.js';
+import { useMapStore } from '../stores/mapStore.js';
+import { useDashboardParametersStore } from '../stores/dashboardParametersStore.js';
+import { useSimulationStateStore } from '../stores/simulationStateStore.js';
 import { useDigitalSimulation } from '../composables/useDigitalSimulation.js';
 import { MAP_COLUMNS, MAP_ROWS } from '../constants/constants.js';
 import HouseLabelsOverlay from './HouseLabelsOverlay.vue';
@@ -156,9 +156,9 @@ const isLoading = ref(true);
 const { vehiclePosition,setupMqttClient } = useMqttVehicle();
 
 // Composables
-const { mapData, setMapData } = useMap();
-const { visibleCarsWithRoutes, scenario } = useDashboardParameters();
-const { simulationState, housesWithLivePackageData } = useSimulationState();
+const { mapData, setMapData } = useMapStore();
+const { visibleCarsWithRoutes, scenario } = useDashboardParametersStore();
+const { simulationState, housesWithLivePackageData } = useSimulationStateStore();
 
 // Initialize digital simulation lifecycle management
 useDigitalSimulation();

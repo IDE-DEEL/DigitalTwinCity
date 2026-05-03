@@ -179,7 +179,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useDashboardParameters } from '../composables/useDashboardParameters';
+import { useDashboardParametersStore } from '../stores/dashboardParametersStore';
 import { useDigitalSimulation } from '../composables/useDigitalSimulation';
 import { MAX_CARS } from '../constants/constants';
 
@@ -199,7 +199,7 @@ const {
     setCarTargetSpeed,
     setScenario,
     collectParameters,
-} = useDashboardParameters();
+} = useDashboardParametersStore();
 
 const {
     isWebSocketConnected,

@@ -4,7 +4,7 @@ import { SCENARIO_OPTIONS } from "../logic/domain/scenarios";
 import { buildCarsWithRoutes } from "../logic/service/carService";
 import { convertWaypointsArrayFromSvgToMath, convertWaypointFromSvgToMath } from "../logic/utils/coordinateConverter";
 import { getHousesByScenarioKey, getHousesLinkedToRoutesByScenarioKey } from "../logic/service/houseService";
-import { useMap } from "./useMap";
+import { useMapStore } from "./mapStore";
 import { MAX_CARS } from "../constants/constants";
 
 // Dashboard parameters refs
@@ -14,7 +14,7 @@ const scenario = ref('rustig');
 const isSimulating = ref(false);
 
 // Import mapData from useMap store
-const { mapData } = useMap();
+const { mapData } = useMapStore();
 
 // ---
 // adding and removing cars
@@ -180,7 +180,7 @@ function collectParameters() {
 // ---
 // exporting composable
 // ---
-export function useDashboardParameters() {
+export function useDashboardParametersStore() {
     return {
         // refs
         cars,

@@ -1,6 +1,6 @@
 import { ref, computed } from "vue";
 import { convertPositionMathToSvg } from "../logic/utils/coordinateConverter";
-import { useDashboardParameters } from "./useDashboardParameters";
+import { useDashboardParametersStore } from "./dashboardParametersStore";
 
 // Backend simulation state
 const simulationState = ref({
@@ -35,7 +35,7 @@ function resetSimulationState() {
 // computed properties combining backend state with dashboard parameters
 // ---
 const housesWithLivePackageData = computed(() => {
-    const { housesFromScenario } = useDashboardParameters();
+    const { housesFromScenario } = useDashboardParametersStore();
     const baseHouses = housesFromScenario.value;
 
     // use scenario defaults when there is no live data
@@ -63,7 +63,7 @@ const housesWithLivePackageData = computed(() => {
 // ---
 // exporting composable
 // ---
-export function useSimulationState() {
+export function useSimulationStateStore() {
     return {
         simulationState,
         housesWithLivePackageData,
