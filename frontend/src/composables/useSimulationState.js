@@ -63,7 +63,7 @@ const housesWithLivePackageData = computed(() => {
 // ---
 // exporting composable
 // ---
-export function useNewSimulationState() {
+export function useSimulationState() {
     return {
         simulationState,
         housesWithLivePackageData,

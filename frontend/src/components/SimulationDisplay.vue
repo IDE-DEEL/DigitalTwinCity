@@ -139,7 +139,7 @@ import { normalizeDegree } from '../logic/utils/rotation.js';
 import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
 import { useMap } from '../composables/useMap.js';
 import { useDashboardParameters } from '../composables/useDashboardParameters.js';
-import { useNewSimulationState } from '../composables/useNewSimulationState.js';
+import { useSimulationState } from '../composables/useSimulationState.js';
 import { useDigitalSimulation } from '../composables/useDigitalSimulation.js';
 import { MAP_COLUMNS, MAP_ROWS } from '../constants/constants.js';
 import HouseLabelsOverlay from './HouseLabelsOverlay.vue';
@@ -158,7 +158,7 @@ const { vehiclePosition,setupMqttClient } = useMqttVehicle();
 // Composables
 const { mapData, setMapData } = useMap();
 const { visibleCarsWithRoutes, scenario } = useDashboardParameters();
-const { simulationState, housesWithLivePackageData } = useNewSimulationState();
+const { simulationState, housesWithLivePackageData } = useSimulationState();
 
 // Initialize digital simulation lifecycle management
 useDigitalSimulation();
