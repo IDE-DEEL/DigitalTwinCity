@@ -137,7 +137,10 @@ import { buildLane } from '../logic/service/laneBuilder.js';
 import { useMqttVehicle } from '../composables/MqttConnection.js';
 import { normalizeDegree } from '../logic/utils/rotation.js';
 import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
-import { useSimulationState } from '../composables/useSimulationState.js';
+import { useMap } from '../composables/useMap.js';
+import { useDashboardParameters } from '../composables/useDashboardParameters.js';
+import { useNewSimulationState } from '../composables/useNewSimulationState.js';
+import { useDigitalSimulation } from '../composables/useDigitalSimulation.js';
 import { MAP_COLUMNS, MAP_ROWS } from '../constants/constants.js';
 import HouseLabelsOverlay from './HouseLabelsOverlay.vue';
 import devLaneDebugOverlay from '../development/devLaneDebugOverlay.vue';
@@ -151,14 +154,14 @@ const componentDefinitions = ref({});
 const isLoading = ref(true);
 
 const { vehiclePosition,setupMqttClient } = useMqttVehicle();
-const {
-    mapData,
-    visibleCarsWithRoutes,
-    setMapData,
-    simulationState,
-    housesWithLivePackageData,
-    scenario,
-} = useSimulationState();
+
+// Composables
+const { mapData, setMapData } = useMap();
+const { visibleCarsWithRoutes, scenario } = useDashboardParameters();
+const { simulationState, housesWithLivePackageData } = useNewSimulationState();
+
+// Initialize digital simulation lifecycle management
+useDigitalSimulation();
 
 // --- lane debug devtool start ---
 const showDevLaneDebug = ref(false);

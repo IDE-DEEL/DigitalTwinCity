@@ -179,15 +179,16 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useSimulationState } from '../composables/useSimulationState';
+import { useDashboardParameters } from '../composables/useDashboardParameters';
+import { useDigitalSimulation } from '../composables/useDigitalSimulation';
 import { MAX_CARS } from '../constants/constants';
 
+// Composables
 const {
     cars,
     carTargetSpeed,
     scenario,
     isSimulating,
-    isWebSocketConnected,
     routeOptions,
     scenarioOptions,
     addCar,
@@ -197,11 +198,15 @@ const {
     toggleCarRouteVisibility,
     setCarTargetSpeed,
     setScenario,
+    collectParameters,
+} = useDashboardParameters();
+
+const {
+    isWebSocketConnected,
     startSimulation,
     stopSimulation,
     reconnectWebSocket,
-    collectParameters,
-} = useSimulationState();
+} = useDigitalSimulation();
 
 const handleStart = () => {
     console.log('Requested simulation start with parameters: ', collectParameters());
