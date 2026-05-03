@@ -164,6 +164,8 @@ const simulationStartPayload = computed(() => {
             routeWaypoints: convertWaypointsArrayFromSvgToMath(car.waypoints),
         })),
         carTargetSpeed: carTargetSpeed.value,
+        simulationSpeed: 1, // TODO: make this configurable from dashboard parameters
+        seed: 123, // TODO: make this configurable from dashboard parameters
         scenario: {
             name: scenario.value,
             houses: housesWithConvertedCoordinates.value,
