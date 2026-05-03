@@ -7,6 +7,14 @@ import { getHousesByScenarioKey, getHousesLinkedToRoutesByScenarioKey } from "..
 import { useWebSocketSimulation } from "./useWebSocketSimulation";
 import { MAX_CARS } from "../constants/constants";
 
+/**
+ * DEPRECATED - this composable has been replaced by new modular composables that have been extracted from here:
+ * - useMap
+ * - useDashboardParameters
+ * - useNewSimulationState
+ * - useDigitalSimulation
+ */
+
 // refs
 const cars = ref([]);
 const carTargetSpeed = ref(50);
