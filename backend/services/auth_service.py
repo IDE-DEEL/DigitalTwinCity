@@ -10,7 +10,7 @@ from backend.core.config import settings
 from backend.data.db.database import get_db
 from backend.data.repositories.access_codes_repo import AccessCodesRepository
 from backend.domain.access_codes import AccessCode
-from backend.schemas.auth import LoginRequest, TokenResponse
+from backend.schemas.auth import LoginRequest
 from backend.services.access_code_lookup import build_access_code_lookup_hash
 
 logger = logging.getLogger(__name__)
@@ -20,7 +20,7 @@ class AuthService:
     def __init__(self, repo: AccessCodesRepository):
         self.repo = repo
 
-    def verify_and_login(self, request: LoginRequest) -> TokenResponse:
+    def verify_and_login(self, request: LoginRequest) -> tuple[str, str]:
         raw_code = request.code
         lookup_hash = build_access_code_lookup_hash(raw_code)
         matched_code = self.repo.find_active_code_by_lookup_hash(lookup_hash)
@@ -48,11 +48,7 @@ class AuthService:
         encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm="HS256")
         logger.info(f"Succesvolle login met code: '{matched_code.name}'")
 
-        return TokenResponse(
-            access_token=encoded_jwt,
-            token_type="bearer",
-            session_name=matched_code.name,
-        )
+        return encoded_jwt, matched_code.name
 
     def _code_matches(self, raw_code: str, db_code: AccessCode) -> bool:
         try:

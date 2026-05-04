@@ -1,4 +1,5 @@
-const rawApiUrl = import.meta.env.VITE_API_URL || '';
+const runtimeEnv = globalThis.window?.__ENV__ || {};
+const rawApiUrl = runtimeEnv.VITE_API_URL || import.meta.env.VITE_API_URL || '';
 
 export const API_BASE_URL = rawApiUrl.replace(/\/$/, '');
 

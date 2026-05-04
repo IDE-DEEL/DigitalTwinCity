@@ -56,6 +56,7 @@ const handleLogin = async () => {
     const response = await fetch(apiUrl('/api/v1/auth/verify-code'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ code: accessCode.value.trim() })
     });
 
@@ -70,10 +71,7 @@ const handleLogin = async () => {
       throw new Error(errorMsg);
     }
 
-    const data = await response.json();
-
-    localStorage.setItem('deel_access_token', data.access_token);
-    localStorage.setItem('deel_session_name', data.session_name);
+    await response.json();
 
     emit('authenticated');
     await router.push('/digital_twin');

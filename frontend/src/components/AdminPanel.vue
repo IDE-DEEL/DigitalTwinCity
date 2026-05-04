@@ -119,11 +119,10 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { apiUrl } from '../config/api';
 
 const isAuthenticated = ref(false);
-const adminToken = ref('');
 const adminUser = ref('');
 const adminPass = ref('');
 const authError = ref('');
@@ -141,10 +140,13 @@ const allSelected = computed(() => {
 const apiCall = async (endpoint, options = {}) => {
   const headers = {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${adminToken.value}`,
     ...options.headers
   };
-  const response = await fetch(apiUrl(`/api/v1/admin/access-codes${endpoint}`), { ...options, headers });
+  const response = await fetch(apiUrl(`/api/v1/admin/access-codes${endpoint}`), {
+    ...options,
+    headers,
+    credentials: 'include'
+  });
   
   if (response.status === 401 || response.status === 403) {
       isAuthenticated.value = false;
@@ -184,13 +186,13 @@ const verifyAdmin = async () => {
     const response = await fetch(apiUrl('/api/v1/auth/admin-login'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ username: adminUser.value, password: adminPass.value })
     });
 
     if (!response.ok) throw new Error('Ongeldige gebruikersnaam of wachtwoord');
 
-    const data = await response.json();
-    adminToken.value = data.access_token;
+    await response.json();
     isAuthenticated.value = true;
     
     codes.value = await apiCall('/');
@@ -199,6 +201,24 @@ const verifyAdmin = async () => {
     authError.value = error.message;
   }
 };
+
+onMounted(async () => {
+  try {
+    const response = await fetch(apiUrl('/api/v1/auth/session'), {
+      credentials: 'include'
+    });
+
+    if (!response.ok) return;
+
+    const session = await response.json();
+    if (session.role !== 'admin') return;
+
+    isAuthenticated.value = true;
+    codes.value = await apiCall('/');
+  } catch {
+    isAuthenticated.value = false;
+  }
+});
 
 const createCode = async () => {
   try {

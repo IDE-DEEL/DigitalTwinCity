@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from backend.api.v1 import results_api
 from backend.api.v1 import access_codes_api
 from backend.api.v1 import auth_api
+from backend.core.config import settings
 from backend.data.db.database import Base, engine
 
 app = FastAPI(title="DEEL - Digital Twin",
@@ -13,12 +14,14 @@ app = FastAPI(title="DEEL - Digital Twin",
               redoc_url="/redoc",
 )
 
-app.add_middleware(
-  CORSMiddleware,
-  allow_origins = ["*"],
-  allow_methods = ["*"],
-  allow_headers = ["*"]
-)
+if settings.cors_allow_origins:
+    app.add_middleware(
+      CORSMiddleware,
+      allow_origins=settings.cors_allow_origins,
+      allow_credentials=True,
+      allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      allow_headers=["Content-Type"],
+    )
 
 api_v1_prefix = "/api/v1"
 app.include_router(results_api.router, prefix=api_v1_prefix)

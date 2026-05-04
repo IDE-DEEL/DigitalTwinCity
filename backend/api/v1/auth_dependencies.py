@@ -1,18 +1,18 @@
-from fastapi import Depends, HTTPException, Security
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi import Depends, HTTPException, Request
 import jwt
 
 from backend.core.config import settings
 
-security = HTTPBearer(auto_error=False)
 
-
-def verify_access_token(credentials: HTTPAuthorizationCredentials | None = Security(security)):
-    if credentials is None:
+def verify_access_token(
+    request: Request,
+):
+    token = request.cookies.get(settings.SESSION_COOKIE_NAME)
+    if not token:
         raise HTTPException(status_code=401, detail="Ongeldige token")
 
     try:
-        payload = jwt.decode(credentials.credentials, settings.SECRET_KEY, algorithms=["HS256"])
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
         if not payload.get("sub"):
             raise HTTPException(status_code=401, detail="Ongeldige token")
         return payload

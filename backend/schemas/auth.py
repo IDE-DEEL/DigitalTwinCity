@@ -8,7 +8,5 @@ class AdminLoginRequest(BaseModel):
     username: str
     password: str
 
-class TokenResponse(BaseModel):
-    access_token: str
-    token_type: str
+class SessionResponse(BaseModel):
     session_name: str

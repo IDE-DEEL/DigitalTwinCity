@@ -20,76 +20,23 @@ const page_router = createRouter({
 });
 
 let sessionExpiryTimer = null;
-let verifiedSessionToken = null;
 
-function decodeJwtPayload(token) {
-    try {
-        const base64Payload = token.split('.')[1];
-        const normalizedPayload = base64Payload.replace(/-/g, '+').replace(/_/g, '/');
-        const paddedPayload = normalizedPayload.padEnd(
-            normalizedPayload.length + ((4 - (normalizedPayload.length % 4)) % 4),
-            '='
-        );
-        const jsonPayload = decodeURIComponent(
-            atob(paddedPayload)
-                .split('')
-                .map((character) => `%${character.charCodeAt(0).toString(16).padStart(2, '0')}`)
-                .join('')
-        );
-
-        return JSON.parse(jsonPayload);
-    } catch {
-        return null;
-    }
-}
-
-function getTokenExpiryTime(token) {
-    const payload = decodeJwtPayload(token);
-    if (!payload?.exp) {
-        return null;
-    }
-
-    return payload.exp * 1000;
-}
-
-function isTokenExpired(token) {
-    const expiryTime = getTokenExpiryTime(token);
-    return !expiryTime || expiryTime <= Date.now();
-}
-
-function hasUnexpiredSessionHint(token) {
-    return Boolean(token && !isTokenExpired(token));
-}
-
-async function verifyStoredSession(token) {
-    if (!hasUnexpiredSessionHint(token)) {
-        return false;
-    }
-
-    if (verifiedSessionToken === token) {
-        return true;
-    }
-
+async function verifySession() {
     try {
         const response = await fetch(apiUrl('/api/v1/auth/session'), {
-            headers: { 'Authorization': `Bearer ${token}` }
+            credentials: 'include'
         });
 
-        if (!response.ok) {
-            return false;
-        }
-
-        verifiedSessionToken = token;
-        return true;
+        return response.ok ? response.json() : null;
     } catch {
-        return false;
+        return null;
     }
 }
 
 function clearSession() {
+    // Remove legacy token data from older versions of the frontend.
     localStorage.removeItem('deel_access_token');
     localStorage.removeItem('deel_session_name');
-    verifiedSessionToken = null;
 
     if (sessionExpiryTimer) {
         clearTimeout(sessionExpiryTimer);
@@ -97,10 +44,9 @@ function clearSession() {
     }
 }
 
-function scheduleSessionExpiry(token) {
-    const expiryTime = getTokenExpiryTime(token);
+function scheduleSessionExpiry(session) {
+    const expiryTime = session?.expires_at ? session.expires_at * 1000 : null;
     if (!expiryTime) {
-        clearSession();
         return;
     }
 
@@ -117,25 +63,28 @@ function scheduleSessionExpiry(token) {
     }, Math.max(expiryTime - Date.now(), 0));
 }
 
+function isStudentSession(session) {
+    return Boolean(session) && session.role !== 'admin';
+}
+
 page_router.beforeEach(async (to) => {
-    const token = localStorage.getItem('deel_access_token');
     const publicPaths = ['/login', '/admin'];
     const requiresAuth = !publicPaths.includes(to.path);
-    const hasVerifiedSession = await verifyStoredSession(token);
+    const session = await verifySession();
+    const hasVerifiedSession = Boolean(session);
+    const hasStudentSession = isStudentSession(session);
 
-    if (token && !hasVerifiedSession) {
-        clearSession();
-    }
+    clearSession();
 
     if (hasVerifiedSession) {
-        scheduleSessionExpiry(token);
+        scheduleSessionExpiry(session);
     }
 
-    if (requiresAuth && !hasVerifiedSession) {
+    if (requiresAuth && !hasStudentSession) {
         return '/login';
     }
 
-    if (to.path === '/login' && hasVerifiedSession) {
+    if (to.path === '/login' && hasStudentSession) {
         return '/digital_twin';
     }
 

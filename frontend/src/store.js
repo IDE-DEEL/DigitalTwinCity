@@ -1,5 +1,6 @@
 import { reactive } from 'vue'
 import axios from 'axios'
+import { apiUrl } from './config/api'
 
 export const store = reactive({
   // De gedeelde data
@@ -28,7 +29,7 @@ export const store = reactive({
   fetch_speed() {
     const result = null;
     
-    axios.get('localhost:8000/api/v1/car/speed')
+    axios.get(apiUrl('/api/v1/car/speed'), { withCredentials: true })
       .then(data => result.value = data)
 
     return result
