@@ -56,9 +56,6 @@
 
                 <devTileCoordinateOverlay
                     v-if="showDevTileCoordDebug"
-                    :map-columns="MAP_COLUMNS"
-                    :map-rows="MAP_ROWS"
-                    :map-data="mapData"
                 />
             </div> 
             <!-- Lanes -->
@@ -83,14 +80,10 @@
                 <devLaneDebugOverlay
                     v-if="showDevLaneDebug"
                     :lanes="lanes"
-                    :map-columns="MAP_COLUMNS"
-                    :map-rows="MAP_ROWS"
                 />
 
                 <devHouseDetectionZonesOverlay
                     v-if="showDevHouseDetectionZones"
-                    :map-columns="MAP_COLUMNS"
-                    :map-rows="MAP_ROWS"
                     :scenario="scenario"
                 />
 
@@ -102,9 +95,6 @@
 
             <devRouteBuilder
                 v-model:isActive="showDevRouteBuilder"
-                :map-columns="MAP_COLUMNS"
-                :map-rows="MAP_ROWS"
-                :map-data="mapData"
             />
 
             <!-- Auto (digital simulation) -->

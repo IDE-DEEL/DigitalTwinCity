@@ -6,7 +6,7 @@
     <!-- Map overlay for highlights -->
     <svg
       class="absolute inset-0 pointer-events-none"
-      :viewBox="`0 0 ${mapColumns} ${mapRows}`"
+      :viewBox="`0 0 ${MAP_COLUMNS} ${MAP_ROWS}`"
       :preserveAspectRatio="`none`"
     >
       <!-- Current tile highlight (depot at start, current tile during building) -->
@@ -99,28 +99,13 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import { DEPOT_TILE } from '../constants/constants';
+import { DEPOT_TILE, MAP_COLUMNS, MAP_ROWS } from '../constants/constants';
 import {
   getDirectionBetweenTiles,
   getMapTile,
   getRotatedLanesForTile,
   OPPOSITE_DIRECTION,
 } from '../logic/service/routeBuilder.js';
-
-const props = defineProps({
-  mapColumns: {
-    type: Number,
-    required: true,
-  },
-  mapRows: {
-    type: Number,
-    required: true,
-  },
-  mapData: {
-    type: Array,
-    required: true,
-  },
-});
 
 const isActive = defineModel('isActive', { type: Boolean, default: false });
 const routeTiles = ref([DEPOT_TILE]);
@@ -150,14 +135,14 @@ const possibleNextTiles = computed(() => {
 
   for (const candidate of candidates) {
     // Check bounds
-    if (candidate.x < 0 || candidate.x >= props.mapColumns ||
-        candidate.y < 0 || candidate.y >= props.mapRows) {
+    if (candidate.x < 0 || candidate.x >= MAP_COLUMNS ||
+        candidate.y < 0 || candidate.y >= MAP_ROWS) {
       continue;
     }
 
     // Check if tile exists
     try {
-      const tile = getMapTile(props.mapData, candidate.x, candidate.y);
+      const tile = getMapTile(candidate.x, candidate.y);
 
       // Validate lane connection
       try {
@@ -191,8 +176,8 @@ const routeDisplay = computed(() => {
  * @throws {Error} If there is no valid connection possible between the tiles.
  */
 function validateConnection(fromTile, toTile) {
-  const fromMapTile = getMapTile(props.mapData, fromTile.x, fromTile.y);
-  const toMapTile = getMapTile(props.mapData, toTile.x, toTile.y);
+  const fromMapTile = getMapTile(fromTile.x, fromTile.y);
+  const toMapTile = getMapTile(toTile.x, toTile.y);
 
   const direction = getDirectionBetweenTiles(fromTile, toTile);
   const incomingDir = OPPOSITE_DIRECTION[direction];

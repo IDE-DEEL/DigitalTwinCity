@@ -1,7 +1,7 @@
 <template>
   <svg
     class="absolute inset-0 pointer-events-none"
-    :viewBox="`0 0 ${mapColumns} ${mapRows}`"
+    :viewBox="`0 0 ${MAP_COLUMNS} ${MAP_ROWS}`"
     preserveAspectRatio="none"
   >
     <!-- House detection zones -->
@@ -38,16 +38,9 @@ import { getTileMetadata, getLocalHouseCoordinates, localToGlobalCoords } from "
 import { rotatePointNormalized, normalizeDegree } from "../logic/utils/rotation.js";
 import { HOUSE_INSTANCES } from "../logic/domain/houseInstances.js";
 import { getHousesForScenarioByValue } from "../logic/domain/scenarios.js";
+import { MAP_COLUMNS, MAP_ROWS } from '../constants/constants.js';
 
 const props = defineProps({
-  mapColumns: {
-    type: Number,
-    required: true,
-  },
-  mapRows: {
-    type: Number,
-    required: true,
-  },
   scenario: {
     type: String,
     required: true,
