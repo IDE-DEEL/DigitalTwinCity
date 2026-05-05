@@ -110,7 +110,7 @@
 
             <!-- Auto (digital simulation) -->
             <div
-                v-for="agent in simulationState.agents"
+                v-for="agent in agentState"
                 :key="`agent-${agent.id}`"
                 class="absolute bg-black z-10 border-2"
                 :style="agentVehicleStyle(agent)"
@@ -156,7 +156,7 @@ const { vehiclePosition,setupMqttClient } = useMqttVehicle();
 // Composables
 const { mapData, setMapData } = useMapStore();
 const { visibleCarsWithRoutes, scenario } = useDashboardParametersStore();
-const { simulationState, housesWithLivePackageData } = useSimulationStateStore();
+const { agentState, housesWithLivePackageData } = useSimulationStateStore();
 
 // Initialize digital simulation lifecycle management
 useDigitalSimulation();

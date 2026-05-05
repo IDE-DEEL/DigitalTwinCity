@@ -3,10 +3,8 @@ import { convertPositionMathToSvg } from "../logic/utils/coordinateConverter";
 import { useDashboardParametersStore } from "./dashboardParametersStore";
 
 // Backend simulation state
-const simulationState = ref({
-    agents: [],
-    houses: []
-});
+const agentState = ref([]);
+const houseState = ref([]);
 
 // ---
 // updating simulation state from backend
@@ -18,17 +16,13 @@ function updateSimulationState(result) {
         position: convertPositionMathToSvg(agent.position)
     }));
     
-    simulationState.value = {
-        agents: convertedAgents,
-        houses: result.houses || []
-    };
+    agentState.value = convertedAgents;
+    houseState.value = result.houses || [];
 }
 
 function resetSimulationState() {
-    simulationState.value = {
-        agents: [],
-        houses: []
-    };
+    agentState.value = [];
+    houseState.value = [];
 }
 
 // ---
@@ -39,13 +33,13 @@ const housesWithLivePackageData = computed(() => {
     const baseHouses = housesFromScenario.value;
 
     // use scenario defaults when there is no live data
-    if (simulationState.value.houses.length === 0) {
+    if (houseState.value.length === 0) {
         return baseHouses;
     }
 
     // use live data for remaining packages when available
     return baseHouses.map(house => {
-        const liveHouseData = simulationState.value.houses.find(
+        const liveHouseData = houseState.value.find(
             h => h.id === house.houseInstanceId // TODO: houseInstanceId needs better name
         );
 
@@ -65,7 +59,8 @@ const housesWithLivePackageData = computed(() => {
 // ---
 export function useSimulationStateStore() {
     return {
-        simulationState,
+        agentState,
+        houseState,
         housesWithLivePackageData,
 
         updateSimulationState,
