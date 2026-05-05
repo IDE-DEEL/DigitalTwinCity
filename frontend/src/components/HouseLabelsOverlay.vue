@@ -34,6 +34,7 @@
 
 <script setup>
 import { ref, watch } from 'vue';
+import { useDashboardParametersStore } from '../stores/dashboardParametersStore';
 
 const props = defineProps({
   houses: {
@@ -47,10 +48,13 @@ const DEFAULT_CIRCLE_RADIUS = 0.08;
 
 const animatedHouses = ref(new Set());
 const previousPackageCounts = ref({});
+const { isSimulating } = useDashboardParametersStore();
 
 watch(
   () => props.houses,
   (newHouses) => {
+    if (!isSimulating.value) return;
+
     newHouses.forEach(house => {
       const currentCount = house.packageCount;
       const previousCount = previousPackageCounts.value[house.houseInstanceId];
