@@ -6,10 +6,7 @@ export const MAP_ROWS = 4;     // Y range: 0-4
 export const DEPOT_TILE = { x: 4, y: 2 };
 
 // identifiers for different houses on the same tile (irrelevant with the current map)
-export const HOUSE_ID_STRAIGHT = 'house-blue';
-export const HOUSE_ID_CURVE = 'house-pool';
-export const HOUSE_ID_T_SPLIT = 'house-green';
-export const HOUSE_ID_DEPOT = 'depot';
+export const HOUSE_POSITION_FIRST = 'A';
 
 // cars
 export const MAX_CARS = 5;

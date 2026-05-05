@@ -29,16 +29,17 @@ export function getTileMetadata(tileX, tileY) {
  * Retrieves the local coordinates for a house on a tile based on the tile type.
  *
  * @param {string} tileType - The type of tile to get house coordinates for.
+ * @param {string} housePositionId - The identifier for the house position on the tile (e.g., 'A').
  * @returns {Object} An object with roadCoords, labelCoords, and supportedLanes.
  * @throws {Error} If no house coordinates are found for the tile type.
  */
-export function getLocalHouseCoordinates(tileType) {
+export function getLocalHouseCoordinates(tileType, housePositionId) {
     const tileHouses = TILE_HOUSES[tileType];
-    if (!tileHouses || !tileHouses.houses[0]) { // TODO: update this index later with the house id
-        throw new Error(`No house coordinates found for tile type "${tileType}".`);
+    if (!tileHouses || !tileHouses.houses[housePositionId]) {
+        throw new Error(`No house coordinates found for tile type "${tileType}" and position "${housePositionId}".`);
     }
 
-    const house = tileHouses.houses[0]; // TODO: update this index later with the house id
+    const house = tileHouses.houses[housePositionId];
     return {
         roadCoords: house.roadCoords,
         labelCoords: house.labelCoords,
@@ -126,10 +127,11 @@ export function localToGlobalCoords(rotatedCoords, tileX, tileY) {
  * @param {number} rotationDegree - The rotation of the tile in degrees.
  * @param {number} tileX - The x-coordinate of the tile within the map.
  * @param {number} tileY - The y-coordinate of the tile within the map.
+ * @param {string} housePositionId - The identifier for the house position on the tile (e.g., 'A').
  * @returns {Object} An object with rotated and translated roadCoords and labelCoords.
  */
-export function getRotatedHouseCoordinatesForTile(tileType, rotationDegree, tileX, tileY) {
-    const localCoords = getLocalHouseCoordinates(tileType);
+export function getRotatedHouseCoordinatesForTile(tileType, rotationDegree, tileX, tileY, housePositionId) {
+    const localCoords = getLocalHouseCoordinates(tileType, housePositionId);
     const rotatedCoords = rotateLocalCoords(localCoords, rotationDegree);
     
     return {

@@ -1,10 +1,9 @@
-import { HOUSE_ID_STRAIGHT, HOUSE_ID_CURVE, HOUSE_ID_T_SPLIT, HOUSE_ID_DEPOT } from "../../constants/constants"
+import { HOUSE_POSITION_FIRST } from "../../constants/constants"
 
 export const TILE_HOUSES = {
     straight: {
-        houses: [
-            {
-                id: HOUSE_ID_STRAIGHT,
+        houses: {
+            [HOUSE_POSITION_FIRST]: {
                 supportedLanes: [
                     { from: 'E', to: 'W' },
                 ],
@@ -15,13 +14,12 @@ export const TILE_HOUSES = {
                     { x: 0.45, y: 0.28 },
                     { x: 0.11, y: 0.28 },
                 ],
-            }
-        ]
+            },
+        }
     },
     curve: {
-        houses: [
-            {
-                id: HOUSE_ID_CURVE,
+        houses: {
+            [HOUSE_POSITION_FIRST]: {
                 supportedLanes: [
                     { from: 'S', to: 'W' },
                 ],
@@ -33,13 +31,12 @@ export const TILE_HOUSES = {
                     { x: 0.4, y: 0.36 },
                     { x: 0.33, y: 0.51 },
                 ],
-            }
-        ]
+            },
+        }
     },
     t_split: {
-        houses: [
-            {
-                id: HOUSE_ID_T_SPLIT,
+        houses: {
+            [HOUSE_POSITION_FIRST]: {
                 supportedLanes: [
                     { from: 'W', to: 'E' },
                     { from: 'W', to: 'N' },
@@ -51,8 +48,8 @@ export const TILE_HOUSES = {
                     { x: 0.33, y: 0.54 },
                     { x: 0.02, y: 0.54 },
                 ],
-            }
-        ]
+            },
+        }
     },
     cross_split: {
         houses: []
@@ -61,9 +58,8 @@ export const TILE_HOUSES = {
         houses: []
     },
     depot: {
-        houses: [
-            {
-                id: HOUSE_ID_DEPOT,
+        houses: {
+            [HOUSE_POSITION_FIRST]: {
                 supportedLanes: [
                     { from: 'S', to: 'E' },
                     { from: 'N', to: 'E' },
@@ -75,7 +71,7 @@ export const TILE_HOUSES = {
                     { x: 0.95, y: 0.28 },
                     { x: 0.7, y: 0.28 },
                 ],
-            }
-        ]
+            },
+        }
     }
 }

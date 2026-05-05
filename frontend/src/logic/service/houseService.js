@@ -20,7 +20,8 @@ export function getHousesByScenarioKey(scenarioKey) {
             tileMetadata.type,
             tileMetadata.rotation,
             instance.tileX,
-            instance.tileY
+            instance.tileY,
+            instance.positionId
         );
 
         return {
