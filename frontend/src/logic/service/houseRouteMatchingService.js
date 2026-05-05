@@ -1,5 +1,6 @@
 import { ROUTES_TILES } from "../domain/routes";
 import { buildLaneSequenceFromTilePath } from "./routeBuilder";
+import { useMapStore } from "../../stores/mapStore";
 import { normalizeDegree, rotateCardinalDirection } from "../utils/rotation";
 
 /**
@@ -8,16 +9,15 @@ import { normalizeDegree, rotateCardinalDirection } from "../utils/rotation";
  * the house's supported lanes align with the route's lanes.
 *
  * @param {Object} house - A house object with tileX and tileY properties.
- * @param {Array<Object>} mapData - Array of all map tile objects.
  * @returns {Array<string>} An array of route names that pass through the house's tile.
  */
-export function findRoutesForHouse(house, mapData) {
+export function findRoutesForHouse(house) {
     const matchingRoutes = [];
 
-    const rotatedSupportedLanes = getRotatedSupportedLanes(house, mapData);
+    const rotatedSupportedLanes = getRotatedSupportedLanes(house);
 
     for (const [routeName, route] of Object.entries(ROUTES_TILES)) {
-        const laneSequence = buildLaneSequenceFromTilePath(route.tiles, mapData);
+        const laneSequence = buildLaneSequenceFromTilePath(route.tiles);
 
         const hasMatchingLane = laneSequence.some(lane => {
             const sameTile =
@@ -44,17 +44,18 @@ export function findRoutesForHouse(house, mapData) {
  * Rotates the supported lanes of a house based on the rotation of its tile.
  * 
  * @param {Object} house - A house object with tileX and tileY properties.
- * @param {Array<Object>} mapData - Array of all map tile objects.
  * @returns {Array<Object>} An array of rotated lane objects.
  */
-function getRotatedSupportedLanes(house, mapData) {
+function getRotatedSupportedLanes(house) {
     if (!house.supportedLanes) {
         throw new Error(
             `House ${house.houseInstanceId} missing supportedLanes`
         );
     }
 
-    const tile = mapData.find(t => t.x === house.tileX && t.y === house.tileY);
+    const { mapData } = useMapStore();
+
+    const tile = mapData.value.find(t => t.x === house.tileX && t.y === house.tileY);
     const rotation = normalizeDegree(tile.rotation || 0);
 
     return house.supportedLanes.map(lane => ({

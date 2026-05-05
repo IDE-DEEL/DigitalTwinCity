@@ -94,7 +94,7 @@ const visibleCarsWithRoutes = computed(() => {
     }
 
     try {
-        return buildCarsWithRoutes(visibleCars.value, mapData.value);
+        return buildCarsWithRoutes(visibleCars.value);
     } catch (error) {
         console.error("Error building visible car routes:", error);
         return [];
@@ -107,7 +107,7 @@ const carsWithRoutes = computed(() => {
     }
 
     try {
-        return buildCarsWithRoutes(cars.value, mapData.value);
+        return buildCarsWithRoutes(cars.value);
     } catch (error) {
         console.error("Error building configured car routes:", error);
         return [];
@@ -120,7 +120,7 @@ const housesFromScenario = computed(() => {
     }
 
     try {
-        return getHousesByScenarioKey(scenario.value, mapData.value);
+        return getHousesByScenarioKey(scenario.value);
     } catch (error) {
         console.error("Error building scenario payload:", error);
         return [];
@@ -133,7 +133,7 @@ const housesLinkedToRoutesFromScenario = computed(() => {
     }
 
     try {
-        return getHousesLinkedToRoutesByScenarioKey(scenario.value, mapData.value);
+        return getHousesLinkedToRoutesByScenarioKey(scenario.value);
     } catch (error) {
         console.error("Error building scenario payload with routes:", error);
         return [];
@@ -152,10 +152,6 @@ const housesWithConvertedCoordinates = computed(() => {
 // simulation start payload
 // ---
 const simulationStartPayload = computed(() => {
-    if (!mapData.value.length) {
-        return null;
-    }
-
     return {
         cars: carsWithRoutes.value.map((car) => ({
             id: car.id,

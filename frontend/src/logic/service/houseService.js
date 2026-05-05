@@ -7,15 +7,14 @@ import { findRoutesForHouse } from "./houseRouteMatchingService";
  * Builds necessary house data for the simulation payload and package overlay based on the selected scenario and map data.
  *
  * @param {string} scenarioKey - The key/name of the scenario to retrieve houses for.
- * @param {Array<Object>} mapData - Array of all map tile objects.
  * @returns {Array<Object>} An array of house objects with coordinates and package counts for the simulation.
  */
-export function getHousesByScenarioKey(scenarioKey, mapData) {
+export function getHousesByScenarioKey(scenarioKey) {
     const houses = getHousesForScenarioByValue(scenarioKey);
 
     return Object.entries(houses).map(([houseInstanceId, packageCount]) => {
         const instance = HOUSE_INSTANCES.find(house => house.id === houseInstanceId);
-        const tileMetadata = getTileMetadata(mapData, instance.tileX, instance.tileY);
+        const tileMetadata = getTileMetadata(instance.tileX, instance.tileY);
         
         const coordinates = getRotatedHouseCoordinatesForTile(
             tileMetadata.type,
@@ -41,14 +40,13 @@ export function getHousesByScenarioKey(scenarioKey, mapData) {
  * This is the extended version used when actually starting the simulation.
  *
  * @param {string} scenarioKey - The key/name of the scenario to retrieve houses for.
- * @param {Array<Object>} mapData - Array of all map tile objects.
  * @returns {Array<Object>} An array of house objects with coordinates, package counts, and route names.
  */
-export function getHousesLinkedToRoutesByScenarioKey(scenarioKey, mapData) {
-    const houses = getHousesByScenarioKey(scenarioKey, mapData);
+export function getHousesLinkedToRoutesByScenarioKey(scenarioKey) {
+    const houses = getHousesByScenarioKey(scenarioKey);
 
     return houses.map(house => ({
         ...house,
-        routeNames: findRoutesForHouse(house, mapData),
+        routeNames: findRoutesForHouse(house),
     }));
 }

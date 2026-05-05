@@ -1,17 +1,19 @@
 import { TILE_HOUSES } from "../domain/houseCoords";
+import { useMapStore } from "../../stores/mapStore.js";
 import { rotatePointNormalized, normalizeDegree } from "../utils/rotation.js";
 
 /**
  * Retrieves the metadata for a tile based on its coordinates from the map data.
  *
- * @param {Array<Object>} mapData - Array of all map tile objects.
  * @param {number} tileX - The x-coordinate of the tile within the map.
  * @param {number} tileY - The y-coordinate of the tile within the map.
  * @returns {Object} An object with type and rotation properties.
  * @throws {Error} If no tile is found at the given coordinates.
  */
-export function getTileMetadata(mapData, tileX, tileY) {
-    const tile = mapData.find(t => t.x === tileX && t.y === tileY);
+export function getTileMetadata(tileX, tileY) {
+    const { mapData } = useMapStore();
+
+    const tile = mapData.value.find(t => t.x === tileX && t.y === tileY);
 
     if (!tile) {
         throw new Error(`Tile not found at coordinates (${tileX}, ${tileY})`);
