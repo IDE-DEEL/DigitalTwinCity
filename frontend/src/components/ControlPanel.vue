@@ -10,6 +10,8 @@
             <button 
                 class="ml-auto bg-sky-200 hover:bg-sky-700 text-inherit rounded-sm w-12 h-8 text-lg"
                 @click="handleReconnect"
+                :disabled="reconnectCooldown"
+                :class="{'opacity-50 cursor-not-allowed': reconnectCooldown}"
             >
                 ⟳
             </button>
