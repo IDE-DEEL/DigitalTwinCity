@@ -114,6 +114,13 @@ const allCarsWithRoutes = computed(() => {
     }
 });
 
+const carsAndRoutesWithConvertedCoordinates = computed(() => {
+    return allCarsWithRoutes.value.map((car) => ({
+        ...car,
+        routeWaypoints: convertWaypointsArrayFromSvgToMath(car.routeWaypoints),
+    }));
+});
+
 const baseHousesFromScenario = computed(() => {
     if (!mapData.value.length) {
         return [];
@@ -153,10 +160,7 @@ const housesWithConvertedCoordinates = computed(() => {
 // ---
 const simulationStartPayload = computed(() => {
     return {
-        cars: allCarsWithRoutes.value.map((car) => ({
-            ...car,
-            routeWaypoints: convertWaypointsArrayFromSvgToMath(car.waypoints),
-        })),
+        cars: carsAndRoutesWithConvertedCoordinates.value,
         carTargetSpeed: carTargetSpeed.value,
         simulationSpeed: 1, // TODO: make this configurable from dashboard parameters
         seed: 123, // TODO: make this configurable from dashboard parameters
