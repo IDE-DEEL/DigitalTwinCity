@@ -216,6 +216,8 @@ const {
     reconnectWebSocket,
 } = useDigitalSimulation();
 
+const reconnectCooldown = ref(false);
+
 const handleStart = () => {
     console.log('Requested simulation start with parameters: ', collectParameters());
     startSimulation();
@@ -227,7 +229,19 @@ const handleStop = () => {
 }
 
 const handleReconnect = () => {
+    if (reconnectCooldown.value) {
+        console.log("Reconnect on cooldown");
+        return;
+    }
+
+    
     console.log("Attempting to reconnect WebSocket...");
     reconnectWebSocket();
+    
+    reconnectCooldown.value = true;
+    const fiveSeconds = 5000;
+    setTimeout(() => {
+        reconnectCooldown.value = false;
+    }, fiveSeconds);
 }
 </script>
