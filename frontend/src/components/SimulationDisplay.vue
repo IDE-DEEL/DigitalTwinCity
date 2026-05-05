@@ -91,7 +91,6 @@
                     v-if="showDevHouseDetectionZones"
                     :map-columns="MAP_COLUMNS"
                     :map-rows="MAP_ROWS"
-                    :map-data="mapData"
                     :scenario="scenario"
                 />
 

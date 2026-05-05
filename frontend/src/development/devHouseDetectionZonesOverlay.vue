@@ -48,10 +48,6 @@ const props = defineProps({
     type: Number,
     required: true,
   },
-  mapData: {
-    type: Array,
-    required: true,
-  },
   scenario: {
     type: String,
     required: true,
@@ -95,10 +91,10 @@ const detectionZones = computed(() => {
       if (!instance) return null;
 
       // Get tile metadata to extract rotation
-      const tileMetadata = getTileMetadata(props.mapData, instance.tileX, instance.tileY);
+      const tileMetadata = getTileMetadata(instance.tileX, instance.tileY);
       
       // Get local house coordinates for the tile type
-      const localCoords = getLocalHouseCoordinates(tileMetadata.type);
+      const localCoords = getLocalHouseCoordinates(tileMetadata.type, instance.positionId);
       
       // Rotate each point in the roadCoords array based on tile rotation
       const rotatedRoadCoords = rotatePointsArray(
