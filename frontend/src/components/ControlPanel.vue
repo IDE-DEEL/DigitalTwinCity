@@ -112,7 +112,7 @@
                             </td>
                             <td class="px-3 py-1">
                                     <select 
-                                        :value="car.route"
+                                        :value="car.routeName"
                                         @change="updateCarRoute(car.id, $event.target.value)"
                                         class="w-full p-1 border border-gray-300 rounded-md text-sm"
                                     >

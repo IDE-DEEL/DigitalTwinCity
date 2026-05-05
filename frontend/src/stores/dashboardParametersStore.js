@@ -24,7 +24,7 @@ function addCar() {
         const newCar = {
             id: `${cars.value.length + 1}`,
             maxPackages: 1,
-            route: ROUTE_OPTIONS[0]?.value ?? '',
+            routeName: ROUTE_OPTIONS[0]?.value ?? '',
             routeVisibility: false,
         };
         cars.value.push(newCar);
@@ -57,7 +57,7 @@ function updateCarRoute(carId, routeName) {
         return;
     }
 
-    car.route = routeName;
+    car.routeName = routeName;
 }
 
 function toggleCarRouteVisibility(carId) {
@@ -154,9 +154,7 @@ const housesWithConvertedCoordinates = computed(() => {
 const simulationStartPayload = computed(() => {
     return {
         cars: carsWithRoutes.value.map((car) => ({
-            id: car.id,
-            maxPackages: car.maxPackages,
-            routeName: car.route,
+            ...car,
             routeWaypoints: convertWaypointsArrayFromSvgToMath(car.waypoints),
         })),
         carTargetSpeed: carTargetSpeed.value,

@@ -9,6 +9,6 @@ import { getWaypointRouteByName } from "./routeService";
 export function buildCarsWithRoutes(cars) {
   return cars.map((car) => ({
     ...car,
-    waypoints: getWaypointRouteByName(car.route),
+    waypoints: getWaypointRouteByName(car.routeName),
   }));
 }
