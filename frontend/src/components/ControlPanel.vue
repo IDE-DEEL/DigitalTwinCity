@@ -25,6 +25,8 @@
                     max="100" 
                     :value="carTargetSpeed"
                     @input="setCarTargetSpeed(Number($event.target.value))"
+                    :disabled="isSimulating"
+                    :class="{'opacity-50 cursor-not-allowed': isSimulating}"
                     class="w-full accent-blue-200" 
                 />
                 <span class="text-sm font-mono w-10">{{ carTargetSpeed }}</span>
@@ -46,6 +48,8 @@
             <select 
                 :value="scenario"
                 @change="setScenario($event.target.value)"
+                :disabled="isSimulating"
+                :class="{'opacity-50 cursor-not-allowed': isSimulating}"
                 class="w-full p-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue outline-none bg-white text-dark"
             >
                 <option 
@@ -65,16 +69,16 @@
                 <button 
                     class="bg-sky-200 hover:bg-sky-700 rounded-sm p-2 w-full h-10"
                     @click="addCar"
-                    :disabled="cars.length >= MAX_CARS"
-                    :class="{'opacity-50 cursor-not-allowed': cars.length >= MAX_CARS}"
+                    :disabled="cars.length >= MAX_CARS || isSimulating"
+                    :class="{'opacity-50 cursor-not-allowed': cars.length >= MAX_CARS || isSimulating}"
                 >
                     Auto toevoegen
                 </button>
                 <button 
                     class="bg-red-200 hover:bg-red-700 rounded-sm p-2 w-full h-10"
                     @click="removeCar"
-                    :disabled="cars.length === 0"
-                    :class="{'opacity-50 cursor-not-allowed': cars.length === 0}"
+                    :disabled="cars.length === 0 || isSimulating"
+                    :class="{'opacity-50 cursor-not-allowed': cars.length === 0 || isSimulating}"
                 >
                     Auto verwijderen
                 </button>
@@ -107,6 +111,8 @@
                                     max="10"
                                     :value="car.maxPackages"
                                     @input="updateCarMaxPackageCount(car.id, Number($event.target.value))"
+                                    :disabled="isSimulating"
+                                    :class="{'opacity-50 cursor-not-allowed': isSimulating}"
                                     class="w-16 p-1 border border-gray-300 rounded-md text-sm"
                                 />
                             </td>
@@ -114,6 +120,8 @@
                                     <select 
                                         :value="car.routeName"
                                         @change="updateCarRoute(car.id, $event.target.value)"
+                                        :disabled="isSimulating"
+                                        :class="{'opacity-50 cursor-not-allowed': isSimulating}"
                                         class="w-full p-1 border border-gray-300 rounded-md text-sm"
                                     >
                                         <option
