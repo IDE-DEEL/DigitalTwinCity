@@ -155,7 +155,7 @@ const { vehiclePosition,setupMqttClient } = useMqttVehicle();
 
 // Composables
 const { mapData, setMapData } = useMapStore();
-const { visibleCarsWithRoutes, scenario } = useDashboardParametersStore();
+const { selectedCarsWithRoutes: visibleCarsWithRoutes, scenario } = useDashboardParametersStore();
 const { agentState, housesWithLivePackageData } = useSimulationStateStore();
 
 // Initialize digital simulation lifecycle management

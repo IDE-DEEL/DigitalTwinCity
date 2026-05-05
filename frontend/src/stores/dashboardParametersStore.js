@@ -84,24 +84,24 @@ function setScenario(value) {
 // ---
 // computed properties derived from dashboard parameters
 // ---
-const visibleCars = computed(() => {
+const listOfCarsWithRouteVisibilityToggledOn = computed(() => {
     return cars.value.filter((car) => car.routeVisibility);
 });
 
-const visibleCarsWithRoutes = computed(() => {
+const selectedCarsWithRoutes = computed(() => {
     if (!mapData.value.length) {
         return [];
     }
 
     try {
-        return buildCarsWithRoutes(visibleCars.value);
+        return buildCarsWithRoutes(listOfCarsWithRouteVisibilityToggledOn.value);
     } catch (error) {
         console.error("Error building visible car routes:", error);
         return [];
     }
 });
 
-const carsWithRoutes = computed(() => {
+const allCarsWithRoutes = computed(() => {
     if (!mapData.value.length) {
         return [];
     }
@@ -114,7 +114,7 @@ const carsWithRoutes = computed(() => {
     }
 });
 
-const housesFromScenario = computed(() => {
+const baseHousesFromScenario = computed(() => {
     if (!mapData.value.length) {
         return [];
     }
@@ -127,7 +127,7 @@ const housesFromScenario = computed(() => {
     }
 });
 
-const housesLinkedToRoutesFromScenario = computed(() => {
+const housesLinkedToRoutes = computed(() => {
     if (!mapData.value.length) {
         return [];
     }
@@ -141,7 +141,7 @@ const housesLinkedToRoutesFromScenario = computed(() => {
 });
 
 const housesWithConvertedCoordinates = computed(() => {
-    return housesLinkedToRoutesFromScenario.value.map((house) => ({
+    return housesLinkedToRoutes.value.map((house) => ({
         ...house,
         labelCoords: convertWaypointFromSvgToMath(house.labelCoords),
         roadCoords: convertWaypointsArrayFromSvgToMath(house.roadCoords),
@@ -153,7 +153,7 @@ const housesWithConvertedCoordinates = computed(() => {
 // ---
 const simulationStartPayload = computed(() => {
     return {
-        cars: carsWithRoutes.value.map((car) => ({
+        cars: allCarsWithRoutes.value.map((car) => ({
             ...car,
             routeWaypoints: convertWaypointsArrayFromSvgToMath(car.waypoints),
         })),
@@ -199,11 +199,11 @@ export function useDashboardParametersStore() {
         setScenario,
 
         // computed properties
-        visibleCars,
-        visibleCarsWithRoutes,
-        carsWithRoutes,
-        housesFromScenario,
-        housesLinkedToRoutesFromScenario,
+        listOfCarsWithRouteVisibilityToggledOn,
+        selectedCarsWithRoutes,
+        allCarsWithRoutes,
+        baseHousesFromScenario,
+        housesLinkedToRoutes,
         housesWithConvertedCoordinates,
         simulationStartPayload,
 

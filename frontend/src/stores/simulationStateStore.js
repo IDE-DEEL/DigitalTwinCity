@@ -29,7 +29,7 @@ function resetSimulationState() {
 // computed properties combining backend state with dashboard parameters
 // ---
 const housesWithLivePackageData = computed(() => {
-    const { housesFromScenario } = useDashboardParametersStore();
+    const { baseHousesFromScenario: housesFromScenario } = useDashboardParametersStore();
     const baseHouses = housesFromScenario.value;
 
     // use scenario defaults when there is no live data
