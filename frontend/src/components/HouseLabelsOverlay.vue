@@ -26,7 +26,7 @@
         font-weight="500"
         fill="black"
       >
-        {{ house.packageCount }}
+        {{ house.expectedPackages }}
       </text>
     </g>
   </g>
@@ -47,7 +47,7 @@ const TEXT_Y_OFFSET = 0.01;
 const DEFAULT_CIRCLE_RADIUS = 0.08;
 
 const animatedHouses = ref(new Set());
-const previousPackageCounts = ref({});
+const previousExpectedPackageCounts = ref({});
 const { isSimulating } = useDashboardParametersStore();
 
 watch(
@@ -56,8 +56,8 @@ watch(
     if (!isSimulating.value) return;
 
     newHouses.forEach(house => {
-      const currentCount = house.packageCount;
-      const previousCount = previousPackageCounts.value[house.houseInstanceId];
+      const currentCount = house.expectedPackages;
+      const previousCount = previousExpectedPackageCounts.value[house.houseInstanceId];
 
       // If count decreased (package was delivered), trigger animation
       if (previousCount !== undefined && currentCount < previousCount) {
@@ -65,18 +65,18 @@ watch(
       }
 
       // Update the previous count
-      previousPackageCounts.value[house.houseInstanceId] = currentCount;
+      previousExpectedPackageCounts.value[house.houseInstanceId] = currentCount;
     });
   },
   { deep: true }
 );
 
-function triggerAnimation(houseId) {
-    animatedHouses.value.add(houseId);
+function triggerAnimation(houseInstanceId) {
+    animatedHouses.value.add(houseInstanceId);
 
     // Remove animation class after animation completes
     setTimeout(() => {
-        animatedHouses.value.delete(houseId);
+        animatedHouses.value.delete(houseInstanceId);
     }, 800);
 }
 </script>

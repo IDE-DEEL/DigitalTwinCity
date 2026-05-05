@@ -46,7 +46,7 @@ const housesWithLivePackageData = computed(() => {
         if (liveHouseData) {
             return {
                 ...house,
-                packageCount: liveHouseData.undelivered_packages // TODO: packageCount needs better name like "undeliveredPackageCount", or "remainingPackages"
+                expectedPackages: liveHouseData.undelivered_packages
             };
         }
 

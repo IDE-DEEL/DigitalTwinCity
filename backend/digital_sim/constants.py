@@ -14,7 +14,7 @@ SCENARIO_KEY = "scenario"
 SCENARIO_NAME_KEY = "name"
 SCENARIO_HOUSES_LIST_KEY = "houses"
 HOUSE_ID_KEY = "houseInstanceId"
-HOUSE_PACKAGE_COUNT_KEY = "packageCount"
+HOUSE_PACKAGE_COUNT_KEY = "expectedPackages"
 HOUSE_ROAD_COORDS_KEY = "roadCoords"
 HOUSE_ROUTE_NAMES_LIST_KEY = "routeNames"
 

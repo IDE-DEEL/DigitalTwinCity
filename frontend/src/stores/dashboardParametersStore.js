@@ -1,7 +1,7 @@
 import { ref, computed } from "vue";
 import { ROUTE_OPTIONS } from "../logic/domain/routes";
 import { SCENARIO_OPTIONS } from "../logic/domain/scenarios";
-import { buildCarsWithRoutes } from "../logic/service/carService";
+import { addWaypointsToCarRoute } from "../logic/service/carService";
 import { convertWaypointsArrayFromSvgToMath, convertWaypointFromSvgToMath } from "../logic/utils/coordinateConverter";
 import { getHousesByScenarioKey, getHousesLinkedToRoutesByScenarioKey } from "../logic/service/houseService";
 import { useMapStore } from "./mapStore";
@@ -94,7 +94,7 @@ const selectedCarsWithRoutes = computed(() => {
     }
 
     try {
-        return buildCarsWithRoutes(listOfCarsWithRouteVisibilityToggledOn.value);
+        return addWaypointsToCarRoute(listOfCarsWithRouteVisibilityToggledOn.value);
     } catch (error) {
         console.error("Error building visible car routes:", error);
         return [];
@@ -107,7 +107,7 @@ const allCarsWithRoutes = computed(() => {
     }
 
     try {
-        return buildCarsWithRoutes(cars.value);
+        return addWaypointsToCarRoute(cars.value);
     } catch (error) {
         console.error("Error building configured car routes:", error);
         return [];

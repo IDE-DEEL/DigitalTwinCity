@@ -12,7 +12,7 @@ import { findRoutesForHouse } from "./houseRouteMatchingService";
 export function getHousesByScenarioKey(scenarioKey) {
     const houses = getHousesForScenarioByValue(scenarioKey);
 
-    return Object.entries(houses).map(([houseInstanceId, packageCount]) => {
+    return Object.entries(houses).map(([houseInstanceId, expectedPackages]) => {
         const instance = HOUSE_INSTANCES.find(house => house.id === houseInstanceId);
         const tileMetadata = getTileMetadata(instance.tileX, instance.tileY);
         
@@ -27,7 +27,7 @@ export function getHousesByScenarioKey(scenarioKey) {
             houseInstanceId,
             tileX: instance.tileX,
             tileY: instance.tileY,
-            packageCount,
+            expectedPackages,
             roadCoords: coordinates.roadCoords,
             labelCoords: coordinates.labelCoords,
             supportedLanes: coordinates.supportedLanes,
