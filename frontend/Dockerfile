@@ -10,6 +10,8 @@ RUN chmod +x node_modules/.bin/* && npm run build
 
 FROM nginx:1.27-alpine
 
+RUN apk upgrade --no-cache
+
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/frontend/dist /usr/share/nginx/html
 COPY docker-entrypoint.sh /docker-entrypoint.d/40-env-config.sh
