@@ -2,6 +2,7 @@
 <script setup>
 import { ref } from 'vue'
 import Slider from './Slider.vue'
+import Input from './Input.vue'
 import DropDown from './DropDown.vue'
 import Table from './Table.vue'
 import { store } from '../store.js'
