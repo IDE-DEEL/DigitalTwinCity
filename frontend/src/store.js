@@ -1,6 +1,4 @@
 import { reactive } from 'vue'
-import axios from 'axios'
-import { apiUrl } from './config/api'
 
 export const store = reactive({
   // De gedeelde data
@@ -23,15 +21,49 @@ export const store = reactive({
     "Placeholder 2",
     "Placeholder 3"
   ],
+  
   chosen_scenario: '',
   speed: 50,
+  sim_speed: 20,
+  max_packages: 12,
+  score: 0,
+  time: "00:00",
 
-  fetch_speed() {
-    const result = null;
-    
-    axios.get(apiUrl('/api/v1/car/speed'), { withCredentials: true })
-      .then(data => result.value = data)
-
-    return result
-  }
+  socket: null
 })
+
+export const connect = () => {
+// Methode om de socket te verbinden
+  store.socket = new WebSocket("ws://localhost:8000/api/v1/ws/digital_twin");
+  
+  store.socket.onopen = () => console.log("WebSocket verbonden!");
+  store.socket.onmessage = (event) => {
+      const { type, payload } = JSON.parse(event.data);
+      //update de store met data van FastAPI
+      switch(type) {
+        case "speed":
+            store.speed = payload;
+        break;
+
+        case "scenario":
+            store.scenario = payload;
+        break;
+
+        case "car_table":
+            store.table_data = payload;
+        break;
+      }
+  };
+}
+
+export const send_data = (data_type, data_value) => {
+  if (store.socket && store.socket.readyState === WebSocket.OPEN) {
+      const payload = {
+        type: data_type,
+        payload: data_value,
+      };
+      store.socket.send(JSON.stringify(payload));
+    } else {
+      console.error("Socket is niet open!");
+    }
+}

@@ -3,10 +3,13 @@ import App from '../src/App.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import DigitalTwinPage from './components/pages/DigitalTwinPage.vue'
 import SimulationPage from './components/pages/SimulationPage.vue'
+import { connect } from './store.js'
 import Login from './components/Login.vue'
 import AdminPage from './components/pages/AdminPage.vue'
 import { apiUrl } from './config/api'
 import './index.css'
+
+connect();
 
 const page_router = createRouter({
     history: createWebHistory(),

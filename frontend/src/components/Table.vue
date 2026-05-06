@@ -1,28 +1,54 @@
 <script setup>
 import "../assets/Table.css"
-const props = defineProps(['name', 'data']);
+import { watch } from 'vue'
+import { store, send_data } from '../store.js'
+
+watch(() => {
+  send_data("car_table", store.table_data)
+})
+
+function add_car(event) {
+  store.table_data.push({
+    "auto_id": "Auto 1", 
+    "pakketje": 0, 
+    "route": "Route 1", 
+    "visueel": false,
+  })
+}
+
+function remove_car(index) {
+  store.table_data.splice(index, 1)
+}
 </script>
 
 <template>
   <div>
-    <label class="block text-sm font-semibold mb-1">{{ name }}:</label>
+    <label class="block text-sm font-semibold mb-1">Auto's:</label>
       <table class="table-container">
         <thead>
           <tr class="title-row">
+            <th>
+              <button class="add-car" @click="add_car">
+                <img style="transform: scale(0.6, 0.6);" src="/assets/plus-sign.png" alt="Auto" />
+              </button>
+            </th>
             <th>Auto ID</th>
             <th>Pakketjes</th>
             <th>Route</th>
             <th>Visueel</th>
           </tr>
         </thead>
-        <tbody v-for="car in data">
+        <tbody v-for="(car, index) in store.table_data" :key="index">
           <tr>
-            <td>{{ car.auto_id }}</td>
-            <td>{{ car.pakketje }}</td>
-            <td>{{ car.route }}</td>
+            <td><button class="remove-car" @click="remove_car(index)">x</button></td>
+            <td><input class="package-input" type="text" size=6 v-model="car.auto_id"></input></td>
+            <td><input class="package-input" type="number" min=0 :max=store.max_packages v-model="car.pakketje"></input></td>
             <td>
-              <input type="checkbox" class="circle" :checked="car.visueel"></input>
+              <select v-model="car.route">
+                <option v-for="value in store.routes">{{ value }}</option>
+              </select>
             </td>
+            <td><input type="checkbox" class="circle" v-model="car.visueel"></input></td>
           </tr>
         </tbody>
       </table>

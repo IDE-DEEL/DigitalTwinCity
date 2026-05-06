@@ -9,7 +9,7 @@
 }
 
 .control-panel {
-  padding: 24px;
+  padding: 28px;
   background-color: var(--color-primary-gray2);
-  flex: 0 1 400px;
+  flex: 0 1 500px;
 }

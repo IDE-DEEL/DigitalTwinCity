@@ -1,53 +1,3 @@
-<template>
-  <div class="w-full p-3">
-    <div>
-        <!-- Map Container -->
-        <div class="relative" :style="containerStyle">
-            <!-- Map grid -->
-            <div class="map-grid" :style="gridStyle"> 
-                <div
-                    v-for="component in mapComponents"
-                    :key="component.key"
-                    class="component-cell"
-                    :style="getComponentPosition(component)">
-
-                    <img 
-                    :src="component.imagePath"
-                    :alt="component.label"
-                    class="w-full h-full object-contain"
-                    :style="{ transform:`rotate(${component.rotation}deg)`}"
-                    />
-                </div>
-            </div> 
-            <!-- Lanes (kleur kan later worden weggehaald)-->
-            <svg 
-                class="absolute inset-0 pointer-events-none"
-                :viewBox="`0 0 ${MAP_DIMENSION} ${MAP_DIMENSION}`"
-                :preserveAspectRatio="`none`"
-            >
-                <polyline
-                    v-for="lane in lanes"
-                    :key="lane.id"
-                    :points="lane.points.map(p => `${p.x},${p.y}`).join(' ')"
-                    fill="none"
-                    stroke="blue"
-                    stroke-width="0.00"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                />
-            </svg>
-            <!-- Auto -->
-                <div
-                    id="live-vehicle"
-                    class="absolute bg-black rounded-full z-10"
-                    :style="vehicleStyle"
-                >
-                </div>
-        </div>
-    </div> 
-  </div>
-</template>
-
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { fetchMapData } from '../logic/service/mapService.js'; 
@@ -55,6 +5,7 @@ import { buildLane } from '../logic/service/laneBuilder.js';
 import { useMqttVehicle } from '../composables/MqttConnection.js';
 import { normalizeDegree } from '../logic/utils/rotation.js';
 import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
+import '../assets/Display.css';
 
 const { vehiclePosition,setupMqttClient } = useMqttVehicle();
 const mapData = ref([]); 
@@ -154,5 +105,55 @@ onMounted(async () => {
         isLoading.value = false;
     }
 });
-
 </script>
+
+<template>
+  <div class="display-container">
+    <div>
+        <!-- Map Container -->
+        <div class="relative" :style="containerStyle">
+            <img src="/assets/test_image.png" alt="Auto" />
+            <!-- Map grid --
+            <div class="map-grid" :style="gridStyle"> 
+                <div
+                    v-for="component in mapComponents"
+                    :key="component.key"
+                    class="component-cell"
+                    :style="getComponentPosition(component)">
+
+                    <img 
+                    :src="component.imagePath"
+                    :alt="component.label"
+                    class="w-full h-full object-contain"
+                    :style="{ transform:`rotate(${component.rotation}deg)`}"
+                    />
+                </div>
+            </div> 
+            !-- Lanes (kleur kan later worden weggehaald)--
+            <svg 
+                class="absolute inset-0 pointer-events-none"
+                :viewBox="`0 0 ${MAP_DIMENSION} ${MAP_DIMENSION}`"
+                :preserveAspectRatio="`none`"
+            >
+                <polyline
+                    v-for="lane in lanes"
+                    :key="lane.id"
+                    :points="lane.points.map(p => `${p.x},${p.y}`).join(' ')"
+                    fill="none"
+                    stroke="blue"
+                    stroke-width="0.00"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                />
+            </svg>
+            !-- Auto --
+                <div
+                    id="live-vehicle"
+                    class="absolute bg-black rounded-full z-10"
+                    :style="vehicleStyle"
+                >
+                </div> -->
+        </div>
+    </div> 
+  </div>
+</template>

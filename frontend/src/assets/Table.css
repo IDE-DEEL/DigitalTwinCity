@@ -10,13 +10,16 @@
 
 .title-row th {
     background-color: var(--color-table-gray1);
-    height: 15%;
     text-align: center;
     border: none;
 }
 
+table {
+    text-align: center;
+}  
+
 tr {
-    text-align: center
+    line-height: 16px;
 }
 
 tbody:nth-child(even) {
@@ -27,15 +30,37 @@ tbody:nth-child(even) {
     appearance: none;
     -webkit-appearance: none;
     display: inline-grid;
-    width: 10px;
-    height: 10px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
     cursor: pointer;
-    place-content: center;
     transition: background-color 0.2s ease, border-color 0.2s ease;
     background-color: var(--color-primary-red);
 }
 
 .circle:checked {
     background-color: var(--color-primary-green);
+}
+
+.package-input {
+    text-align: center;
+}
+
+.add-car {
+    width: 48px;
+    height: 24px;
+    position: relative;
+    font-size: 14px;
+    font-weight: bold;
+    border-color: black;
+    background-color: var(--color-table-gray1);
+}
+
+.remove-car {
+    width: 20px;
+    height: 20px;
+    position: relative;
+    font-size: 10px;
+    font-weight: bold;
+    background-color: #e80202;
 }

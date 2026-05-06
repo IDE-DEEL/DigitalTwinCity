@@ -1,0 +1,60 @@
+/* Container voor de input en de decoratie */
+.slider-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 20px;
+}
+
+/* De decoratieve rondjes */
+.dot {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background-color: black;
+  border-radius: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.slider-value-top {
+  position: absolute;
+  left: 96.5%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-family: monospace;
+  font-size: 0.875rem;
+  font-weight: bold;
+  color: black;
+  text-align: center;
+}
+
+.dot-left { left: 0; }
+.dot-right { right: 0; }
+
+.custom-slider {
+  appearance: none; 
+  -webkit-appearance: none; 
+  width: 100%;
+  height: 8px;
+  background: #ccc;
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+/* Voor de 'thumb' (het bolletje) geldt hetzelfde */
+.custom-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--color-primary-blue);
+  border-radius: 50%;
+  border: 2px solid white;
+  position: relative;
+  z-index: 2;
+}
