@@ -1,6 +1,8 @@
 # payload keys
-# car target speed property
+# general simulation properties
 CAR_TARGET_SPEED_KEY = "carTargetSpeed"
+SEED_KEY = "seed"
+SIMULATION_SPEED_KEY = "simulationSpeed"
 
 # car properties
 CARS_KEY = "cars"
