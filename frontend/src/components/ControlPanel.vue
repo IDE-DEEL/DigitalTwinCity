@@ -1,5 +1,5 @@
 <template>
-    <aside class="w-[320px] bg-cream text-dark p-6 flex flex-col gap-6 text-sm">
+    <aside class="w-[380px] bg-cream text-dark p-6 flex flex-col gap-6 text-sm">
 
         <!-- WebSocket Status Indicator -->
         <div v-if="!isWebSocketConnected" class="flex items-center gap-2 border-b border-red-300 p-3 bg-red-100 rounded-sm">

@@ -15,7 +15,7 @@
 
       <!-- Control Panel -->
        <div class="flex pt-3">
-          <ControlPanel class="flex-1 w-[340px] bg-white border border-gray-400 rounded-md overflow-y-auto text-sm" />
+          <ControlPanel class="flex-1 bg-white border border-gray-400 rounded-md overflow-y-auto text-sm" />
        </div>
        
     </div>
