@@ -179,11 +179,21 @@ class CarAgent(mesa.Agent):
         self.current_delivery_house = None
         self.delivery_time_remaining = 0.0
         self.delivery_duration = 0.0
+    
+    def _reset_route(self) -> None:
+        """Reset movement controller for another trip.
+        
+        Resets the controller to start position and prepares the agent
+        to traverse the route again.
+        """
+        if self.controller:
+            self.controller.reset_for_new_trip()
 
     def _pick_up_available_packages(self):
         """Pick up available packages from the route while parked.
         
         Gets packages from the route and assigns them to this agent if there's cargo space.
+        If we pick up packages after a completed trip, reset the route for another traversal.
         """
         if not self.route or len(self.packages_in_cargo) >= self.max_packages:
             return
@@ -191,6 +201,7 @@ class CarAgent(mesa.Agent):
         # Get all available packages from the route
         available_packages = self.route.get_available_packages()
         
+        packages_picked_up = False
         for package in available_packages:
             # Check if we still have capacity
             if len(self.packages_in_cargo) >= self.max_packages:
@@ -199,3 +210,8 @@ class CarAgent(mesa.Agent):
             # Assign package to this agent
             package.assign_to_agent(self.unique_id)
             self.packages_in_cargo.append(package)
+            packages_picked_up = True
+        
+        # If we picked up packages and the route is already finished, reset for another trip
+        if packages_picked_up and self.controller.finished:
+            self._reset_route()
