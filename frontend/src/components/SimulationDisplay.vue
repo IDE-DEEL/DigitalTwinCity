@@ -103,7 +103,7 @@
                 :key="`agent-${agent.id}`"
                 class="absolute bg-black z-10 border-2"
                 :style="agentVehicleStyle(agent)"
-                :title="`Agent ${agent.id} - Speed: ${agent.speed?.toFixed(2)}`"
+                :title="`Agent ${agent.id} - Packages in cargo: ${agent.packages_in_cargo.length}`"
             >
             </div>
 
