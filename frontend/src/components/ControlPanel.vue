@@ -104,7 +104,13 @@
                     <tbody>
                         <tr v-for="car in cars" :key="car.id">
                             <td class="px-3 py-1">
-                                {{ car.id }}
+                                <div class="flex items-center gap-2">
+                                    <div 
+                                        class="w-1 h-6 rounded-sm"
+                                        :style="{ backgroundColor: getColorForCarAndRoute(car.id) }"
+                                    ></div>
+                                    {{ car.id }}
+                                </div>
                             </td>
                             <td class="px-3 py-1">
                                  <input 
@@ -191,7 +197,8 @@
 import { ref } from 'vue'
 import { useDashboardParametersStore } from '../stores';
 import { useDigitalSimulation } from '../composables/useDigitalSimulation';
-import { MAX_CARS } from '../constants/constants';
+import { useCarColors } from '../composables/useCarColors';
+import { MAX_CARS, CAR_ROUTE_COLORS } from '../constants/constants';
 
 // Composables
 const {
@@ -217,6 +224,8 @@ const {
     stopSimulation,
     reconnectWebSocket,
 } = useDigitalSimulation();
+
+const { getColorForCarAndRoute } = useCarColors();
 
 const reconnectCooldown = ref(false);
 

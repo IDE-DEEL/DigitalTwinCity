@@ -71,7 +71,7 @@
                     :key="`route-${car.id}`"
                     :points="car.routeWaypoints.map(p => `${p.x},${p.y}`).join(' ')"
                     fill="none"
-                    :stroke="getRouteColorForCar(car.id)"
+                    :stroke="getColorForCarAndRoute(car.id)"
                     stroke-width="0.01"
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -137,7 +137,8 @@ import { normalizeDegree } from '../logic/utils/rotation.js';
 import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
 import { useMapStore, useDashboardParametersStore, useSimulationStateStore } from '../stores';
 import { useDigitalSimulation } from '../composables/useDigitalSimulation.js';
-import { MAP_COLUMNS, MAP_ROWS } from '../constants/constants.js';
+import { useCarColors } from '../composables/useCarColors.js';
+import { MAP_COLUMNS, MAP_ROWS, CAR_ROUTE_COLORS } from '../constants/constants.js';
 import HouseLabelsOverlay from './HouseLabelsOverlay.vue';
 import devLaneDebugOverlay from '../development/devLaneDebugOverlay.vue';
 import devTileCoordinateOverlay from '../development/devTileCoordinateOverlay.vue';
@@ -155,6 +156,7 @@ const { vehiclePosition,setupMqttClient } = useMqttVehicle();
 const { mapData, setMapData } = useMapStore();
 const { selectedCarsWithRoutes: visibleCarsWithRoutes, scenario } = useDashboardParametersStore();
 const { agentState, housesWithLivePackageData } = useSimulationStateStore();
+const { getColorForCarAndRoute } = useCarColors();
 
 // Initialize digital simulation lifecycle management
 useDigitalSimulation();
@@ -191,20 +193,6 @@ const toggleHouseDetectionZones = () => {
 };
 // --- house detection zones devtool end ---
 
-// --- custom colors for car routes start ---
-const CAR_ROUTE_COLORS = {
-    '1': 'blue',
-    '2': 'red',
-    '3': 'green',
-    '4': 'yellow',
-    '5': 'purple',
-};
-
-const getRouteColorForCar = (carId) => {
-    return CAR_ROUTE_COLORS[carId] ?? 'blue';
-};
-// --- custom colors for car routes end ---
-
 // container style
 const containerStyle = computed(() => {
     return {
@@ -230,7 +218,7 @@ const agentVehicleStyle = (agent) => {
         height: height,
         left: `calc(${xPercent}% - ${parseInt(width)/2}px)`,
         top: `calc(${yPercent}% - ${parseInt(height)/2}px)`,
-        background: getRouteColorForCar(agent.id),
+        background: getColorForCarAndRoute(agent.id),
         borderRadius: '2px',
         transform: `rotate(${rotation}deg)`
     };
