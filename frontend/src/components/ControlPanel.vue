@@ -92,13 +92,13 @@
         <div>
             <label class="block text-sm font-semibold mb-1">Auto's:</label>
             <div class="bg-white border border-gray-300 rounded-md max-h-70 overflow-y-auto text-sm">
-                <table class="w-full text-left">
+                <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="border-b border-gray-200">
-                            <th class="px-3 py-2 font-semibold text-gray-700">ID</th>
-                            <th class="px-3 py-2 font-semibold text-gray-700">Max. pakketten</th>
-                            <th class="px-3 py-2 font-semibold text-gray-700">Route</th>
-                            <th class="px-3 py-2 font-semibold text-gray-700">Visualiseren</th>
+                            <th class="px-3 py-2 font-semibold text-gray-700 w-12">ID</th>
+                            <th class="px-3 py-2 font-semibold text-gray-700 w-20">Max. pakketten</th>
+                            <th class="px-3 py-2 font-semibold text-gray-700 flex-1">Route</th>
+                            <th class="px-3 py-2 font-semibold text-gray-700 w-24">Visualiseren</th>
                         </tr>
                     </thead>
                     <tbody>
