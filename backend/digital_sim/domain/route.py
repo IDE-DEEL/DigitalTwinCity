@@ -1,3 +1,5 @@
+import random
+
 from backend.digital_sim.domain.house import House
 from backend.digital_sim.domain.package import PackageStatus
 
@@ -14,8 +16,13 @@ class Route:
             List of Package objects that are IN_DEPOT and not yet assigned to any agent
         """
         available_packages = []
-        for house in self.houses:
+
+        shuffled_houses = self.houses.copy()
+        random.shuffle(shuffled_houses)
+        
+        for house in shuffled_houses:
             for package in house.packages:
                 if package.status == PackageStatus.IN_DEPOT and package.assigned_car_id is None:
                     available_packages.append(package)
+
         return available_packages
