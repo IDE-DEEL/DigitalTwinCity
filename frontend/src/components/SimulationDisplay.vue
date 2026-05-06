@@ -69,13 +69,22 @@
                 <polyline
                     v-for="car in visibleCarsWithRoutes"
                     :key="`route-${car.id}`"
-                    :points="car.routeWaypoints.map(point => `${point.x},${point.y}`).join(' ')"
+                    :points="car.routeWaypoints.map(p => `${p.x},${p.y}`).join(' ')"
                     fill="none"
                     :stroke="getRouteColorForCar(car.id)"
                     stroke-width="0.01"
                     stroke-linecap="round"
                     stroke-linejoin="round"
-                />
+                    stroke-dasharray="0.06 0.04"
+                    >
+                    <animate
+                        attributeName="stroke-dashoffset"
+                        from="0"
+                        to="-0.10"
+                        dur="1.8s"
+                        repeatCount="indefinite"
+                    />
+                </polyline>
 
                 <devLaneDebugOverlay
                     v-if="showDevLaneDebug"
