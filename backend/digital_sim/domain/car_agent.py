@@ -4,17 +4,18 @@ import mesa
 
 from backend.digital_sim.domain.route import Route
 from backend.digital_sim.domain.movement_controller import MovementController
-from backend.digital_sim.constants import MAX_DELIVERY_TIME_IN_SECONDS, MIN_DELIVERY_TIME_IN_SECONDS
+from backend.digital_sim.constants import MAX_DELIVERY_TIME_IN_SECONDS, MIN_DELIVERY_TIME_IN_SECONDS, MAX_PICKUP_TIME_IN_SECONDS, MIN_PICKUP_TIME_IN_SECONDS
 
 
 class CarStatus(Enum):
     PARKED = "parked"
     IDLE = "idle"
+    LOADING_PACKAGES = "loading_packages"
     DRIVING = "driving"
     DELIVERING = "delivering"
 
 class CarAgent(mesa.Agent):
-    def __init__(self, model, car_target_speed: int = 50, route: Route = None, max_packages: int = 1):
+    def __init__(self, model, car_target_speed: int = 50, route: Route = None, max_packages: int = 1, seed: int = None):
         super().__init__(model)
 
         self.target_speed = car_target_speed
@@ -23,35 +24,44 @@ class CarAgent(mesa.Agent):
         self.controller = MovementController(waypoints=route.waypoints, target_speed=self.target_speed)
         self.packages_in_cargo = []
         
+        # Random number generator
+        self._random_generator = random.Random(seed)
+        
         # Delivery state
-        self.current_delivery_house = None
-        self.delivery_time_remaining = 0.0
-        self.delivery_duration = 0.0
+        self._reset_delivery_state()
+        
+        # Pickup state
+        self._reset_pickup_state()
+        self.packages_pending_load = []
 
     def step(self):
         """Execute one step of the car agent.
         
         First: pick up available packages if parked and has capacity.
-        Second: process any delivery logic.
-        Third: handle movement along the route.
+        Second: process package pickup time if currently loading packages.
+        Third: process any delivery logic.
+        Fourth: handle movement along the route.
         """
         dt = getattr(self.model, "delta_time", 0.1)
 
-        # First: pick up packages if parked
+        # First: start loading packages if parked and has capacity
         if self.status == CarStatus.PARKED:
             self._pick_up_available_packages()
+        
+        # Second: process package pickup time
+        self._process_pickup(dt)
 
-        # Second: handle delivery logic
+        # Third: handle delivery logic
         self._process_delivery(dt)
         
-        # Third: handle movement
+        # Fourth: handle movement
         if not self.controller:
             return
 
         self.controller.dt = dt
         
-        # Only move if not delivering
-        if self.current_delivery_house is None:
+        # Only move if not delivering or picking up
+        if self.current_delivery_house is None and not self.is_picking_up:
             self.controller.update()
 
     @property
@@ -105,15 +115,17 @@ class CarAgent(mesa.Agent):
 
     @property
     def status(self):
-        """
-        Get the current status of the car based on its movement and route progress.
+        """Get the current status of the car based on its movement and route progress.
         
         - PARKED: Not started (total_distance_travelled=0) OR finished route (is_finished=True) AND actual_speed=0
+        - LOADING_PACKAGES: Currently loading packages
         - IDLE: Underway on route AND actual_speed=0
         - DRIVING: actual_speed > 0
         - DELIVERING: Currently at a delivery location
         """
-        if self.current_delivery_house is not None:
+        if self.is_picking_up:
+            return CarStatus.LOADING_PACKAGES
+        elif self.current_delivery_house is not None:
             return CarStatus.DELIVERING
         elif self.actual_speed > 0:
             return CarStatus.DRIVING
@@ -145,7 +157,7 @@ class CarAgent(mesa.Agent):
             if house.is_in_delivery_zone(self.position):
                 # Start delivery
                 self.current_delivery_house = house
-                self.delivery_duration = random.uniform(MIN_DELIVERY_TIME_IN_SECONDS, MAX_DELIVERY_TIME_IN_SECONDS)
+                self.delivery_duration = self._get_random_duration(MIN_DELIVERY_TIME_IN_SECONDS, MAX_DELIVERY_TIME_IN_SECONDS)
                 self.delivery_time_remaining = self.delivery_duration
                 return
 
@@ -176,26 +188,61 @@ class CarAgent(mesa.Agent):
             self.packages_in_cargo.remove(package)
         
         # Resume movement
-        self.current_delivery_house = None
-        self.delivery_time_remaining = 0.0
-        self.delivery_duration = 0.0
+        self._reset_delivery_state()
+
+    def _process_pickup(self, dt: float):
+        """Process pickup loading time: count down timer until loading is complete.
+        
+        When timer finishes, moves pending packages into cargo.
+        """
+        if self.is_picking_up:
+            self.pickup_time_remaining -= dt
+            if self.pickup_time_remaining <= 0:
+                # Loading complete: move pending packages to cargo
+                self.packages_in_cargo.extend(self.packages_pending_load)
+                self.packages_pending_load.clear()
+                
+                self._reset_pickup_state()
+    
+    def _get_random_duration(self, min_seconds: float, max_seconds: float) -> float:
+        """Generate a random duration between min and max seconds.
+        
+        Args:
+            min_seconds: Minimum duration
+            max_seconds: Maximum duration
+            
+        Returns:
+            Random duration value
+        """
+        return self._random_generator.uniform(min_seconds, max_seconds)
     
     def _reset_route(self) -> None:
-        """Reset movement controller for another trip.
-        
-        Resets the controller to start position and prepares the agent
+        """Resets the controller to start position and prepares the agent
         to traverse the route again.
         """
         if self.controller:
             self.controller.reset_for_new_trip()
 
+    def _reset_delivery_state(self) -> None:
+        """Reset the delivery state variables to their initial values."""
+        self.current_delivery_house = None
+        self.delivery_time_remaining = 0.0
+        self.delivery_duration = 0.0
+
+    def _reset_pickup_state(self) -> None:
+        """Reset the pickup state variables to their initial values."""
+        self.is_picking_up = False
+        self.pickup_time_remaining = 0.0
+        self.pickup_duration = 0.0
+
     def _pick_up_available_packages(self):
         """Pick up available packages from the route while parked.
         
         Gets packages from the route and assigns them to this agent if there's cargo space.
-        If we pick up packages after a completed trip, reset the route for another traversal.
+        Packages are queued for loading (not immediately added to cargo).
+        Starts a loading timer. If we pick up packages after a completed trip, reset the route.
         """
-        if not self.route or len(self.packages_in_cargo) >= self.max_packages:
+        if not self.route or (len(self.packages_in_cargo) + len(self.packages_pending_load)) >= self.max_packages:
             return
         
         # Get all available packages from the route
@@ -203,14 +250,20 @@ class CarAgent(mesa.Agent):
         
         packages_picked_up = False
         for package in available_packages:
-            # Check if we still have capacity
-            if len(self.packages_in_cargo) >= self.max_packages:
+            # Check if we still have capacity (including pending packages)
+            if len(self.packages_in_cargo) + len(self.packages_pending_load) >= self.max_packages:
                 break
             
-            # Assign package to this agent
+            # Assign package to this agent and queue for loading
             package.assign_to_agent(self.unique_id)
-            self.packages_in_cargo.append(package)
+            self.packages_pending_load.append(package)
             packages_picked_up = True
+        
+        # Start pickup loading time if we picked up packages
+        if packages_picked_up:
+            self.is_picking_up = True
+            self.pickup_duration = self._get_random_duration(MIN_PICKUP_TIME_IN_SECONDS, MAX_PICKUP_TIME_IN_SECONDS)
+            self.pickup_time_remaining = self.pickup_duration
         
         # If we picked up packages and the route is already finished, reset for another trip
         if packages_picked_up and self.controller.finished:
