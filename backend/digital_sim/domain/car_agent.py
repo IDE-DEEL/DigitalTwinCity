@@ -15,7 +15,7 @@ class CarStatus(Enum):
     DELIVERING = "delivering"
 
 class CarAgent(mesa.Agent):
-    def __init__(self, model, car_target_speed: int = 50, route: Route = None, max_packages: int = 1, seed: int = None):
+    def __init__(self, model, car_target_speed: int = 50, route: Route = None, max_packages: int = 1):
         super().__init__(model)
 
         self.target_speed = car_target_speed
@@ -25,7 +25,7 @@ class CarAgent(mesa.Agent):
         self.packages_in_cargo = []
         
         # Random number generator
-        self._random_generator = random.Random(seed)
+        self._random_generator = random.Random()
         
         # Delivery state
         self._reset_delivery_state()

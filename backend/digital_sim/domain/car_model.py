@@ -9,7 +9,7 @@ from backend.digital_sim.constants import CAR_ROUTE_NAME_KEY, CAR_ROUTE_WAYPOINT
 
 class CarModel(mesa.Model):
 
-    def __init__(self, cars: list[dict], car_target_speed: int, scenario_name: str, houses: list[dict], seed: int = None, rng=None):
+    def __init__(self, cars: list[dict], car_target_speed: int, scenario_name: str, houses: list[dict], rng=None):
         super().__init__(rng=rng)
 
         self.num_agents = len(cars)
@@ -18,7 +18,6 @@ class CarModel(mesa.Model):
         self.routes = {}
         self.houses = {}
         self.scenario_name = scenario_name
-        self.seed = seed
         
         self._setup_cars_and_routes(cars, self.car_target_speed)
         self._setup_houses(houses or [])
@@ -124,7 +123,7 @@ class CarModel(mesa.Model):
                 routes_added.add(route_name)
             
             route = self.routes[route_name]
-            CarAgent(model=self, car_target_speed=car_target_speed, route=route, max_packages=max_packages, seed=self.seed)
+            CarAgent(model=self, car_target_speed=car_target_speed, route=route, max_packages=max_packages)
     
     def _setup_houses(self, houses: list[dict]):
         """Create house objects and link them to routes and packages."""

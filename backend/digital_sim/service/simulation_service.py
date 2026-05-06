@@ -38,7 +38,6 @@ class SimulationService:
             car_target_speed=car_target_speed,
             scenario_name=scenario_name,
             houses=houses,
-            seed=seed
         )
         self.is_running = True
         return {
