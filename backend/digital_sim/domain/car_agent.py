@@ -204,7 +204,7 @@ class CarAgent(mesa.Agent):
                 
                 self._reset_pickup_state()
     
-    def _get_random_duration(self, min_seconds: float, max_seconds: float) -> float:
+    def _get_random_duration(self, min_seconds: int, max_seconds: int) -> int:
         """Generate a random duration between min and max seconds.
         
         Args:
@@ -214,7 +214,7 @@ class CarAgent(mesa.Agent):
         Returns:
             Random duration value
         """
-        return self._random_generator.uniform(min_seconds, max_seconds)
+        return self.model.random.randint(min_seconds, max_seconds)
     
     def _reset_route(self) -> None:
         """Resets the controller to start position and prepares the agent

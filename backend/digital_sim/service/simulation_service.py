@@ -23,6 +23,7 @@ class SimulationService:
         scenario_name = scenario.get(SCENARIO_NAME_KEY, "unknown")
         houses = scenario.get(SCENARIO_HOUSES_LIST_KEY, [])
         seed = parameters.get(SEED_KEY, None)
+        print(f"Creating model using rng seed: {seed}")
 
         # Convert route waypoints from dicts to tuples for each car
         for car in cars:
@@ -38,6 +39,7 @@ class SimulationService:
             car_target_speed=car_target_speed,
             scenario_name=scenario_name,
             houses=houses,
+            rng=seed
         )
         self.is_running = True
         return {
