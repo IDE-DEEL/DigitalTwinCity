@@ -9,16 +9,19 @@ class Route:
         self.waypoints = waypoints
         self.houses = houses
 
-    def get_available_packages(self):
+    def get_available_packages(self, shuffle_func=None):
         """Get all available packages from houses on this route that haven't been assigned.
         
         Returns:
             List of Package objects that are IN_DEPOT and not yet assigned to any agent
         """
+        if shuffle_func is None:
+            shuffle_func = random.shuffle
+
         available_packages = []
 
         shuffled_houses = self.houses.copy()
-        random.shuffle(shuffled_houses)
+        shuffle_func(shuffled_houses)
         
         for house in shuffled_houses:
             for package in house.packages:
