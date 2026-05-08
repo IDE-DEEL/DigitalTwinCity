@@ -3,6 +3,7 @@
 CAR_TARGET_SPEED_KEY = "carTargetSpeed"
 SEED_KEY = "seed"
 SIMULATION_SPEED_KEY = "simulationSpeed"
+HOUSES_ON_ROUTES_KEY = "housesOnRoutes"
 
 # car properties
 CARS_KEY = "cars"
