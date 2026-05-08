@@ -57,8 +57,15 @@ class CarAgent(mesa.Agent):
 
         self.controller.dt = dt
         
-        # Only move if not delivering or picking up
-        if self.current_delivery_house is None and not self.is_picking_up:
+        # Only move if:
+        # - Not delivering AND
+        # - Not picking up AND
+        # - Either has cargo in cargo bay OR has already started the route
+        has_cargo = len(self.packages_in_cargo) > 0
+        has_started = self.has_started_route
+        can_move = self.current_delivery_house is None and not self.is_picking_up and (has_cargo or has_started)
+        
+        if can_move:
             self.controller.update()
 
     @property
