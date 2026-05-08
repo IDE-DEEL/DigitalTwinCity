@@ -167,10 +167,10 @@
             <div class="flex gap-2 justify-center">
                 <button 
                     @click="handleStart"
-                    :disabled="isSimulating"
+                    :disabled="isSimulating || cars.length < MIN_CARS"
                     :class="[
                       'rounded-sm w-24 h-10 transition-colors',
-                      isSimulating 
+                      isSimulating || cars.length < MIN_CARS
                         ? 'bg-gray-300 cursor-not-allowed' 
                         : 'bg-sky-200 hover:bg-sky-700'
                     ]"
