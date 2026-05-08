@@ -1,10 +1,9 @@
 from enum import Enum
-import random
 import mesa
 
 from backend.digital_sim.domain.route import Route
 from backend.digital_sim.domain.movement_controller import MovementController
-from backend.digital_sim.constants import MAX_DELIVERY_TIME_IN_SECONDS, MIN_DELIVERY_TIME_IN_SECONDS, MAX_PICKUP_TIME_IN_SECONDS, MIN_PICKUP_TIME_IN_SECONDS
+from backend.digital_sim.constants import MAX_DELIVERY_TIME_IN_SECONDS, MIN_DELIVERY_TIME_IN_SECONDS, PACKAGE_PICKUP_TIME_IN_SECONDS
 
 
 class CarStatus(Enum):
@@ -23,9 +22,6 @@ class CarAgent(mesa.Agent):
         self.max_packages = max_packages
         self.controller = MovementController(waypoints=route.waypoints, target_speed=self.target_speed)
         self.packages_in_cargo = []
-        
-        # Random number generator
-        self._random_generator = random.Random()
         
         # Delivery state
         self._reset_delivery_state()
@@ -191,17 +187,26 @@ class CarAgent(mesa.Agent):
         self._reset_delivery_state()
 
     def _process_pickup(self, dt: float):
-        """Process pickup loading time: count down timer until loading is complete.
+        """Process pickup loading time: load packages one by one.
         
-        When timer finishes, moves pending packages into cargo.
+        Each package takes PACKAGE_PICKUP_TIME_IN_SECONDS to load. Packages are added
+        to cargo one at a time as their loading time completes, making the package
+        count visible in real-time in the frontend.
         """
-        if self.is_picking_up:
+        if self.is_picking_up and self.packages_pending_load:
             self.pickup_time_remaining -= dt
-            if self.pickup_time_remaining <= 0:
-                # Loading complete: move pending packages to cargo
-                self.packages_in_cargo.extend(self.packages_pending_load)
-                self.packages_pending_load.clear()
+            
+            # When enough time has passed for one package to load
+            while self.pickup_time_remaining <= 0 and self.packages_pending_load:
+                # Move first pending package to cargo
+                package = self.packages_pending_load.pop(0)
+                self.packages_in_cargo.append(package)
                 
+                # Reset timer for next package
+                self.pickup_time_remaining += PACKAGE_PICKUP_TIME_IN_SECONDS
+            
+            # All packages loaded when none remaining
+            if not self.packages_pending_load:
                 self._reset_pickup_state()
     
     def _get_random_duration(self, min_seconds: int, max_seconds: int) -> int:
@@ -240,7 +245,9 @@ class CarAgent(mesa.Agent):
         
         Gets packages from the route and assigns them to this agent if there's cargo space.
         Packages are queued for loading (not immediately added to cargo).
-        Starts a loading timer. If we pick up packages after a completed trip, reset the route.
+        Loading duration is calculated as: number_of_packages * PACKAGE_PICKUP_TIME_IN_SECONDS.
+        Packages are loaded one by one, with each taking PACKAGE_PICKUP_TIME_IN_SECONDS.
+        If we pick up packages after a completed trip, reset the route.
         """
         if not self.route or (len(self.packages_in_cargo) + len(self.packages_pending_load)) >= self.max_packages:
             return
@@ -262,8 +269,9 @@ class CarAgent(mesa.Agent):
         # Start pickup loading time if we picked up packages
         if packages_picked_up:
             self.is_picking_up = True
-            self.pickup_duration = self._get_random_duration(MIN_PICKUP_TIME_IN_SECONDS, MAX_PICKUP_TIME_IN_SECONDS)
-            self.pickup_time_remaining = self.pickup_duration
+            self.pickup_duration = len(self.packages_pending_load) * PACKAGE_PICKUP_TIME_IN_SECONDS
+            # Timer for first package
+            self.pickup_time_remaining = PACKAGE_PICKUP_TIME_IN_SECONDS
         
         # If we picked up packages and the route is already finished, reset for another trip
         if packages_picked_up and self.controller.finished:
