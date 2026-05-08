@@ -258,7 +258,7 @@ class CarAgent(mesa.Agent):
             return
         
         # Get all available packages from the route
-        available_packages = self.route.get_available_packages(shuffle_func=self.model.random.shuffle)
+        available_packages = self.route.get_available_packages()
         
         packages_picked_up = False
         for package in available_packages:
