@@ -3,7 +3,7 @@ import mesa
 
 from backend.digital_sim.domain.route import Route
 from backend.digital_sim.domain.movement_controller import MovementController
-from backend.digital_sim.constants import MAX_DELIVERY_TIME_IN_SECONDS, MIN_DELIVERY_TIME_IN_SECONDS, PACKAGE_PICKUP_TIME_IN_SECONDS
+from backend.digital_sim.constants import PACKAGE_PICKUP_TIME_IN_SECONDS, PACKAGE_DELIVERY_TIME_IN_SECONDS
 
 
 class CarStatus(Enum):
@@ -25,6 +25,7 @@ class CarAgent(mesa.Agent):
         
         # Delivery state
         self._reset_delivery_state()
+        self.packages_pending_delivery = []
         
         # Pickup state
         self._reset_pickup_state()
@@ -151,47 +152,50 @@ class CarAgent(mesa.Agent):
             
             # Check if current position is in the delivery zone
             if house.is_in_delivery_zone(self.position):
-                # Start delivery
+                # Prepare delivery by queuing packages for this house
                 self.current_delivery_house = house
-                self.delivery_duration = self._get_random_duration(MIN_DELIVERY_TIME_IN_SECONDS, MAX_DELIVERY_TIME_IN_SECONDS)
-                self.delivery_time_remaining = self.delivery_duration
+                self.packages_pending_delivery = packages_for_house.copy()
+                self.delivery_duration = len(self.packages_pending_delivery) * PACKAGE_DELIVERY_TIME_IN_SECONDS
+                self.delivery_time_remaining = PACKAGE_DELIVERY_TIME_IN_SECONDS
                 return
 
     def _process_ongoing_delivery(self, dt: float):
-        """
-        Process the ongoing delivery: count down timer and complete delivery when done.
+        """Process ongoing delivery: deliver packages one by one.
+        
+        Each package takes PACKAGE_DELIVERY_TIME_IN_SECONDS to deliver. Packages are removed
+        from cargo one at a time as their delivery time completes.
         
         Args:
             dt: Time delta for this step
         """
-        self.delivery_time_remaining -= dt
-        
-        if self.delivery_time_remaining <= 0:
-            self._complete_delivery()
-
-    def _complete_delivery(self):
-        """Complete the delivery at current house and remove delivered packages from cargo."""
-        if not self.current_delivery_house:
+        if self.current_delivery_house is None:
             return
         
-        house = self.current_delivery_house
-        
-        # Find and complete delivery of all packages for this house
-        packages_to_remove = [p for p in self.packages_in_cargo if p.destination_house_id == house.id]
-        
-        for package in packages_to_remove:
-            package.mark_delivered()
-            self.packages_in_cargo.remove(package)
-        
-        # Resume movement
-        self._reset_delivery_state()
+        if self.packages_pending_delivery:
+            self.delivery_time_remaining -= dt
+            
+            # When enough time has passed for one package to deliver
+            while self.delivery_time_remaining <= 0 and self.packages_pending_delivery:
+                # Deliver first pending package
+                package = self.packages_pending_delivery.pop(0)
+                package.mark_delivered()
+                self.packages_in_cargo.remove(package)
+                
+                # Reset timer for next package
+                self.delivery_time_remaining += PACKAGE_DELIVERY_TIME_IN_SECONDS
+            
+            # All packages delivered when none remaining
+            if not self.packages_pending_delivery:
+                self._reset_delivery_state()
+        else:
+            # No pending packages but still in delivery state - reset
+            self._reset_delivery_state()
 
     def _process_pickup(self, dt: float):
         """Process pickup loading time: load packages one by one.
         
         Each package takes PACKAGE_PICKUP_TIME_IN_SECONDS to load. Packages are added
-        to cargo one at a time as their loading time completes, making the package
-        count visible in real-time in the frontend.
+        to cargo one at a time as their loading time completes.
         """
         if self.is_picking_up and self.packages_pending_load:
             self.pickup_time_remaining -= dt
@@ -233,6 +237,7 @@ class CarAgent(mesa.Agent):
         self.current_delivery_house = None
         self.delivery_time_remaining = 0.0
         self.delivery_duration = 0.0
+        self.packages_pending_delivery = []
 
     def _reset_pickup_state(self) -> None:
         """Reset the pickup state variables to their initial values."""
