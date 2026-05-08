@@ -23,7 +23,7 @@
             <div class="flex items-center gap-3">
                 <input 
                     type="range" 
-                    min="0" 
+                    min="1" 
                     max="100" 
                     :value="carTargetSpeed"
                     @input="setCarTargetSpeed(Number($event.target.value))"
