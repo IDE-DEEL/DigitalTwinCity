@@ -38,13 +38,13 @@ export function getHousesByScenarioKey(scenarioKey) {
 }
 
 /**
- * Builds house data for the simulation payload including the routes that pass through each house.
- * This is the extended version used when actually starting the simulation.
+ * Builds house data including the routes that pass through each house.
+ * Shared internal function to avoid recalculating getHousesByScenarioKey.
  *
  * @param {string} scenarioKey - The key/name of the scenario to retrieve houses for.
  * @returns {Array<Object>} An array of house objects with coordinates, package counts, and route names.
  */
-export function getHousesLinkedToRoutesByScenarioKey(scenarioKey) {
+export function getHousesWithRoutesByScenarioKey(scenarioKey) {
     const houses = getHousesByScenarioKey(scenarioKey);
 
     return houses.map(house => ({
@@ -54,23 +54,23 @@ export function getHousesLinkedToRoutesByScenarioKey(scenarioKey) {
 }
 
 /**
- * Builds route data with houses ordered by their appearance on each route.
+ * Builds ordered house instance IDs for each route.
+ * Houses are ordered by their appearance on the route.
  * This is used to determine package pickup order based on route progression.
  * 
- * @param {string} scenarioKey - The key/name of the scenario to retrieve houses for.
- * @returns {Object} An object with route names as keys and arrays of ordered houses as values.
+ * @param {Array<Object>} housesWithRoutes - Array of house objects with routeNames property.
+ * @returns {Object} An object with route names as keys and arrays of ordered houseInstanceIds as values.
  */
-export function buildRoutesWithOrderedHouses(scenarioKey) {
-    const baseHouses = getHousesByScenarioKey(scenarioKey);
-    const routesWithHouses = {};
+export function buildOrderedHouseInstancesOnRoutes(housesWithRoutes) {
+    const routesWithHouseIds = {};
 
     // For each route, find all houses that lie on it, in route order
     for (const [routeName] of Object.entries(ROUTES_TILES)) {
-        const housesOnRoute = findHousesForRoute(routeName, baseHouses);
+        const housesOnRoute = findHousesForRoute(routeName, housesWithRoutes);
         if (housesOnRoute.length > 0) {
-            routesWithHouses[routeName] = housesOnRoute;
+            routesWithHouseIds[routeName] = housesOnRoute;
         }
     }
 
-    return routesWithHouses;
+    return routesWithHouseIds;
 }
