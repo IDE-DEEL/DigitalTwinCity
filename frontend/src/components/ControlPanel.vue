@@ -115,10 +115,11 @@
                             <td class="px-3 py-1">
                                  <input 
                                     type="number" 
-                                    min="1" 
-                                    max="10"
+                                    :min="min_packages" 
+                                    :max="max_packages"
                                     :value="car.maxPackages"
-                                    @input="updateCarMaxPackageCount(car.id, Number($event.target.value))"
+                                    @blur="handleMaxPackagesInput(car.id, $event)"
+                                    @keydown.enter="handleMaxPackagesInput(car.id, $event)"
                                     :disabled="isSimulating"
                                     :class="{'opacity-50 cursor-not-allowed': isSimulating}"
                                     class="w-16 p-1 border border-gray-300 rounded-md text-sm"
@@ -227,6 +228,9 @@ const {
 
 const { getColorForCarAndRoute } = useCarColors();
 
+const min_packages = 1;
+const max_packages = 10;
+
 const reconnectCooldown = ref(false);
 
 const handleStart = () => {
@@ -254,5 +258,19 @@ const handleReconnect = () => {
     setTimeout(() => {
         reconnectCooldown.value = false;
     }, fiveSeconds);
+}
+
+const handleMaxPackagesInput = (carId, event) => {
+    let value = Number(event.target.value);
+    
+    if (isNaN(value)) {
+        value = min_packages;
+    }
+
+    // Clamp value between min_packages and max_packages
+    value = Math.max(min_packages, Math.min(max_packages, value));
+    event.target.value = value;
+
+    updateCarMaxPackageCount(carId, value);
 }
 </script>
