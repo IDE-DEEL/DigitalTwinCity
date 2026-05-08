@@ -5,10 +5,17 @@ import { addWaypointsToCarRoute } from "../logic/service/carService";
 import { convertWaypointsArrayFromSvgToMath, convertWaypointFromSvgToMath } from "../logic/utils/coordinateConverter";
 import { getHousesWithRoutesByScenarioKey, buildOrderedHouseInstancesOnRoutes } from "../logic/service/houseService";
 import { useMapStore } from "./mapStore";
-import { MAX_CARS } from "../constants/constants";
+import { MAX_CARS, MIN_CARS } from "../constants/constants";
 
 // Dashboard parameters refs
-const cars = ref([]);
+const cars = ref([
+  {
+    id: '1',
+    maxPackages: 1,
+    routeName: ROUTE_OPTIONS[0]?.value ?? '',
+    routeVisibility: false,
+  }
+]);
 const carTargetSpeed = ref(50);
 const scenario = ref('rustig');
 const isSimulating = ref(false);
@@ -32,7 +39,7 @@ function addCar() {
 }
 
 function removeCar() {
-    if (cars.value.length > 0) {
+    if (cars.value.length > MIN_CARS) {
         cars.value.pop();
     }
 }

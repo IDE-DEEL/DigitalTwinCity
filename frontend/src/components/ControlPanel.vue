@@ -79,8 +79,8 @@
                 <button 
                     class="bg-red-200 hover:bg-red-700 rounded-sm p-2 w-full h-10"
                     @click="removeCar"
-                    :disabled="cars.length === 0 || isSimulating"
-                    :class="{'opacity-50 cursor-not-allowed': cars.length === 0 || isSimulating}"
+                    :disabled="cars.length === MIN_CARS || isSimulating"
+                    :class="{'opacity-50 cursor-not-allowed': cars.length === MIN_CARS || isSimulating}"
                 >
                     Auto verwijderen
                 </button>
@@ -199,7 +199,7 @@ import { ref } from 'vue'
 import { useDashboardParametersStore } from '../stores';
 import { useDigitalSimulation } from '../composables/useDigitalSimulation';
 import { useCarColors } from '../composables/useCarColors';
-import { MAX_CARS, CAR_ROUTE_COLORS } from '../constants/constants';
+import { MAX_CARS, MIN_CARS, CAR_ROUTE_COLORS } from '../constants/constants';
 
 // Composables
 const {
