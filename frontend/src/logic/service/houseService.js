@@ -1,7 +1,8 @@
 import { getHousesForScenarioByValue } from "../domain/scenarios";
 import { HOUSE_INSTANCES } from "../domain/houseInstances";
 import { getTileMetadata, getRotatedHouseCoordinatesForTile } from "./houseBuilder";
-import { findRoutesForHouse } from "./houseRouteMatchingService";
+import { findRoutesForHouse, findHousesForRoute } from "./houseRouteMatchingService";
+import { ROUTES_TILES } from "../domain/routes";
 
 /**
  * Builds necessary house data for the simulation payload and package overlay based on the selected scenario and map data.
@@ -50,4 +51,26 @@ export function getHousesLinkedToRoutesByScenarioKey(scenarioKey) {
         ...house,
         routeNames: findRoutesForHouse(house),
     }));
+}
+
+/**
+ * Builds route data with houses ordered by their appearance on each route.
+ * This is used to determine package pickup order based on route progression.
+ * 
+ * @param {string} scenarioKey - The key/name of the scenario to retrieve houses for.
+ * @returns {Object} An object with route names as keys and arrays of ordered houses as values.
+ */
+export function buildRoutesWithOrderedHouses(scenarioKey) {
+    const baseHouses = getHousesByScenarioKey(scenarioKey);
+    const routesWithHouses = {};
+
+    // For each route, find all houses that lie on it, in route order
+    for (const [routeName] of Object.entries(ROUTES_TILES)) {
+        const housesOnRoute = findHousesForRoute(routeName, baseHouses);
+        if (housesOnRoute.length > 0) {
+            routesWithHouses[routeName] = housesOnRoute;
+        }
+    }
+
+    return routesWithHouses;
 }

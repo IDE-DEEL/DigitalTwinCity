@@ -3,7 +3,7 @@ import { ROUTE_OPTIONS } from "../logic/domain/routes";
 import { SCENARIO_OPTIONS } from "../logic/domain/scenarios";
 import { addWaypointsToCarRoute } from "../logic/service/carService";
 import { convertWaypointsArrayFromSvgToMath, convertWaypointFromSvgToMath } from "../logic/utils/coordinateConverter";
-import { getHousesByScenarioKey, getHousesLinkedToRoutesByScenarioKey } from "../logic/service/houseService";
+import { getHousesByScenarioKey, getHousesLinkedToRoutesByScenarioKey, buildRoutesWithOrderedHouses } from "../logic/service/houseService";
 import { useMapStore } from "./mapStore";
 import { MAX_CARS } from "../constants/constants";
 
@@ -155,6 +155,16 @@ const housesWithConvertedCoordinates = computed(() => {
     }));
 });
 
+const housesOnRoutesWithConvertedCoordinates = computed(() => {
+    if (!mapData.value.length) {
+        return {};
+    }
+
+    // TODO: filter on selected routes only?
+    // TODO: console log when a simulation is started in which a house on the selected scenario isn't serviced by any of the selected routes (for future toast.info)
+    return buildRoutesWithOrderedHouses(scenario.value);
+});
+
 // ---
 // simulation start payload
 // ---
@@ -168,6 +178,7 @@ const simulationStartPayload = computed(() => {
             name: scenario.value,
             houses: housesWithConvertedCoordinates.value,
         },
+        housesOnRoutes: housesOnRoutesWithConvertedCoordinates.value,
     };
 });
 
