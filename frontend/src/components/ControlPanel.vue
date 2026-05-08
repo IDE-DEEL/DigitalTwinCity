@@ -115,8 +115,8 @@
                             <td class="px-3 py-1">
                                  <input 
                                     type="number" 
-                                    :min="min_packages" 
-                                    :max="max_packages"
+                                    :min="MIN_PACKAGES" 
+                                    :max="MAX_PACKAGES"
                                     :value="car.maxPackages"
                                     @blur="handleMaxPackagesInput(car.id, $event)"
                                     @keydown.enter="handleMaxPackagesInput(car.id, $event)"
@@ -228,8 +228,8 @@ const {
 
 const { getColorForCarAndRoute } = useCarColors();
 
-const min_packages = 1;
-const max_packages = 10;
+const MIN_PACKAGES = 1;
+const MAX_PACKAGES = 10;
 
 const reconnectCooldown = ref(false);
 
@@ -254,21 +254,21 @@ const handleReconnect = () => {
     reconnectWebSocket();
     
     reconnectCooldown.value = true;
-    const fiveSeconds = 5000;
+    const timeInMillis = 5000;
     setTimeout(() => {
         reconnectCooldown.value = false;
-    }, fiveSeconds);
+    }, timeInMillis);
 }
 
 const handleMaxPackagesInput = (carId, event) => {
     let value = Number(event.target.value);
     
     if (isNaN(value)) {
-        value = min_packages;
+        value = MIN_PACKAGES;
     }
 
     // Clamp value between min_packages and max_packages
-    value = Math.max(min_packages, Math.min(max_packages, value));
+    value = Math.max(MIN_PACKAGES, Math.min(MAX_PACKAGES, value));
     event.target.value = value;
 
     updateCarMaxPackageCount(carId, value);
