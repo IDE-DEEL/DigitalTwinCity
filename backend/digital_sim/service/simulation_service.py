@@ -1,5 +1,6 @@
 from backend.digital_sim.domain.car_model import CarModel
 from backend.digital_sim.constants import CAR_ROUTE_WAYPOINTS_KEY, CARS_KEY, CAR_TARGET_SPEED_KEY, SCENARIO_KEY, SCENARIO_NAME_KEY, SCENARIO_HOUSES_LIST_KEY, HOUSE_ROAD_COORDS_KEY, SEED_KEY, HOUSES_ON_ROUTES_KEY
+import pandas as pd
 
 
 class SimulationService:
@@ -73,6 +74,71 @@ class SimulationService:
         final_step = self.model.step_count if self.model else 0
         self.model = None
         return {"status": "simulation_stopped", "final_step": final_step}
+
+    def get_current_stats(self):
+        """Return per-agent stats from the current simulation.
+        
+        Returns:
+            Dict with stats or None if no simulation is active.
+            
+            Structure:
+            {
+                "step_count": int,
+                "agents": [
+                    {
+                        "id": agent_id,
+                        "distance_travelled": float,
+                        "time_driving_seconds": float
+                    },
+                    ...
+                ],
+                "totals": {
+                    "total_distance": float,
+                    "total_time_driving": float
+                }
+            }
+        """
+        if not self.model:
+            return None
+        
+        stats = {
+            "step_count": self.model.step_count,
+            "agents": [],
+            "totals": {"total_distance": 0.0, "total_time_driving": 0.0}
+        }
+        
+        for agent in self.model.agents:
+            agent_stat = {
+                "id": agent.unique_id,
+                "distance_travelled": agent.total_distance_travelled,
+                "time_driving_seconds": agent.time_driving_seconds
+            }
+            stats["agents"].append(agent_stat)
+            stats["totals"]["total_distance"] += agent.total_distance_travelled
+            stats["totals"]["total_time_driving"] += agent.time_driving_seconds
+        
+        return stats
+
+    def export_data_as_csv(self):
+        """Export Mesa DataCollector agent data as CSV string.
+        
+        Returns:
+            CSV string with all collected agent data or None if no simulation is active.
+            
+            CSV structure:
+            Step,AgentID,total_distance_travelled,time_driving_seconds,status
+        """
+        if not self.model or not self.model.datacollector:
+            return None
+        
+        try:
+            # Get agent variables dataframe from Mesa DataCollector
+            agent_data = self.model.datacollector.get_agent_vars_dataframe()
+            # Convert to CSV string
+            return agent_data.to_csv()
+        except Exception as e:
+            print(f"Error exporting data to CSV: {e}")
+            return None
 
     @staticmethod
     def _convert_waypoint_dicts_to_tuples(waypoints):
