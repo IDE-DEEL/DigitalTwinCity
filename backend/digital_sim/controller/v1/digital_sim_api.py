@@ -50,6 +50,38 @@ async def websocket_simulation_endpoint(websocket: WebSocket):
                         "command": "simulation_stopped",
                         "result": result
                     })
+                
+                case "get_stats":
+                    stats = simulation_service.get_current_stats()
+                    
+                    if stats is None:
+                        await websocket.send_json({
+                            "command": "get_stats",
+                            "status": "error",
+                            "message": "No simulation running or started"
+                        })
+                    else:
+                        await websocket.send_json({
+                            "command": "get_stats",
+                            "status": "success",
+                            "data": stats
+                        })
+                
+                case "export_data":
+                    csv_data = simulation_service.export_data_as_csv()
+                    
+                    if csv_data is None:
+                        await websocket.send_json({
+                            "command": "export_data",
+                            "status": "error",
+                            "message": "No simulation data available"
+                        })
+                    else:
+                        await websocket.send_json({
+                            "command": "export_data",
+                            "status": "success",
+                            "data": csv_data
+                        })
     
     except WebSocketDisconnect:
         simulation_service.stop_simulation()
