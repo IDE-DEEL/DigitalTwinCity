@@ -21,6 +21,14 @@ class CarModel(mesa.Model):
         
         self._setup_cars_and_routes(cars, self.car_target_speed)
         self._setup_houses(houses or [], houses_on_routes or {})
+        
+        self.datacollector = mesa.DataCollector(
+            agent_reporters={
+                "total_distance_travelled": "total_distance_travelled",
+                "time_driving_seconds": "time_driving_seconds",
+                "status": lambda agent: agent.status.name # enum name of the agent's status
+            }
+        )
     
     def step(self):
         """Execute one simulation step.
@@ -30,6 +38,8 @@ class CarModel(mesa.Model):
         - Delivery logic (zone detection, delivery countdown)
         - Movement along route
         """
+        self.datacollector.collect(self)
+        
         self.agents.shuffle_do("step")
         self.step_count += 1
     

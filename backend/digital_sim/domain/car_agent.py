@@ -30,6 +30,9 @@ class CarAgent(mesa.Agent):
         # Pickup state
         self._reset_pickup_state()
         self.packages_pending_load = []
+        
+        # Statistics tracking
+        self.time_driving_seconds = 0.0
 
     def step(self):
         """Execute one step of the car agent.
@@ -40,6 +43,10 @@ class CarAgent(mesa.Agent):
         Fourth: handle movement along the route.
         """
         dt = getattr(self.model, "delta_time", 0.1)
+
+        # Track driving time when car is in DRIVING status
+        if self.status == CarStatus.DRIVING:
+            self.time_driving_seconds += dt
 
         # First: start loading packages if parked and has capacity
         if self.status == CarStatus.PARKED:
