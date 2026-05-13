@@ -17,6 +17,11 @@ class SimulationService:
         Args:
             parameters: Dictionary containing cars, carTargetSpeed, scenario, and housesOnRoutes
         """
+        # Clean up any existing model before starting a new simulation
+        if self.model is not None:
+            self.model = None
+            self.is_running = False
+        
         cars = parameters.get(CARS_KEY, [])  # TODO: throw error if missing/empty
         car_target_speed = parameters.get(CAR_TARGET_SPEED_KEY, 50)
 
@@ -25,7 +30,6 @@ class SimulationService:
         houses = scenario.get(SCENARIO_HOUSES_LIST_KEY, [])
         houses_on_routes = parameters.get(HOUSES_ON_ROUTES_KEY, {})
         seed = parameters.get(SEED_KEY, None)
-        print(f"Creating model using rng seed: {seed}")
 
         # Convert route waypoints from dicts to tuples for each car
         for car in cars:
@@ -72,7 +76,7 @@ class SimulationService:
         """Stop the current simulation."""
         self.is_running = False
         final_step = self.model.step_count if self.model else 0
-        self.model = None
+
         return {"status": "simulation_stopped", "final_step": final_step}
 
     def get_current_stats(self):
@@ -99,6 +103,11 @@ class SimulationService:
             }
         """
         if not self.model:
+            print("[SimulationService] get_current_stats: No model available")
+            return None
+        
+        if not hasattr(self.model, 'agents') or not self.model.agents:
+            print("[SimulationService] get_current_stats: No agents in model")
             return None
         
         stats = {
