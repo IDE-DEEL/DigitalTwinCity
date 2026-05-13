@@ -3,6 +3,8 @@ import { useWebSocketSimulation } from "./useWebSocketSimulation";
 import { useDashboardParametersStore } from "../stores/dashboardParametersStore";
 import { useSimulationStateStore } from "../stores/simulationStateStore";
 
+const TIMEOUT_DURATION_MILLIS = 5000;
+
 // ---
 // orchestrator composable
 // ---
@@ -75,11 +77,18 @@ export function useDigitalSimulation() {
                 return;
             }
 
+            const timeoutId = setTimeout(() => {
+                console.error("Stats request timeout after 5 seconds");
+                reject(new Error("Request timeout: No response from server"));
+            }, TIMEOUT_DURATION_MILLIS);
+
             registerResponseHandler("get_stats", (response) => {
+                clearTimeout(timeoutId);
+
                 if (response.status === "success") {
                     resolve(response.data);
                 } else {
-                    console.warn(response.message);
+                    console.warn("Stats request error:", response.message);
                     reject(new Error(response.message));
                 }
             });
@@ -96,11 +105,18 @@ export function useDigitalSimulation() {
                 return;
             }
 
+            const timeoutId = setTimeout(() => {
+                console.error("CSV export request timeout after 5 seconds");
+                reject(new Error("Request timeout: No response from server"));
+            }, TIMEOUT_DURATION_MILLIS);
+
             registerResponseHandler("export_data", (response) => {
+                clearTimeout(timeoutId);
+
                 if (response.status === "success") {
                     resolve(response.data);
                 } else {
-                    console.warn(response.message);
+                    console.warn("CSV export error:", response.message);
                     reject(new Error(response.message));
                 }
             });
