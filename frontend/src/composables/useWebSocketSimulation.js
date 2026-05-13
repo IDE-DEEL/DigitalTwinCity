@@ -25,6 +25,7 @@ function connectWebSocket(onSimulationUpdate) {
         websocket.onopen = () => {
             console.log("WebSocket connected to simulation backend");
             isWebSocketConnected.value = true;
+            isConnecting = false;
         };
         
         websocket.onmessage = (event) => {
@@ -34,6 +35,7 @@ function connectWebSocket(onSimulationUpdate) {
                 
                 // Check if there's a registered handler for this command response
                 if (responseHandlers[data.command]) {
+                    console.log("Using registered handler for:", data.command);
                     responseHandlers[data.command](data);
                     delete responseHandlers[data.command];
                     return;
@@ -64,12 +66,14 @@ function connectWebSocket(onSimulationUpdate) {
             console.error("WebSocket error:", error);
             isWebSocketConnected.value = false;
             isConnecting = false;
+            websocket = null;
         };
         
         websocket.onclose = () => {
             console.log("WebSocket connection closed");
             isWebSocketConnected.value = false;
             isConnecting = false;
+            websocket = null;
         };
     } catch (error) {
         console.error("Error connecting to WebSocket:", error);
@@ -88,9 +92,10 @@ function disconnectWebSocket() {
 
 function sendWebSocketMessage(message) {
     if (websocket && websocket.readyState === WebSocket.OPEN) {
+        console.log("Sending message:", message.command);
         websocket.send(JSON.stringify(message));
     } else {
-        console.warn("WebSocket not connected. Cannot send message.");
+        console.warn("WebSocket not connected. Cannot send message. Websocket state:", websocket?.readyState);
     }
 }
 
