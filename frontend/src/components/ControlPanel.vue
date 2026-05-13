@@ -158,10 +158,15 @@
 
         <!-- Simulation controls -->
         <div class="mt-auto pt-4 border-t border-gray-200">
-            <!-- Score & time -->
-            <div class="flex items-center gap-4 mb-2 justify-center">
-                <div class="flex items-center gap-2"><span>Score:</span><span>0</span></div>
-                <div class="flex items-center gap-2"><span>Tijd:</span><span>00:00</span></div>
+            <!-- Stats button -->
+            <div class="mb-4 flex justify-center gap-4">
+                <button
+                    @click="emit('open-stats')"
+                    class="bg-sky-200 hover:bg-sky-700 text-dark rounded-sm p-3 text-sm transition-colors"
+                >
+                    Statistieken
+                </button>
+                <div class="flex items-center"><span>Tijd:</span><span>00:00</span></div>
             </div>
             <!-- Start/Stop buttons -->
             <div class="flex gap-2 justify-center">
@@ -224,6 +229,8 @@ const {
     startSimulation,
     stopSimulation,
     reconnectWebSocket,
+    getStats,
+    exportDataAsCSV,
 } = useDigitalSimulation();
 
 const { getColorForCarAndRoute } = useCarColors();
@@ -233,19 +240,19 @@ const MAX_PACKAGES = 10;
 
 const reconnectCooldown = ref(false);
 
+const emit = defineEmits(['open-stats']);
+
 const handleStart = () => {
     console.log('Requested simulation start with parameters: ', collectParameters());
     startSimulation();
 }
 
 const handleStop = () => {
-    console.log('Requested simulation stop');
     stopSimulation();
 }
 
 const handleReconnect = () => {
     if (reconnectCooldown.value) {
-        console.log("Reconnect on cooldown");
         return;
     }
 
