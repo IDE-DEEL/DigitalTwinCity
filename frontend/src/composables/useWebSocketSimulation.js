@@ -4,6 +4,7 @@ const isWebSocketConnected = ref(false);
 let websocket = null;
 let isConnecting = false;
 let onSimulationUpdateCallback = null;
+const responseHandlers = {};
 
 const WS_URL = "ws://localhost:8000/api/v1/digital-sim/ws/simulation"; // TODO: switch URL based on environmnent (dev vs prod)
 
@@ -30,6 +31,13 @@ function connectWebSocket(onSimulationUpdate) {
             try {
                 const data = JSON.parse(event.data);
                 const result = data.result;
+                
+                // Check if there's a registered handler for this command response
+                if (responseHandlers[data.command]) {
+                    responseHandlers[data.command](data);
+                    delete responseHandlers[data.command];
+                    return;
+                }
                 
                 switch (data.command) {
                     case "simulation_started":
@@ -86,11 +94,16 @@ function sendWebSocketMessage(message) {
     }
 }
 
+function registerResponseHandler(command, handler) {
+    responseHandlers[command] = handler;
+}
+
 export function useWebSocketSimulation() {
     return {
         isWebSocketConnected,
         connectWebSocket,
         disconnectWebSocket,
         sendWebSocketMessage,
+        registerResponseHandler,
     };
 }

@@ -7,7 +7,7 @@ import { useSimulationStateStore } from "../stores/simulationStateStore";
 // orchestrator composable
 // ---
 export function useDigitalSimulation() {
-    const { isWebSocketConnected, connectWebSocket, disconnectWebSocket, sendWebSocketMessage } = useWebSocketSimulation();
+    const { isWebSocketConnected, connectWebSocket, disconnectWebSocket, sendWebSocketMessage, registerResponseHandler } = useWebSocketSimulation();
     const { isSimulating, simulationStartPayload } = useDashboardParametersStore();
     const { updateSimulationState, resetSimulationState } = useSimulationStateStore();
 
@@ -65,6 +65,51 @@ export function useDigitalSimulation() {
     }
 
     // ---
+    // data retrieval
+    // ---
+    function getStats() {
+        return new Promise((resolve, reject) => {
+            if (!isWebSocketConnected.value) {
+                console.warn("WebSocket not connected. Cannot get stats.");
+                reject(new Error("WebSocket not connected"));
+                return;
+            }
+
+            registerResponseHandler("get_stats", (response) => {
+                if (response.status === "success") {
+                    resolve(response.data);
+                } else {
+                    console.warn(response.message);
+                    reject(new Error(response.message));
+                }
+            });
+
+            sendWebSocketMessage({ command: "get_stats" });
+        });
+    }
+
+    function exportDataAsCSV() {
+        return new Promise((resolve, reject) => {
+            if (!isWebSocketConnected.value) {
+                console.warn("WebSocket not connected. Cannot export data.");
+                reject(new Error("WebSocket not connected"));
+                return;
+            }
+
+            registerResponseHandler("export_data", (response) => {
+                if (response.status === "success") {
+                    resolve(response.data);
+                } else {
+                    console.warn(response.message);
+                    reject(new Error(response.message));
+                }
+            });
+
+            sendWebSocketMessage({ command: "export_data" });
+        });
+    }
+
+    // ---
     // exporting composable
     // ---
     return {
@@ -74,5 +119,7 @@ export function useDigitalSimulation() {
         startSimulation,
         stopSimulation,
         reconnectWebSocket,
+        getStats,
+        exportDataAsCSV,
     };
 }
