@@ -58,6 +58,7 @@ class CarModel(mesa.Model):
         """        
         return {
             "step": self.steps,
+            "sim_time_seconds": round(self.simulation_time, 2),
             "agents": self._get_agents_status(),
             "houses": self._get_houses_status()
         }
