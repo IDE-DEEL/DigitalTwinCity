@@ -42,7 +42,7 @@ class CarAgent(mesa.Agent):
         Third: process any delivery logic.
         Fourth: handle movement along the route.
         """
-        dt = getattr(self.model, "delta_time", 0.1)
+        dt = self.model.delta_time
 
         # Track driving time when car is in DRIVING status
         if self.status == CarStatus.DRIVING:

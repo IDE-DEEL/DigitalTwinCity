@@ -9,10 +9,12 @@ from backend.digital_sim.constants import CAR_ROUTE_NAME_KEY, CAR_ROUTE_WAYPOINT
 
 class CarModel(mesa.Model):
 
-    def __init__(self, cars: list[dict], car_target_speed: int, scenario_name: str, houses: list[dict], houses_on_routes: dict = None, rng=None):
+    def __init__(self, cars: list[dict], car_target_speed: int, scenario_name: str, houses: list[dict], houses_on_routes: dict = None, delta_time: float = 0.1, rng=None):
         super().__init__(rng=rng)
 
         self.num_agents = len(cars)
+        self.delta_time = delta_time
+        self.simulation_time = 0.0
         self.car_target_speed = car_target_speed / 100
         self.routes = {}
         self.houses = {}
@@ -40,7 +42,9 @@ class CarModel(mesa.Model):
         self.datacollector.collect(self)
         
         self.agents.do("step")
+
         super().step()
+        self.simulation_time += self.delta_time
     
     def get_simulation_state(self):
         """
