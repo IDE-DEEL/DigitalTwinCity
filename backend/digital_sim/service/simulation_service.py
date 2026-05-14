@@ -119,12 +119,16 @@ class SimulationService:
         for agent in self.model.agents:
             agent_stat = {
                 "id": agent.unique_id,
-                "distance_travelled": agent.total_distance_travelled,
-                "time_driving_seconds": agent.time_driving_seconds
+                "distance_travelled": round(agent.total_distance_travelled, 2),
+                "time_driving_seconds": round(agent.time_driving_seconds, 2)
             }
             stats["agents"].append(agent_stat)
             stats["totals"]["total_distance"] += agent.total_distance_travelled
             stats["totals"]["total_time_driving"] += agent.time_driving_seconds
+        
+        # Round totals to 2 decimal places
+        stats["totals"]["total_distance"] = round(stats["totals"]["total_distance"], 2)
+        stats["totals"]["total_time_driving"] = round(stats["totals"]["total_time_driving"], 2)
         
         return stats
 
@@ -143,6 +147,13 @@ class SimulationService:
         try:
             # Get agent variables dataframe from Mesa DataCollector
             agent_data = self.model.datacollector.get_agent_vars_dataframe()
+            
+            # Round numeric columns to 2 decimal places
+            numeric_columns = ['total_distance_travelled', 'time_driving_seconds']
+            for col in numeric_columns:
+                if col in agent_data.columns:
+                    agent_data[col] = agent_data[col].round(2)
+            
             # Convert to CSV string
             return agent_data.to_csv()
         except Exception as e:
