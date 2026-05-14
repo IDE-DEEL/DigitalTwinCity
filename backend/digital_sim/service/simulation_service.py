@@ -75,7 +75,7 @@ class SimulationService:
     def stop_simulation(self):
         """Stop the current simulation."""
         self.is_running = False
-        final_step = self.model.step_count if self.model else 0
+        final_step = self.model.steps if self.model else 0
 
         return {"status": "simulation_stopped", "final_step": final_step}
 
@@ -111,7 +111,7 @@ class SimulationService:
             return None
         
         stats = {
-            "step_count": self.model.step_count,
+            "step_count": self.model.steps,
             "agents": [],
             "totals": {"total_distance": 0.0, "total_time_driving": 0.0}
         }

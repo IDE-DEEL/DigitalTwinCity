@@ -13,7 +13,6 @@ class CarModel(mesa.Model):
         super().__init__(rng=rng)
 
         self.num_agents = len(cars)
-        self.step_count = 0
         self.car_target_speed = car_target_speed / 100
         self.routes = {}
         self.houses = {}
@@ -41,7 +40,7 @@ class CarModel(mesa.Model):
         self.datacollector.collect(self)
         
         self.agents.shuffle_do("step")
-        self.step_count += 1
+        super().step()
     
     def get_simulation_state(self):
         """
@@ -54,7 +53,7 @@ class CarModel(mesa.Model):
             - step: current simulation step
         """        
         return {
-            "step": self.step_count,
+            "step": self.steps,
             "agents": self._get_agents_status(),
             "houses": self._get_houses_status()
         }
