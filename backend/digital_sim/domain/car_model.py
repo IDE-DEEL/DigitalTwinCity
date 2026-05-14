@@ -39,7 +39,7 @@ class CarModel(mesa.Model):
         """
         self.datacollector.collect(self)
         
-        self.agents.shuffle_do("step")
+        self.agents.do("step")
         super().step()
     
     def get_simulation_state(self):
