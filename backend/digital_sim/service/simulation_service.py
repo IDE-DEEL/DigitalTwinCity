@@ -29,7 +29,6 @@ class SimulationService:
         scenario_name = scenario.get(SCENARIO_NAME_KEY, "unknown")
         houses = scenario.get(SCENARIO_HOUSES_LIST_KEY, [])
         houses_on_routes = parameters.get(HOUSES_ON_ROUTES_KEY, {})
-        seed = parameters.get(SEED_KEY, None)
 
         # Convert route waypoints from dicts to tuples for each car
         for car in cars:
@@ -46,7 +45,6 @@ class SimulationService:
             scenario_name=scenario_name,
             houses=houses,
             houses_on_routes=houses_on_routes,
-            rng=seed
         )
         self.is_running = True
         return {

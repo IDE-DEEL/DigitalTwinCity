@@ -183,7 +183,6 @@ const simulationStartPayload = computed(() => {
         cars: allCarsAndRoutesWithConvertedCoordinates.value,
         carTargetSpeed: carTargetSpeed.value,
         simulationSpeed: 1, // TODO: make this configurable from dashboard parameters
-        seed: 123, // TODO: make this configurable from dashboard parameters
         scenario: {
             name: scenario.value,
             houses: housesWithConvertedCoordinates.value,
