@@ -1,5 +1,5 @@
 <template>
-    <div v-if="isOpen" class="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50">
+    <div v-if="isOpen" @click.self="closeModal" class="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl max-h-[80vh] overflow-auto">
             <!-- Header -->
             <div class="sticky top-0 bg-white border-b border-gray-300 p-6 flex items-center justify-between">
@@ -95,7 +95,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
 
 const props = defineProps({
     isOpen: {
@@ -113,6 +113,24 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close']);
+
+const closeModal = () => {
+    emit('close');
+};
+
+const handleKeyDown = (event) => {
+    if (event.key === 'Escape' && props.isOpen) {
+        closeModal();
+    }
+};
+
+onMounted(() => {
+    window.addEventListener('keydown', handleKeyDown);
+});
+
+onBeforeUnmount(() => {
+    window.removeEventListener('keydown', handleKeyDown);
+});
 
 const stats = ref(null);
 const isLoading = ref(false);
