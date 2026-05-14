@@ -162,7 +162,13 @@
             <div class="mb-4 flex justify-center gap-4">
                 <button
                     @click="emit('open-stats')"
-                    class="bg-sky-200 hover:bg-sky-700 text-dark rounded-sm p-3 text-sm transition-colors"
+                    :disabled="!hasSimulated"
+                    :class="[
+                        'text-dark rounded-sm p-3 text-sm transition-colors',
+                        !hasSimulated 
+                        ? 'bg-gray-300 cursor-not-allowed' 
+                        : 'bg-sky-200 hover:bg-sky-700'
+                    ]"
                 >
                     Statistieken
                 </button>
@@ -226,6 +232,7 @@ const {
 const {
     isWebSocketConnected,
     isSimulating,
+    hasSimulated,
     startSimulation,
     stopSimulation,
     reconnectWebSocket,

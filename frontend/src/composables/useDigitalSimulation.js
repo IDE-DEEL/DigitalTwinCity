@@ -13,6 +13,7 @@ export function useDigitalSimulation() {
     const { simulationStartPayload } = useDashboardParametersStore();
     const { updateSimulationState, resetSimulationState } = useSimulationStateStore();
     const isSimulating = ref(false);
+    const hasSimulated = ref(false);
 
     // ---
     // WebSocket lifecycle management
@@ -46,6 +47,7 @@ export function useDigitalSimulation() {
         });
 
         isSimulating.value = true;
+        hasSimulated.value = true;
     }
 
     function stopSimulation() {
@@ -132,6 +134,7 @@ export function useDigitalSimulation() {
     return {
         isWebSocketConnected,
         isSimulating,
+        hasSimulated,
 
         startSimulation,
         stopSimulation,
