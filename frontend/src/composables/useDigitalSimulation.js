@@ -4,6 +4,8 @@ import { useDashboardParametersStore } from "../stores/dashboardParametersStore"
 import { useSimulationStateStore } from "../stores/simulationStateStore";
 
 const TIMEOUT_DURATION_MILLIS = 5000;
+const isSimulating = ref(false);
+const hasSimulated = ref(false);
 
 // ---
 // orchestrator composable
@@ -12,14 +14,12 @@ export function useDigitalSimulation() {
     const { isWebSocketConnected, connectWebSocket, disconnectWebSocket, sendWebSocketMessage, registerResponseHandler } = useWebSocketSimulation();
     const { simulationStartPayload } = useDashboardParametersStore();
     const { updateSimulationState, resetSimulationState } = useSimulationStateStore();
-    const isSimulating = ref(false);
-    const hasSimulated = ref(false);
 
     // ---
     // WebSocket lifecycle management
     // ---
     onMounted(() => {
-        connectWebSocket(updateSimulationState);
+        connectWebSocket(updateSimulationState, handleSimulationEnded);
     });
 
     onBeforeUnmount(() => {
@@ -66,7 +66,12 @@ export function useDigitalSimulation() {
 
     function reconnectWebSocket() {
         disconnectWebSocket();
-        connectWebSocket(updateSimulationState);
+        connectWebSocket(updateSimulationState, handleSimulationEnded);
+    }
+
+    function handleSimulationEnded() {
+        isSimulating.value = false;
+        resetSimulationState();
     }
 
     // ---

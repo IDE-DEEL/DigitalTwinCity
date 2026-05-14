@@ -4,13 +4,15 @@ const isWebSocketConnected = ref(false);
 let websocket = null;
 let isConnecting = false;
 let onSimulationUpdateCallback = null;
+let onSimulationEndedCallback = null;
 const responseHandlers = {};
 
 const WS_URL = "ws://localhost:8000/api/v1/digital-sim/ws/simulation"; // TODO: switch URL based on environmnent (dev vs prod)
 
-function connectWebSocket(onSimulationUpdate) {
-    // Store the callback for simulation updates
+function connectWebSocket(onSimulationUpdate, onSimulationEnded) {
+    // Store the callbacks
     onSimulationUpdateCallback = onSimulationUpdate;
+    onSimulationEndedCallback = onSimulationEnded;
     
     // Prevent duplicate connection attempts
     if (isConnecting || websocket !== null) {
@@ -52,7 +54,17 @@ function connectWebSocket(onSimulationUpdate) {
                         }
                         break;
                     case "simulation_stopped":
-                        console.log("simulation stopped on backend", result);
+                        console.log("simulation stopped on backend (manual stop)", result);
+                        break;
+                    case "simulation_ended":
+                        console.log("simulation ended on backend (auto-stopped)", data.reason, result);
+                        if (onSimulationUpdateCallback) {
+                            onSimulationUpdateCallback(result);
+                        }
+                        if (onSimulationEndedCallback) {
+                            console.log("Invoking simulation ended callback");
+                            onSimulationEndedCallback();
+                        }
                         break;
                     default:
                         console.warn("Unknown command received:", data.command);
@@ -88,6 +100,7 @@ function disconnectWebSocket() {
         isWebSocketConnected.value = false;
     }
     onSimulationUpdateCallback = null;
+    onSimulationEndedCallback = null;
 }
 
 function sendWebSocketMessage(message) {
