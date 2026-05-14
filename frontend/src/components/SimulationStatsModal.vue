@@ -156,9 +156,15 @@ const handleDownloadCSV = async () => {
         const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
+
+        const now = new Date();
+        const timestamp = now.toISOString().split('T')[0] + '_' + 
+            (String(now.getHours()).padStart(2, '0')) + '-' + 
+            (String(now.getMinutes()).padStart(2, '0')) + '-' + 
+            (String(now.getSeconds()).padStart(2, '0'));
         
         link.setAttribute('href', url);
-        link.setAttribute('download', `simulation_data_${new Date().toISOString().split('T')[0]}.csv`);
+        link.setAttribute('download', `DEEL-simulation_${timestamp}.csv`);
         link.style.visibility = 'hidden';
         
         document.body.appendChild(link);
