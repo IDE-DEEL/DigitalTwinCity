@@ -56,6 +56,8 @@ class SimulationService:
         """
         Execute one step of the simulation.
         
+        Checks if simulation should auto-complete after each step.
+        
         Returns:
             Dictionary with complete simulation state (agents, houses, packages)
         """
@@ -64,6 +66,10 @@ class SimulationService:
         
         # Execute one step in the simulation
         self.model.step()
+        
+        # Check if simulation should auto-complete
+        if self.model.is_simulation_complete():
+            self.is_running = False
         
         return {
             "status": "simulation_update",

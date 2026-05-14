@@ -1,6 +1,6 @@
 import mesa
 
-from backend.digital_sim.domain.car_agent import CarAgent
+from backend.digital_sim.domain.car_agent import CarAgent, CarStatus
 from backend.digital_sim.domain.route import Route
 from backend.digital_sim.domain.package import Package, PackageStatus
 from backend.digital_sim.domain.house import House
@@ -138,6 +138,41 @@ class CarModel(mesa.Model):
             
             route = self.routes[route_name]
             CarAgent(model=self, car_target_speed=car_target_speed, route=route, max_packages=max_packages)
+    
+    def is_simulation_complete(self) -> bool:
+        """
+        Check if simulation should stop.
+        
+        Conditions:
+        1. All cars are PARKED
+        2. No packages with IN_DEPOT status remain on any car's route
+        
+        Returns:
+            True if both conditions are met, False otherwise
+        """
+        for agent in self.agents:
+            if agent.status != CarStatus.PARKED:
+                return False
+            
+            if agent.route and self._route_has_remaining_packages(agent.route):
+                return False
+        
+        return True
+    
+    def _route_has_remaining_packages(self, route: Route) -> bool:
+        """
+        Check if a route has any packages still in IN_DEPOT status.
+        
+        Args:
+            route: The Route object to check
+            
+        Returns:
+            True if any house on the route has IN_DEPOT packages, False otherwise
+        """
+        for house in route.houses:
+            if any(pkg.status == PackageStatus.IN_DEPOT for pkg in house.packages):
+                return True
+        return False
     
     def _setup_houses(self, houses: list[dict], houses_on_routes: dict):
         """Create house objects and link them to routes and packages.

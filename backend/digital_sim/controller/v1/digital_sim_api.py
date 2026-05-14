@@ -102,6 +102,8 @@ async def _run_simulation_loop(websocket: WebSocket, simulation_service: Simulat
     Run the simulation loop and send updates to the websocket client.
     This is a background task started by the API.
     
+    Automatically stops when all cars are parked and all packages on selected routes are delivered.
+    
     Args:
         websocket: The WebSocket connection to send updates to
         simulation_service: The simulation service instance for this client
@@ -123,6 +125,17 @@ async def _run_simulation_loop(websocket: WebSocket, simulation_service: Simulat
                 break
             
             await asyncio.sleep(step_interval)
+        
+        # Simulation has auto-stopped - send final notification
+        if simulation_service.model and not simulation_service.is_running:
+            try:
+                await websocket.send_json({
+                    "command": "simulation_ended",
+                    "reason": "All cars parked and all packages delivered",
+                    "result": simulation_service.model.get_simulation_state()
+                })
+            except Exception as e:
+                print(f"[digital_sim_api] Error sending simulation_ended message: {e}")
     
     except asyncio.CancelledError:
         print("[digital_sim_api] Simulation loop cancelled")
