@@ -54,7 +54,7 @@ class SimulationService:
             **self.model.get_simulation_state()
         }
     
-    def step(self):
+    def execute_step(self):
         """
         Execute one step of the simulation.
         

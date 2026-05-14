@@ -110,7 +110,7 @@ async def _run_simulation_loop(websocket: WebSocket, simulation_service: Simulat
     
     try:
         while simulation_service.is_running:
-            step_result = simulation_service.step()
+            step_result = simulation_service.execute_step()
             
             # Send update to client
             try:
