@@ -40,7 +40,15 @@
                                 </thead>
                                 <tbody>
                                     <tr v-for="agent in stats.agents" :key="agent.id" class="border-b border-gray-200 hover:bg-gray-50">
-                                        <td class="px-4 py-2 font-mono text-gray-800">{{ agent.id }}</td>
+                                        <td class="px-4 py-2 font-mono text-gray-800">
+                                            <div class="flex items-center gap-2">
+                                                <div
+                                                    class="w-1 h-6 rounded-sm"
+                                                    :style="{ backgroundColor: getColorForCarAndRoute(agent.id) }"
+                                                ></div>
+                                                {{ agent.id }}
+                                            </div>
+                                        </td>
                                         <td class="px-4 py-2 text-right text-gray-700">{{ agent.distance_travelled.toFixed(2) }}</td>
                                         <td class="px-4 py-2 text-right text-gray-700">{{ agent.time_driving_seconds.toFixed(2) }}</td>
                                     </tr>
@@ -96,6 +104,7 @@
 
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
+import { useCarColors } from '../composables/useCarColors';
 
 const props = defineProps({
     isOpen: {
@@ -112,6 +121,7 @@ const props = defineProps({
     }
 });
 
+const { getColorForCarAndRoute } = useCarColors();
 const emit = defineEmits(['close']);
 
 const closeModal = () => {
