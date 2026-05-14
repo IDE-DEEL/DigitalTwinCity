@@ -1,4 +1,4 @@
-import { onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import { useWebSocketSimulation } from "./useWebSocketSimulation";
 import { useDashboardParametersStore } from "../stores/dashboardParametersStore";
 import { useSimulationStateStore } from "../stores/simulationStateStore";
@@ -10,8 +10,9 @@ const TIMEOUT_DURATION_MILLIS = 5000;
 // ---
 export function useDigitalSimulation() {
     const { isWebSocketConnected, connectWebSocket, disconnectWebSocket, sendWebSocketMessage, registerResponseHandler } = useWebSocketSimulation();
-    const { isSimulating, simulationStartPayload } = useDashboardParametersStore();
+    const { simulationStartPayload } = useDashboardParametersStore();
     const { updateSimulationState, resetSimulationState } = useSimulationStateStore();
+    const isSimulating = ref(false);
 
     // ---
     // WebSocket lifecycle management

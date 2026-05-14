@@ -18,7 +18,6 @@ const cars = ref([
 ]);
 const carTargetSpeed = ref(50);
 const scenario = ref('rustig');
-const isSimulating = ref(false);
 
 // Import mapData from useMap store
 const { mapData } = useMapStore();
@@ -206,7 +205,6 @@ export function useDashboardParametersStore() {
         cars,
         carTargetSpeed,
         scenario,
-        isSimulating,
         mapData,
 
         // constants

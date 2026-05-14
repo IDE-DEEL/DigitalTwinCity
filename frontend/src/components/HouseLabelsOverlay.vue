@@ -34,7 +34,7 @@
 
 <script setup>
 import { ref, watch } from 'vue';
-import { useDashboardParametersStore } from '../stores/dashboardParametersStore';
+import { useDigitalSimulation } from '../composables/useDigitalSimulation';
 
 const props = defineProps({
   houses: {
@@ -48,7 +48,7 @@ const DEFAULT_CIRCLE_RADIUS = 0.08;
 
 const animatedHouses = ref(new Set());
 const previousExpectedPackageCounts = ref({});
-const { isSimulating } = useDashboardParametersStore();
+const { isSimulating } = useDigitalSimulation();
 
 watch(
   () => props.houses,

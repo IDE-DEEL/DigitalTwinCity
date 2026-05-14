@@ -211,7 +211,6 @@ const {
     cars,
     carTargetSpeed,
     scenario,
-    isSimulating,
     routeOptions,
     scenarioOptions,
     addCar,
@@ -226,6 +225,7 @@ const {
 
 const {
     isWebSocketConnected,
+    isSimulating,
     startSimulation,
     stopSimulation,
     reconnectWebSocket,
