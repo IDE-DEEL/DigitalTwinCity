@@ -276,7 +276,7 @@ const mapComponents = computed(() => {
 });
 
 const lanePositions = computed(() => {
-    return mapData.value.map(item => ({
+    return mapstore.mapData.map(item => ({
         id: `${item.x}-${item.y}`,
         type: item.type,
         rotation: normalizeDegree(item.rotation || 0),

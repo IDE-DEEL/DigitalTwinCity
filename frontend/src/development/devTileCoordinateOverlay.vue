@@ -43,7 +43,7 @@ import { ref, computed } from 'vue';
 import { MAP_COLUMNS, MAP_ROWS } from '../constants/constants.js';
 import { useMapStore } from '../stores';
 
-const { mapData } = useMapStore();
+const mapStore = useMapStore();
 
 const overlayRef = ref(null);
 const hoverInfo = ref(null);
@@ -79,7 +79,7 @@ function clamp(value, min, max) {
  * @returns The type of the tile, or null if not found.
  */
 function findTileType(tileX, tileY) {
-  const tile = mapData.value.find(t => t.x === tileX && t.y === tileY);
+  const tile = mapStore.mapData.find(t => t.x === tileX && t.y === tileY);
   return tile?.type ?? null;
 }
 
