@@ -32,7 +32,13 @@ class CarAgent(mesa.Agent):
         self.packages_pending_load = []
         
         # Statistics tracking
+        self.total_packages_delivered = 0
+        self.depot_load_count = 0
         self.time_driving_seconds = 0.0
+        self.time_delivering_seconds = 0.0
+        self.time_parked_seconds = 0.0
+        self.time_loading_packages_seconds = 0.0
+        self._last_status = None
 
     def step(self):
         """Execute one step of the car agent.
@@ -44,9 +50,21 @@ class CarAgent(mesa.Agent):
         """
         dt = self.model.delta_time
 
-        # Track driving time when car is in DRIVING status
-        if self.status == CarStatus.DRIVING:
+        # Track time per status
+        current_status = self.status
+        if self._last_status is None:
+            self._last_status = current_status
+        
+        if current_status == CarStatus.DRIVING:
             self.time_driving_seconds += dt
+        elif current_status == CarStatus.DELIVERING:
+            self.time_delivering_seconds += dt
+        elif current_status == CarStatus.PARKED:
+            self.time_parked_seconds += dt
+        elif current_status == CarStatus.LOADING_PACKAGES:
+            self.time_loading_packages_seconds += dt
+        
+        self._last_status = current_status
 
         # First: start loading packages if parked and has capacity
         if self.status == CarStatus.PARKED:
@@ -123,6 +141,11 @@ class CarAgent(mesa.Agent):
         if self.controller:
             return self.controller.total_distance_travelled > 0
         return False
+    
+    @property
+    def packages_in_cargo_count(self):
+        """Get the current number of packages in cargo."""
+        return len(self.packages_in_cargo)
 
     @property
     def status(self):
@@ -194,6 +217,7 @@ class CarAgent(mesa.Agent):
                 package = self.packages_pending_delivery.pop(0)
                 package.mark_delivered()
                 self.packages_in_cargo.remove(package)
+                self.total_packages_delivered += 1
                 
                 # Reset timer for next package
                 self.delivery_time_remaining += PACKAGE_DELIVERY_TIME_IN_SECONDS
@@ -285,8 +309,9 @@ class CarAgent(mesa.Agent):
             self.packages_pending_load.append(package)
             packages_picked_up = True
         
-        # Start pickup loading time if we picked up packages
+        # Start pickup loading time if we picked up packages and increment depot load count
         if packages_picked_up:
+            self.depot_load_count += 1
             self.is_picking_up = True
             self.pickup_duration = len(self.packages_pending_load) * PACKAGE_PICKUP_TIME_IN_SECONDS
             # Timer for first package
