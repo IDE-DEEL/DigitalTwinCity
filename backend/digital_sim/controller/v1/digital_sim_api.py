@@ -2,6 +2,7 @@ import asyncio
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from backend.digital_sim.service.simulation_service import SimulationService
+from backend.digital_sim.constants import STEPS_PER_SECOND
 
 
 router = APIRouter(prefix="/api/v1/digital-sim")
@@ -114,7 +115,7 @@ async def _run_simulation_loop(websocket: WebSocket, simulation_service: Simulat
         simulation_service: The simulation service instance for this client
         steps_multiplier: Number of simulation steps to execute per update cycle
     """
-    step_interval = 1.0 / SimulationService.STEPS_PER_SECOND
+    step_interval = 1.0 / STEPS_PER_SECOND
     
     try:
         while simulation_service.is_running:

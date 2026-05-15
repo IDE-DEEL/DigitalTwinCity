@@ -4,16 +4,16 @@ from backend.digital_sim.domain.car_agent import CarAgent, CarStatus
 from backend.digital_sim.domain.route import Route
 from backend.digital_sim.domain.package import Package, PackageStatus
 from backend.digital_sim.domain.house import House
-from backend.digital_sim.constants import CAR_ROUTE_NAME_KEY, CAR_ROUTE_WAYPOINTS_KEY, CAR_MAX_PACKAGES_KEY, HOUSE_PACKAGE_COUNT_KEY, HOUSE_ID_KEY, HOUSE_ROAD_COORDS_KEY, HOUSE_ROUTE_NAMES_LIST_KEY
+from backend.digital_sim.constants import CAR_ROUTE_NAME_KEY, CAR_ROUTE_WAYPOINTS_KEY, CAR_MAX_PACKAGES_KEY, HOUSE_PACKAGE_COUNT_KEY, HOUSE_ID_KEY, HOUSE_ROAD_COORDS_KEY, DELTA_TIME_PER_STEP_IN_SECONDS
 
 
 class CarModel(mesa.Model):
 
-    def __init__(self, cars: list[dict], car_target_speed: int, scenario_name: str, houses: list[dict], houses_on_routes: dict = None, delta_time: float = 0.1, rng=None):
+    def __init__(self, cars: list[dict], car_target_speed: int, scenario_name: str, houses: list[dict], houses_on_routes: dict = None, rng=None):
         super().__init__(rng=rng)
 
         self.num_agents = len(cars)
-        self.delta_time = delta_time
+        self.delta_time = DELTA_TIME_PER_STEP_IN_SECONDS
         self.simulation_time = 0.0
         self.car_target_speed = car_target_speed / 100
         self.routes = {}

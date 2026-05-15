@@ -1,11 +1,8 @@
 from backend.digital_sim.domain.car_model import CarModel
-from backend.digital_sim.constants import CAR_ROUTE_WAYPOINTS_KEY, CARS_KEY, CAR_TARGET_SPEED_KEY, SCENARIO_KEY, SCENARIO_NAME_KEY, SCENARIO_HOUSES_LIST_KEY, HOUSE_ROAD_COORDS_KEY, SEED_KEY, HOUSES_ON_ROUTES_KEY
-import pandas as pd
+from backend.digital_sim.constants import CAR_ROUTE_WAYPOINTS_KEY, CARS_KEY, CAR_TARGET_SPEED_KEY, SCENARIO_KEY, SCENARIO_NAME_KEY, SCENARIO_HOUSES_LIST_KEY, HOUSE_ROAD_COORDS_KEY, HOUSES_ON_ROUTES_KEY
 
 
 class SimulationService:
-    STEPS_PER_SECOND = 10
-    
     def __init__(self):
         self.model = None
         self.is_running = False
