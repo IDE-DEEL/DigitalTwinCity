@@ -26,8 +26,9 @@
       <div>Tile: ({{ hoverInfo.tileX }}, {{ hoverInfo.tileY }})</div>
       <div>Type: {{ hoverInfo.tileType ?? 'unknown' }}</div>
       <div>Rotation: {{ hoverInfo.tileRotation }}°</div>
+      <div>Global x-y: ({{ hoverInfo.globalX }}, {{ hoverInfo.globalY }})</div>
       <div>Local x-y: ({{ hoverInfo.localX }}, {{ hoverInfo.localY }})</div>
-      <div class="text-gray-500">Click to copy</div>
+      <div class="text-gray-500">Click to copy local x-y</div>
     </div>
 
     <div
@@ -119,6 +120,10 @@ function handleMouseMove(event) {
 
   const tileData = findTileData(tileX, tileY);
 
+  // Calculate global map coordinates
+  const globalX = roundCoord(tileX + localX);
+  const globalY = roundCoord(tileY + localY);
+
   hoverInfo.value = {
     mouseX: clampedX,
     mouseY: clampedY,
@@ -128,6 +133,8 @@ function handleMouseMove(event) {
     tileRotation: tileData?.rotation ?? 0,
     localX: roundCoord(localX),
     localY: roundCoord(localY),
+    globalX,
+    globalY,
     tileWidth,
     tileHeight,
   };
