@@ -96,9 +96,9 @@ function getRotatedSupportedLanes(house) {
         );
     }
 
-    const { mapData } = useMapStore();
+    const mapStore = useMapStore();
 
-    const tile = mapData.value.find(t => t.x === house.tileX && t.y === house.tileY);
+    const tile = mapStore.mapData.find(t => t.x === house.tileX && t.y === house.tileY);
     const rotation = normalizeDegree(tile.rotation || 0);
 
     return house.supportedLanes.map(lane => ({

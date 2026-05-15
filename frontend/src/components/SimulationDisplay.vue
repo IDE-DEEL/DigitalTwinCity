@@ -67,7 +67,7 @@
 
                 <!-- Route polyline -->
                 <polyline
-                    v-for="car in visibleCarsWithRoutes"
+                    v-for="car in dashboardStore.selectedCarsWithRoutes"
                     :key="`route-${car.id}`"
                     :points="car.routeWaypoints.map(p => `${p.x},${p.y}`).join(' ')"
                     fill="none"
@@ -93,12 +93,12 @@
 
                 <devHouseDetectionZonesOverlay
                     v-if="showDevHouseDetectionZones"
-                    :scenario="scenario"
+                    :scenario="dashboardStore.scenario"
                 />
 
                 <!-- House labels for packages -->
                 <HouseLabelsOverlay
-                    :houses="housesWithLivePackageData"
+                    :houses="simulationStore.housesWithLivePackageData"
                 />
             </svg>
 
@@ -108,7 +108,7 @@
 
             <!-- Auto (digital simulation) -->
             <div
-                v-for="agent in agentState"
+                v-for="agent in simulationStore.agentState"
                 :key="`agent-${agent.id}`"
                 class="absolute bg-black z-10 border-2"
                 :style="agentVehicleStyle(agent)"
@@ -155,10 +155,12 @@ const isLoading = ref(true);
 
 const { vehiclePosition,setupMqttClient } = useMqttVehicle();
 
+// Stores
+const mapstore = useMapStore();
+const dashboardStore = useDashboardParametersStore();
+const simulationStore = useSimulationStateStore();
+
 // Composables
-const { mapData, setMapData } = useMapStore();
-const { selectedCarsWithRoutes: visibleCarsWithRoutes, scenario } = useDashboardParametersStore();
-const { agentState, housesWithLivePackageData } = useSimulationStateStore();
 const { getColorForCarAndRoute } = useCarColors();
 
 // Initialize digital simulation lifecycle management
@@ -255,7 +257,7 @@ const gridStyle = computed(() => {
 });
 
 const mapComponents = computed(() => {
-    return mapData.value.map(item => {
+    return mapstore.mapData.map(item => {
         const def = componentDefinitions.value[item.type];
         
         if (!def) return null;
@@ -297,7 +299,7 @@ onMounted(async () => {
         const data = await fetchMapData(); 
         componentDefinitions.value = data.componentDefinitions;
 
-        setMapData(data.mapData);
+        mapstore.setMapData(data.mapData);
         
         // Initialize the RFID mapper with loaded data
         initRfidMapper(data.mapData, data.rfidData);

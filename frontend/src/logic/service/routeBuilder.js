@@ -41,9 +41,9 @@ export function getDirectionBetweenTiles(tileA, tileB) {
  * @throws {Error} If no tile is found at the given coordinates.
  */
 export function getMapTile(x, y) {
-  const { mapData } = useMapStore();
+  const mapStore = useMapStore();
   
-  const tile = mapData.value.find((item) => item.x === x && item.y === y);
+  const tile = mapStore.mapData.find((item) => item.x === x && item.y === y);
 
   if (!tile) {
     throw new Error(`No tile found at (${x}, ${y}).`);

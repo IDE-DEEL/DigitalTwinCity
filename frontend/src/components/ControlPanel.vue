@@ -25,13 +25,13 @@
                     type="range" 
                     min="1" 
                     max="100" 
-                    :value="carTargetSpeed"
-                    @input="setCarTargetSpeed(Number($event.target.value))"
+                    :value="dashboardStore.carTargetSpeed"
+                    @input="dashboardStore.setCarTargetSpeed(Number($event.target.value))"
                     :disabled="isSimulating"
                     :class="{'opacity-50 cursor-not-allowed': isSimulating}"
                     class="w-full accent-blue-200" 
                 />
-                <span class="text-sm font-mono w-10">{{ carTargetSpeed }}</span>
+                <span class="text-sm font-mono w-10">{{ dashboardStore.carTargetSpeed }}</span>
             </div>
          </div>
 
@@ -48,14 +48,14 @@
         <div>
             <label class="block text-sm font-semibold mb-1">Scenario:</label>
             <select 
-                :value="scenario"
-                @change="setScenario($event.target.value)"
+                :value="dashboardStore.scenario"
+                @change="dashboardStore.setScenario($event.target.value)"
                 :disabled="isSimulating"
                 :class="{'opacity-50 cursor-not-allowed': isSimulating}"
                 class="w-full p-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue outline-none bg-white text-dark"
             >
                 <option 
-                    v-for="scenarioOption in scenarioOptions"
+                    v-for="scenarioOption in dashboardStore.scenarioOptions"
                     :key="scenarioOption.value"
                     :value="scenarioOption.value"
                 >
@@ -70,22 +70,22 @@
             <div class="flex gap-2">
                 <button 
                     class="bg-sky-200 hover:bg-sky-700 rounded-sm p-2 w-full h-10"
-                    @click="addCar"
-                    :disabled="cars.length >= MAX_CARS || isSimulating"
-                    :class="{'opacity-50 cursor-not-allowed': cars.length >= MAX_CARS || isSimulating}"
+                    @click="dashboardStore.addCar"
+                    :disabled="dashboardStore.cars.length >= MAX_CARS || isSimulating"
+                    :class="{'opacity-50 cursor-not-allowed': dashboardStore.cars.length >= MAX_CARS || isSimulating}"
                 >
                     Auto toevoegen
                 </button>
                 <button 
                     class="bg-red-200 hover:bg-red-700 rounded-sm p-2 w-full h-10"
-                    @click="removeCar"
-                    :disabled="cars.length === MIN_CARS || isSimulating"
-                    :class="{'opacity-50 cursor-not-allowed': cars.length === MIN_CARS || isSimulating}"
+                    @click="dashboardStore.removeCar"
+                    :disabled="dashboardStore.cars.length === MIN_CARS || isSimulating"
+                    :class="{'opacity-50 cursor-not-allowed': dashboardStore.cars.length === MIN_CARS || isSimulating}"
                 >
                     Auto verwijderen
                 </button>
             </div>
-            <div v-if="cars.length >= MAX_CARS" class="text-xs text-red-500 mt-1">Maximaal {{ MAX_CARS }} auto's toegestaan</div>
+            <div v-if="dashboardStore.cars.length >= MAX_CARS" class="text-xs text-red-500 mt-1">Maximaal {{ MAX_CARS }} auto's toegestaan</div>
         </div>
 
         <!-- List of cars -->
@@ -102,7 +102,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="car in cars" :key="car.id">
+                        <tr v-for="car in dashboardStore.cars" :key="car.id">
                             <td class="px-3 py-1">
                                 <div class="flex items-center gap-2">
                                     <div 
@@ -128,13 +128,13 @@
                             <td class="px-3 py-1">
                                     <select 
                                         :value="car.routeName"
-                                        @change="updateCarRoute(car.id, $event.target.value)"
+                                        @change="dashboardStore.updateCarRoute(car.id, $event.target.value)"
                                         :disabled="isSimulating"
                                         :class="{'opacity-50 cursor-not-allowed': isSimulating}"
                                         class="w-full p-1 border border-gray-300 rounded-md text-sm"
                                     >
                                         <option
-                                            v-for="routeOption in routeOptions"
+                                            v-for="routeOption in dashboardStore.routeOptions"
                                             :key="routeOption.key"
                                             :value="routeOption.value"
                                         >
@@ -145,7 +145,7 @@
                             <td class="px-3 py-1">
                                     <button 
                                         class="bg-sky-200 hover:bg-sky-700 text-inherit rounded-sm p-1 w-full h-8 text-xs"
-                                        @click="toggleCarRouteVisibility(car.id)"
+                                        @click="dashboardStore.toggleCarRouteVisibility(car.id)"
                                     >
                                         {{ car.routeVisibility ? 'Verberg' : 'Toon' }}
                                     </button>
@@ -178,10 +178,10 @@
             <div class="flex gap-2 justify-center">
                 <button 
                     @click="handleStart"
-                    :disabled="isSimulating || cars.length < MIN_CARS"
+                    :disabled="isSimulating || dashboardStore.cars.length < MIN_CARS"
                     :class="[
                       'rounded-sm w-24 h-10 transition-colors',
-                      isSimulating || cars.length < MIN_CARS
+                      isSimulating || dashboardStore.cars.length < MIN_CARS
                         ? 'bg-gray-300 cursor-not-allowed' 
                         : 'bg-sky-200 hover:bg-sky-700'
                     ]"
@@ -212,23 +212,8 @@ import { useDigitalSimulation } from '../composables/useDigitalSimulation';
 import { useCarColors } from '../composables/useCarColors';
 import { MAX_CARS, MIN_CARS, CAR_ROUTE_COLORS } from '../constants/constants';
 
-// Composables
-const {
-    cars,
-    carTargetSpeed,
-    scenario,
-    routeOptions,
-    scenarioOptions,
-    addCar,
-    removeCar,
-    updateCarMaxPackageCount,
-    updateCarRoute,
-    toggleCarRouteVisibility,
-    setCarTargetSpeed,
-    setScenario,
-    collectParameters,
-} = useDashboardParametersStore();
-
+// Stores & Composables
+const dashboardStore = useDashboardParametersStore();
 const {
     isWebSocketConnected,
     isSimulating,
@@ -250,7 +235,7 @@ const reconnectCooldown = ref(false);
 const emit = defineEmits(['open-stats']);
 
 const handleStart = () => {
-    console.log('Requested simulation start with parameters: ', collectParameters());
+    console.log('Requested simulation start with parameters: ', dashboardStore.collectParameters());
     startSimulation();
 }
 
@@ -285,6 +270,6 @@ const handleMaxPackagesInput = (carId, event) => {
     value = Math.max(MIN_PACKAGES, Math.min(MAX_PACKAGES, value));
     event.target.value = value;
 
-    updateCarMaxPackageCount(carId, value);
+    dashboardStore.updateCarMaxPackageCount(carId, value);
 }
 </script>

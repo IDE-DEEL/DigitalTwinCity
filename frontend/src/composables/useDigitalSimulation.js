@@ -12,14 +12,14 @@ const hasSimulated = ref(false);
 // ---
 export function useDigitalSimulation() {
     const { isWebSocketConnected, connectWebSocket, disconnectWebSocket, sendWebSocketMessage, registerResponseHandler } = useWebSocketSimulation();
-    const { simulationStartPayload } = useDashboardParametersStore();
-    const { updateSimulationState, resetSimulationState } = useSimulationStateStore();
+    const dashboardStore = useDashboardParametersStore();
+    const simulationStore = useSimulationStateStore();
 
     // ---
     // WebSocket lifecycle management
     // ---
     onMounted(() => {
-        connectWebSocket(updateSimulationState, handleSimulationEnded);
+        connectWebSocket(simulationStore.updateSimulationState, handleSimulationEnded);
     });
 
     onBeforeUnmount(() => {
@@ -35,7 +35,8 @@ export function useDigitalSimulation() {
             return;
         }
 
-        const parameters = simulationStartPayload.value;
+        const parameters = dashboardStore.simulationStartPayload;
+        console.log("Starting simulation with parameters:", parameters);
         if (!parameters) {
             console.error("Parameters not available. Cannot start simulation.");
             return;
@@ -61,17 +62,17 @@ export function useDigitalSimulation() {
         });
 
         isSimulating.value = false;
-        resetSimulationState();
+        simulationStore.resetSimulationState();
     }
 
     function reconnectWebSocket() {
         disconnectWebSocket();
-        connectWebSocket(updateSimulationState, handleSimulationEnded);
+        connectWebSocket(simulationStore.updateSimulationState, handleSimulationEnded);
     }
 
     function handleSimulationEnded() {
         isSimulating.value = false;
-        resetSimulationState();
+        simulationStore.resetSimulationState();
     }
 
     // ---

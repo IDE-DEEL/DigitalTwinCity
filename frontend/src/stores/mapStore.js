@@ -1,14 +1,15 @@
 import { ref } from "vue";
+import { defineStore } from "pinia";
 
-const mapData = ref([]);
+export const useMapStore = defineStore("map", () => {
+    const mapData = ref([]);
 
-function setMapData(loadedMapData) {
-    mapData.value = loadedMapData;
-}
+    function setMapData(loadedMapData) {
+        mapData.value = loadedMapData;
+    }
 
-export function useMapStore() {
     return {
         mapData,
         setMapData,
     };
-}
+});
