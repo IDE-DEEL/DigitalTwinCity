@@ -1,7 +1,9 @@
 import { ref, onMounted, onBeforeUnmount } from "vue";
+import { useToast } from "vue-toastification";
 import { useWebSocketSimulation } from "./useWebSocketSimulation";
 import { useDashboardParametersStore } from "../stores/dashboardParametersStore";
 import { useSimulationStateStore } from "../stores/simulationStateStore";
+import { TOAST_MESSAGES } from "../constants/toast_messages";
 
 const TIMEOUT_DURATION_MILLIS = 5000;
 const isSimulating = ref(false);
@@ -75,6 +77,45 @@ export function useDigitalSimulation() {
         simulationStore.resetSimulationState();
     }
 
+        // ---
+    // validation
+    // ---
+    /**
+     * Validates if all houses in the scenario are reachable by at least one selected car route.
+     * Shows an info toast if unreachable houses are found.
+     * @returns {boolean} true if all houses are reachable, false if some are unreachable
+     */
+    function validateHousesReachability() {
+        const toast = useToast();
+        const payload = dashboardStore.simulationStartPayload;
+        
+        if (!payload || !payload.cars || !payload.scenario?.houses) {
+            return true;
+        }
+
+        // Get all selected car routes
+        const selectedRoutes = new Set(
+            payload.cars.map(car => car.routeName).filter(Boolean)
+        );
+
+        // Check if any house has no overlap with selected routes
+        const unreachableHouses = payload.scenario.houses.filter(house => {
+            // A house is unreachable if none of its routeNames match any selected car route
+            return !house.routeNames?.some(routeName => selectedRoutes.has(routeName));
+        });
+
+        if (unreachableHouses.length > 0) {
+            console.info(
+                `Found ${unreachableHouses.length} unreachable house(es):`,
+                unreachableHouses.map(h => h.houseInstanceId)
+            );
+            toast.info(TOAST_MESSAGES.UNREACHABLE_HOUSES);
+            return false;
+        }
+
+        return true;
+    }
+
     // ---
     // data retrieval
     // ---
@@ -145,6 +186,7 @@ export function useDigitalSimulation() {
         startSimulation,
         stopSimulation,
         reconnectWebSocket,
+        validateHousesReachability,
         getStats,
         exportDataAsCSV,
     };

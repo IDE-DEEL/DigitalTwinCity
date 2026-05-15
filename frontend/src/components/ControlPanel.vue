@@ -221,6 +221,7 @@ const {
     startSimulation,
     stopSimulation,
     reconnectWebSocket,
+    validateHousesReachability,
     getStats,
     exportDataAsCSV,
 } = useDigitalSimulation();
@@ -236,6 +237,7 @@ const emit = defineEmits(['open-stats']);
 
 const handleStart = () => {
     console.log('Requested simulation start with parameters: ', dashboardStore.collectParameters());
+    validateHousesReachability();
     startSimulation();
 }
 
