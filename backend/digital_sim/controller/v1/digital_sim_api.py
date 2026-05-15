@@ -35,9 +35,13 @@ async def websocket_simulation_endpoint(websocket: WebSocket):
                         "result": result
                     })
                     
+                    # Get simulation speed and convert to steps multiplier
+                    simulation_speed = parameters.get("simulationSpeed", 1)
+                    steps_multiplier = _get_steps_multiplier(simulation_speed)
+                    
                     # Create simulation loop to advance simulation steps
                     simulation_task = asyncio.create_task(
-                        _run_simulation_loop(websocket, simulation_service)
+                        _run_simulation_loop(websocket, simulation_service, steps_multiplier)
                     )
                 
                 case "stop":
@@ -97,24 +101,32 @@ async def websocket_simulation_endpoint(websocket: WebSocket):
         })
 
 
-async def _run_simulation_loop(websocket: WebSocket, simulation_service: SimulationService):
+async def _run_simulation_loop(websocket: WebSocket, simulation_service: SimulationService, steps_multiplier: int = 1):
     """
     Run the simulation loop and send updates to the websocket client.
     This is a background task started by the API.
     
+    Executes multiple simulation steps per update cycle based on steps_multiplier.
     Automatically stops when all cars are parked and all packages on selected routes are delivered.
     
     Args:
         websocket: The WebSocket connection to send updates to
         simulation_service: The simulation service instance for this client
+        steps_multiplier: Number of simulation steps to execute per update cycle
     """
     step_interval = 1.0 / SimulationService.STEPS_PER_SECOND
     
     try:
         while simulation_service.is_running:
-            step_result = simulation_service.execute_step()
+            # Execute multiple steps based on multiplier
+            for _ in range(steps_multiplier):
+                step_result = simulation_service.execute_step()
+                
+                # Stop inner loop if simulation ended
+                if not simulation_service.is_running:
+                    break
             
-            # Send update to client
+            # Send update to client after all steps
             try:
                 await websocket.send_json({
                     "command": "simulation_update",
@@ -141,3 +153,20 @@ async def _run_simulation_loop(websocket: WebSocket, simulation_service: Simulat
         print("[digital_sim_api] Simulation loop cancelled")
     except Exception as e:
         print(f"[digital_sim_api] Error in simulation loop: {e}")
+
+def _get_steps_multiplier(simulation_speed: int) -> int:
+    """
+    Convert simulation speed value to steps multiplier.
+    
+    Args:
+        simulation_speed: Numeric value from frontend (1, 2, or 3)
+        
+    Returns:
+        Number of steps to execute per update cycle
+    """
+    speed_to_multiplier = {
+        1: 1,      # 1x speed: 1 step per update
+        2: 2,      # 2x speed: 2 steps per update
+        3: 50,     # Instant: many steps per update
+    }
+    return speed_to_multiplier.get(simulation_speed, 1)
