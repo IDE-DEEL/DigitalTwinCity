@@ -36,6 +36,7 @@
                                         <th class="px-4 py-2 text-left font-semibold text-gray-700">Auto ID</th>
                                         <th class="px-4 py-2 text-right font-semibold text-gray-700">Afstand</th>
                                         <th class="px-4 py-2 text-right font-semibold text-gray-700">Rij tijd</th>
+                                        <th class="px-4 py-2 text-right font-semibold text-gray-700">Bezorgde pakketten</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -51,6 +52,7 @@
                                         </td>
                                         <td class="px-4 py-2 text-right text-gray-700">{{ agent.distance_travelled.toFixed(2) }}</td>
                                         <td class="px-4 py-2 text-right text-gray-700">{{ agent.time_driving_seconds.toFixed(2) }}</td>
+                                        <td class="px-4 py-2 text-right text-gray-700">{{ agent.total_packages_delivered }}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -68,6 +70,10 @@
                             <div class="flex justify-between items-center">
                                 <span class="text-gray-700">Totale rij tijd:</span>
                                 <span class="font-mono font-bold text-gray-900">{{ stats.totals.total_time_driving.toFixed(2) }}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700">Totale bezorgde pakketten:</span>
+                                <span class="font-mono font-bold text-gray-900">{{ stats.totals.total_packages_delivered }}</span>
                             </div>
                             <div class="flex justify-between items-center text-sm text-gray-600 mt-2 pt-2 border-t border-blue-200">
                                 <span>Stap:</span>
