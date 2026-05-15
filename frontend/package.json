@@ -12,7 +12,8 @@
     "@tailwindcss/vite": "^4.1.14",
     "paho-mqtt": "^1.1.0",
     "pinia": "^3.0.4",
-    "vue": "^3.5.22"
+    "vue": "^3.5.22",
+    "vue-toastification": "^2.0.0-rc.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.14",
