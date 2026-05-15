@@ -37,7 +37,7 @@
                         :class="[
                             'w-full py-2 px-3 rounded-sm text-center text-sm font-medium transition-colors',
                             dashboardStore.simulationSpeed === speedOption.value
-                                ? 'bg-blue-500 text-white'
+                                ? 'bg-sky-200'
                                 : 'bg-gray-200 text-gray-800 hover:bg-gray-300',
                             isSimulating ? 'opacity-50 cursor-not-allowed' : ''
                         ]"
@@ -50,7 +50,7 @@
 
         <!-- Car speed parameter -->
          <div>
-            <label class="block text-sm font-semibold mb-1">Snelheid:</label>
+            <label class="block text-sm font-semibold mb-1">Auto snelheid:</label>
             <div class="flex items-center gap-3">
                 <input 
                     type="range" 
