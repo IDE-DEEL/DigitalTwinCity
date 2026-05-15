@@ -6,7 +6,7 @@ import { addWaypointsToCarRoute } from "../logic/service/carService";
 import { convertWaypointsArrayFromSvgToMath, convertWaypointFromSvgToMath } from "../logic/utils/coordinateConverter";
 import { getHousesWithRoutesByScenarioKey, buildOrderedHouseInstancesOnRoutes } from "../logic/service/houseService";
 import { useMapStore } from "./mapStore";
-import { MAX_CARS, MIN_CARS } from "../constants/constants";
+import { MAX_CARS, MIN_CARS, SIMULATION_SPEED_OPTIONS } from "../constants/constants";
 
 export const useDashboardParametersStore = defineStore("dashboardParameters", () => {
     // ---
@@ -22,6 +22,7 @@ export const useDashboardParametersStore = defineStore("dashboardParameters", ()
     ]);
     const carTargetSpeed = ref(50);
     const scenario = ref('rustig');
+    const simulationSpeed = ref('1x');
 
     const mapStore = useMapStore();
     const mapData = computed(() => mapStore.mapData);
@@ -86,6 +87,10 @@ export const useDashboardParametersStore = defineStore("dashboardParameters", ()
 
     function setScenario(value) {
         scenario.value = value;
+    }
+
+    function setSimulationSpeed(value) {
+        simulationSpeed.value = value;
     }
 
     // ---
@@ -176,6 +181,13 @@ export const useDashboardParametersStore = defineStore("dashboardParameters", ()
         }));
     });
 
+    const simulationSpeedValue = computed(() => {
+        const speedOption = SIMULATION_SPEED_OPTIONS.find(
+            (option) => option.value === simulationSpeed.value
+        );
+        return speedOption ? speedOption.numericValue : 1;
+    });
+
     // ---
     // Simulation start payload getter
     // ---
@@ -183,7 +195,7 @@ export const useDashboardParametersStore = defineStore("dashboardParameters", ()
         return {
             cars: allCarsAndRoutesWithConvertedCoordinates.value,
             carTargetSpeed: carTargetSpeed.value,
-            simulationSpeed: 1, // TODO: make this configurable from dashboard parameters
+            simulationSpeed: simulationSpeedValue.value,
             scenario: {
                 name: scenario.value,
                 houses: housesWithConvertedCoordinates.value,
@@ -204,11 +216,13 @@ export const useDashboardParametersStore = defineStore("dashboardParameters", ()
         cars,
         carTargetSpeed,
         scenario,
+        simulationSpeed,
         mapData,
 
         // Constants
         routeOptions: ROUTE_OPTIONS,
         scenarioOptions: SCENARIO_OPTIONS,
+        simulationSpeedOptions: SIMULATION_SPEED_OPTIONS,
 
         // Car management actions
         addCar,
@@ -220,6 +234,7 @@ export const useDashboardParametersStore = defineStore("dashboardParameters", ()
         // Parameter setters
         setCarTargetSpeed,
         setScenario,
+        setSimulationSpeed,
 
         // Getters (computed properties)
         listOfCarsWithRouteVisibilityToggledOn,

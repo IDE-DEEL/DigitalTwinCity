@@ -17,6 +17,37 @@
             </button>
         </div>
 
+        <!-- Simulation speed selector -->
+        <div>
+            <label class="block text-sm font-semibold mb-2">Simulatie snelheid:</label>
+            <div class="flex gap-2">
+                <label 
+                    v-for="speedOption in SIMULATION_SPEED_OPTIONS" 
+                    :key="speedOption.value"
+                    class="flex-1 relative cursor-pointer"
+                >
+                    <input 
+                        type="radio" 
+                        :value="speedOption.value"
+                        v-model="dashboardStore.simulationSpeed"
+                        :disabled="isSimulating"
+                        class="sr-only"
+                    />
+                    <div 
+                        :class="[
+                            'w-full py-2 px-3 rounded-sm text-center text-sm font-medium transition-colors',
+                            dashboardStore.simulationSpeed === speedOption.value
+                                ? 'bg-blue-500 text-white'
+                                : 'bg-gray-200 text-gray-800 hover:bg-gray-300',
+                            isSimulating ? 'opacity-50 cursor-not-allowed' : ''
+                        ]"
+                    >
+                        {{ speedOption.value }}
+                    </div>
+                </label>
+            </div>
+        </div>
+
         <!-- Car speed parameter -->
          <div>
             <label class="block text-sm font-semibold mb-1">Snelheid:</label>
@@ -210,7 +241,7 @@ import { ref } from 'vue'
 import { useDashboardParametersStore } from '../stores';
 import { useDigitalSimulation } from '../composables/useDigitalSimulation';
 import { useCarColors } from '../composables/useCarColors';
-import { MAX_CARS, MIN_CARS, CAR_ROUTE_COLORS } from '../constants/constants';
+import { MAX_CARS, MIN_CARS, CAR_ROUTE_COLORS, SIMULATION_SPEED_OPTIONS } from '../constants/constants';
 
 // Stores & Composables
 const dashboardStore = useDashboardParametersStore();
