@@ -93,13 +93,15 @@ class SimulationService:
                     {
                         "id": agent_id,
                         "distance_travelled": float,
-                        "time_driving_seconds": float
+                        "total_packages_delivered": int,
+                        "time_driving_seconds": float,
                     },
                     ...
                 ],
                 "totals": {
                     "total_distance": float,
-                    "total_time_driving": float
+                    "total_packages_delivered": int,
+                    "total_time_driving": float,
                 }
             }
         """
@@ -114,17 +116,23 @@ class SimulationService:
         stats = {
             "step_count": self.model.steps,
             "agents": [],
-            "totals": {"total_distance": 0.0, "total_time_driving": 0.0}
+            "totals": {
+                "total_distance": 0.0,
+                "total_packages_delivered": 0,
+                "total_time_driving": 0.0,
+            }
         }
         
         for agent in self.model.agents:
             agent_stat = {
                 "id": agent.unique_id,
                 "distance_travelled": round(agent.total_distance_travelled, 2),
-                "time_driving_seconds": round(agent.time_driving_seconds, 2)
+                "time_driving_seconds": round(agent.time_driving_seconds, 2),
+                "total_packages_delivered": agent.total_packages_delivered,
             }
             stats["agents"].append(agent_stat)
             stats["totals"]["total_distance"] += agent.total_distance_travelled
+            stats["totals"]["total_packages_delivered"] += agent.total_packages_delivered
             stats["totals"]["total_time_driving"] += agent.time_driving_seconds
         
         # Round totals to 2 decimal places
@@ -140,7 +148,9 @@ class SimulationService:
             CSV string with all collected agent data or None if no simulation is active.
             
             CSV structure:
-            Step,AgentID,total_distance_travelled,time_driving_seconds,status
+            Step,AgentID,total_distance_travelled,time_driving_seconds,status,
+            packages_in_cargo_count,total_packages_delivered,time_delivering_seconds,
+            time_parked_seconds,time_loading_packages_seconds,depot_reload_count
         """
         if not self.model or not self.model.datacollector:
             return None
@@ -150,7 +160,13 @@ class SimulationService:
             agent_data = self.model.datacollector.get_agent_vars_dataframe()
             
             # Round numeric columns to 2 decimal places
-            numeric_columns = ['total_distance_travelled', 'time_driving_seconds']
+            numeric_columns = [
+                'total_distance_travelled',
+                'time_driving_seconds',
+                'time_delivering_seconds',
+                'time_parked_seconds',
+                'time_loading_packages_seconds'
+            ]
             for col in numeric_columns:
                 if col in agent_data.columns:
                     agent_data[col] = agent_data[col].round(2)

@@ -25,9 +25,15 @@ class CarModel(mesa.Model):
         
         self.datacollector = mesa.DataCollector(
             agent_reporters={
+                "status": lambda agent: agent.status.name, # enum name of the agent's status
                 "total_distance_travelled": "total_distance_travelled",
+                "total_packages_delivered": "total_packages_delivered",
+                "packages_in_cargo_count": "packages_in_cargo_count",
+                "depot_load_count": "depot_load_count",
                 "time_driving_seconds": "time_driving_seconds",
-                "status": lambda agent: agent.status.name # enum name of the agent's status
+                "time_delivering_seconds": "time_delivering_seconds",
+                "time_parked_seconds": "time_parked_seconds",
+                "time_loading_packages_seconds": "time_loading_packages_seconds",
             }
         )
     
@@ -90,7 +96,14 @@ class CarModel(mesa.Model):
                         "status": package.status.name
                     }
                     for package in agent.packages_in_cargo
-                ]
+                ],
+                "packages_in_cargo_count": agent.packages_in_cargo_count,
+                "total_packages_delivered": agent.total_packages_delivered,
+                "depot_load_count": agent.depot_load_count,
+                "time_driving_seconds": round(agent.time_driving_seconds, 2),
+                "time_delivering_seconds": round(agent.time_delivering_seconds, 2),
+                "time_parked_seconds": round(agent.time_parked_seconds, 2),
+                "time_loading_packages_seconds": round(agent.time_loading_packages_seconds, 2),
             })
 
         return agents_status
