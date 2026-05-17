@@ -40,44 +40,76 @@ class CarAgent(mesa.Agent):
         self.time_loading_packages_seconds = 0.0
         self._last_status = None
 
-    def step(self):
+    def agent_cycle(self):
         """Execute one step of the car agent.
+        
+        Orchestrates the agent's actions in order:
+        1. Package pickup
+        2. Package delivery
+        3. Movement along route
+        4. Status time tracking
+        """
+        dt = self.model.delta_time
+        self.handle_package_pickup(dt)
+        self.handle_package_delivery(dt)
+        self.handle_movement(dt)
+        self.update_status_tracking(dt)
+
+    def handle_package_pickup(self, dt: float):
+        """Handle package pickup logic.
         
         First: pick up available packages if parked and has capacity.
         Second: process package pickup time if currently loading packages.
-        Third: process any delivery logic.
-        Fourth: handle movement along the route.
+        
+        Args:
+            dt: Time delta for this step
         """
-        dt = self.model.delta_time
-
         # First: start loading packages if parked and has capacity
         if self.status == CarStatus.PARKED:
-            self._pick_up_available_packages()
+            self._select_packages_for_pickup()
         
         # Second: process package pickup time
-        self._process_pickup(dt)
+        self._pickup_packages(dt)
 
-        # Third: handle delivery logic
-        self._process_delivery(dt)
+    def handle_package_delivery(self, dt: float):
+        """Handle package delivery logic.
+
+        Checks if in delivery zones and handles ongoing deliveries.
         
-        # Fourth: handle movement
+        Args:
+            dt: Time delta for this step
+        """
+        if self.current_delivery_house is not None:
+            self._deliver_packages(dt)
+        else:
+            self._check_for_delivery_zone()
+
+    def handle_movement(self, dt: float):
+        """Handle movement along the route.
+        
+        Args:
+            dt: Time delta for this step
+        """
         if not self.controller:
             return
 
         self.controller.dt = dt
         
         # Only move if:
-        # - Not delivering AND
-        # - Not picking up AND
-        # - Either has cargo in cargo bay OR has already started the route
+        # Not delivering AND not picking up AND either has cargo OR has already started the route
         has_cargo = len(self.packages_in_cargo) > 0
         has_started = self.has_started_route
         can_move = self.current_delivery_house is None and not self.is_picking_up and (has_cargo or has_started)
         
         if can_move:
             self.controller.update()
+
+    def update_status_tracking(self, dt: float):
+        """Track time spent in each status.
         
-        # Track time per status
+        Args:
+            dt: Time delta for this step
+        """
         current_status = self.status
         if self._last_status is None:
             self._last_status = current_status
@@ -167,13 +199,6 @@ class CarAgent(mesa.Agent):
             return CarStatus.PARKED
         else:
             return CarStatus.IDLE
-        
-    def _process_delivery(self, dt: float):
-        """Process delivery logic: check if in delivery zones and handle ongoing deliveries."""        
-        if self.current_delivery_house is not None:
-            self._process_ongoing_delivery(dt)
-        else:
-            self._check_for_delivery_zone()
 
     def _check_for_delivery_zone(self):
         """Check if the car has entered a delivery zone of any house on its route."""
@@ -196,7 +221,7 @@ class CarAgent(mesa.Agent):
                 self.delivery_time_remaining = PACKAGE_DELIVERY_TIME_IN_SECONDS
                 return
 
-    def _process_ongoing_delivery(self, dt: float):
+    def _deliver_packages(self, dt: float):
         """Process ongoing delivery: deliver packages one by one.
         
         Each package takes PACKAGE_DELIVERY_TIME_IN_SECONDS to deliver. Packages are removed
@@ -229,8 +254,8 @@ class CarAgent(mesa.Agent):
             # No pending packages but still in delivery state - reset
             self._reset_delivery_state()
 
-    def _process_pickup(self, dt: float):
-        """Process pickup loading time: load packages one by one.
+    def _pickup_packages(self, dt: float):
+        """Process picking up packages: load packages one by one.
         
         Each package takes PACKAGE_PICKUP_TIME_IN_SECONDS to load. Packages are added
         to cargo one at a time as their loading time completes.
@@ -283,8 +308,8 @@ class CarAgent(mesa.Agent):
         self.pickup_time_remaining = 0.0
         self.pickup_duration = 0.0
 
-    def _pick_up_available_packages(self):
-        """Pick up available packages from the route while parked.
+    def _select_packages_for_pickup(self):
+        """Selects available packages from the route while parked.
         
         Gets packages from the route and assigns them to this agent if there's cargo space.
         Packages are queued for loading (not immediately added to cargo).

@@ -56,12 +56,14 @@ class CarModel(mesa.Model):
     def step(self):
         """Execute one simulation step.
         
-        Executes step for all agents. Each agent autonomously handles:
+        Executes step for all agents. Each agent handles:
         - Package pickup (when parked with capacity)
         - Delivery logic (zone detection, delivery countdown)
         - Movement along route
+        - Status time tracking
+        Then collects simulation data.
         """
-        self.agents.do("step")
+        self.agents.do("agent_cycle")
         
         self.datacollector.collect(self)
 
