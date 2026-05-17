@@ -50,22 +50,6 @@ class CarAgent(mesa.Agent):
         """
         dt = self.model.delta_time
 
-        # Track time per status
-        current_status = self.status
-        if self._last_status is None:
-            self._last_status = current_status
-        
-        if current_status == CarStatus.DRIVING:
-            self.time_driving_seconds += dt
-        elif current_status == CarStatus.DELIVERING:
-            self.time_delivering_seconds += dt
-        elif current_status == CarStatus.PARKED:
-            self.time_parked_seconds += dt
-        elif current_status == CarStatus.LOADING_PACKAGES:
-            self.time_loading_packages_seconds += dt
-        
-        self._last_status = current_status
-
         # First: start loading packages if parked and has capacity
         if self.status == CarStatus.PARKED:
             self._pick_up_available_packages()
@@ -92,6 +76,22 @@ class CarAgent(mesa.Agent):
         
         if can_move:
             self.controller.update()
+        
+        # Track time per status
+        current_status = self.status
+        if self._last_status is None:
+            self._last_status = current_status
+        
+        if current_status == CarStatus.DRIVING:
+            self.time_driving_seconds += dt
+        elif current_status == CarStatus.DELIVERING:
+            self.time_delivering_seconds += dt
+        elif current_status == CarStatus.PARKED:
+            self.time_parked_seconds += dt
+        elif current_status == CarStatus.LOADING_PACKAGES:
+            self.time_loading_packages_seconds += dt
+        
+        self._last_status = current_status
 
     @property
     def position(self):

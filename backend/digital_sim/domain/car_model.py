@@ -61,9 +61,9 @@ class CarModel(mesa.Model):
         - Delivery logic (zone detection, delivery countdown)
         - Movement along route
         """
-        self.datacollector.collect(self)
-        
         self.agents.do("step")
+        
+        self.datacollector.collect(self)
 
         super().step()
         self.simulation_time += self.delta_time
