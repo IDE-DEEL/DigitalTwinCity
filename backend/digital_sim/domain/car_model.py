@@ -12,6 +12,7 @@ from backend.digital_sim.constants import (
     AGENT_PACKAGES_IN_CARGO_COUNT_KEY, AGENT_DEPOT_LOAD_COUNT_KEY,
     AGENT_TIME_DRIVING_SECONDS_KEY, AGENT_TIME_DELIVERING_SECONDS_KEY,
     AGENT_TIME_PARKED_SECONDS_KEY, AGENT_TIME_LOADING_PACKAGES_SECONDS_KEY,
+    MODEL_TOTAL_PACKAGES_IN_SCENARIO_KEY, MODEL_TOTAL_PACKAGES_UNDELIVERED_KEY,
 )
 
 
@@ -32,6 +33,13 @@ class CarModel(mesa.Model):
         self._setup_houses(houses or [], houses_on_routes or {})
         
         self.datacollector = mesa.DataCollector(
+            model_reporters={
+                MODEL_TOTAL_PACKAGES_IN_SCENARIO_KEY: lambda m: sum(len(h.packages) for h in m.houses.values()),
+                MODEL_TOTAL_PACKAGES_UNDELIVERED_KEY: lambda m: sum(
+                    len([p for p in h.packages if p.status != PackageStatus.DELIVERED])
+                    for h in m.houses.values()
+                ),
+            },
             agent_reporters={
                 AGENT_STATUS_KEY: lambda agent: agent.status.name, # enum name of the agent's status
                 AGENT_DISTANCE_TRAVELLED_KEY: "distance_travelled",

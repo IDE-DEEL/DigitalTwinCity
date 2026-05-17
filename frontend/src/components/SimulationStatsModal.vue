@@ -52,7 +52,7 @@
                                         </td>
                                         <td class="px-4 py-2 text-right text-gray-700">{{ agent.distance_travelled.toFixed(2) }}</td>
                                         <td class="px-4 py-2 text-right text-gray-700">{{ agent.time_driving_seconds.toFixed(2) }}</td>
-                                        <td class="px-4 py-2 text-right text-gray-700">{{ agent.total_packages_delivered }}</td>
+                                        <td class="px-4 py-2 text-right text-gray-700">{{ agent.packages_delivered }}</td>
                                     </tr>
                                 </tbody>
                             </table>

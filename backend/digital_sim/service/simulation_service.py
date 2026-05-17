@@ -147,30 +147,36 @@ class SimulationService:
         return stats
 
     def export_data_as_csv(self):
-        """Export Mesa DataCollector agent data as CSV string.
+        """Export Mesa DataCollector agent and model data as combined CSV string.
         
         Returns:
-            CSV string with all collected agent data or None if no simulation is active.
+            CSV string with all collected agent and model data or None if no simulation is active.
             
-            CSV structure:
-            Step,AgentID,distance_travelled,time_driving_seconds,status,
-            packages_in_cargo_count,packages_delivered,time_delivering_seconds,
-            time_parked_seconds,time_loading_packages_seconds,depot_reload_count
+            CSV structure includes:
+            - Step, AgentID (from agent data)
+            - Agent metrics: distance_travelled, time_driving_seconds, status, etc.
+            - Model metrics: total_packages_in_scenario, total_packages_undelivered
         """
         if not self.model or not self.model.datacollector:
             return None
         
         try:
-            # Get agent variables dataframe from Mesa DataCollector
+            # Get both agent and model variables dataframes from Mesa DataCollector
             agent_data = self.model.datacollector.get_agent_vars_dataframe()
+            model_data = self.model.datacollector.get_model_vars_dataframe()
             
-            # Round numeric columns to 2 decimal places
+            # Round numeric columns in agent data to 2 decimal places
             for col in NUMERIC_AGENT_REPORTER_KEYS:
                 if col in agent_data.columns:
                     agent_data[col] = agent_data[col].round(2)
             
+            # Merge agent and model data on Step index
+            merged_data = agent_data.copy()
+            for col in model_data.columns:
+                merged_data[col] = agent_data.index.get_level_values('Step').map(model_data[col])
+            
             # Convert to CSV string
-            return agent_data.to_csv()
+            return merged_data.to_csv()
         except Exception as e:
             print(f"Error exporting data to CSV: {e}")
             return None

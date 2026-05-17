@@ -36,8 +36,8 @@ PACKAGE_DELIVERY_TIME_IN_SECONDS = 1.0
 PACKAGE_PICKUP_TIME_IN_SECONDS = 0.5
 
 # --- --- --- --- --- --- --- --- --- --- ---
-# Mesa DataCollector agent reporter keys
-# Agent reporter properties
+# Mesa DataCollector reporter keys
+# Agent property keys
 AGENT_STATUS_KEY = "status"
 AGENT_DISTANCE_TRAVELLED_KEY = "distance_travelled"
 AGENT_PACKAGES_DELIVERED_KEY = "packages_delivered"
@@ -47,6 +47,10 @@ AGENT_TIME_DRIVING_SECONDS_KEY = "time_driving_seconds"
 AGENT_TIME_DELIVERING_SECONDS_KEY = "time_delivering_seconds"
 AGENT_TIME_PARKED_SECONDS_KEY = "time_parked_seconds"
 AGENT_TIME_LOADING_PACKAGES_SECONDS_KEY = "time_loading_packages_seconds"
+
+# Model property keys
+MODEL_TOTAL_PACKAGES_IN_SCENARIO_KEY = "total_packages_in_scenario"
+MODEL_TOTAL_PACKAGES_UNDELIVERED_KEY = "total_packages_undelivered"
 
 # Numeric agent reporter keys (for rounding in CSV export)
 NUMERIC_AGENT_REPORTER_KEYS = [
