@@ -43,7 +43,7 @@ class MovementController:
         self.off_route = False
         
         # Afstand tracking
-        self.total_distance_travelled = 0.0
+        self.distance_travelled = 0.0
 
         # Tuning parameters
         self.max_steer = 0.18  # radians per step
@@ -140,7 +140,7 @@ class MovementController:
         
         # Voeg werkelijk afgelegde afstand toe
         new_pos = (self.position[0], self.position[1])
-        self.total_distance_travelled += math.hypot(new_pos[0] - prev_pos[0], new_pos[1] - prev_pos[1])
+        self.distance_travelled += math.hypot(new_pos[0] - prev_pos[0], new_pos[1] - prev_pos[1])
 
     def _find_closest_point_on_route(self) -> Tuple[int, Point, float, float]:
         """

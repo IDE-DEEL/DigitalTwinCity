@@ -32,7 +32,7 @@ class CarAgent(mesa.Agent):
         self.packages_pending_load = []
         
         # Statistics tracking
-        self.total_packages_delivered = 0
+        self.packages_delivered = 0
         self.depot_load_count = 0
         self.time_driving_seconds = 0.0
         self.time_delivering_seconds = 0.0
@@ -129,17 +129,17 @@ class CarAgent(mesa.Agent):
         return 0.0
 
     @property
-    def total_distance_travelled(self):
+    def distance_travelled(self):
         """Get total distance travelled."""
         if self.controller:
-            return self.controller.total_distance_travelled
+            return self.controller.distance_travelled
         return 0.0
 
     @property
     def has_started_route(self):
         """Check if the car has started moving along its route."""
         if self.controller:
-            return self.controller.total_distance_travelled > 0
+            return self.controller.distance_travelled > 0
         return False
     
     @property
@@ -151,7 +151,7 @@ class CarAgent(mesa.Agent):
     def status(self):
         """Get the current status of the car based on its movement and route progress.
         
-        - PARKED: Not started (total_distance_travelled=0) OR finished route (is_finished=True) AND actual_speed=0
+        - PARKED: Not started (distance_travelled=0) OR finished route (is_finished=True) AND actual_speed=0
         - LOADING_PACKAGES: Currently loading packages
         - IDLE: Underway on route AND actual_speed=0
         - DRIVING: actual_speed > 0
@@ -217,7 +217,7 @@ class CarAgent(mesa.Agent):
                 package = self.packages_pending_delivery.pop(0)
                 package.mark_delivered()
                 self.packages_in_cargo.remove(package)
-                self.total_packages_delivered += 1
+                self.packages_delivered += 1
                 
                 # Reset timer for next package
                 self.delivery_time_remaining += PACKAGE_DELIVERY_TIME_IN_SECONDS

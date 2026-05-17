@@ -4,7 +4,15 @@ from backend.digital_sim.domain.car_agent import CarAgent, CarStatus
 from backend.digital_sim.domain.route import Route
 from backend.digital_sim.domain.package import Package, PackageStatus
 from backend.digital_sim.domain.house import House
-from backend.digital_sim.constants import CAR_ROUTE_NAME_KEY, CAR_ROUTE_WAYPOINTS_KEY, CAR_MAX_PACKAGES_KEY, HOUSE_PACKAGE_COUNT_KEY, HOUSE_ID_KEY, HOUSE_ROAD_COORDS_KEY, DELTA_TIME_PER_STEP_IN_SECONDS
+from backend.digital_sim.constants import (
+    CAR_ROUTE_NAME_KEY, CAR_ROUTE_WAYPOINTS_KEY, CAR_MAX_PACKAGES_KEY, 
+    HOUSE_PACKAGE_COUNT_KEY, HOUSE_ID_KEY, HOUSE_ROAD_COORDS_KEY, 
+    DELTA_TIME_PER_STEP_IN_SECONDS,
+    AGENT_STATUS_KEY, AGENT_DISTANCE_TRAVELLED_KEY, AGENT_PACKAGES_DELIVERED_KEY,
+    AGENT_PACKAGES_IN_CARGO_COUNT_KEY, AGENT_DEPOT_LOAD_COUNT_KEY,
+    AGENT_TIME_DRIVING_SECONDS_KEY, AGENT_TIME_DELIVERING_SECONDS_KEY,
+    AGENT_TIME_PARKED_SECONDS_KEY, AGENT_TIME_LOADING_PACKAGES_SECONDS_KEY,
+)
 
 
 class CarModel(mesa.Model):
@@ -25,15 +33,15 @@ class CarModel(mesa.Model):
         
         self.datacollector = mesa.DataCollector(
             agent_reporters={
-                "status": lambda agent: agent.status.name, # enum name of the agent's status
-                "total_distance_travelled": "total_distance_travelled",
-                "total_packages_delivered": "total_packages_delivered",
-                "packages_in_cargo_count": "packages_in_cargo_count",
-                "depot_load_count": "depot_load_count",
-                "time_driving_seconds": "time_driving_seconds",
-                "time_delivering_seconds": "time_delivering_seconds",
-                "time_parked_seconds": "time_parked_seconds",
-                "time_loading_packages_seconds": "time_loading_packages_seconds",
+                AGENT_STATUS_KEY: lambda agent: agent.status.name, # enum name of the agent's status
+                AGENT_DISTANCE_TRAVELLED_KEY: "distance_travelled",
+                AGENT_PACKAGES_DELIVERED_KEY: "packages_delivered",
+                AGENT_PACKAGES_IN_CARGO_COUNT_KEY: "packages_in_cargo_count",
+                AGENT_DEPOT_LOAD_COUNT_KEY: "depot_load_count",
+                AGENT_TIME_DRIVING_SECONDS_KEY: "time_driving_seconds",
+                AGENT_TIME_DELIVERING_SECONDS_KEY: "time_delivering_seconds",
+                AGENT_TIME_PARKED_SECONDS_KEY: "time_parked_seconds",
+                AGENT_TIME_LOADING_PACKAGES_SECONDS_KEY: "time_loading_packages_seconds",
             }
         )
     
@@ -86,7 +94,7 @@ class CarModel(mesa.Model):
                 "heading_deg": agent.heading_deg,
                 "target_speed": agent.target_speed,
                 "speed": agent.actual_speed,
-                "total_distance_travelled": agent.total_distance_travelled,
+                "distance_travelled": agent.distance_travelled,
                 "finished": agent.is_finished,
                 "maxPackages": agent.max_packages,
                 "status": agent.status.name,
@@ -98,7 +106,7 @@ class CarModel(mesa.Model):
                     for package in agent.packages_in_cargo
                 ],
                 "packages_in_cargo_count": agent.packages_in_cargo_count,
-                "total_packages_delivered": agent.total_packages_delivered,
+                "packages_delivered": agent.packages_delivered,
                 "depot_load_count": agent.depot_load_count,
                 "time_driving_seconds": round(agent.time_driving_seconds, 2),
                 "time_delivering_seconds": round(agent.time_delivering_seconds, 2),
