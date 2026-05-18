@@ -157,19 +157,22 @@ export function findConnectingLane(rotatedLanes, incomingDirection, outgoingDire
 
 /**
  * Converts a sequence of tiles (tile path) into a sequence of chosen lanes for the route.
+ * This builder requires a complete route and is used for final route generation before starting the simulation.
  *
  * @param {Array<Object>} tilePath - Array of tile objects representing the route, each with x and y properties.
+ * @param {boolean} allowIncompleteRoute - If true, does not throw an error if the last tile is not the depot tile.
  * @returns {Array<Object>} An array of lane objects representing the chosen lanes for the route.
  * @throws {Error} If the tile path is invalid or a suitable lane cannot be found for any tile.
  */
-export function buildLaneSequenceFromTilePath(tilePath) {
+export function buildLaneSequenceFromTilePath(tilePath, allowIncompleteRoute = false) {
   if (!Array.isArray(tilePath) || tilePath.length < 2) {
     throw new Error('tilePath must contain at least 2 tiles.');
   }
 
   const laneSequence = [];
+  const iterationLimit = allowIncompleteRoute ? tilePath.length - 1 : tilePath.length;
 
-  for (let index = 0; index < tilePath.length; index++) {
+  for (let index = 0; index < iterationLimit; index++) {
     const currentPathTile = tilePath[index];
     const currentMapTile = getMapTile(currentPathTile.x, currentPathTile.y);
     const rotatedLanes = getRotatedLanesForTile(currentMapTile);
@@ -189,7 +192,7 @@ export function buildLaneSequenceFromTilePath(tilePath) {
       continue;
     }
 
-    if (isLast) {
+    if (isLast && !allowIncompleteRoute) {
       const previousTile = tilePath[index - 1];
       const incomingDirection = OPPOSITE_DIRECTION[
         getDirectionBetweenTiles(previousTile, currentPathTile)
@@ -220,20 +223,16 @@ export function buildLaneSequenceFromTilePath(tilePath) {
 }
 
 /**
- * Converts a sequence of tiles into a single list of global waypoints for the route.
- *
- * @param {Array<Object>} tilePath - Array of tile objects representing the route, each with x and y properties.
- * @returns {Array<Object>} An array of waypoint objects, each with x and y properties, representing the full route.
+ * Converts a sequence of lanes into a single list of global waypoints for the route.
+ * 
+ * @param {Array<Object>} laneSequence - Array of lane objects representing the chosen lanes for the route.
+ * @returns {Array<Object>} An array of waypoint objects, each with x and y properties, representing the route.
  */
-export function buildWaypointRouteFromTilePath(tilePath) {
-  const laneSequence = buildLaneSequenceFromTilePath(tilePath);
+function buildWaypointsFromLaneSequence(laneSequence) {
   const waypoints = [];
 
-  laneSequence.forEach((lane, laneIndex) => {
-    lane.points.forEach((point, pointIndex) => {
-      const isFirstPointOfLane = pointIndex === 0;
-      const previousPoint = waypoints[waypoints.length - 1];
-
+  laneSequence.forEach((lane) => {
+    lane.points.forEach((point) => {
       waypoints.push({
         x: Number(point.x.toFixed(3)),
         y: Number(point.y.toFixed(3)),
@@ -242,4 +241,17 @@ export function buildWaypointRouteFromTilePath(tilePath) {
   });
 
   return waypoints;
+}
+
+/**
+ * Converts a sequence of tiles into a sequence of chosen lanes.
+ * Must be a full route: depot -> ... -> depot
+ *
+ * @param {Array<Object>} tilePath - Array of tile objects representing the route, starting and ending with depot tiles.
+ * @param {boolean} allowIncompleteRoute - If true, does not throw an error if the last tile is not the depot tile.
+ * @returns {Array<Object>} An array of waypoint objects representing the route.
+ */
+export function buildWaypointRouteFromTilePath(tilePath, allowIncompleteRoute = false) {
+  const laneSequence = buildLaneSequenceFromTilePath(tilePath, allowIncompleteRoute);
+    return buildWaypointsFromLaneSequence(laneSequence);
 }
