@@ -82,7 +82,6 @@ function connectWebSocket(onSimulationUpdate, onSimulationEnded) {
             isWebSocketConnected.value = false;
             isConnecting = false;
             websocket = null;
-            toast.error(TOAST_MESSAGES.WS_CONNECTION_ERROR);
         };
         
         websocket.onclose = () => {
@@ -90,11 +89,11 @@ function connectWebSocket(onSimulationUpdate, onSimulationEnded) {
             isWebSocketConnected.value = false;
             isConnecting = false;
             websocket = null;
+            toast.error(TOAST_MESSAGES.WS_CONNECTION_ERROR);
         };
     } catch (error) {
         console.error("Error connecting to WebSocket:", error);
         isConnecting = false;
-        toast.error(TOAST_MESSAGES.WS_CONNECTION_ERROR);
     }
 }
 
