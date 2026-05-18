@@ -1,0 +1,151 @@
+name: digitaltwin
+
+services:
+  # Grafana: The visualization tool for dashboards based on data from Prometheus and Loki.
+  grafana:
+    image: grafana/grafana:13.1.0-25893932881
+    profiles: ["monitoring"]
+    restart: unless-stopped
+    environment:
+      - GF_SERVER_ROOT_URL=${GF_SERVER_ROOT_URL}
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+      - grafana_data:/var/lib/grafana
+    networks:
+      - proxy
+      - monitoring
+
+  # Loki: The database for logs.
+  loki:
+    image: grafana/loki:3.7.2
+    profiles: ["monitoring"]
+    command: -config.file=/etc/loki/local-config.yaml
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/loki/loki-config.yaml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+    networks:
+      - monitoring
+
+  # Alloy: Collects logs from Docker containers and sends them to Loki.
+  alloy:
+    image: grafana/alloy:v1.16.1
+    profiles: ["monitoring"]
+    restart: unless-stopped
+    privileged: true
+    volumes:
+      - ./monitoring/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/log:/var/log:ro
+      - /var/log/journal:/run/log/journal:ro
+      - alloy_data:/var/lib/alloy/data
+    command: run --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
+    networks:
+      - monitoring
+
+  # Prometheus: The database for metrics.
+  prometheus:
+    image: prom/prometheus:v3.11.3
+    profiles: ["monitoring"]
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    networks:
+      - monitoring
+
+  # Node exporter: Server/VM statistics.
+  node-exporter:
+    image: prom/node-exporter:v1.11.1
+    profiles: ["monitoring"]
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.rootfs=/rootfs"
+      - "--path.sysfs=/host/sys"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+    networks:
+      - monitoring
+
+  # cAdvisor: Container statistics.
+  cadvisor:
+    image: ghcr.io/google/cadvisor:0.57.0
+    profiles: ["monitoring"]
+    restart: unless-stopped
+    command:
+      - "-docker_only=true"
+      - "-housekeeping_interval=30s"
+      - "-max_housekeeping_interval=60s"
+      - "-storage_driver_buffer_duration=1m"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    networks:
+      - monitoring
+
+  # MQTT broker statistics.
+  mosquitto-exporter:
+    image: sapcc/mosquitto-exporter:0.6.0
+    profiles: ["monitoring"]
+    command:
+      - --endpoint=tcp://mqtt:1883
+      - --bind-address=0.0.0.0:9234
+    expose:
+      - "9234"
+    depends_on:
+      - mqtt
+    networks:
+      - backend
+      - monitoring
+    restart: unless-stopped
+
+  # PostgreSQL Exporter: Database-specific metrics.
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.19.1
+    profiles: ["monitoring"]
+    restart: unless-stopped
+    environment:
+      DATA_SOURCE_NAME: "postgresql://${DT_PG_MONITOR_USER}:${DT_PG_MONITOR_PASS}@postgres:5432/${DT_PG_DB}?sslmode=require"
+    depends_on:
+      - postgres
+    networks:
+      - backend
+      - monitoring
+
+  # Blackbox exporter: External accessibility.
+  blackbox-exporter:
+    image: prom/blackbox-exporter:v0.28.0
+    profiles: ["monitoring"]
+    restart: unless-stopped
+    expose:
+      - "9115"
+    networks:
+      - backend
+      - monitoring
+
+networks:
+  proxy:
+  backend:
+  monitoring:
+
+volumes:
+  # Monitoring
+  prometheus_data:
+  grafana_data:
+
+  # Logging
+  loki_data:
+  alloy_data:

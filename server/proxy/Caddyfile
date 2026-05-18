@@ -1,0 +1,33 @@
+{
+	email {$LETSENCRYPT_EMAIL}
+	metrics {per_host}
+	admin 0.0.0.0:2019
+}
+
+{$DOMAIN} {
+	encode gzip zstd
+	log {
+		output stdout
+		format json
+	}
+
+	# MQTT over WebSockets via HTTPS
+	handle /mqtt {
+		reverse_proxy mqtt:9001
+	}
+
+	# Grafana dashboard
+	handle /grafana* {
+		reverse_proxy grafana:3000
+	}
+
+	# Backend API
+	handle /api* {
+		reverse_proxy backend:8000
+	}
+
+	# Frontend
+	handle {
+		reverse_proxy frontend:80
+	}
+}
