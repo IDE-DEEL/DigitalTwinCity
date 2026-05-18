@@ -55,14 +55,6 @@
     <div class="absolute top-2 left-2 bg-white border border-blue-400 rounded p-3 shadow-lg max-w-[10rem] z-40">
       <div class="font-semibold text-sm mb-2">Route Builder</div>
 
-      <!-- Current route display -->
-      <div class="text-xs mb-2">
-        <div class="text-gray-600">Current route:</div>
-        <div class="font-mono text-xs bg-gray-50 p-1 rounded max-h-20 overflow-y-auto">
-          {{ routeDisplay }}
-        </div>
-      </div>
-
       <!-- Status -->
       <div class="text-xs mb-2">
         <span v-if="!routeComplete" class="text-blue-600">Building...</span>
@@ -157,15 +149,6 @@ const possibleNextTiles = computed(() => {
   }
 
   return valid;
-});
-
-// Display route as formatted text
-const routeDisplay = computed(() => {
-  return routeTiles.value.map((tile, index) => {
-    const isDepot = tile.x === DEPOT_TILE.x && tile.y === DEPOT_TILE.y;
-    const label = isDepot ? 'DEPOT' : `(${tile.x},${tile.y})`;
-    return label;
-  }).join(' → ');
 });
 
 /**
