@@ -92,7 +92,7 @@ class CarModel(mesa.Model):
         Get the current status of all agents.
         
         Returns:
-            List of dictionaries containing agent status (id, position, speed, finished)
+            List of dictionaries containing information about each agent
         """
         agents_status = []
 
@@ -103,7 +103,7 @@ class CarModel(mesa.Model):
                 "heading_radial": agent.heading,
                 "heading_deg": agent.heading_deg,
                 "target_speed": agent.target_speed,
-                "speed": agent.actual_speed,
+                "actual_speed": agent.actual_speed,
                 "distance_travelled": agent.distance_travelled,
                 "finished": agent.is_finished,
                 "maxPackages": agent.max_packages,
