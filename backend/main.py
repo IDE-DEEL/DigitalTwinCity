@@ -7,7 +7,10 @@ from backend.api.v1 import access_codes_api
 from backend.api.v1 import auth_api
 from backend.core.config import settings
 from backend.api.v1 import digital_twin
+from backend.api.v1 import car_commands_api, car_logs_api, track_segment_api
 from backend.data.db.database import Base, engine
+from backend.domain import track_segment, car_commands, car_logs # noqa: F401
+
 
 app = FastAPI(title="DEEL - Digital Twin",
               version="0.1.0",
@@ -33,6 +36,9 @@ app.include_router(results_api.router, prefix=api_v1_prefix)
 app.include_router(access_codes_api.router, prefix=api_v1_prefix)
 app.include_router(auth_api.router, prefix=api_v1_prefix)
 app.include_router(digital_twin.router, prefix=api_v1_prefix)
+app.include_router(car_commands_api.router, prefix=api_v1_prefix)
+app.include_router(car_logs_api.router, prefix=api_v1_prefix)
+app.include_router(track_segment_api.router, prefix=api_v1_prefix)
 
 Base.metadata.create_all(bind=engine)
 
