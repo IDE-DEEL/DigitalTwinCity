@@ -128,6 +128,7 @@ jobs:
 
           should_deploy="true"
           backend_expected="false"
+          deployment_expected="false"
           frontend_expected="false"
 
           if [[ "${{ github.event_name }}" == "workflow_run" ]]; then
@@ -137,11 +138,15 @@ jobs:
             fi
 
             backend_expected="false"
+            deployment_expected="false"
             frontend_expected="false"
             while IFS= read -r file; do
               case "$file" in
                 backend/*|.github/workflows/backend-build-scan-publish.yml)
                   backend_expected="true"
+                  ;;
+                deploy/*|server/*)
+                  deployment_expected="true"
                   ;;
                 frontend/*|.github/workflows/frontend-build-scan-publish.yml)
                   frontend_expected="true"
@@ -186,13 +191,13 @@ jobs:
               fi
             }
 
-            if [[ "$backend_expected" == "true" || "$frontend_expected" == "true" ]]; then
+            if [[ "$backend_expected" == "true" || "$deployment_expected" == "true" || "$frontend_expected" == "true" ]]; then
               wait_for_expected_workflow "backend-build-scan-publish.yml" "Backend"
               wait_for_expected_workflow "frontend-build-scan-publish.yml" "Frontend"
             fi
 
-            if [[ "$backend_expected" != "true" && "$frontend_expected" != "true" ]]; then
-              echo "No backend or frontend changes detected for ${SOURCE_SHA}; deployment is skipped."
+            if [[ "$backend_expected" != "true" && "$deployment_expected" != "true" && "$frontend_expected" != "true" ]]; then
+              echo "No backend, frontend, server, or deploy changes detected for ${SOURCE_SHA}; deployment is skipped."
               should_deploy="false"
             fi
           fi

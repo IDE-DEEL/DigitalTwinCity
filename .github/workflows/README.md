@@ -22,7 +22,7 @@ Voor de volledige uitleg per workflow staat er nu een apart detaildocument:
 2. Beide build workflows gebruiken `docker-build-scan-publish.yml`.
 3. De herbruikbare workflow bouwt de Docker image, scant met Trivy en pusht alleen bij toegestane branch-runs naar GHCR.
 4. Op `main` start `cd-deploy.yml` automatisch na een succesvolle backend- of frontend-build.
-5. De CD workflow wacht logisch tot beide verwachte app-images voor dezelfde commit klaar zijn.
+5. De CD workflow wacht logisch tot beide app-images voor dezelfde commit klaar zijn wanneer `backend/`, `frontend/`, `server/` of `deploy/` is gewijzigd.
 6. De deployment gebruikt immutable image references: `sha-<short-sha>` tags of `sha256` digests.
 7. Op de server promoveert `remote-deploy.sh` de nieuwe release pas nadat healthchecks slagen.
 
@@ -32,7 +32,7 @@ Voor de volledige uitleg per workflow staat er nu een apart detaildocument:
 - Pull requests bouwen en scannen wel, maar pushen geen image naar GHCR.
 - `CRITICAL` Trivy vulnerabilities blokkeren de build.
 - `HIGH` en `MEDIUM` findings worden gerapporteerd, maar blokkeren niet automatisch.
-- Automatische CD draait alleen voor `main`.
+- Automatische CD draait alleen voor `main` en gaat door bij wijzigingen in `backend/`, `frontend/`, `server/` of `deploy/`.
 - Handmatige CD accepteert alleen lege image-inputs, `sha-*` tags of `sha256` digests.
 - De deploy-job draait op een `self-hosted` runner omdat de OpenICT lab VM niet bereikbaar is via een externe SSH-verbinding vanaf GitHub-hosted runners.
 - Als de self-hosted runner op dezelfde OpenICT lab VM draait als de deployment-host, zet `DEPLOY_HOST` op `localhost`.

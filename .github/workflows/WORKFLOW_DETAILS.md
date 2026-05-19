@@ -228,7 +228,7 @@ Belangrijkste taken:
 
 1. Checkout van de source commit die gedeployed moet worden.
 2. Bepalen welke bestanden in de source commit gewijzigd zijn.
-3. Bij automatische runs bepalen of backend en/of frontend verwacht worden.
+3. Bij automatische runs bepalen of backend-, frontend-, server- en/of deploy-wijzigingen een deployment vragen.
 4. Via de GitHub API controleren of de verwachte backend- en frontend-builds voor dezelfde commit klaar en succesvol zijn.
 5. De default image references bepalen.
 6. Handmatige image inputs valideren.
@@ -237,9 +237,9 @@ Belangrijkste taken:
 Wanneer `should_deploy=false` wordt gezet:
 
 - Een verwachte backend- of frontend-build voor dezelfde commit is nog niet klaar.
-- De automatische run bevat geen backend- of frontendwijzigingen.
+- De automatische run bevat geen wijzigingen in `backend/`, `frontend/`, `server/` of `deploy/`.
 
-Bij app-wijzigingen wacht de workflow dus logisch tot beide app-images van dezelfde commit bestaan. Een te vroeg getriggerde deploy-run wordt overgeslagen in plaats van een halve release uit te rollen.
+Bij app-, server- en deploy-wijzigingen wacht de workflow dus logisch tot beide app-images van dezelfde commit bestaan. Een te vroeg getriggerde deploy-run wordt overgeslagen in plaats van een halve release uit te rollen.
 
 Outputs:
 
