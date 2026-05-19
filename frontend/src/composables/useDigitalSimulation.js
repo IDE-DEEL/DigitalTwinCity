@@ -5,7 +5,8 @@ import { useDashboardParametersStore } from "../stores/dashboardParametersStore"
 import { useSimulationStateStore } from "../stores/simulationStateStore";
 import { TOAST_MESSAGES } from "../constants/toast_messages";
 
-const TIMEOUT_DURATION_MILLIS = 5000;
+const GET_STATS_TIMEOUT_IN_MILLIS = 5000;
+const CSV_EXPORT_TIMEOUT_IN_MILLIS = 20000;
 const isSimulating = ref(false);
 const hasSimulated = ref(false);
 
@@ -128,9 +129,9 @@ export function useDigitalSimulation() {
             }
 
             const timeoutId = setTimeout(() => {
-                console.error("Stats request timeout after 5 seconds");
+                console.error(`Stats request timeout after ${GET_STATS_TIMEOUT_IN_MILLIS / 1000} seconds`);
                 reject(new Error("Request timeout: No response from server"));
-            }, TIMEOUT_DURATION_MILLIS);
+            }, GET_STATS_TIMEOUT_IN_MILLIS);
 
             registerResponseHandler("get_stats", (response) => {
                 clearTimeout(timeoutId);
@@ -156,9 +157,9 @@ export function useDigitalSimulation() {
             }
 
             const timeoutId = setTimeout(() => {
-                console.error("CSV export request timeout after 5 seconds");
+                console.error(`CSV export request timeout after ${CSV_EXPORT_TIMEOUT_IN_MILLIS / 1000} seconds`);
                 reject(new Error("Request timeout: No response from server"));
-            }, TIMEOUT_DURATION_MILLIS);
+            }, CSV_EXPORT_TIMEOUT_IN_MILLIS);
 
             registerResponseHandler("export_data", (response) => {
                 clearTimeout(timeoutId);
