@@ -13,7 +13,7 @@ De stack bestaat uit:
 - **Mosquitto Exporter**: MQTT broker metrics
 - **PostgreSQL Exporter**: database metrics zoals connecties en querygedrag
 - **Blackbox Exporter**: HTTP- en TCP-bereikbaarheidschecks
-- **Caddy metrics**: reverse-proxy metrics via Caddy admin/metrics op poort `2019`
+- **Caddy metrics**: reverse-proxy metrics via Caddy's metrics-only endpoint op poort `2020`
 
 ## 1. Structuur van deze map
 
@@ -142,7 +142,7 @@ Volgens `monitoring/prometheus/prometheus.yml` worden de volgende jobs gescraped
 | `node-exporter` | `node-exporter:9100` | Host/VM metrics |
 | `cadvisor` | `cadvisor:8080` | Docker container metrics |
 | `mosquitto-exporter` | `mosquitto-exporter:9234` | MQTT broker metrics |
-| `caddy` | `caddy:2019` | Caddy request-, latency- en servermetrics |
+| `caddy` | `caddy:2020` | Caddy request-, latency- en servermetrics |
 | `postgres-exporter` | `postgres-exporter:9187` | PostgreSQL metrics |
 | `backend` | `backend:8000/metrics` | Backend applicatie-metrics |
 | `blackbox_http` | via `blackbox-exporter:9115` | HTTP 2xx checks |
@@ -269,7 +269,7 @@ docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.y
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://mosquitto-exporter:9234/metrics | head
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://postgres-exporter:9187/metrics | head
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://backend:8000/metrics | head
-docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://caddy:2019/metrics | head
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://caddy:2020/metrics | head
 ```
 
 ### Geen PostgreSQL metrics
@@ -324,7 +324,7 @@ Controleer daarna in Grafana Explore met datasource `Loki`:
 {source="journal"}
 ```
 
-Let op host mounts in `compose.monitoring.yml`: Alloy leest `/var/run/docker.sock`, `/var/log` en `/run/log/journal` read-only. Op hosts zonder systemd journal directory kan de journal-bron leeg blijven.
+Let op host mounts in `compose.monitoring.yml`: Alloy leest `/var/run/docker.sock`, `/var/log` en `/var/log/journal` read-only. Op hosts zonder systemd journal directory kan de journal-bron leeg blijven.
 
 ### Blackbox checks falen
 

@@ -18,7 +18,7 @@ De service `caddy` staat in `server/compose.yml` en publiceert als enige HTTP(S)
 - gzip/zstd compressie
 - JSON access logs naar stdout
 - reverse proxy routes naar frontend, backend, MQTT WebSockets en Grafana
-- metrics via de Caddy admin endpoint op poort `2019`
+- metrics via een metrics-only endpoint op poort `2020`
 
 ## Vereiste variabelen
 
@@ -48,16 +48,20 @@ De globale Caddy-config bevat:
 
 ```caddyfile
 metrics {per_host}
-admin 0.0.0.0:2019
+admin localhost:2019
+
+http://:2020 {
+  metrics /metrics
+}
 ```
 
-In `compose.yml` wordt poort `2019` alleen via `expose` beschikbaar gemaakt binnen Docker-netwerken. Prometheus scraped Caddy via:
+De Caddy admin API luistert alleen op `localhost:2019` binnen de Caddy-container, zodat andere containers de runtime-config niet kunnen wijzigen. In `compose.yml` wordt alleen de metrics-only poort `2020` via `expose` beschikbaar gemaakt binnen Docker-netwerken. Prometheus scraped Caddy via:
 
 ```text
-caddy:2019
+caddy:2020
 ```
 
-Publiceer poort `2019` niet direct naar internet.
+Publiceer poort `2019` of `2020` niet direct naar internet.
 
 ## Logs
 
@@ -159,5 +163,6 @@ GF_SERVER_ROOT_URL=https://<DOMAIN>/grafana/
 ## Security
 
 - Alleen poorten `80` en `443` horen publiek open te staan.
-- Caddy admin/metrics poort `2019` is bedoeld voor intern Docker-verkeer.
+- De Caddy admin API is alleen bereikbaar binnen de Caddy-container op `localhost:2019`.
+- Caddy metrics op poort `2020` zijn bedoeld voor intern Docker-verkeer.
 - Logs kunnen requestpaden en metadata bevatten; schrijf geen tokens of secrets in URL's.

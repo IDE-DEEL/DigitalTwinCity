@@ -1,7 +1,11 @@
 {
 	email {$LETSENCRYPT_EMAIL}
 	metrics {per_host}
-	admin 0.0.0.0:2019
+	admin localhost:2019
+}
+
+http://:2020 {
+	metrics /metrics
 }
 
 {$DOMAIN} {
