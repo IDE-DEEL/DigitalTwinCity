@@ -140,21 +140,25 @@ route_10 = ["left", "forward", "right", "right", "forward", "left", "right", "ri
 route_11 = ["left", "forward", "right", "right", "forward", "left", "right", "right", "forward"]
 route_12 = ["left", "forward", "right", "right", "forward", "left", "right", "right", "forward"]
 route_13 = ["left", "forward", "right", "right", "forward", "left", "right", "right", "forward"]
-route = [
-    route_1,
-    route_2,
-    route_3,
-    route_4,
-    route_5,
-    route_6,
-    route_7,
-    route_8,
-    route_9,
-    route_10,
-    route_11,
-    route_12,
-    route_13
-]
+
+route = {
+    "route_1": [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]],
+}
+
+Tags = {
+    "tag 1": ["adjacent tag", "adjacent tag", "adjacent tag"],
+    "tag 2": ["adjacent tag", "adjacent tag", "adjacent tag"],
+    "tag 3": ["adjacent tag", "adjacent tag", "adjacent tag"],
+    "tag 4": ["adjacent tag", "adjacent tag", "adjacent tag"],
+    "tag 5": ["adjacent tag", "adjacent tag", "adjacent tag"],
+    "tag 6": ["adjacent tag", "adjacent tag", "adjacent tag"],
+    "tag 7": ["adjacent tag", "adjacent tag", "adjacent tag"],
+    "tag 8": ["adjacent tag", "adjacent tag", "adjacent tag"],
+    "tag 9": ["adjacent tag", "adjacent tag", "adjacent tag"],
+    "tag 10": ["adjacent tag", "adjacent tag", "adjacent tag"],
+    "tag 11": ["adjacent tag", "adjacent tag", "adjacent tag"]
+
+}
 
 
 
@@ -175,6 +179,22 @@ route = [
 # index for the loop
 index = 0
 
+
+
 while True:
-    if auto_1 or auto_2 == route_1[index][1]:
+    # check to make sure that cars arent on the same track position.
+    if auto_1 == auto_2 or auto_2 == auto_1:
+        time.sleep(1)  # for specific car
+        continue
+
+    # check to see if the car is at the destination tag and sends new command.
+    if auto_1 == route_1[index][1] or auto_2 == route_1[index][1]:
+        if Tags[auto_1][1] == auto_2 or  Tags[auto_1][2] == auto_2:
+            time.sleep(1)
         # route_1[index][0] send to robot
+        index += 1
+        continue
+
+
+
+
