@@ -14,13 +14,13 @@ scripts/
 
 De scripts zijn serverbeheer-scripts en hebben defaults voor de huidige OpenICT lab VM setup:
 
-- deployment root: `/opt/digital-twin`, te overschrijven met `DEPLOY_ROOT`
+- deployment root: `/opt/digitaltwin`, te overschrijven met `DEPLOY_ROOT`
 - Linux group voor teambeheer: `team`
 - Docker group voor beheerders: `docker`
 - Mosquitto UID: `1883`
 - PostgreSQL is alleen binnen Docker bereikbaar via de service `postgres`
 
-Als `DEPLOY_PATH` in GitHub Actions niet `/opt/digital-twin` is, voer de scripts uit met dezelfde root:
+Als `DEPLOY_PATH` in GitHub Actions niet `/opt/digitaltwin` is, voer de scripts uit met dezelfde root:
 
 ```bash
 sudo DEPLOY_ROOT=<DEPLOY_PATH> ./new-user.sh <username>

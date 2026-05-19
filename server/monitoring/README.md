@@ -150,7 +150,7 @@ Volgens `monitoring/prometheus/prometheus.yml` worden de volgende jobs gescraped
 
 Blackbox checks in de huidige configuratie:
 
-- HTTP: `https://innodigitaltwin.duckdns.org/`
+- HTTP: `https://digitaltwin.duckdns.org/`
 - HTTP: `http://backend:8000/docs`
 - TCP: `mqtt:1883`
 

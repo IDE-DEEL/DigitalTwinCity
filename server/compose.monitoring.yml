@@ -40,7 +40,7 @@ services:
       - ./monitoring/alloy/config.alloy:/etc/alloy/config.alloy:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /var/log:/var/log:ro
-      - /var/log/journal:/run/log/journal:ro
+      - /var/log/journal:/var/log/journal:ro
       - alloy_data:/var/lib/alloy/data
     command: run --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
     networks:

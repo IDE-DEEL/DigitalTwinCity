@@ -131,7 +131,7 @@ en `remote-deploy.sh` weigeren mutable tags zoals `latest`.
 is bijvoorbeeld:
 
 ```text
-/opt/digitaltwin
+/opt/digital-twin
 ```
 
 De deployment maakt en gebruikt deze structuur:
@@ -240,20 +240,20 @@ Log daarna opnieuw in als `github`, zodat de Docker group actief is.
 
 ### 3. Maak de deploy root
 
-Voorbeeld met `/opt/digitaltwin`:
+Voorbeeld met `/opt/digital-twin`:
 
 ```bash
-sudo mkdir -p /opt/digitaltwin/releases /opt/digitaltwin/shared /opt/digitaltwin/state
-sudo chown -R github:github /opt/digitaltwin
+sudo mkdir -p /opt/digital-twin/releases /opt/digital-twin/shared /opt/digital-twin/state
+sudo chown -R github:github /opt/digital-twin
 ```
 
 Als meerdere beheerders moeten kunnen meekijken of aanpassen, zet dan de group
 rechten goed:
 
 ```bash
-sudo chgrp -R github /opt/digitaltwin
-sudo chmod -R g+rwX /opt/digitaltwin
-sudo find /opt/digitaltwin -type d -exec chmod g+s {} +
+sudo chgrp -R github /opt/digital-twin
+sudo chmod -R g+rwX /opt/digital-twin
+sudo find /opt/digital-twin -type d -exec chmod g+s {} +
 ```
 
 ### 4. Maak een SSH key voor GitHub Actions
@@ -317,7 +317,7 @@ Maak deze secrets aan:
 | `DEPLOY_HOST` | Ja | Hostname of IP van de server. Gebruik `localhost` als runner en applicatie op dezelfde VM staan. |
 | `DEPLOY_USER` | Ja | SSH user op de server, bijvoorbeeld `github`. |
 | `DEPLOY_SSH_KEY` | Ja | Volledige private deploy key, inclusief begin- en eindregels. |
-| `DEPLOY_PATH` | Ja | Rootmap voor releases, shared config en state, bijvoorbeeld `/opt/digitaltwin`. Laat het pad niet eindigen met `/`. |
+| `DEPLOY_PATH` | Ja | Rootmap voor releases, shared config en state, bijvoorbeeld `/opt/digital-twin`. Laat het pad niet eindigen met `/`. |
 | `DEPLOY_PORT` | Nee | SSH poort. Standaard `22`. |
 
 GHCR gebruikt `github.actor` en `github.token`. Daarvoor is normaal geen extra
