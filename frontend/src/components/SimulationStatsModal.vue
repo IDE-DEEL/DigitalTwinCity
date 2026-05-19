@@ -179,21 +179,27 @@ const loadStats = async () => {
     }
 };
 
-const formatDrivingTime = (seconds) => {
+function formatDrivingTime(seconds) {
     if (seconds === null || seconds === undefined) return '0s';
-    
+
     const totalSeconds = Math.floor(seconds);
     const oneMinute = 60;
-    
-    if (totalSeconds < oneMinute) {
-        return seconds.toFixed(2) + 's';
+    const oneHour = 3600;
+
+    const hours = Math.floor(totalSeconds / oneHour);
+    const minutes = Math.floor((totalSeconds % oneHour) / oneMinute);
+    const remainingSeconds = totalSeconds % oneMinute;
+
+    if (hours > 0) {
+        return `${hours}h ${minutes}m ${remainingSeconds}s`;
     }
-    
-    const minutes = Math.floor(totalSeconds / oneMinute);
-    const remainingSeconds = seconds % oneMinute;
-    
-    return `${minutes}m ${remainingSeconds.toFixed(2)}s`;
-};
+
+    if (minutes > 0) {
+        return `${minutes}m ${remainingSeconds}s`;
+    }
+
+    return `${remainingSeconds}s`;
+}
 
 const handleDownloadCSV = async () => {
     isDownloading.value = true;
