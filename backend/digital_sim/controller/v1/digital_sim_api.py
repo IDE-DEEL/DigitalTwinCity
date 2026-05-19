@@ -168,6 +168,6 @@ def _get_steps_multiplier(simulation_speed: int) -> int:
     speed_to_multiplier = {
         1: 1,      # 1x speed: 1 step per update
         2: 2,      # 2x speed: 2 steps per update
-        3: 50,     # Instant: many steps per update
+        3: 200,    # Super fast: many steps per update
     }
     return speed_to_multiplier.get(simulation_speed, 1)
