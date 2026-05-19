@@ -114,7 +114,17 @@
                 :style="agentVehicleStyle(agent)"
                 :title="`Agent ${agent.id} - Packages in cargo: ${agent.packages_in_cargo.length}`"
             >
-                <span class="flex items-center justify-center text-white text-xs font-bold" :style="{ transform: `rotate(${-((agent.heading_deg || 0) - 90)}deg)` }">
+                <span 
+                    class="flex items-center justify-center text-white text-xs font-bold" 
+                    :style="{ transform: `rotate(${-((agent.heading_deg || 0) - 90)}deg)`,
+                                textShadow: `
+                                    -1px -1px 0 black,
+                                    1px -1px 0 black,
+                                    -1px  1px 0 black,
+                                    1px  1px 0 black
+                                `
+                     }"
+                    >
                     {{ agent.packages_in_cargo.length }}
                 </span>
             </div>
