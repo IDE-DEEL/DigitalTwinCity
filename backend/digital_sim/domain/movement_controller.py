@@ -71,7 +71,7 @@ class MovementController:
         self._update_speed()
 
         # 2. Update position en heading
-        if self.actual_speed > 0.01:  # Alleen bewegen als snelheid > 0
+        if self.actual_speed >= 0.01:  # Alleen bewegen als snelheid > 0
             self._update_position()
             self._check_route_finished()
 
