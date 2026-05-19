@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { convertPositionMathToSvg } from "../logic/utils/coordinateConverter";
 import { useDashboardParametersStore } from "./dashboardParametersStore";
 
@@ -9,6 +9,19 @@ export const useSimulationStateStore = defineStore("simulationState", () => {
     // ---
     const agentState = ref([]);
     const houseState = ref([]);
+
+    // ---
+    // Watchers to reset simulation state when relevant dashboard parameters change after a previous simulation run
+    // ---
+    const dashboardStore = useDashboardParametersStore();
+
+    watch(() => dashboardStore.scenario, () => {
+        resetSimulationState();
+    });
+
+    watch(() => dashboardStore.cars, () => {
+        resetSimulationState();
+    }, { deep: true });
 
     // ---
     // Actions
@@ -33,7 +46,6 @@ export const useSimulationStateStore = defineStore("simulationState", () => {
     // Getters (computed properties combining backend state with dashboard parameters)
     // ---
     const housesWithLivePackageData = computed(() => {
-        const dashboardStore = useDashboardParametersStore();
         const baseHouses = dashboardStore.baseHousesFromScenario;
 
         // use scenario defaults when there is no live data
