@@ -51,7 +51,7 @@
                                             </div>
                                         </td>
                                         <td class="px-4 py-2 text-right text-gray-700">{{ agent.distance_travelled.toFixed(2) }}</td>
-                                        <td class="px-4 py-2 text-right text-gray-700">{{ agent.time_driving_seconds.toFixed(2) }}</td>
+                                        <td class="px-4 py-2 text-right text-gray-700">{{ formatDrivingTime(agent.time_driving_seconds) }}</td>
                                         <td class="px-4 py-2 text-right text-gray-700">{{ agent.packages_delivered }}</td>
                                     </tr>
                                 </tbody>
@@ -69,7 +69,7 @@
                             </div>
                             <div class="flex justify-between items-center">
                                 <span class="text-gray-700">Totale rij tijd:</span>
-                                <span class="font-mono font-bold text-gray-900">{{ stats.totals.total_time_driving.toFixed(2) }}</span>
+                                <span class="font-mono font-bold text-gray-900">{{ formatDrivingTime(stats.totals.total_time_driving) }}</span>
                             </div>
                             <div class="flex justify-between items-center">
                                 <span class="text-gray-700">Totale bezorgde pakketten:</span>
@@ -177,6 +177,22 @@ const loadStats = async () => {
     } finally {
         isLoading.value = false;
     }
+};
+
+const formatDrivingTime = (seconds) => {
+    if (seconds === null || seconds === undefined) return '0s';
+    
+    const totalSeconds = Math.floor(seconds);
+    const oneMinute = 60;
+    
+    if (totalSeconds < oneMinute) {
+        return seconds.toFixed(2) + 's';
+    }
+    
+    const minutes = Math.floor(totalSeconds / oneMinute);
+    const remainingSeconds = seconds % oneMinute;
+    
+    return `${minutes}m ${remainingSeconds.toFixed(2)}s`;
 };
 
 const handleDownloadCSV = async () => {
