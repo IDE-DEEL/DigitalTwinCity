@@ -37,6 +37,8 @@ export function useDigitalSimulation() {
             return;
         }
 
+        simulationStore.resetSimulationState();
+
         const parameters = dashboardStore.simulationStartPayload;
         console.log("Starting simulation with parameters:", parameters);
         if (!parameters) {
@@ -64,7 +66,6 @@ export function useDigitalSimulation() {
         });
 
         isSimulating.value = false;
-        simulationStore.resetSimulationState();
     }
 
     function reconnectWebSocket() {
@@ -74,7 +75,6 @@ export function useDigitalSimulation() {
 
     function handleSimulationEnded() {
         isSimulating.value = false;
-        simulationStore.resetSimulationState();
     }
 
         // ---
