@@ -11,15 +11,8 @@ const app = createApp(App)
 app.use(pinia)
 app.use(Toast, {
     position: "top-right",
-    timeout: 3000,
+    timeout: 5000,
     closeOnClick: true,
     pauseOnHover: true,
-    // draggable: true,
-    // draggablePercent: 0.6,
-    // showCloseButtonOnHover: false,
-    // hideProgressBar: false,
-    // closeButton: "button",
-    // icon: true,
-    // rtl: false
 });
 app.mount('#app')
