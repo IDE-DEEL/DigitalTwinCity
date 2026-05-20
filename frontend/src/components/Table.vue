@@ -64,7 +64,7 @@ function update_car(car, newValue) {
             <td><input class="package-input" type="number" min=0 :max=store.max_packages v-model="car.pakketje"></input></td>
             <td>
               <select v-model="car.route">
-                <option v-for="value in store.routes.route">{{ value }}</option>
+                <option v-for="r in store.routes" :key="r.route" :value="r.route">{{ r.route }}</option>
               </select>
             </td>
             <td><input type="checkbox" class="circle" v-model="car.visueel"></input></td>

@@ -10,6 +10,28 @@ export const store = reactive({
     {"auto_id": "Auto 4", "pakketje": 2, "route": "Route 1", "visueel": false}
   ],
 
+  car_data: [
+    {"auto_id": "Auto B", "tag_id": "53:3F:11:F7:32:00:01"},
+  ],
+
+  tag_positions: [
+    {"tag_id": "53:3F:11:F7:32:00:01", "tag_pos": {"x": 400, "y": 32}},
+    {"tag_id": "53:2A:27:F7:32:00:01", "tag_pos": {"x": 100, "y": 100}},
+    {"tag_id": "53:5F:2D:F7:32:00:01", "tag_pos": {"x": 100, "y": 100}},
+    
+    {"tag_id": "CF:8D:0A:3E", "tag_pos": {"x": 100, "y": 100}},
+    {"tag_id": "3A:6E:0A:3E", "tag_pos": {"x": 100, "y": 100}},
+    {"tag_id": "10:8E:0A:3E", "tag_pos": {"x": 100, "y": 100}},
+    
+    {"tag_id": "53:D7:78:F6:32:00:01", "tag_pos": {"x": 100, "y": 100}},
+    {"tag_id": "53:0C:5F:F6:32:00:01", "tag_pos": {"x": 100, "y": 100}},
+    {"tag_id": "53:71:61:6A:62:00:01", "tag_pos": {"x": 100, "y": 100}},
+    
+    {"tag_id": "53:66:C0:F5:32:00:01​", "tag_pos": {"x": 100, "y": 100}},
+    {"tag_id": "53:78:C7:F5:32:00:01", "tag_pos": {"x": 100, "y": 100}},
+    {"tag_id": "53:B2:D1:F5:32:00:01", "tag_pos": {"x": 100, "y": 100}}
+  ],
+
   routes: [
     {"route": "Route 1"},
     {"route": "Route 2"},
@@ -61,7 +83,11 @@ export const connect = () => {
               store.active = false;
             }
         break;
-      }
+
+      case "car_data":
+            store.car_data = payload;
+      break;
+    }
   };
 }
 
