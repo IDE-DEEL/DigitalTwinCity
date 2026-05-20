@@ -11,9 +11,9 @@ export const store = reactive({
   ],
 
   routes: [
-    "Route 1",
-    "Route 2",
-    "Route 3"
+    {"route": "Route 1"},
+    {"route": "Route 2"},
+    {"route": "Route 3"}
   ],
 
   scenarios: [
@@ -27,6 +27,7 @@ export const store = reactive({
   sim_speed: 20,
   max_packages: 12,
   score: 0,
+  active: false,
   time: "00:00",
 
   socket: null
@@ -51,6 +52,14 @@ export const connect = () => {
 
         case "car_table":
             store.table_data = payload;
+        break;
+
+        case "activation":
+            if (payload === "start") {
+              store.active = true;
+            } else if (payload === "stop") {
+              store.active = false;
+            }
         break;
       }
   };

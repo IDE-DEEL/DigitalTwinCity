@@ -5,14 +5,16 @@ import Slider from './Slider.vue'
 import Input from './Input.vue'
 import DropDown from './DropDown.vue'
 import Table from './Table.vue'
-import { store } from '../store.js'
+import { store, send_data } from '../store.js'
 import '../assets/Button.css'
 import '../assets/ControlPanel.css'
 
 function start(event) {
+  send_data("activation", "start")
 }
 
 function stop(event) {
+  send_data("activation", "stop")
 }
 </script>
 

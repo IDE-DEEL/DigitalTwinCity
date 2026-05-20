@@ -5,6 +5,7 @@ import { buildLane } from '../logic/service/laneBuilder.js';
 import { useMqttVehicle } from '../composables/MqttConnection.js';
 import { normalizeDegree } from '../logic/utils/rotation.js';
 import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
+import { store } from '../store.js'
 import '../assets/Display.css';
 
 const { vehiclePosition,setupMqttClient } = useMqttVehicle();
@@ -105,6 +106,13 @@ onMounted(async () => {
         isLoading.value = false;
     }
 });
+
+function generatePath() {
+     if (!stappen || stappen.length === 0) return "M 0 0";
+
+    let pathString = "";
+    return pathString;
+}
 </script>
 
 <template>
@@ -112,8 +120,7 @@ onMounted(async () => {
     <div>
         <!-- Map Container -->
         <div class="relative" :style="containerStyle">
-            <img src="/assets/test_image.png" alt="Auto" />
-            <!-- Map grid --
+            <!-- Map grid -->
             <div class="map-grid" :style="gridStyle"> 
                 <div
                     v-for="component in mapComponents"
@@ -128,8 +135,9 @@ onMounted(async () => {
                     :style="{ transform:`rotate(${component.rotation}deg)`}"
                     />
                 </div>
-            </div> 
-            !-- Lanes (kleur kan later worden weggehaald)--
+            </div>
+            
+            <!-- Lanes (kleur kan later worden weggehaald) -->
             <svg 
                 class="absolute inset-0 pointer-events-none"
                 :viewBox="`0 0 ${MAP_DIMENSION} ${MAP_DIMENSION}`"
@@ -146,13 +154,30 @@ onMounted(async () => {
                     stroke-linejoin="round"
                 />
             </svg>
-            !-- Auto --
+
+            <!-- Routes -->
+            <svg class="absolute inset-0 pointer-events-none"
+                :viewBox="`0 0 ${MAP_DIMENSION} ${MAP_DIMENSION}`"
+                preserveAspectRatio="none"
+                style="width: 100%; height: 100%;">
+
+                <!-- We tonen alleen paden als 'visueel' true is
+                v-for="car in store.table_data.filter(c => c.visueel)"-->
+                <path
+                    d="M 20 20 L 100 100 L 200 50 Q 300 200 400 100"
+                    fill="none"
+                    stroke="#F54242"
+                    stroke-width="4" />
+
+            </svg>
+
+            <!-- Auto -->
                 <div
                     id="live-vehicle"
                     class="absolute bg-black rounded-full z-10"
                     :style="vehicleStyle"
                 >
-                </div> -->
+                </div>
         </div>
     </div> 
   </div>
