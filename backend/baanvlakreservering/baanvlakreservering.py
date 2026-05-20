@@ -1,8 +1,5 @@
+import paho.mqtt.client as mqtt
 import time
-
-
-auto_1 = "auto_1"
-auto_2 = "auto_2"
 
 # start = [
 #     [[0],[1],[2],[0]],
@@ -89,16 +86,10 @@ auto_2 = "auto_2"
 # ]
 #
 #
-#
 # '''
 # bereken alle commandos van te voren gebaseerd op wat de route is vanuit de front end, dan een lijst vullen met de commandos en per rfid tag het volgende commando doorsturen.
-#
-#
 # voor het genereren van de commandos of gewoon een variabele string die je elke keer weer in de lijst append of aan een variable +=
 # '''
-#
-#
-#
 # # all zeros are for empty space to create a kind of x and y coordinates
 # # matrix has 4 rows and 5 columns.
 # # each
@@ -109,21 +100,17 @@ auto_2 = "auto_2"
 #     [[turn_NE],            [straight_horizontal],   [t_junction_up],         [t_junction_up],        [turn_WN]]
 # ]
 
+# the mqtt connection and topic
+BROKER = "broker.hivemq.com"
+TOPIC = "test/chatgpt/example"
+
+# connecting to the broker
+client = mqtt.Client()
+client.connect(BROKER, 1883, 60)
+client.loop_start()
 
 auto_1 = "auto_1"
 auto_2 = "auto_2"
-
-
-
-# def find_index():
-
-#
-# index_current_auto_1 = matrix.index("auto_1")
-# index_current_auto_2 = matrix.index("auto_2")
-# index_next_auto_1 = matrix.index("auto_1")
-# index_next_auto_2 = matrix.index("auto_2")
-
-
 
 # this is a list of routes with the commands and tags
 
@@ -160,9 +147,6 @@ Tags = {
 
 }
 
-
-
-
 # while True:
 #     if matrix[index_current_auto_1] == matrix[index_next_auto_2]:
 #         # hold car for a second and follow traffic laws
@@ -179,22 +163,23 @@ Tags = {
 # index for the loop
 index = 0
 
+try:
+    while True:
+        # check to make sure that cars arent on the same track position.
+        if auto_1 == auto_2 or auto_2 == auto_1:
+            time.sleep(1)  # for specific car
 
+        # check to see if the car is at the destination tag and sends new command.
+        if auto_1 == route_1[index][1] or auto_2 == route_1[index][1]:
+            if Tags[auto_1][1] == auto_2 or Tags[auto_1][2] == auto_2:
+                time.sleep(1)
+            client.publish(TOPIC, route_1[index][0])
+            print("Sent:", route_1[index][0])
+            index += 1
 
-while True:
-    # check to make sure that cars arent on the same track position.
-    if auto_1 == auto_2 or auto_2 == auto_1:
-        time.sleep(1)  # for specific car
-        continue
+# if you press on keyboard it stops the process
+except KeyboardInterrupt:
+    print("stopping...")
 
-    # check to see if the car is at the destination tag and sends new command.
-    if auto_1 == route_1[index][1] or auto_2 == route_1[index][1]:
-        if Tags[auto_1][1] == auto_2 or  Tags[auto_1][2] == auto_2:
-            time.sleep(1)
-        # route_1[index][0] send to robot
-        index += 1
-        continue
-
-
-
-
+client.loop_stop()
+client.disconnect()
