@@ -9,6 +9,7 @@ const GET_STATS_TIMEOUT_IN_MILLIS = 5000;
 const CSV_EXPORT_TIMEOUT_IN_MILLIS = 20000;
 const isSimulating = ref(false);
 const hasSimulated = ref(false);
+const autoOpenStatsModal = ref(false);
 
 // ---
 // orchestrator composable
@@ -76,6 +77,7 @@ export function useDigitalSimulation() {
 
     function handleSimulationEnded() {
         isSimulating.value = false;
+        autoOpenStatsModal.value = true;
     }
 
         // ---
@@ -183,6 +185,7 @@ export function useDigitalSimulation() {
         isWebSocketConnected,
         isSimulating,
         hasSimulated,
+        autoOpenStatsModal,
 
         startSimulation,
         stopSimulation,

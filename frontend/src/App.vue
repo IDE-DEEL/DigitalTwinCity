@@ -35,7 +35,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import TopBar from './components/TopBar.vue'
 import SimulationDisplay from './components/SimulationDisplay.vue'
 import ControlPanel from './components/ControlPanel.vue'
@@ -43,5 +43,13 @@ import SimulationStatsModal from './components/SimulationStatsModal.vue'
 import { useDigitalSimulation } from './composables/useDigitalSimulation'
 
 const showStatsModal = ref(false)
-const { getStats, exportDataAsCSV } = useDigitalSimulation()
+const { getStats, exportDataAsCSV, autoOpenStatsModal } = useDigitalSimulation()
+
+// Automatically open the stats model when the backend signals the end of the simulation
+watch(autoOpenStatsModal, (value) => {
+    if (value) {
+        showStatsModal.value = true
+        autoOpenStatsModal.value = false
+    }
+})
 </script>
