@@ -1,4 +1,5 @@
 import paho.mqtt.client as mqtt
+import ssl
 import time
 
 # start = [
@@ -100,14 +101,17 @@ import time
 #     [[turn_NE],            [straight_horizontal],   [t_junction_up],         [t_junction_up],        [turn_WN]]
 # ]
 
-# the mqtt connection and topic
-BROKER = "broker.hivemq.com"
-TOPIC = "test/chatgpt/example"
+# ---------------- MQTT CONFIG ----------------
+MQTT_HOST = "digitaltwin.duckdns.org"
+MQTT_PORT = 443
+MQTT_PATH = "/mqtt"
 
-# connecting to the broker
-client = mqtt.Client()
-client.connect(BROKER, 1883, 60)
-client.loop_start()
+MQTT_USERNAME = "backend_user"
+MQTT_PASSWORD = "NBQ4Tnz@EtN3rDu$eBdS"
+
+SUB_TOPIC = "car/auto_X/data/LastRFID"
+PUB_TOPIC_DIR = "car/auto_X/cmd/direction"
+PUB_TOPIC_MOVE = "car/auto_X/cmd/start"
 
 auto_1 = "auto_1"
 auto_2 = "auto_2"
@@ -115,18 +119,18 @@ auto_2 = "auto_2"
 # this is a list of routes with the commands and tags
 
 route_1 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
-route_2 = ["left", "forward", "right", "right", "forward", "left", "right", "right", "forward"]
-route_3 = ["left", "forward", "right", "right", "forward", "left", "right", "right", "forward"]
-route_4 = ["left", "forward", "right", "right", "forward", "left", "right", "right", "forward"]
-route_5 = ["left", "forward", "right", "right", "forward", "left", "right", "right", "forward"]
-route_6 = ["left", "forward", "right", "right", "forward", "left", "right", "right", "forward"]
-route_7 = ["left", "forward", "right", "right", "forward", "left", "right", "right", "forward"]
-route_8 = ["left", "forward", "right", "right", "forward", "left", "right", "right", "forward"]
-route_9 = ["left", "forward", "right", "right", "forward", "left", "right", "right", "forward"]
-route_10 = ["left", "forward", "right", "right", "forward", "left", "right", "right", "forward"]
-route_11 = ["left", "forward", "right", "right", "forward", "left", "right", "right", "forward"]
-route_12 = ["left", "forward", "right", "right", "forward", "left", "right", "right", "forward"]
-route_13 = ["left", "forward", "right", "right", "forward", "left", "right", "right", "forward"]
+route_2 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
+route_3 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
+route_4 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
+route_5 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
+route_6 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
+route_7 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
+route_8 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
+route_9 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
+route_10 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
+route_11 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
+route_12 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
+route_13 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
 
 route = {
     "route_1": [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]],
@@ -147,39 +151,69 @@ Tags = {
 
 }
 
-# while True:
-#     if matrix[index_current_auto_1] == matrix[index_next_auto_2]:
-#         # hold car for a second and follow traffic laws
-#         break
-#
-#     elif matrix[index_current_auto_2] == matrix[index_next_auto_1]:
-#         # hold car for a second and follow traffic laws
-#         break
-#
-#     else:
-#         # follow the path
-#         break
+start = True
+# ---------------- CALLBACKS ----------------
+def on_connect(client, userdata, flags, reason_code, properties):
+    if reason_code == 0:
+        print("✅ Connected to MQTT")
+        client.subscribe(SUB_TOPIC)
+    else:
+        print("❌ Connection failed:", reason_code)
+
+def on_message(client, userdata, msg):
+    rfid = msg.payload.decode().strip()
+
+    print(f"RFID received: {rfid}")
+
+    # ----- DECISION LOGIC -----
+    if start == True:
+        client.publish(PUB_TOPIC_MOVE, "False")
+        print("Car started...")
+    elif start == False:
+        client.publish(PUB_TOPIC_MOVE, "True")
+        print("Car stopped...")
+    # elif start == True == False:
+    #     response = ""
+    #     history_start = True
+    # elif start == True and history_start == False:
+    #     response = ""
+
+    # # publish response
+    # client.publish(PUB_TOPIC_DIR, response)
+    # print("Sent:", response)
 
 # index for the loop
-index = 0
+# index = 0
+#
+#     # check to make sure that cars arent on the same track position.
+#     if auto_1 == auto_2 or auto_2 == auto_1:
+#         # send stop to car
+#         time.sleep(1)  # for specific car
+#
+#     # check to see if the car is at the destination tag and sends new command.
+#     if auto_1 == route_1[index][1] or auto_2 == route_1[index][1]:
+#         if Tags[auto_1][1] == auto_2 or Tags[auto_1][2] == auto_2:
+#             time.sleep(1)
+#         client.publish(TOPIC, route_1[index][0])
+#         print("Sent:", route_1[index][0])
+#         index += 1
 
-try:
-    while True:
-        # check to make sure that cars arent on the same track position.
-        if auto_1 == auto_2 or auto_2 == auto_1:
-            time.sleep(1)  # for specific car
 
-        # check to see if the car is at the destination tag and sends new command.
-        if auto_1 == route_1[index][1] or auto_2 == route_1[index][1]:
-            if Tags[auto_1][1] == auto_2 or Tags[auto_1][2] == auto_2:
-                time.sleep(1)
-            client.publish(TOPIC, route_1[index][0])
-            print("Sent:", route_1[index][0])
-            index += 1
+# ---------------- CLIENT ----------------
+client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, transport="websockets")
 
-# if you press on keyboard it stops the process
-except KeyboardInterrupt:
-    print("stopping...")
+client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
 
-client.loop_stop()
-client.disconnect()
+client.ws_set_options(path=MQTT_PATH)
+client.tls_set(cert_reqs=ssl.CERT_REQUIRED)
+
+client.on_connect = on_connect
+client.on_message = on_message
+
+client.reconnect_delay_set(min_delay=1, max_delay=60)
+
+client.connect(MQTT_HOST, MQTT_PORT)
+
+print("Waiting for RFID scans...")
+client.loop_forever()
+
