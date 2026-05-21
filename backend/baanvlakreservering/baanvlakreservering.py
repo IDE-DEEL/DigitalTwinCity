@@ -109,9 +109,9 @@ MQTT_PATH = "/mqtt"
 MQTT_USERNAME = "backend_user"
 MQTT_PASSWORD = "NBQ4Tnz@EtN3rDu$eBdS"
 
-SUB_TOPIC = "car/auto_X/data/LastRFID"
+SUB_TOPIC = "car/auto_B/data/LastRFID"
 PUB_TOPIC_DIR = "car/auto_X/cmd/direction"
-PUB_TOPIC_MOVE = "car/auto_X/cmd/start"
+PUB_TOPIC_MOVE = "car/auto_B/cmd/Start"
 
 auto_1 = "auto_1"
 auto_2 = "auto_2"
@@ -167,10 +167,10 @@ def on_message(client, userdata, msg):
 
     # ----- DECISION LOGIC -----
     if start == True:
-        client.publish(PUB_TOPIC_MOVE, "False")
+        client.publish(PUB_TOPIC_MOVE, "True")
         print("Car started...")
     elif start == False:
-        client.publish(PUB_TOPIC_MOVE, "True")
+        client.publish(PUB_TOPIC_MOVE, "False")
         print("Car stopped...")
     # elif start == True == False:
     #     response = ""
