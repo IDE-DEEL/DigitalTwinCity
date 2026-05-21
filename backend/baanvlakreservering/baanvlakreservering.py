@@ -164,7 +164,9 @@ def on_message(client, userdata, msg):
     rfid = msg.payload.decode().strip()
 
     print(f"RFID received: {rfid}")
-
+    car_data = [
+        {"auto_id": "Auto B", "tag_id": "53:3F:11:F7:32:00:01"},
+    ]
     # ----- DECISION LOGIC -----
     if start == True:
         client.publish(PUB_TOPIC_MOVE, "True")
