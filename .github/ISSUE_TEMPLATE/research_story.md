@@ -1,16 +1,16 @@
 ---
-name: Learning Story
-about: Learning Story 
-label: learning story
+name: Research Story
+about: Research Story 
+label: research story
 ---
 
-## Learning Story
+## Research Story
 
-(Learning story)
+(Research story)
 
 ## Beschrijving
 
-(beschrijf hier de learning story)
+(beschrijf hier de research story)
 
 ---
 
