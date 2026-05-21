@@ -205,21 +205,45 @@ def on_message(client, userdata, msg):
 #         index += 1
 
 
-# ---------------- CLIENT ----------------
-client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, transport="websockets")
+def create_client():
+    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, transport="websockets")
+    client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
+    client.ws_set_options(path=MQTT_PATH)
+    client.tls_set(cert_reqs=ssl.CERT_REQUIRED)
+    client.on_connect = on_connect
+    client.on_message = on_message
+    client.reconnect_delay_set(min_delay=1, max_delay=60)
+    return client
 
-client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
 
-client.ws_set_options(path=MQTT_PATH)
-client.tls_set(cert_reqs=ssl.CERT_REQUIRED)
+_client = None
 
-client.on_connect = on_connect
-client.on_message = on_message
 
-client.reconnect_delay_set(min_delay=1, max_delay=60)
+def start_mqtt_client():
+    global _client
+    if _client is not None:
+        return _client
 
-client.connect(MQTT_HOST, MQTT_PORT)
+    _client = create_client()
+    _client.connect(MQTT_HOST, MQTT_PORT)
+    print("Waiting for RFID scans...")
+    _client.loop_start()
+    return _client
 
-print("Waiting for RFID scans...")
-client.loop_forever()
+
+def stop_mqtt_client():
+    global _client
+    if _client is None:
+        return
+
+    _client.loop_stop()
+    _client.disconnect()
+    _client = None
+
+
+if __name__ == "__main__":
+    client = create_client()
+    client.connect(MQTT_HOST, MQTT_PORT)
+    print("Waiting for RFID scans...")
+    client.loop_forever()
 
