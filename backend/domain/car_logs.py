@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, DateTime
-from backend.db.database import Base
+from backend.data.db.database import Base
 
 
 class CarLogs(Base):

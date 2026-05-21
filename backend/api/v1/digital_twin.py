@@ -1,6 +1,7 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from backend.api.manager import ConnectionManager
 from backend.services.car_service import CarService, get_car_service
+from backend.baanvlakreservering.baanvlakreservering import getTag
 
 router = APIRouter()
 manager = ConnectionManager()
@@ -15,6 +16,10 @@ async def websocket_endpoint(websocket: WebSocket):
             print(data)
             payload = data.get("payload")
 
+            car_data = getTag()
+            await manager.broadcast_update(msg_type, car_data)
+            await websocket.send_json({"type": msg_type, "payload": car_data})
+
             match msg_type:
                 case "speed":
                     await manager.broadcast_update(msg_type, payload)
@@ -27,6 +32,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 case "car_table":
                     await manager.broadcast_update(msg_type, len(payload))
                     await websocket.send_json({"type": msg_type, "payload": payload})
+
 
     except WebSocketDisconnect:
         manager.disconnect(websocket)

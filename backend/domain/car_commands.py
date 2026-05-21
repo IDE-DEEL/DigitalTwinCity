@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
-from backend.db.database import Base
+from backend.data.db.database import Base
 
 
 class CarCommands(Base):

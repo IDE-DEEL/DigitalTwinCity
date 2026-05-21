@@ -2,9 +2,9 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from backend.data.db.database import get_db
-from backend.repositories.car_logs_repo import CarLogsRepository
-from backend.repositories.car_repo import CarRepository
-from backend.repositories.track_segment_repo import TrackSegmentRepository
+from backend.data.repositories.car_logs_repo import CarLogsRepository
+from backend.data.repositories.car_repo import CarRepository
+from backend.data.repositories.track_segment_repo import TrackSegmentRepository
 from backend.domain.car_logs import CarLogs
 
 router = APIRouter()

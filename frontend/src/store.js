@@ -1,4 +1,5 @@
 import { reactive } from 'vue'
+import { wsUrl } from './config/api'
 
 export const store = reactive({
   // De gedeelde data
@@ -57,7 +58,7 @@ export const store = reactive({
 
 export const connect = () => {
 // Methode om de socket te verbinden
-  store.socket = new WebSocket("ws://localhost:8000/api/v1/ws/digital_twin");
+  store.socket = new WebSocket(wsUrl("/api/v1/ws/digital_twin"));
   
   store.socket.onopen = () => console.log("WebSocket verbonden!");
   store.socket.onmessage = (event) => {
