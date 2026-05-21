@@ -1,0 +1,171 @@
+// Adjust this value per server:
+// main server  -> "main"
+// backup server -> "backup"
+
+logging {
+  level    = "info"
+  format   = "logfmt"
+  write_to = [loki.relabel.alloy_logs.receiver]
+}
+
+// Loki destination.
+// Main server -> preferably HTTPS to Loki on backup server via Caddy.
+// Backup server -> may be internal and local.
+loki.write "central" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}
+
+// Match host logs.
+local.file_match "host_logs" {
+  path_targets = [
+    { __path__ = "/var/log/auth.log", log_file = "auth.log" },
+    { __path__ = "/var/log/syslog", log_file = "syslog" },
+    { __path__ = "/var/log/kern.log", log_file = "kern.log" },
+    { __path__ = "/var/log/ufw.log", log_file = "ufw.log" },
+    { __path__ = "/var/log/daemon.log", log_file = "daemon.log" },
+    { __path__ = "/var/log/docker.log", log_file = "docker.log" },
+  ]
+}
+
+// Discover Docker containers.
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+// Convert Docker discovery metadata into persistent labels.
+discovery.relabel "docker_targets" {
+  targets = discovery.docker.containers.targets
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container"
+    replacement   = "$1"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "compose_service"
+  }
+
+  rule {
+    target_label = "server"
+    replacement  = "main"
+  }
+
+  rule {
+    target_label = "env"
+    replacement  = "dev"
+  }
+
+  rule {
+    target_label = "source"
+    replacement  = "docker"
+  }
+}
+
+// Tail host logs and enrich labels.
+loki.source.file "host_tail" {
+  targets    = local.file_match.host_logs.targets
+  forward_to = [loki.process.host_pipeline.receiver]
+}
+
+loki.source.journal "host_journal" {
+  max_age       = "24h"
+  path          = "/var/log/journal"
+  relabel_rules = loki.relabel.journal_labels.rules
+  labels        = {
+    job    = "host_journal",
+    source = "journal",
+    server = "main",
+    env    = "dev",
+  }
+  forward_to    = [loki.write.central.receiver]
+}
+
+loki.relabel "journal_labels" {
+  forward_to = []
+
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    target_label  = "unit"
+  }
+
+  rule {
+    source_labels = ["__journal__hostname"]
+    target_label  = "host"
+  }
+
+  rule {
+    source_labels = ["__journal_priority_keyword"]
+    target_label  = "priority"
+  }
+}
+
+loki.process "host_pipeline" {
+  forward_to = [loki.write.central.receiver]
+
+  stage.static_labels {
+    values = {
+      job    = "host_logs",
+      source = "host",
+      server = "main",
+      env    = "dev",
+    }
+  }
+}
+
+// Collect logs from Docker container stdout/stderr.
+loki.source.docker "docker_engine" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.relabel.docker_targets.output
+  forward_to = [loki.process.docker_pipeline.receiver]
+
+  labels = {
+    job = "docker_logs",
+  }
+}
+
+loki.process "docker_pipeline" {
+  forward_to = [loki.write.central.receiver]
+
+  stage.static_labels {
+    values = {
+      server = "main",
+      env    = "dev",
+      source = "docker",
+    }
+  }
+}
+
+// Add labels to internal Alloy logs.
+loki.relabel "alloy_logs" {
+  forward_to = [loki.write.central.receiver]
+
+  rule {
+    target_label = "service"
+    replacement  = "alloy"
+  }
+
+  rule {
+    target_label = "source"
+    replacement  = "alloy"
+  }
+
+  rule {
+    target_label = "server"
+    replacement  = "main"
+  }
+
+  rule {
+    target_label = "env"
+    replacement  = "dev"
+  }
+
+  rule {
+    target_label = "job"
+    replacement  = "alloy_internal"
+  }
+}

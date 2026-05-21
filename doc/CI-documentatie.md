@@ -7,9 +7,9 @@ images van de backend en frontend. Beide workflows bouwen een Docker image,
 voeren een Trivy beveiligingsscan uit en publiceren de gescande image naar
 GitHub Container Registry (GHCR) wanneer de run op `main` of `dev` draait.
 
-De workflows zijn vrijwel gelijk opgezet. Het verschil zit vooral in de map die
-gebouwd wordt, de Dockerfile die gebruikt wordt, de image-naam en de
-artifactnaam.
+De backend- en frontend-workflows gebruiken dezelfde herbruikbare workflow voor
+builden, scannen en publiceren. Het verschil zit vooral in de map die gebouwd
+wordt, de Dockerfile die gebruikt wordt, de image-naam en de artifactnaam.
 
 ## Workflowbestanden
 
@@ -17,13 +17,13 @@ artifactnaam.
 | --- | --- |
 | Backend | `.github/workflows/backend-build-scan-publish.yml` |
 | Frontend | `.github/workflows/frontend-build-scan-publish.yml` |
+| Herbruikbare workflow | `.github/workflows/docker-build-scan-publish.yml` |
 
 ## Wanneer draaien de workflows?
 
 Beide workflows starten in drie situaties:
 
-- Bij een `push` naar de branches `main` of `dev`, maar alleen als er relevante
-  bestanden zijn gewijzigd.
+- Bij een `push` naar de branches `main` of `dev`.
 - Bij een `pull_request`, maar alleen als er relevante bestanden zijn gewijzigd.
 - Handmatig via `workflow_dispatch` in GitHub Actions.
 
@@ -34,9 +34,9 @@ De padfilters verschillen per workflow:
 | Backend | `backend/**` en `.github/workflows/backend-build-scan-publish.yml` |
 | Frontend | `frontend/**` en `.github/workflows/frontend-build-scan-publish.yml` |
 
-Door deze padfilters draait de backend workflow alleen bij backend-wijzigingen
-en draait de frontend workflow alleen bij frontend-wijzigingen. Dit voorkomt
-onnodige CI-runs.
+Door deze padfilters draaien pull request checks alleen bij relevante backend-,
+frontend- of workflowwijzigingen. Pushes naar `main` en `dev` draaien altijd,
+zodat deploybare branches steeds actuele image-tags kunnen publiceren.
 
 ## Rechten en gelijktijdigheid
 
@@ -61,7 +61,8 @@ gescand.
 
 ## Jobopzet
 
-Beide workflows bevatten een Docker job die draait op `ubuntu-latest`.
+Beide componentworkflows roepen de herbruikbare Docker workflow aan. Die
+herbruikbare workflow bevat een Docker job die draait op `ubuntu-latest`.
 
 | Onderdeel | Jobnaam |
 | --- | --- |
@@ -110,12 +111,6 @@ Elke image krijgt altijd een SHA-tag:
 ghcr.io/<owner>/<repository>/<onderdeel>:sha-<korte-commit-sha>
 ```
 
-Voor runs op `main` wordt daarnaast ook de tag `latest` toegevoegd:
-
-```text
-ghcr.io/<owner>/<repository>/<onderdeel>:latest
-```
-
 De concrete image namen zijn:
 
 | Onderdeel | Image |
@@ -123,8 +118,9 @@ De concrete image namen zijn:
 | Backend | `ghcr.io/<owner>/<repository>/backend` |
 | Frontend | `ghcr.io/<owner>/<repository>/frontend` |
 
-De scan gebruikt altijd de SHA-tag. Daardoor is duidelijk welke exacte commit is
-gebouwd en gecontroleerd.
+De scan en publicatie gebruiken dezelfde SHA-tag. Daardoor is duidelijk welke
+exacte commit is gebouwd en gecontroleerd. Er wordt bewust geen `latest` tag
+gepubliceerd voor app-images.
 
 ### 6. Docker image lokaal bouwen
 
@@ -217,5 +213,16 @@ De image wordt alleen gepubliceerd als:
 - de branch `main` of `dev` is
 - de workflow niet eerder is gefaald door kritieke kwetsbaarheden
 
-De workflows pushen alle berekende tags naar GHCR. Op `dev` is dat alleen de
-SHA-tag. Op `main` zijn dat de SHA-tag en `latest`.
+De workflows pushen de berekende SHA-tag naar GHCR. Zowel op `dev` als op
+`main` is dat een immutable tag in de vorm `sha-<korte-commit-sha>`.
+
+## CD deployment
+
+Deployment staat apart beschreven in `deploy/README.md`. De CD-workflow staat
+in `.github/workflows/cd-deploy.yml` en gebruikt de gepubliceerde GHCR-images
+uit deze CI-workflows.
+
+Na deployment controleert de workflow de backend- en frontend-healthchecks. Bij
+een mislukte healthcheck wordt de vorige release teruggezet als die beschikbaar
+is; de pipeline faalt daarna alsnog zodat de mislukte deployment traceerbaar
+blijft.

@@ -8,14 +8,20 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - ENV=development
+      - DATABASE_URL=postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - CORS_ALLOW_ORIGINS=http://localhost:8080,http://localhost:5173
+      - SESSION_COOKIE_SECURE=false
     env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "80:80"
+      - "8080:80"
     environment:
       - VITE_API_URL=http://localhost:8000
 
@@ -27,6 +33,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
 volumes:
   postgres_data:

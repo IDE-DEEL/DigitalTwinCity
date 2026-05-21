@@ -18,6 +18,10 @@ app = FastAPI(title="DEEL - Digital Twin",
               redoc_url="/redoc",
 )
 
+@app.get("/api/v1/health", tags=["Health"])
+def health_check():
+    return {"status": "ok"}
+
 if settings.cors_allow_origins:
     app.add_middleware(
       CORSMiddleware,

@@ -1,0 +1,19 @@
+# --- Backend User ---
+user backend_user
+topic readwrite car/#
+
+# --- Auto A Devices ---
+user auto_A
+topic readwrite car/auto_A/#
+
+# --- Auto B Devices ---
+user auto_B
+topic readwrite car/auto_B/#
+
+# --- Auto C Devices ---
+user auto_C
+topic readwrite car/auto_C/#
+
+# --- Auto D Devices ---
+user auto_D
+topic readwrite car/auto_D/#
