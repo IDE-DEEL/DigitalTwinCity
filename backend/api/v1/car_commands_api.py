@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from backend.data.db.database import get_db
-from backend.repositories.car_repo import CarRepository
+from backend.data.repositories.car_repo import CarRepository
 from backend.domain.car_commands import CarCommands
 
 router = APIRouter()

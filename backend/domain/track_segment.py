@@ -1,5 +1,5 @@
 from sqlalchemy import Column, String
-from backend.db.database import Base
+from backend.data.db.database import Base
 
 
 class TrackSegment(Base):
