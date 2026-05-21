@@ -195,8 +195,7 @@ const carPositions = computed(() => {
             <svg class="absolute inset-0 pointer-events-none"
             v-for="car in carPositions"
             width=${MAP_DIMENSION} height=${MAP_DIMENSION}>
-                <rect class="car" :x="car.x" :y="car.y" width="80" height="40" fill="#636363" stroke="black"
-                style="transform-box: fill-box; transform-origin: center; transform: rotate(90deg);"></rect>
+                <rect class="car" :x="car.x - 20" :y="car.y - 20" width="40" height="40" fill="#636363" stroke="black"></rect>
             </svg>
         </div>
     </div> 
