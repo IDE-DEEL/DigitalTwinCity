@@ -150,6 +150,9 @@ Tags = {
     "tag 11": ["adjacent tag", "adjacent tag", "adjacent tag"]
 
 }
+car_data = []
+def getTag():
+    return car_data
 
 start = True
 # ---------------- CALLBACKS ----------------
@@ -164,8 +167,9 @@ def on_message(client, userdata, msg):
     rfid = msg.payload.decode().strip()
 
     print(f"RFID received: {rfid}")
+    global car_data
     car_data = [
-        {"auto_id": "Auto B", "tag_id": "53:3F:11:F7:32:00:01"},
+        {"auto_id": "Auto B", "tag_id": rfid},
     ]
     # ----- DECISION LOGIC -----
     if start == True:
