@@ -79,33 +79,34 @@ probeert rollback als iets misgaat.
 
 Dit is wat er gebeurt als code naar `main` gaat.
 
-1. Een commit wordt gemerged of gepusht naar `main`.
-2. GitHub Actions start de backend- en frontend-build workflows.
-3. Elke workflow bouwt een Docker image.
-4. Trivy scant de image op vulnerabilities, secrets en misconfiguraties.
-5. Als Trivy `CRITICAL` findings vindt, faalt de build. Er wordt dan geen image
+1. Een pull request naar `main` bouwt en scant de gewijzigde app-image, maar publiceert of deployt niet.
+2. De pull request wordt gemerged, of een commit wordt direct gepusht naar `main`.
+3. GitHub Actions start de backend- en frontend-build workflows.
+4. Elke workflow bouwt een Docker image.
+5. Trivy scant de image op vulnerabilities, secrets en misconfiguraties.
+6. Als Trivy `CRITICAL` findings vindt, faalt de build. Er wordt dan geen image
    gepubliceerd en er hoort geen deployment plaats te vinden.
-6. Als de scan goed genoeg is, pusht de workflow de image naar GHCR.
-7. De image krijgt een tag met de commit, bijvoorbeeld `sha-abc1234`.
-8. `CD Deploy` start op `main`.
-9. `CD Deploy` controleert of de backend- en frontendimage voor dezelfde commit
+7. Als de scan goed genoeg is, pusht de workflow de image naar GHCR.
+8. De image krijgt een tag met de commit, bijvoorbeeld `sha-abc1234`.
+9. `CD Deploy` start na de succesvolle push-build op `main`.
+10. `CD Deploy` controleert of de backend- en frontendimage voor dezelfde commit
    allebei bestaan.
-10. De deploy-job draait op de self-hosted runner.
-11. De runner maakt via SSH verbinding met de deployment-host.
-12. De runner maakt een release-map aan onder `<DEPLOY_PATH>/releases/`.
-13. De runner kopieert `server/`, `remote-deploy.sh` en deze README naar die
+11. De deploy-job draait op de self-hosted runner.
+12. De runner maakt via SSH verbinding met de deployment-host.
+13. De runner maakt een release-map aan onder `<DEPLOY_PATH>/releases/`.
+14. De runner kopieert `server/`, `remote-deploy.sh` en deze README naar die
     release-map.
-14. De runner uploadt runtimewaarden zoals `BACKEND_IMAGE`, `FRONTEND_IMAGE`,
+15. De runner uploadt runtimewaarden zoals `BACKEND_IMAGE`, `FRONTEND_IMAGE`,
     `GHCR_TOKEN` en `ROLLBACK_ON_FAILURE`.
-15. Op de server start `remote-deploy.sh`.
-16. Het script controleert of Docker, Docker Compose, `curl` en
+16. Op de server start `remote-deploy.sh`.
+17. Het script controleert of Docker, Docker Compose, `curl` en
     `<DEPLOY_PATH>/shared/.env` bestaan.
-17. Het script maakt of normaliseert de Mosquitto password file.
-18. Het script bewaart de huidige release als vorige release.
-19. Docker Compose trekt de nieuwe images en start de stack.
-20. Het script voert de frontend- en backend-healthchecks uit.
-21. Als beide healthchecks slagen, wordt de nieuwe release `current`.
-22. Als iets faalt, probeert het script rollback naar de vorige release.
+18. Het script maakt of normaliseert de Mosquitto password file.
+19. Het script bewaart de huidige release als vorige release.
+20. Docker Compose trekt de nieuwe images en start de stack.
+21. Het script voert de frontend- en backend-healthchecks uit.
+22. Als beide healthchecks slagen, wordt de nieuwe release `current`.
+23. Als iets faalt, probeert het script rollback naar de vorige release.
 
 Het belangrijkste punt: de nieuwe release wordt pas actief gemarkeerd nadat de
 healthchecks slagen.
@@ -371,7 +372,7 @@ Mosquitto password file:
 
 ### Automatisch deployen
 
-De normale route is een merge of push naar `main`.
+De normale route is een pull request naar `main`, gevolgd door een merge naar `main`. Directe pushes naar `main` volgen dezelfde build- en deployroute.
 
 Wat je als beheerder doet:
 
