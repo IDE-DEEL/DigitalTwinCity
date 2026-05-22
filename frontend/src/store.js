@@ -1,7 +1,23 @@
 import { reactive } from 'vue'
 import { wsUrl } from './config/api'
 
-let factor = 5.33;
+export const TAG_POSITION_SCALE = 5.33;
+export const MAP_PIXEL_SIZE = 100 * TAG_POSITION_SCALE;
+
+export const normalizeTagId = (tagId) => {
+  return String(tagId ?? '').replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
+}
+
+const normalizeCarData = (payload) => {
+  if (!Array.isArray(payload)) {
+    return [];
+  }
+
+  return payload.map((car) => ({
+    ...car,
+    tag_id: normalizeTagId(car.tag_id ?? car.rfid_tag ?? car.tag),
+  })).filter((car) => car.tag_id);
+}
 
 export const store = reactive({
   // De gedeelde data
@@ -18,21 +34,21 @@ export const store = reactive({
   ],
 
   tag_positions: [
-    {"tag_id": "53:3F:11:F7:32:00:01", "tag_pos": {"x": 93.5*factor, "y": 53*factor}},
-    {"tag_id": "53:2A:27:F7:32:00:01", "tag_pos": {"x": 84*factor, "y": 31*factor}},
-    {"tag_id": "53:5F:2D:F7:32:00:01", "tag_pos": {"x": 61.5*factor, "y": 21*factor}},
+    {"tag_id": "53:3F:11:F7:32:00:01", "tag_pos": {"x": 93.5*TAG_POSITION_SCALE, "y": 53*TAG_POSITION_SCALE}},
+    {"tag_id": "53:2A:27:F7:32:00:01", "tag_pos": {"x": 84*TAG_POSITION_SCALE, "y": 31*TAG_POSITION_SCALE}},
+    {"tag_id": "53:5F:2D:F7:32:00:01", "tag_pos": {"x": 61.5*TAG_POSITION_SCALE, "y": 21*TAG_POSITION_SCALE}},
     
-    {"tag_id": "CF:8D:0A:3E", "tag_pos": {"x": 53*factor, "y": 21*factor}},
-    {"tag_id": "3A:6E:0A:3E", "tag_pos": {"x": 30*factor, "y": 31*factor}},
-    {"tag_id": "10:8E:0A:3E", "tag_pos": {"x": 21*factor, "y": 53*factor}},
+    {"tag_id": "CF:8D:0A:3E", "tag_pos": {"x": 53*TAG_POSITION_SCALE, "y": 21*TAG_POSITION_SCALE}},
+    {"tag_id": "3A:6E:0A:3E", "tag_pos": {"x": 30*TAG_POSITION_SCALE, "y": 31*TAG_POSITION_SCALE}},
+    {"tag_id": "10:8E:0A:3E", "tag_pos": {"x": 21*TAG_POSITION_SCALE, "y": 53*TAG_POSITION_SCALE}},
     
-    {"tag_id": "53:D7:78:F6:32:00:01", "tag_pos": {"x": 21*factor, "y": 61*factor}},
-    {"tag_id": "53:0C:5F:F6:32:00:01", "tag_pos": {"x": 31*factor, "y": 84*factor}},
-    {"tag_id": "53:71:61:6A:62:00:01", "tag_pos": {"x": 53*factor, "y": 93.5*factor}},
+    {"tag_id": "53:D7:78:F6:32:00:01", "tag_pos": {"x": 21*TAG_POSITION_SCALE, "y": 61*TAG_POSITION_SCALE}},
+    {"tag_id": "53:0C:5F:F6:32:00:01", "tag_pos": {"x": 31*TAG_POSITION_SCALE, "y": 84*TAG_POSITION_SCALE}},
+    {"tag_id": "53:71:61:6A:62:00:01", "tag_pos": {"x": 53*TAG_POSITION_SCALE, "y": 93.5*TAG_POSITION_SCALE}},
     
-    {"tag_id": "53:66:C0:F5:32:00:01​", "tag_pos": {"x": 61.5*factor, "y": 93.5*factor}},
-    {"tag_id": "53:78:C7:F5:32:00:01", "tag_pos": {"x": 84*factor, "y": 84*factor}},
-    {"tag_id": "53:B2:D1:F5:32:00:01", "tag_pos": {"x": 93.5*factor, "y": 61.5*factor}}
+    {"tag_id": "53:66:C0:F5:32:00:01", "tag_pos": {"x": 61.5*TAG_POSITION_SCALE, "y": 93.5*TAG_POSITION_SCALE}},
+    {"tag_id": "53:78:C7:F5:32:00:01", "tag_pos": {"x": 84*TAG_POSITION_SCALE, "y": 84*TAG_POSITION_SCALE}},
+    {"tag_id": "53:B2:D1:F5:32:00:01", "tag_pos": {"x": 93.5*TAG_POSITION_SCALE, "y": 61.5*TAG_POSITION_SCALE}}
   ],
 
   routes: [
@@ -88,7 +104,7 @@ export const connect = () => {
         break;
 
         case "car_data":
-            store.car_data = payload;
+            store.car_data = normalizeCarData(payload);
         break;
     }
   };

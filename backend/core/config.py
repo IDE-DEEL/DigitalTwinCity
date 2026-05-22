@@ -13,6 +13,11 @@ class Settings(BaseSettings):
     SESSION_COOKIE_SECURE: bool = True
     SESSION_COOKIE_SAMESITE: str = "lax"
     SESSION_COOKIE_DOMAIN: str | None = None
+    MQTT_HOST: str
+    MQTT_PORT: int = 443
+    MQTT_PATH: str = "/mqtt"
+    MQTT_USERNAME: str
+    MQTT_PASSWORD: str
 
     @property
     def cors_allow_origins(self) -> list[str]:

@@ -1,6 +1,9 @@
 import paho.mqtt.client as mqtt
 import ssl
 import time
+from typing import Callable
+
+from backend.core.config import settings
 
 # start = [
 #     [[0],[1],[2],[0]],
@@ -102,12 +105,11 @@ import time
 # ]
 
 # ---------------- MQTT CONFIG ----------------
-MQTT_HOST = "digitaltwin.duckdns.org"
-MQTT_PORT = 443
-MQTT_PATH = "/mqtt"
-
-MQTT_USERNAME = "backend_user"
-MQTT_PASSWORD = "NBQ4Tnz@EtN3rDu$eBdS"
+MQTT_HOST = settings.MQTT_HOST
+MQTT_PORT = settings.MQTT_PORT
+MQTT_PATH = settings.MQTT_PATH
+MQTT_USERNAME = settings.MQTT_USERNAME
+MQTT_PASSWORD = settings.MQTT_PASSWORD
 
 SUB_TOPIC = "car/auto_B/data/LastRFID"
 PUB_TOPIC_DIR = "car/auto_X/cmd/direction"
@@ -151,8 +153,25 @@ Tags = {
 
 }
 car_data = []
+car_data_listeners: list[Callable[[list[dict]], None]] = []
+
+
 def getTag():
     return car_data
+
+
+def add_car_data_listener(listener: Callable[[list[dict]], None]):
+    if listener not in car_data_listeners:
+        car_data_listeners.append(listener)
+
+
+def notify_car_data_listeners():
+    for listener in tuple(car_data_listeners):
+        try:
+            listener(car_data)
+        except Exception as exc:
+            print(f"Failed to notify car data listener: {exc}")
+
 
 start = True
 # ---------------- CALLBACKS ----------------
@@ -171,6 +190,7 @@ def on_message(client, userdata, msg):
     car_data = [
         {"auto_id": "Auto B", "tag_id": rfid},
     ]
+    notify_car_data_listeners()
     # ----- DECISION LOGIC -----
     if start == True:
         client.publish(PUB_TOPIC_MOVE, "True")
