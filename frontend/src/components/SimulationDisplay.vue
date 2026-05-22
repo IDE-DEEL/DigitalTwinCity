@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { fetchMapData } from '../logic/service/mapService.js'; 
 import { buildLane } from '../logic/service/laneBuilder.js';
 import { useMqttVehicle } from '../composables/MqttConnection.js';
@@ -13,8 +13,13 @@ const mapData = ref([]);
 const componentDefinitions = ref({}); 
 const isLoading = ref(true);
 // const mapGrid = ref(null); 
+const factor_x = ref(0)
+const factor_y = ref(0)
 const MAP_DIMENSION = 2;
 const MAX_MAP_SCALE = 70;
+const factor = 5.33;
+
+//real scale: tile -> 57.5 cm
 
 // container style
 const containerStyle = computed(() => {
@@ -114,6 +119,12 @@ function generatePath() {
     return pathString;
 }
 
+// Update factor to scale the x and y coordinates of a tag or car
+const updateFactor = (event) => {
+  factor_x.value = event.target.clientWidth / 57.5
+  factor_y.value = event.target.clientHeight / 57.5
+}
+
 const carPositions = computed(() => {
   return store.car_data.map(car => {
 
@@ -128,6 +139,25 @@ const carPositions = computed(() => {
     }
   })
 })
+
+// Custom directive named 'v-resize' to update factors when resizing browser
+const vResize = {
+  mounted(el, binding) {
+    const observer = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        // Call function with every change
+        binding.value(entry); 
+      }
+    });
+    observer.observe(el);
+    el._resizeObserver = observer;
+  },
+  unmounted(el) {
+    if (el._resizeObserver) {
+      el._resizeObserver.disconnect();
+    }
+  }
+};
 </script>
 
 <template>
@@ -148,6 +178,7 @@ const carPositions = computed(() => {
                     :alt="component.label"
                     class="w-full h-full object-contain"
                     :style="{ transform:`rotate(${component.rotation}deg)`}"
+                    v-resize="updateFactor"
                     />
                 </div>
             </div>
@@ -156,7 +187,7 @@ const carPositions = computed(() => {
             <svg class="absolute inset-0 pointer-events-none"
             v-for="tag in store.tag_positions"
             width=${MAP_DIMENSION} height=${MAP_DIMENSION}>
-                <circle :cx="tag.tag_pos.x" :cy="tag.tag_pos.y" r="8" fill="black"></circle>
+                <circle :cx="tag.tag_pos.x * factor_x" :cy="tag.tag_pos.y * factor_y" r="8" fill="black"></circle>
             </svg>
             
             <!-- Lanes (kleur kan later worden weggehaald) --
@@ -195,7 +226,7 @@ const carPositions = computed(() => {
             <svg class="absolute inset-0 pointer-events-none"
             v-for="car in carPositions"
             width=${MAP_DIMENSION} height=${MAP_DIMENSION}>
-                <rect class="car" :x="car.x - 20" :y="car.y - 20" width="40" height="40" fill="#636363" stroke="black"></rect>
+                <rect class="car" :x="(car.x*factor_x) - 20" :y="(car.y*factor_y) - 20" width="40" height="40" fill="#636363" stroke="black"></rect>
             </svg>
         </div>
     </div> 
