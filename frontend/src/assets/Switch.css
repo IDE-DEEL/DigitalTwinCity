@@ -1,0 +1,37 @@
+.switch-container {
+    display: flex;
+    --container-radius: 28px;
+    width: fit-content;
+    min-width: 240px;
+    height: 45%;
+    border: 1px solid #000000;
+    border-radius: var(--container-radius);
+    overflow: hidden;
+}
+
+.switch-button {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    background-color: transparent; 
+    color: black;
+    cursor: pointer;
+}
+
+.switch-button-left {
+    border-radius: var(--container-radius) 0 0 var(--container-radius);
+}
+
+.switch-button-right {
+    border-radius: 0 var(--container-radius) var(--container-radius) 0;
+}
+
+.is-active {
+    background-color: var(--color-primary-blue);
+    color: white;
+}

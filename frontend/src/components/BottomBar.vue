@@ -36,19 +36,19 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useMqttVehicle } from '../composables/MqttConnection';
+import { computed } from 'vue';
+import { send_data, store } from '../store.js';
 
-const{ isSimulating, startSimulation, stopSimulation } = useMqttVehicle();
+const isSimulating = computed(() => store.active);
 
 const handleStart = () => {
   // NOTE: kan eventueel later ook timer + score bijghouden worden hier
-  startSimulation();
+  send_data('activation', 'start');
   console.log('Simulation gestart');
 }
 
 const handleStop = () => {
-  stopSimulation();
+  send_data('activation', 'stop');
   console.log('Simulation gestopt');
 }
 

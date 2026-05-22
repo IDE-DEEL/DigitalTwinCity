@@ -1,0 +1,174 @@
+name: digitaltwin
+
+services:
+  # DuckDNS: Keep your dynamic IP address up to date with a subdomain of duckdns.org.
+  duckdns:
+    image: lscr.io/linuxserver/duckdns:543b6a4c-ls80
+    network_mode: bridge
+    environment:
+      - TZ=Europe/Amsterdam
+      - SUBDOMAINS=${DUCKDNS_DOMAIN}
+      - TOKEN=${DUCKDNS_TOKEN}
+      - UPDATE_IP=ipv4
+    restart: unless-stopped 
+
+  # Reverse proxy & TLS: Caddy ensures secure HTTPS connections and routes traffic to the correct services based on the domain.
+  caddy:
+    image: caddy:2.11.3-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    expose:
+      - "2020"
+    dns:
+      - 1.1.1.1
+    environment:
+      DOMAIN: ${DOMAIN}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+    volumes:
+      - ./proxy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - proxy
+      - monitoring
+    restart: unless-stopped
+
+  # Frontend: production image for the web application.
+  frontend:
+    image: ${FRONTEND_IMAGE}
+    restart: unless-stopped
+    environment:
+      - VITE_API_URL=${FRONTEND_API_URL:-}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - proxy
+
+  # Backend: production image for the API and application logic.
+  backend:
+    image: ${BACKEND_IMAGE}
+    environment:
+      - POSTGRES_USER=${DT_PG_DEVELOPER_USER}
+      - POSTGRES_PASSWORD=${DT_PG_DEVELOPER_PASS}
+      - POSTGRES_DB=${DT_PG_DB}
+      - DATABASE_URL=${DATABASE_URL}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - SECRET_KEY=${SECRET_KEY}
+      - CORS_ALLOW_ORIGINS=${CORS_ALLOW_ORIGINS}
+      - SESSION_COOKIE_NAME=${SESSION_COOKIE_NAME}
+      - SESSION_COOKIE_SECURE=${SESSION_COOKIE_SECURE}
+      - SESSION_COOKIE_SAMESITE=${SESSION_COOKIE_SAMESITE}
+      - SESSION_COOKIE_DOMAIN=${SESSION_COOKIE_DOMAIN}
+      - MQTT_HOST=${MQTT_HOST}
+      - MQTT_PORT=${MQTT_PORT}
+      - MQTT_PATH=${MQTT_PATH}
+      - MQTT_USERNAME=${MQTT_USERNAME}
+      - MQTT_PASSWORD=${MQTT_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - proxy
+      - backend
+      - monitoring
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=5).read()\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+    
+  # MQTT broker: Eclipse Mosquitto is a lightweight MQTT broker that enables communication between IoT devices.
+  mqtt:
+    image: eclipse-mosquitto:2.1.2-alpine
+    expose:
+      - "1883"
+      - "9001"
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./mosquitto/conf.d:/mosquitto/config/conf.d:ro
+      - ./mosquitto/acl:/mosquitto/config/acl:ro
+      - ${MOSQUITTO_PASSWORD_DIR:-./mosquitto/password}:/mosquitto/config/password:ro
+      - mosquitto_data:/mosquitto/data
+    networks:
+      - proxy
+      - backend
+    restart: unless-stopped
+
+  # PostgreSQL TLS setup: A temporary service that generates certificates for PostgreSQL TLS encryption.
+  postgres-tls-setup:
+    image: alpine:3.20
+    network_mode: bridge
+    environment:
+      POSTGRES_UID: "70"
+      POSTGRES_GID: "70"
+    volumes:
+      - postgres_tls:/certs
+      - ./postgresql/generate-certs.sh:/generate-certs.sh:ro
+    entrypoint: ["/bin/sh", "/generate-certs.sh"]
+    restart: "no"
+
+  # PostgreSQL: The relational database used for storing data of the digital twin. TLS encryption is configured for secure communication.
+  postgres:
+    image: postgres:18-alpine
+    depends_on:
+      postgres-tls-setup:
+        condition: service_completed_successfully
+    environment:
+      # Admin user
+      POSTGRES_DB: ${DT_PG_DB}
+      POSTGRES_USER: ${DT_PG_ADMIN_USER}
+      POSTGRES_PASSWORD: ${DT_PG_ADMIN_PASS}
+      DT_PG_DEVELOPER_USER: ${DT_PG_DEVELOPER_USER}
+      DT_PG_DEVELOPER_PASS: ${DT_PG_DEVELOPER_PASS}
+      DT_PG_MONITOR_USER: ${DT_PG_MONITOR_USER}
+      DT_PG_MONITOR_PASS: ${DT_PG_MONITOR_PASS}
+    volumes:
+      - postgres_data:/var/lib/postgresql
+      - ./postgresql/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+      - ./postgresql/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
+      - postgres_tls:/etc/ssl/postgresql:ro
+      - ./postgresql/init:/docker-entrypoint-initdb.d:ro
+    command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "PGSSLMODE=require pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB -h 127.0.0.1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - backend
+    restart: unless-stopped
+
+networks:
+  # Publieke reverse-proxylaag: only services that Caddy needs to reach directly.
+  proxy:
+
+  # Applicatielaag: backend, database and internal MQTT communication.
+  backend:
+
+  # Observabilitylaag: Prometheus/Grafana/Loki/exporters and metrics targets.
+  monitoring:
+
+volumes:
+  # Caddy
+  caddy_data:
+  caddy_config:
+
+  # MQTT
+  mosquitto_data:
+
+  # PostgreSQL(database)
+  postgres_data:
+  postgres_tls:

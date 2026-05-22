@@ -1,0 +1,66 @@
+.table-container {
+    --container-radius: 10px;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: var(--container-radius);
+    background-color: var(--color-primary-gray1);
+    overflow: hidden;
+}
+
+.title-row th {
+    background-color: var(--color-table-gray1);
+    text-align: center;
+    border: none;
+}
+
+table {
+    text-align: center;
+}  
+
+tr {
+    line-height: 16px;
+}
+
+tbody:nth-child(even) {
+    background-color: var(--color-table-gray2);
+}
+
+.circle {
+    appearance: none;
+    -webkit-appearance: none;
+    display: inline-grid;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    background-color: var(--color-primary-red);
+}
+
+.circle:checked {
+    background-color: var(--color-primary-green);
+}
+
+.package-input {
+    text-align: center;
+}
+
+.add-car {
+    width: 48px;
+    height: 24px;
+    position: relative;
+    font-size: 14px;
+    font-weight: bold;
+    border-color: black;
+    background-color: var(--color-table-gray1);
+}
+
+.remove-car {
+    width: 20px;
+    height: 20px;
+    position: relative;
+    font-size: 10px;
+    font-weight: bold;
+    background-color: #e80202;
+}

@@ -1,68 +1,34 @@
-<template>
-  <div class="w-full p-3">
-    <div class="border border-gray-400 rounded-lg w-full h-full bg-white flex items-center justify-center overflow-hidden">
-        <!-- Map Container -->
-        <div class="relative" :style="containerStyle">
-            <!-- Map grid -->
-            <div class="map-grid" :style="gridStyle"> 
-                <div
-                    v-for="component in mapComponents"
-                    :key="component.key"
-                    class="component-cell"
-                    :style="getComponentPosition(component)">
-
-                    <img 
-                    :src="component.imagePath"
-                    :alt="component.label"
-                    class="w-full h-full object-contain"
-                    :style="{ transform:`rotate(${component.rotation}deg)`}"
-                    />
-                </div>
-            </div> 
-            <!-- Lanes (kleur kan later worden weggehaald)-->
-            <svg 
-                class="absolute inset-0 pointer-events-none"
-                :viewBox="`0 0 ${MAP_DIMENSION} ${MAP_DIMENSION}`"
-                :preserveAspectRatio="`none`"
-            >
-                <polyline
-                    v-for="lane in lanes"
-                    :key="lane.id"
-                    :points="lane.points.map(p => `${p.x},${p.y}`).join(' ')"
-                    fill="none"
-                    stroke="blue"
-                    stroke-width="0.00"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                />
-            </svg>
-            <!-- Auto -->
-                <div
-                    id="live-vehicle"
-                    class="absolute bg-black rounded-full z-10"
-                    :style="vehicleStyle"
-                >
-                </div>
-        </div>
-    </div> 
-  </div>
-</template>
-
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, reactive, watch } from 'vue';
 import { fetchMapData } from '../logic/service/mapService.js'; 
 import { buildLane } from '../logic/service/laneBuilder.js';
-import { useMqttVehicle } from '../composables/MqttConnection.js';
 import { normalizeDegree } from '../logic/utils/rotation.js';
 import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
+import { MAP_PIXEL_SIZE, normalizeTagId, store } from '../store.js'
+import '../assets/Display.css';
 
-const { vehiclePosition,setupMqttClient } = useMqttVehicle();
 const mapData = ref([]); 
 const componentDefinitions = ref({}); 
 const isLoading = ref(true);
 // const mapGrid = ref(null); 
-const MAP_DIMENSION = 5;
+const MAP_DIMENSION = 2;
 const MAX_MAP_SCALE = 70;
+const MIN_CAR_MOVE_MS = 300;
+const MIN_ROUTE_SPEED = 10;
+const MAX_ROUTE_SPEED = 100;
+const PIXELS_PER_SECOND_PER_SPEED = 2.3;
+const SCREEN_SPEED_MULTIPLIER = 0.40;
+const MIN_OBSERVED_PIXELS_PER_SECOND = 20;
+const MAX_OBSERVED_PIXELS_PER_SECOND = 350;
+const OBSERVED_SPEED_SMOOTHING = 0.55;
+const TAG_TIMEOUT_MS = 5000;
+const DEFAULT_CAR_ROTATION = 0;
+
+let animationFrameId = null;
+const carMotionStates = new Map();
+const carRealSyncStates = new Map();
+const carObservedSpeeds = new Map();
+const carPositionsById = reactive({});
 
 // container style
 const containerStyle = computed(() => {
@@ -73,23 +39,6 @@ const containerStyle = computed(() => {
         position: 'relative'
     };
 });
-
-// vehicle style
-const vehicleStyle = computed(() => {
-    const xPercent = (vehiclePosition.value.x / MAP_DIMENSION) * 100;
-    const yPercent = (vehiclePosition.value.y / MAP_DIMENSION) * 100;
-    const vehicleSize = '12px';
-
-    return {
-        width: vehicleSize, 
-        height: vehicleSize,
-        left: `calc(${xPercent}% - ${parseInt(vehicleSize)/2}px)`,
-        top: `calc(${yPercent}% - ${parseInt(vehicleSize)/2}px)`,
-        transform: `rotate(${vehiclePosition.value.rotation}deg)`,
-        transition: 'all 0.5s linear'
-    };
-});
-
 
 // gridstyle
 const gridStyle = computed(() => {
@@ -140,7 +89,6 @@ const getComponentPosition = (component) => {
 };
 
 onMounted(async () => {
-    setupMqttClient();
     try {
         const data = await fetchMapData(); 
         mapData.value = data.mapData;
@@ -155,4 +103,485 @@ onMounted(async () => {
     }
 });
 
+const normalizeCarKey = (autoId, fallback) => {
+  return String(autoId ?? fallback).toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+const clamp = (value, min, max) => {
+  return Math.min(Math.max(value, min), max);
+}
+
+const lerp = (start, end, progress) => {
+  return start + (end - start) * progress;
+}
+
+const getHeadingAngle = (from, to) => {
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+
+  if (Math.hypot(dx, dy) < 0.5) {
+    return DEFAULT_CAR_ROTATION;
+  }
+
+  return Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+}
+
+const orderedTags = computed(() => {
+  return store.tag_positions.map((tag, index) => ({
+    id: normalizeTagId(tag.tag_id),
+    index,
+    x: tag.tag_pos.x,
+    y: tag.tag_pos.y,
+  }));
+})
+
+const findTagPosition = (tagId) => {
+  const normalizedTagId = normalizeTagId(tagId);
+  return orderedTags.value.find(tag => tag.id === normalizedTagId) ?? null;
+}
+
+const getNextTagPosition = (tagId) => {
+  const currentTag = findTagPosition(tagId);
+
+  if (!currentTag || orderedTags.value.length < 2) {
+    return null;
+  }
+
+  return orderedTags.value[(currentTag.index + 1) % orderedTags.value.length];
+}
+
+const getPixelsPerSecond = () => {
+  const routeSpeed = clamp(Number(store.speed) || 50, MIN_ROUTE_SPEED, MAX_ROUTE_SPEED);
+  return routeSpeed * PIXELS_PER_SECOND_PER_SPEED;
+}
+
+const updateObservedSpeed = (carId, previousTagId, currentTagId, previousUpdateAt, now) => {
+  if (!previousTagId || !previousUpdateAt || previousTagId === currentTagId) {
+    return;
+  }
+
+  const previousTag = findTagPosition(previousTagId);
+  const currentTag = findTagPosition(currentTagId);
+  const elapsedSeconds = (now - previousUpdateAt) / 1000;
+
+  if (!previousTag || !currentTag || elapsedSeconds <= 0.2) {
+    return;
+  }
+
+  const distance = Math.hypot(currentTag.x - previousTag.x, currentTag.y - previousTag.y);
+  const observedSpeed = clamp(
+    distance / elapsedSeconds,
+    MIN_OBSERVED_PIXELS_PER_SECOND,
+    MAX_OBSERVED_PIXELS_PER_SECOND,
+  );
+  const previousObservedSpeed = carObservedSpeeds.get(carId) ?? observedSpeed;
+  const smoothedSpeed = lerp(previousObservedSpeed, observedSpeed, OBSERVED_SPEED_SMOOTHING);
+
+  carObservedSpeeds.set(carId, smoothedSpeed);
+}
+
+const getMoveDuration = (carId, from, to) => {
+  const distance = Math.hypot(to.x - from.x, to.y - from.y);
+  const pixelsPerSecond = (carObservedSpeeds.get(carId) ?? getPixelsPerSecond()) * SCREEN_SPEED_MULTIPLIER;
+
+  return Math.max(MIN_CAR_MOVE_MS, Math.round((distance / pixelsPerSecond) * 1000));
+}
+
+const getMotionPosition = (motion, now) => {
+  if (!motion) {
+    return null;
+  }
+
+  const progress = clamp((now - motion.startedAt) / motion.duration, 0, 1);
+
+  return {
+    x: lerp(motion.from.x, motion.to.x, progress),
+    y: lerp(motion.from.y, motion.to.y, progress),
+    progress,
+  };
+}
+
+const setCarDisplayPosition = (carId, carMeta, position, rotation = DEFAULT_CAR_ROTATION) => {
+  carPositionsById[carId] = {
+    id: carId,
+    auto_id: carMeta.auto_id,
+    x: position.x,
+    y: position.y,
+    rotation,
+    leftPercent: (position.x / MAP_PIXEL_SIZE) * 100,
+    topPercent: (position.y / MAP_PIXEL_SIZE) * 100,
+  };
+}
+
+const startMotion = (carId, carMeta, from, to, targetTagId, mode) => {
+  const duration = getMoveDuration(carId, from, to);
+  const rotation = getHeadingAngle(from, to);
+
+  carMotionStates.set(carId, {
+    carMeta,
+    from,
+    to,
+    targetTagId,
+    mode,
+    rotation,
+    duration,
+    startedAt: performance.now(),
+  });
+
+  setCarDisplayPosition(carId, carMeta, from, rotation);
+}
+
+const startPredictionFromTag = (carId, carMeta, tag) => {
+  const nextTag = getNextTagPosition(tag.id);
+
+  if (!nextTag) {
+    setCarDisplayPosition(carId, carMeta, tag);
+    carMotionStates.delete(carId);
+    return;
+  }
+
+  startMotion(carId, carMeta, tag, nextTag, nextTag.id, 'predicted');
+}
+
+const setRealSyncState = (carId, tagId, updateAt, stopped = false) => {
+  carRealSyncStates.set(carId, {
+    lastRealTagId: tagId,
+    lastRealUpdateAt: updateAt,
+    stopped,
+  });
+}
+
+const carTargets = computed(() => {
+  return store.car_data.map((car, index) => {
+
+    const foundTag = findTagPosition(car.tag_id);
+
+    if (!foundTag) {
+      return null;
+    }
+    
+    const id = normalizeCarKey(car.auto_id, `car-${index}`);
+    
+    return {
+      id,
+      tag_id: foundTag.id,
+      x: foundTag.x,
+      y: foundTag.y,
+      auto_id: car.auto_id,
+    }
+  }).filter(Boolean)
+})
+
+watch(carTargets, (targets) => {
+  const activeCarIds = new Set();
+  const now = performance.now();
+
+  targets.forEach((target) => {
+    activeCarIds.add(target.id);
+
+    const carMeta = {
+      auto_id: target.auto_id,
+    };
+
+    const currentTag = findTagPosition(target.tag_id);
+    if (!currentTag) {
+      return;
+    }
+
+    const existingMotion = carMotionStates.get(target.id);
+    const realSyncState = carRealSyncStates.get(target.id);
+
+    if (realSyncState?.lastRealTagId === target.tag_id && !realSyncState.stopped) {
+      if (existingMotion) {
+        existingMotion.carMeta = carMeta;
+      } else {
+        setCarDisplayPosition(target.id, carMeta, currentTag);
+      }
+
+      realSyncState.lastRealUpdateAt = now;
+      return;
+    }
+
+    if (!realSyncState?.stopped) {
+      updateObservedSpeed(
+        target.id,
+        realSyncState?.lastRealTagId,
+        target.tag_id,
+        realSyncState?.lastRealUpdateAt,
+        now,
+      );
+    } else {
+      carObservedSpeeds.delete(target.id);
+    }
+
+    setRealSyncState(target.id, target.tag_id, now);
+
+    if (realSyncState?.stopped) {
+      startPredictionFromTag(target.id, carMeta, currentTag);
+      setCarDisplayPosition(
+        target.id,
+        carMeta,
+        currentTag,
+        getHeadingAngle(currentTag, getNextTagPosition(currentTag.id) ?? currentTag),
+      );
+      return;
+    }
+
+    const displayPosition = getMotionPosition(existingMotion, now) ?? carPositionsById[target.id] ?? currentTag;
+    const distanceToRealTag = Math.hypot(displayPosition.x - currentTag.x, displayPosition.y - currentTag.y);
+
+    if (distanceToRealTag > 1) {
+      startMotion(target.id, carMeta, displayPosition, currentTag, currentTag.id, 'correction');
+    } else {
+      startPredictionFromTag(target.id, carMeta, currentTag);
+    }
+  });
+
+  Array.from(carRealSyncStates.keys()).forEach((carId) => {
+    if (!activeCarIds.has(carId)) {
+      carMotionStates.delete(carId);
+      carRealSyncStates.delete(carId);
+      carObservedSpeeds.delete(carId);
+      delete carPositionsById[carId];
+    }
+  });
+}, { immediate: true });
+
+const carPositions = computed(() => {
+  return Object.values(carPositionsById);
+})
+
+const getCarSpriteStyle = (car) => {
+  return {
+    left: `${car.leftPercent}%`,
+    top: `${car.topPercent}%`,
+  };
+}
+
+const getCarHeadingStyle = (car) => {
+  return {
+    transform: `rotate(${car.rotation}deg)`,
+  };
+}
+
+const animateCars = (now) => {
+  carMotionStates.forEach((motion, carId) => {
+    const realSyncState = carRealSyncStates.get(carId);
+
+    if (
+      realSyncState &&
+      !realSyncState.stopped &&
+      now - realSyncState.lastRealUpdateAt >= TAG_TIMEOUT_MS
+    ) {
+      const lastRealTag = findTagPosition(realSyncState.lastRealTagId);
+
+      if (lastRealTag) {
+        setCarDisplayPosition(carId, motion.carMeta, lastRealTag, motion.rotation);
+      }
+
+      carMotionStates.delete(carId);
+      carObservedSpeeds.delete(carId);
+      realSyncState.stopped = true;
+      return;
+    }
+
+    const position = getMotionPosition(motion, now);
+
+    if (!position) {
+      return;
+    }
+
+    setCarDisplayPosition(carId, motion.carMeta, position, motion.rotation);
+
+    if (position.progress >= 1) {
+      if (motion.mode === 'correction') {
+        const realTag = findTagPosition(motion.targetTagId);
+        if (realTag) {
+          startPredictionFromTag(carId, motion.carMeta, realTag);
+        }
+      } else if (motion.mode === 'predicted') {
+        const nextTag = findTagPosition(motion.targetTagId);
+        if (nextTag) {
+          startPredictionFromTag(carId, motion.carMeta, nextTag);
+        }
+      }
+    }
+  });
+
+  animationFrameId = requestAnimationFrame(animateCars);
+}
+
+watch(() => store.speed, () => {
+  const now = performance.now();
+
+  carMotionStates.forEach((motion, carId) => {
+    const position = getMotionPosition(motion, now);
+    if (!position) {
+      return;
+    }
+
+    startMotion(carId, motion.carMeta, position, motion.to, motion.targetTagId, motion.mode);
+  });
+});
+
+onMounted(() => {
+  animationFrameId = requestAnimationFrame(animateCars);
+});
+
+onBeforeUnmount(() => {
+  if (animationFrameId) {
+    cancelAnimationFrame(animationFrameId);
+  }
+});
 </script>
+
+<template>
+  <div class="display-container">
+    <div>
+        <!-- Map Container -->
+        <div class="relative" :style="containerStyle">
+            <!-- Map grid -->
+            <div class="map-grid" :style="gridStyle"> 
+                <div
+                    v-for="component in mapComponents"
+                    :key="component.key"
+                    class="component-cell"
+                    :style="getComponentPosition(component)">
+
+                    <img 
+                    :src="component.imagePath"
+                    :alt="component.label"
+                    class="w-full h-full object-contain"
+                    :style="{ transform:`rotate(${component.rotation}deg)`}"
+                    />
+                </div>
+            </div>
+
+            <!-- RIFD Tags -->
+            <svg class="absolute inset-0 pointer-events-none"
+            v-for="tag in store.tag_positions"
+            :key="tag.tag_id"
+            :viewBox="`0 0 ${MAP_PIXEL_SIZE} ${MAP_PIXEL_SIZE}`"
+            width="100%" height="100%">
+                <circle :cx="tag.tag_pos.x" :cy="tag.tag_pos.y" r="8" fill="black"></circle>
+            </svg>
+            
+            <!-- Lanes (kleur kan later worden weggehaald) --
+            <svg 
+                class="absolute inset-0 pointer-events-none"
+                :viewBox="`0 0 ${MAP_DIMENSION} ${MAP_DIMENSION}`"
+                :preserveAspectRatio="`none`"
+            >
+                <polyline
+                    v-for="lane in lanes"
+                    :key="lane.id"
+                    :points="lane.points.map(p => `${p.x},${p.y}`).join(' ')"
+                    fill="none"
+                    stroke="blue"
+                    stroke-width="0.00"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                />
+            </svg>-->
+
+            <!-- Routes --
+            <svg class="absolute inset-0 pointer-events-none"
+            width=${MAP_DIMENSION} height=${MAP_DIMENSION}>
+
+                !-- We tonen alleen paden als 'visueel' true is
+                v-for="car in store.table_data.filter(c => c.visueel)"--
+                <path
+                    d="M 20 20 L 100 100 L 200 50 Q 300 200 400 100"
+                    fill="none"
+                    stroke="#F54242"
+                    stroke-width="4" />
+
+            </svg> -->
+
+            <!-- Auto -->
+            <div
+                v-for="car in carPositions"
+                :key="car.id"
+                class="car-sprite"
+                :style="getCarSpriteStyle(car)"
+            >
+                <div class="car-heading" :style="getCarHeadingStyle(car)">
+                    <div class="car-body">
+                        <div class="car-window"></div>
+                        <div class="car-hood"></div>
+                        <div class="car-headlights">
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> 
+  </div>
+</template>
+
+<style scoped>
+.car-sprite {
+    position: absolute;
+    z-index: 5;
+    width: 34px;
+    height: 48px;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+}
+
+.car-heading {
+    width: 100%;
+    height: 100%;
+    transition: transform 260ms ease-out;
+    transform-origin: center;
+}
+
+.car-body {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border: 2px solid #111827;
+    border-radius: 8px 8px 6px 6px;
+    background: #4b5563;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.28);
+}
+
+.car-window {
+    position: absolute;
+    top: 8px;
+    left: 7px;
+    width: 16px;
+    height: 12px;
+    border-radius: 4px 4px 2px 2px;
+    background: #bfdbfe;
+    border: 1px solid #1f2937;
+}
+
+.car-hood {
+    position: absolute;
+    top: 24px;
+    left: 7px;
+    width: 16px;
+    height: 12px;
+    border-radius: 3px;
+    background: #374151;
+}
+
+.car-headlights {
+    position: absolute;
+    top: 2px;
+    left: 5px;
+    right: 5px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.car-headlights span {
+    width: 6px;
+    height: 4px;
+    border-radius: 1px;
+    background: #fde68a;
+}
+</style>
