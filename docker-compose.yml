@@ -1,3 +1,4 @@
+# For development only
 services:
   backend:
     build:
@@ -9,7 +10,7 @@ services:
       - PYTHONUNBUFFERED=1
       - ENV=development
       - DATABASE_URL=postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
-      - CORS_ALLOW_ORIGINS=http://localhost:8080,http://localhost:5173
+      - CORS_ALLOW_ORIGINS=http://localhost:8080,http://localhost:5173,http://127.0.0.1:8080,http://127.0.0.1:5173
       - SESSION_COOKIE_SECURE=false
     env_file: .env
     depends_on:
@@ -23,7 +24,7 @@ services:
     ports:
       - "8080:80"
     environment:
-      - VITE_API_URL=https://innodigitialtwin
+      - VITE_API_URL=http://localhost:8000
 
   db:
     image: postgres:16
