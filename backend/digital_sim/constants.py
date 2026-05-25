@@ -1,6 +1,9 @@
 # payload keys
-# car target speed property
+# general simulation properties
 CAR_TARGET_SPEED_KEY = "carTargetSpeed"
+SEED_KEY = "seed"
+SIMULATION_SPEED_KEY = "simulationSpeed"
+HOUSES_ON_ROUTES_KEY = "housesOnRoutes"
 
 # car properties
 CARS_KEY = "cars"
@@ -22,6 +25,8 @@ HOUSE_ROUTE_NAMES_LIST_KEY = "routeNames"
 X_COORD_IDX = 0
 Y_COORD_IDX = 1
 
-# package delivery
-MIN_DELIVERY_TIME_IN_SECONDS = 5.0
-MAX_DELIVERY_TIME_IN_SECONDS = 15.0
+# packages
+MIN_DELIVERY_TIME_IN_SECONDS = 5
+MAX_DELIVERY_TIME_IN_SECONDS = 10
+PACKAGE_DELIVERY_TIME_IN_SECONDS = 1.0
+PACKAGE_PICKUP_TIME_IN_SECONDS = 0.5

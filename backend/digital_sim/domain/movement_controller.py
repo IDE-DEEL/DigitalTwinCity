@@ -243,6 +243,19 @@ class MovementController:
         p2 = self.waypoints[1]
         return math.atan2(p2[Y_COORD_IDX] - p1[Y_COORD_IDX], p2[X_COORD_IDX] - p1[X_COORD_IDX])
 
+    def reset_for_new_trip(self) -> None:
+        """Reset controller to start position for a new trip.
+        
+        Resets position to first waypoint, heading to initial direction,
+        clears finished flag, and prepares for another route traversal.
+        """
+        self.finished = False
+        self.segment_index = 0
+        self.position = [float(self.waypoints[0][X_COORD_IDX]), float(self.waypoints[0][Y_COORD_IDX])]
+        self.heading = self._initial_heading()
+        self.actual_speed = 0.0
+        self.off_route = False
+
     @staticmethod
     def _project_point_on_segment(p: Point, a: Point, b: Point) -> Tuple[Point, float, float]:
         """

@@ -1,5 +1,5 @@
 from backend.digital_sim.domain.car_model import CarModel
-from backend.digital_sim.constants import CAR_ROUTE_WAYPOINTS_KEY, CARS_KEY, CAR_TARGET_SPEED_KEY, SCENARIO_KEY, SCENARIO_NAME_KEY, SCENARIO_HOUSES_LIST_KEY, HOUSE_ROAD_COORDS_KEY
+from backend.digital_sim.constants import CAR_ROUTE_WAYPOINTS_KEY, CARS_KEY, CAR_TARGET_SPEED_KEY, SCENARIO_KEY, SCENARIO_NAME_KEY, SCENARIO_HOUSES_LIST_KEY, HOUSE_ROAD_COORDS_KEY, SEED_KEY, HOUSES_ON_ROUTES_KEY
 
 
 class SimulationService:
@@ -14,7 +14,7 @@ class SimulationService:
         Start a new simulation with the given parameters.
         
         Args:
-            parameters: Dictionary containing cars, carTargetSpeed, and scenario
+            parameters: Dictionary containing cars, carTargetSpeed, scenario, and housesOnRoutes
         """
         cars = parameters.get(CARS_KEY, [])  # TODO: throw error if missing/empty
         car_target_speed = parameters.get(CAR_TARGET_SPEED_KEY, 50)
@@ -22,6 +22,9 @@ class SimulationService:
         scenario = parameters.get(SCENARIO_KEY, {})
         scenario_name = scenario.get(SCENARIO_NAME_KEY, "unknown")
         houses = scenario.get(SCENARIO_HOUSES_LIST_KEY, [])
+        houses_on_routes = parameters.get(HOUSES_ON_ROUTES_KEY, {})
+        seed = parameters.get(SEED_KEY, None)
+        print(f"Creating model using rng seed: {seed}")
 
         # Convert route waypoints from dicts to tuples for each car
         for car in cars:
@@ -36,7 +39,9 @@ class SimulationService:
             cars=cars,
             car_target_speed=car_target_speed,
             scenario_name=scenario_name,
-            houses=houses
+            houses=houses,
+            houses_on_routes=houses_on_routes,
+            rng=seed
         )
         self.is_running = True
         return {

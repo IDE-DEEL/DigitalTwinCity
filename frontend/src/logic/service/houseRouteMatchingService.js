@@ -41,6 +41,49 @@ export function findRoutesForHouse(house) {
 }
 
 /**
+ * Finds all houses that a route passes through, in the order they appear on the route.
+ * The route's tile path determines the order of houses.
+ * 
+ * @param {string} routeName - The name of the route to find houses for.
+ * @param {Array<Object>} allHouses - Array of all house objects available.
+ * @returns {Array<Object>} An array of house objects that lie on the route, in route order.
+ */
+export function findHousesForRoute(routeName, allHouses) {
+    const route = ROUTES_TILES[routeName];
+    if (!route) {
+        return [];
+    }
+
+    const laneSequence = buildLaneSequenceFromTilePath(route.tiles);
+    const housesOnRoute = [];
+
+    // For each tile in the route, find all houses on that tile
+    // This preserves the route's tile order
+    for (const lane of laneSequence) {
+        // Find all houses on this tile that match this lane
+        const housesOnTile = allHouses.filter(house => {
+            const onSameTile = house.tileX === lane.tileX && house.tileY === lane.tileY;
+            if (!onSameTile) return false;
+
+            const rotatedSupportedLanes = getRotatedSupportedLanes(house);
+            return rotatedSupportedLanes.some(supported =>
+                supported.from === lane.from &&
+                supported.to === lane.to
+            );
+        });
+
+        // Add houses to result (avoiding duplicates)
+        for (const house of housesOnTile) {
+            if (!housesOnRoute.find(h => h.houseInstanceId === house.houseInstanceId)) {
+                housesOnRoute.push(house.houseInstanceId);
+            }
+        }
+    }
+
+    return housesOnRoute;
+}
+
+/**
  * Rotates the supported lanes of a house based on the rotation of its tile.
  * 
  * @param {Object} house - A house object with tileX and tileY properties.

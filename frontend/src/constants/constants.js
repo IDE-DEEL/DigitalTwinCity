@@ -10,3 +10,13 @@ export const HOUSE_POSITION_FIRST = 'A';
 
 // cars
 export const MAX_CARS = 5;
+export const MIN_CARS = 1;
+
+// custom colors for cars and routes
+export const CAR_ROUTE_COLORS = {
+    '1': 'blue',
+    '2': 'red',
+    '3': 'green',
+    '4': 'yellow',
+    '5': 'purple',
+};

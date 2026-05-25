@@ -3,12 +3,19 @@ import { ROUTE_OPTIONS } from "../logic/domain/routes";
 import { SCENARIO_OPTIONS } from "../logic/domain/scenarios";
 import { addWaypointsToCarRoute } from "../logic/service/carService";
 import { convertWaypointsArrayFromSvgToMath, convertWaypointFromSvgToMath } from "../logic/utils/coordinateConverter";
-import { getHousesByScenarioKey, getHousesLinkedToRoutesByScenarioKey } from "../logic/service/houseService";
+import { getHousesWithRoutesByScenarioKey, buildOrderedHouseInstancesOnRoutes } from "../logic/service/houseService";
 import { useMapStore } from "./mapStore";
-import { MAX_CARS } from "../constants/constants";
+import { MAX_CARS, MIN_CARS } from "../constants/constants";
 
 // Dashboard parameters refs
-const cars = ref([]);
+const cars = ref([
+  {
+    id: '1',
+    maxPackages: 1,
+    routeName: ROUTE_OPTIONS[0]?.value ?? '',
+    routeVisibility: false,
+  }
+]);
 const carTargetSpeed = ref(50);
 const scenario = ref('rustig');
 const isSimulating = ref(false);
@@ -32,7 +39,7 @@ function addCar() {
 }
 
 function removeCar() {
-    if (cars.value.length > 0) {
+    if (cars.value.length > MIN_CARS) {
         cars.value.pop();
     }
 }
@@ -114,24 +121,11 @@ const allCarsWithRoutes = computed(() => {
     }
 });
 
-const carsAndRoutesWithConvertedCoordinates = computed(() => {
+const allCarsAndRoutesWithConvertedCoordinates = computed(() => {
     return allCarsWithRoutes.value.map((car) => ({
         ...car,
         routeWaypoints: convertWaypointsArrayFromSvgToMath(car.routeWaypoints),
     }));
-});
-
-const baseHousesFromScenario = computed(() => {
-    if (!mapData.value.length) {
-        return [];
-    }
-
-    try {
-        return getHousesByScenarioKey(scenario.value);
-    } catch (error) {
-        console.error("Error building scenario payload:", error);
-        return [];
-    }
 });
 
 const housesLinkedToRoutes = computed(() => {
@@ -140,10 +134,37 @@ const housesLinkedToRoutes = computed(() => {
     }
 
     try {
-        return getHousesLinkedToRoutesByScenarioKey(scenario.value);
+        return getHousesWithRoutesByScenarioKey(scenario.value);
     } catch (error) {
         console.error("Error building scenario payload with routes:", error);
         return [];
+    }
+});
+
+const baseHousesFromScenario = computed(() => {
+    if (!mapData.value.length) {
+        return [];
+    }
+
+    try {
+        return housesLinkedToRoutes.value.map(({ routeNames, ...house }) => house);
+    } catch (error) {
+        console.error("Error building base scenario houses:", error);
+        return [];
+    }
+});
+
+const orderedHouseInstancesOnRoutes = computed(() => {
+    if (!mapData.value.length || !housesLinkedToRoutes.value.length) {
+        return {};
+    }
+
+    try {
+        // TODO: console log when a simulation is started in which a house on the selected scenario isn't serviced by any of the selected routes (for future toast.info)
+        return buildOrderedHouseInstancesOnRoutes(housesLinkedToRoutes.value);
+    } catch (error) {
+        console.error("Error building ordered house instances on routes:", error);
+        return {};
     }
 });
 
@@ -160,7 +181,7 @@ const housesWithConvertedCoordinates = computed(() => {
 // ---
 const simulationStartPayload = computed(() => {
     return {
-        cars: carsAndRoutesWithConvertedCoordinates.value,
+        cars: allCarsAndRoutesWithConvertedCoordinates.value,
         carTargetSpeed: carTargetSpeed.value,
         simulationSpeed: 1, // TODO: make this configurable from dashboard parameters
         seed: 123, // TODO: make this configurable from dashboard parameters
@@ -168,6 +189,7 @@ const simulationStartPayload = computed(() => {
             name: scenario.value,
             houses: housesWithConvertedCoordinates.value,
         },
+        housesOnRoutes: orderedHouseInstancesOnRoutes.value,
     };
 });
 

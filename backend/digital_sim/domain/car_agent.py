@@ -1,15 +1,15 @@
 from enum import Enum
-import random
 import mesa
 
 from backend.digital_sim.domain.route import Route
 from backend.digital_sim.domain.movement_controller import MovementController
-from backend.digital_sim.constants import MAX_DELIVERY_TIME_IN_SECONDS, MIN_DELIVERY_TIME_IN_SECONDS
+from backend.digital_sim.constants import PACKAGE_PICKUP_TIME_IN_SECONDS, PACKAGE_DELIVERY_TIME_IN_SECONDS
 
 
 class CarStatus(Enum):
     PARKED = "parked"
     IDLE = "idle"
+    LOADING_PACKAGES = "loading_packages"
     DRIVING = "driving"
     DELIVERING = "delivering"
 
@@ -24,34 +24,48 @@ class CarAgent(mesa.Agent):
         self.packages_in_cargo = []
         
         # Delivery state
-        self.current_delivery_house = None
-        self.delivery_time_remaining = 0.0
-        self.delivery_duration = 0.0
+        self._reset_delivery_state()
+        self.packages_pending_delivery = []
+        
+        # Pickup state
+        self._reset_pickup_state()
+        self.packages_pending_load = []
 
     def step(self):
         """Execute one step of the car agent.
         
         First: pick up available packages if parked and has capacity.
-        Second: process any delivery logic.
-        Third: handle movement along the route.
+        Second: process package pickup time if currently loading packages.
+        Third: process any delivery logic.
+        Fourth: handle movement along the route.
         """
         dt = getattr(self.model, "delta_time", 0.1)
 
-        # First: pick up packages if parked
+        # First: start loading packages if parked and has capacity
         if self.status == CarStatus.PARKED:
             self._pick_up_available_packages()
+        
+        # Second: process package pickup time
+        self._process_pickup(dt)
 
-        # Second: handle delivery logic
+        # Third: handle delivery logic
         self._process_delivery(dt)
         
-        # Third: handle movement
+        # Fourth: handle movement
         if not self.controller:
             return
 
         self.controller.dt = dt
         
-        # Only move if not delivering
-        if self.current_delivery_house is None:
+        # Only move if:
+        # - Not delivering AND
+        # - Not picking up AND
+        # - Either has cargo in cargo bay OR has already started the route
+        has_cargo = len(self.packages_in_cargo) > 0
+        has_started = self.has_started_route
+        can_move = self.current_delivery_house is None and not self.is_picking_up and (has_cargo or has_started)
+        
+        if can_move:
             self.controller.update()
 
     @property
@@ -105,15 +119,17 @@ class CarAgent(mesa.Agent):
 
     @property
     def status(self):
-        """
-        Get the current status of the car based on its movement and route progress.
+        """Get the current status of the car based on its movement and route progress.
         
         - PARKED: Not started (total_distance_travelled=0) OR finished route (is_finished=True) AND actual_speed=0
+        - LOADING_PACKAGES: Currently loading packages
         - IDLE: Underway on route AND actual_speed=0
         - DRIVING: actual_speed > 0
         - DELIVERING: Currently at a delivery location
         """
-        if self.current_delivery_house is not None:
+        if self.is_picking_up:
+            return CarStatus.LOADING_PACKAGES
+        elif self.current_delivery_house is not None:
             return CarStatus.DELIVERING
         elif self.actual_speed > 0:
             return CarStatus.DRIVING
@@ -143,59 +159,132 @@ class CarAgent(mesa.Agent):
             
             # Check if current position is in the delivery zone
             if house.is_in_delivery_zone(self.position):
-                # Start delivery
+                # Prepare delivery by queuing packages for this house
                 self.current_delivery_house = house
-                self.delivery_duration = random.uniform(MIN_DELIVERY_TIME_IN_SECONDS, MAX_DELIVERY_TIME_IN_SECONDS)
-                self.delivery_time_remaining = self.delivery_duration
+                self.packages_pending_delivery = packages_for_house.copy()
+                self.delivery_duration = len(self.packages_pending_delivery) * PACKAGE_DELIVERY_TIME_IN_SECONDS
+                self.delivery_time_remaining = PACKAGE_DELIVERY_TIME_IN_SECONDS
                 return
 
     def _process_ongoing_delivery(self, dt: float):
-        """
-        Process the ongoing delivery: count down timer and complete delivery when done.
+        """Process ongoing delivery: deliver packages one by one.
+        
+        Each package takes PACKAGE_DELIVERY_TIME_IN_SECONDS to deliver. Packages are removed
+        from cargo one at a time as their delivery time completes.
         
         Args:
             dt: Time delta for this step
         """
-        self.delivery_time_remaining -= dt
-        
-        if self.delivery_time_remaining <= 0:
-            self._complete_delivery()
-
-    def _complete_delivery(self):
-        """Complete the delivery at current house and remove delivered packages from cargo."""
-        if not self.current_delivery_house:
+        if self.current_delivery_house is None:
             return
         
-        house = self.current_delivery_house
+        if self.packages_pending_delivery:
+            self.delivery_time_remaining -= dt
+            
+            # When enough time has passed for one package to deliver
+            while self.delivery_time_remaining <= 0 and self.packages_pending_delivery:
+                # Deliver first pending package
+                package = self.packages_pending_delivery.pop(0)
+                package.mark_delivered()
+                self.packages_in_cargo.remove(package)
+                
+                # Reset timer for next package
+                self.delivery_time_remaining += PACKAGE_DELIVERY_TIME_IN_SECONDS
+            
+            # All packages delivered when none remaining
+            if not self.packages_pending_delivery:
+                self._reset_delivery_state()
+        else:
+            # No pending packages but still in delivery state - reset
+            self._reset_delivery_state()
+
+    def _process_pickup(self, dt: float):
+        """Process pickup loading time: load packages one by one.
         
-        # Find and complete delivery of all packages for this house
-        packages_to_remove = [p for p in self.packages_in_cargo if p.destination_house_id == house.id]
+        Each package takes PACKAGE_PICKUP_TIME_IN_SECONDS to load. Packages are added
+        to cargo one at a time as their loading time completes.
+        """
+        if self.is_picking_up and self.packages_pending_load:
+            self.pickup_time_remaining -= dt
+            
+            # When enough time has passed for one package to load
+            while self.pickup_time_remaining <= 0 and self.packages_pending_load:
+                # Move first pending package to cargo
+                package = self.packages_pending_load.pop(0)
+                self.packages_in_cargo.append(package)
+                
+                # Reset timer for next package
+                self.pickup_time_remaining += PACKAGE_PICKUP_TIME_IN_SECONDS
+            
+            # All packages loaded when none remaining
+            if not self.packages_pending_load:
+                self._reset_pickup_state()
+    
+    def _get_random_duration(self, min_seconds: int, max_seconds: int) -> int:
+        """Generate a random duration between min and max seconds.
         
-        for package in packages_to_remove:
-            package.mark_delivered()
-            self.packages_in_cargo.remove(package)
-        
-        # Resume movement
+        Args:
+            min_seconds: Minimum duration
+            max_seconds: Maximum duration
+            
+        Returns:
+            Random duration value
+        """
+        return self.model.random.randint(min_seconds, max_seconds)
+    
+    def _reset_route(self) -> None:
+        """Resets the controller to start position and prepares the agent
+        to traverse the route again.
+        """
+        if self.controller:
+            self.controller.reset_for_new_trip()
+
+    def _reset_delivery_state(self) -> None:
+        """Reset the delivery state variables to their initial values."""
         self.current_delivery_house = None
         self.delivery_time_remaining = 0.0
         self.delivery_duration = 0.0
+        self.packages_pending_delivery = []
+
+    def _reset_pickup_state(self) -> None:
+        """Reset the pickup state variables to their initial values."""
+        self.is_picking_up = False
+        self.pickup_time_remaining = 0.0
+        self.pickup_duration = 0.0
 
     def _pick_up_available_packages(self):
         """Pick up available packages from the route while parked.
         
         Gets packages from the route and assigns them to this agent if there's cargo space.
+        Packages are queued for loading (not immediately added to cargo).
+        Loading duration is calculated as: number_of_packages * PACKAGE_PICKUP_TIME_IN_SECONDS.
+        Packages are loaded one by one, with each taking PACKAGE_PICKUP_TIME_IN_SECONDS.
+        If we pick up packages after a completed trip, reset the route.
         """
-        if not self.route or len(self.packages_in_cargo) >= self.max_packages:
+        if not self.route or (len(self.packages_in_cargo) + len(self.packages_pending_load)) >= self.max_packages:
             return
         
         # Get all available packages from the route
         available_packages = self.route.get_available_packages()
         
+        packages_picked_up = False
         for package in available_packages:
-            # Check if we still have capacity
-            if len(self.packages_in_cargo) >= self.max_packages:
+            # Check if we still have capacity (including pending packages)
+            if len(self.packages_in_cargo) + len(self.packages_pending_load) >= self.max_packages:
                 break
             
-            # Assign package to this agent
+            # Assign package to this agent and queue for loading
             package.assign_to_agent(self.unique_id)
-            self.packages_in_cargo.append(package)
+            self.packages_pending_load.append(package)
+            packages_picked_up = True
+        
+        # Start pickup loading time if we picked up packages
+        if packages_picked_up:
+            self.is_picking_up = True
+            self.pickup_duration = len(self.packages_pending_load) * PACKAGE_PICKUP_TIME_IN_SECONDS
+            # Timer for first package
+            self.pickup_time_remaining = PACKAGE_PICKUP_TIME_IN_SECONDS
+        
+        # If we picked up packages and the route is already finished, reset for another trip
+        if packages_picked_up and self.controller.finished:
+            self._reset_route()

@@ -36,6 +36,41 @@
             </button>
         </div>
 
+        <div v-if="isDevelopment" class="absolute top-6 left-1/2 -translate-x-1/2 z-40">
+            <!-- Developer tool buttons (only in development mode) -->
+            <button
+                type="button"
+                class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
+                @click="toggleLaneDebug"
+                >
+                {{ showDevLaneDebug ? 'Hide lane overlay' : 'Show lane overlay' }}
+            </button>
+
+            <button
+                type="button"
+                class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
+                @click="toggleTileCoordDebug"
+            >
+                {{ showDevTileCoordDebug ? 'Hide tile coords overlay' : 'Show tile coords overlay' }}
+            </button>
+
+            <button
+                type="button"
+                class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
+                @click="toggleRouteBuilder"
+            >
+                {{ showDevRouteBuilder ? 'Hide route builder' : 'Show route builder' }}
+            </button>
+
+            <button
+                type="button"
+                class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
+                @click="toggleHouseDetectionZones"
+            >
+                {{ showDevHouseDetectionZones ? 'Hide house zones' : 'Show house zones' }}
+            </button>
+        </div>
+
         <!-- Map Container -->
         <div class="relative" :style="containerStyle">
             <div class="absolute top-2 right-2 z-40">
@@ -75,7 +110,12 @@
                 <devTileCoordinateOverlay
                     v-if="showDevTileCoordDebug"
                 />
+
+                <devTileCoordinateOverlay
+                    v-if="showDevTileCoordDebug"
+                />
             </div> 
+            <!-- Lanes -->
             <!-- Lanes -->
             <svg 
                 class="absolute inset-0 pointer-events-none"
@@ -84,17 +124,44 @@
             >
 
                 <!-- Route polyline -->
+
+                <!-- Route polyline -->
                 <polyline
                     v-for="car in visibleCarsWithRoutes"
                     :key="`route-${car.id}`"
                     :points="car.routeWaypoints.map(p => `${p.x},${p.y}`).join(' ')"
+                    v-for="car in visibleCarsWithRoutes"
+                    :key="`route-${car.id}`"
+                    :points="car.routeWaypoints.map(p => `${p.x},${p.y}`).join(' ')"
                     fill="none"
-                    :stroke="getRouteColorForCar(car.id)"
-                    stroke-width="0.01"
-                    :stroke="getRouteColorForCar(car.id)"
+                    :stroke="getColorForCarAndRoute(car.id)"
                     stroke-width="0.01"
                     stroke-linecap="round"
                     stroke-linejoin="round"
+                    stroke-dasharray="0.06 0.04"
+                    >
+                    <animate
+                        attributeName="stroke-dashoffset"
+                        from="0"
+                        to="-0.10"
+                        dur="1.8s"
+                        repeatCount="indefinite"
+                    />
+                </polyline>
+
+                <devLaneDebugOverlay
+                    v-if="showDevLaneDebug"
+                    :lanes="lanes"
+                />
+
+                <devHouseDetectionZonesOverlay
+                    v-if="showDevHouseDetectionZones"
+                    :scenario="scenario"
+                />
+
+                <!-- House labels for packages -->
+                <HouseLabelsOverlay
+                    :houses="housesWithLivePackageData"
                     stroke-dasharray="0.06 0.04"
                     >
                     <animate
@@ -134,6 +201,9 @@
                 :style="agentVehicleStyle(agent)"
                 :title="`Agent ${agent.id} - Packages in cargo: ${agent.packages_in_cargo.length}`"
             >
+                <span class="flex items-center justify-center text-white text-xs font-bold" :style="{ transform: `rotate(${-((agent.heading_deg || 0) - 90)}deg)` }">
+                    {{ agent.packages_in_cargo.length }}
+                </span>
             </div>
 
             <!-- Auto (MQTT)-->
@@ -142,7 +212,6 @@
                     class="absolute bg-black rounded-full z-10"
                     :style="vehicleStyle"
                 >
-                </div> -->
                 </div> -->
         </div>
     </div> 
@@ -158,7 +227,8 @@ import { normalizeDegree } from '../logic/utils/rotation.js';
 import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
 import { useMapStore, useDashboardParametersStore, useSimulationStateStore } from '../stores';
 import { useDigitalSimulation } from '../composables/useDigitalSimulation.js';
-import { MAP_COLUMNS, MAP_ROWS } from '../constants/constants.js';
+import { useCarColors } from '../composables/useCarColors.js';
+import { MAP_COLUMNS, MAP_ROWS, CAR_ROUTE_COLORS } from '../constants/constants.js';
 import HouseLabelsOverlay from './HouseLabelsOverlay.vue';
 import devLaneDebugOverlay from '../development/devLaneDebugOverlay.vue';
 import devTileCoordinateOverlay from '../development/devTileCoordinateOverlay.vue';
@@ -176,6 +246,7 @@ const { vehiclePosition,setupMqttClient } = useMqttVehicle();
 const { mapData, setMapData } = useMapStore();
 const { selectedCarsWithRoutes: visibleCarsWithRoutes, scenario } = useDashboardParametersStore();
 const { agentState, housesWithLivePackageData } = useSimulationStateStore();
+const { getColorForCarAndRoute } = useCarColors();
 
 // Initialize digital simulation lifecycle management
 useDigitalSimulation();
@@ -212,20 +283,6 @@ const toggleHouseDetectionZones = () => {
 };
 // --- house detection zones devtool end ---
 
-// --- custom colors for car routes start ---
-const CAR_ROUTE_COLORS = {
-    '1': 'blue',
-    '2': 'red',
-    '3': 'green',
-    '4': 'yellow',
-    '5': 'purple',
-};
-
-const getRouteColorForCar = (carId) => {
-    return CAR_ROUTE_COLORS[carId] ?? 'blue';
-};
-// --- custom colors for car routes end ---
-
 // container style
 const containerStyle = computed(() => {
     return {
@@ -245,48 +302,13 @@ const agentVehicleStyle = (agent) => {
     const height = '18px';
 
     const rotation = (agent.heading_deg || 0) - 90;
-// vehicle style - now for simulated agents
-const agentVehicleStyle = (agent) => {
-    if (!agent || !agent.position) return {};
-    
-    const xPercent = (agent.position[0] / MAP_COLUMNS) * 100;
-    const yPercent = (agent.position[1] / MAP_ROWS) * 100;
-    const width = '36px';
-    const height = '18px';
-
-    const rotation = (agent.heading_deg || 0) - 90;
 
     return {
         width: width, 
         height: height,
         left: `calc(${xPercent}% - ${parseInt(width)/2}px)`,
         top: `calc(${yPercent}% - ${parseInt(height)/2}px)`,
-        background: getRouteColorForCar(agent.id),
-        borderRadius: '2px',
-        transform: `rotate(${rotation}deg)`
-    };
-};
-
-// // vehicle style - MQTT
-// const vehicleStyle = computed(() => {
-//     const xPercent = (vehiclePosition.value.x / MAP_DIMENSION) * 100;
-//     const yPercent = (vehiclePosition.value.y / MAP_DIMENSION) * 100;
-//     const vehicleSize = '12px';
-
-//     return {
-//         width: vehicleSize, 
-//         height: vehicleSize,
-//         left: `calc(${xPercent}% - ${parseInt(vehicleSize)/2}px)`,
-//         top: `calc(${yPercent}% - ${parseInt(vehicleSize)/2}px)`,
-//         transform: `rotate(${vehiclePosition.value.rotation}deg)`,
-//         transition: 'all 0.5s linear'
-//     };
-// });
-        width: width, 
-        height: height,
-        left: `calc(${xPercent}% - ${parseInt(width)/2}px)`,
-        top: `calc(${yPercent}% - ${parseInt(height)/2}px)`,
-        background: getRouteColorForCar(agent.id),
+        background: getColorForCarAndRoute(agent.id),
         borderRadius: '2px',
         transform: `rotate(${rotation}deg)`
     };
@@ -358,14 +380,18 @@ const getComponentPosition = (component) => {
 
 onMounted(async () => {
     // setupMqttClient();
+    // setupMqttClient();
     try {
         const data = await fetchMapData(); 
         componentDefinitions.value = data.componentDefinitions;
 
         setMapData(data.mapData);
+
+        setMapData(data.mapData);
         
         // Initialize the RFID mapper with loaded data
         initRfidMapper(data.mapData, data.rfidData);
+
 
     } catch (error) {
         console.error("Fout bij het laden:", error);

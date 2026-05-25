@@ -9,7 +9,7 @@ from backend.digital_sim.constants import CAR_ROUTE_NAME_KEY, CAR_ROUTE_WAYPOINT
 
 class CarModel(mesa.Model):
 
-    def __init__(self, cars: list[dict], car_target_speed: int, scenario_name: str, houses: list[dict], rng=None):
+    def __init__(self, cars: list[dict], car_target_speed: int, scenario_name: str, houses: list[dict], houses_on_routes: dict = None, rng=None):
         super().__init__(rng=rng)
 
         self.num_agents = len(cars)
@@ -20,7 +20,7 @@ class CarModel(mesa.Model):
         self.scenario_name = scenario_name
         
         self._setup_cars_and_routes(cars, self.car_target_speed)
-        self._setup_houses(houses or [])
+        self._setup_houses(houses or [], houses_on_routes or {})
     
     def step(self):
         """Execute one simulation step.
@@ -125,21 +125,31 @@ class CarModel(mesa.Model):
             route = self.routes[route_name]
             CarAgent(model=self, car_target_speed=car_target_speed, route=route, max_packages=max_packages)
     
-    def _setup_houses(self, houses: list[dict]):
-        """Create house objects and link them to routes and packages."""
-        # Instantiate houses
+    def _setup_houses(self, houses: list[dict], houses_on_routes: dict):
+        """Create house objects and link them to routes and packages.
+        
+        Uses housesOnRoutes if provided (new format with ordered houses per route),
+        otherwise falls back to HOUSE_ROUTE_NAMES_LIST_KEY per house (old format).
+        """
+        # Instantiate all house objects
         for house_data in houses:
             house_id = house_data.get(HOUSE_ID_KEY)
             expected_num_packages = house_data.get(HOUSE_PACKAGE_COUNT_KEY)
-            packages = [Package(id=house_id + f"_{i}", destination_house_id=house_id) for i in range(expected_num_packages)]
+            packages = [Package(id=f"{house_id}_{i}", destination_house_id=house_id) for i in range(expected_num_packages)]
             house = House(
                 id=house_id,
                 packages=packages,
                 road_coords=house_data.get(HOUSE_ROAD_COORDS_KEY),
                 num_undelivered_packages=len(packages),
             )
-            # Link house to routes
-            for route_name in house_data.get(HOUSE_ROUTE_NAMES_LIST_KEY, []):
-                if route_name in self.routes:
-                    self.routes[route_name].houses.append(house)
             self.houses[house.id] = house
+        
+        # Link houses to routes using housesOnRoutes
+        for route_name, route_houses_data in houses_on_routes.items():
+            route = self.routes.get(route_name)
+            if not route:
+                continue
+            for house_id in route_houses_data:
+                house = self.houses.get(house_id)
+                if house:
+                    route.houses.append(house)
