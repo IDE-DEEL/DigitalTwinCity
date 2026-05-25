@@ -36,8 +36,61 @@
             </button>
         </div>
 
+        <div v-if="isDevelopment" class="absolute top-6 left-1/2 -translate-x-1/2 z-40">
+            <!-- Developer tool buttons (only in development mode) -->
+            <button
+                type="button"
+                class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
+                @click="toggleLaneDebug"
+                >
+                {{ showDevLaneDebug ? 'Hide lane overlay' : 'Show lane overlay' }}
+            </button>
+
+            <button
+                type="button"
+                class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
+                @click="toggleTileCoordDebug"
+            >
+                {{ showDevTileCoordDebug ? 'Hide tile coords overlay' : 'Show tile coords overlay' }}
+            </button>
+
+            <button
+                type="button"
+                class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
+                @click="toggleRouteBuilder"
+            >
+                {{ showDevRouteBuilder ? 'Hide route builder' : 'Show route builder' }}
+            </button>
+
+            <button
+                type="button"
+                class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
+                @click="toggleHouseDetectionZones"
+            >
+                {{ showDevHouseDetectionZones ? 'Hide house zones' : 'Show house zones' }}
+            </button>
+        </div>
+
         <!-- Map Container -->
         <div class="relative" :style="containerStyle">
+            <div class="absolute top-2 right-2 z-40">
+                <button
+                    type="button"
+                    class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
+                    @click="toggleLaneDebug"
+                    >
+                    {{ showDevLaneDebug ? 'Hide lane debug' : 'Show lane debug' }}
+                </button>
+
+                <button
+                    type="button"
+                    class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
+                    @click="toggleTileCoordDebug"
+                >
+                    {{ showDevTileCoordDebug ? 'Hide tile coords' : 'Show tile coords' }}
+                </button>
+            </div>
+
             <!-- Map grid -->
             <div class="map-grid" :style="gridStyle"> 
                 <div
@@ -57,7 +110,12 @@
                 <devTileCoordinateOverlay
                     v-if="showDevTileCoordDebug"
                 />
+
+                <devTileCoordinateOverlay
+                    v-if="showDevTileCoordDebug"
+                />
             </div> 
+            <!-- Lanes -->
             <!-- Lanes -->
             <svg 
                 class="absolute inset-0 pointer-events-none"
@@ -66,7 +124,12 @@
             >
 
                 <!-- Route polyline -->
+
+                <!-- Route polyline -->
                 <polyline
+                    v-for="car in visibleCarsWithRoutes"
+                    :key="`route-${car.id}`"
+                    :points="car.routeWaypoints.map(p => `${p.x},${p.y}`).join(' ')"
                     v-for="car in visibleCarsWithRoutes"
                     :key="`route-${car.id}`"
                     :points="car.routeWaypoints.map(p => `${p.x},${p.y}`).join(' ')"
@@ -75,6 +138,30 @@
                     stroke-width="0.01"
                     stroke-linecap="round"
                     stroke-linejoin="round"
+                    stroke-dasharray="0.06 0.04"
+                    >
+                    <animate
+                        attributeName="stroke-dashoffset"
+                        from="0"
+                        to="-0.10"
+                        dur="1.8s"
+                        repeatCount="indefinite"
+                    />
+                </polyline>
+
+                <devLaneDebugOverlay
+                    v-if="showDevLaneDebug"
+                    :lanes="lanes"
+                />
+
+                <devHouseDetectionZonesOverlay
+                    v-if="showDevHouseDetectionZones"
+                    :scenario="scenario"
+                />
+
+                <!-- House labels for packages -->
+                <HouseLabelsOverlay
+                    :houses="housesWithLivePackageData"
                     stroke-dasharray="0.06 0.04"
                     >
                     <animate
@@ -293,14 +380,18 @@ const getComponentPosition = (component) => {
 
 onMounted(async () => {
     // setupMqttClient();
+    // setupMqttClient();
     try {
         const data = await fetchMapData(); 
         componentDefinitions.value = data.componentDefinitions;
 
         setMapData(data.mapData);
+
+        setMapData(data.mapData);
         
         // Initialize the RFID mapper with loaded data
         initRfidMapper(data.mapData, data.rfidData);
+
 
     } catch (error) {
         console.error("Fout bij het laden:", error);

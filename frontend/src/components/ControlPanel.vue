@@ -61,6 +61,20 @@
                 >
                     {{ scenarioOption.label }}
                 </option>
+            <select 
+                :value="scenario"
+                @change="setScenario($event.target.value)"
+                :disabled="isSimulating"
+                :class="{'opacity-50 cursor-not-allowed': isSimulating}"
+                class="w-full p-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue outline-none bg-white text-dark"
+            >
+                <option 
+                    v-for="scenarioOption in scenarioOptions"
+                    :key="scenarioOption.value"
+                    :value="scenarioOption.value"
+                >
+                    {{ scenarioOption.label }}
+                </option>
             </select>
         </div> 
 
@@ -71,6 +85,8 @@
                 <button 
                     class="bg-sky-200 hover:bg-sky-700 rounded-sm p-2 w-full h-10"
                     @click="addCar"
+                    :disabled="cars.length >= MAX_CARS || isSimulating"
+                    :class="{'opacity-50 cursor-not-allowed': cars.length >= MAX_CARS || isSimulating}"
                     :disabled="cars.length >= MAX_CARS || isSimulating"
                     :class="{'opacity-50 cursor-not-allowed': cars.length >= MAX_CARS || isSimulating}"
                 >
@@ -127,6 +143,10 @@
                             </td>
                             <td class="px-3 py-1">
                                     <select 
+                                        :value="car.routeName"
+                                        @change="updateCarRoute(car.id, $event.target.value)"
+                                        :disabled="isSimulating"
+                                        :class="{'opacity-50 cursor-not-allowed': isSimulating}"
                                         :value="car.routeName"
                                         @change="updateCarRoute(car.id, $event.target.value)"
                                         :disabled="isSimulating"
@@ -234,6 +254,8 @@ const MAX_PACKAGES = 10;
 const reconnectCooldown = ref(false);
 
 const handleStart = () => {
+    console.log('Requested simulation start with parameters: ', collectParameters());
+    startSimulation();
     console.log('Requested simulation start with parameters: ', collectParameters());
     startSimulation();
 }
