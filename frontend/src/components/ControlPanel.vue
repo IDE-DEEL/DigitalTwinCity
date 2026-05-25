@@ -1,10 +1,26 @@
 <template>
     <aside class="w-[320px] bg-cream text-dark p-6 flex flex-col gap-6 text-sm">
 
+        <!-- WebSocket Status Indicator -->
+        <div v-if="!isWebSocketConnected" class="flex items-center gap-2 pb-4 border-b border-red-300 p-3">
+            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+            <span class="text-xs font-medium text-red-700">
+                Niet verbonden met backend
+            </span>
+        </div>
+
         <!-- Car speed parameter -->
          <div>
             <label class="block text-sm font-semibold mb-1">Snelheid:</label>
             <div class="flex items-center gap-3">
+                <input 
+                    type="range" 
+                    min="0" 
+                    max="100" 
+                    :value="carSpeed"
+                    @input="setCarSpeed(Number($event.target.value))"
+                    class="w-full accent-blue-200" 
+                />
                 <input 
                     type="range" 
                     min="0" 
@@ -29,6 +45,14 @@
         <!-- Scenario dropdown -->
         <div>
             <label class="block text-sm font-semibold mb-1">Scenario:</label>
+            <select 
+                :value="scenario"
+                @change="setScenario($event.target.value)"
+                class="w-full p-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue outline-none bg-white text-dark"
+            >
+                <option>Rustig</option>
+                <option>Gemiddeld</option>
+                <option>Druk</option>
             <select 
                 :value="scenario"
                 @change="setScenario($event.target.value)"
@@ -89,6 +113,8 @@
                                     max="10"
                                     :value="car.packageCount"
                                     @input="updateCarPackageCount(car.id, Number($event.target.value))"
+                                    :value="car.packageCount"
+                                    @input="updateCarPackageCount(car.id, Number($event.target.value))"
                                     class="w-16 p-1 border border-gray-300 rounded-md text-sm"
                                 />
                             </td>
@@ -96,8 +122,17 @@
                                     <select 
                                         :value="car.route"
                                         @change="updateCarRoute(car.id, $event.target.value)"
+                                        :value="car.route"
+                                        @change="updateCarRoute(car.id, $event.target.value)"
                                         class="w-full p-1 border border-gray-300 rounded-md text-sm"
                                     >
+                                        <option
+                                            v-for="routeOption in routeOptions"
+                                            :key="routeOption.key"
+                                            :value="routeOption.value"
+                                        >
+                                            {{ routeOption.label }}
+                                        </option>
                                         <option
                                             v-for="routeOption in routeOptions"
                                             :key="routeOption.key"
@@ -110,6 +145,7 @@
                             <td class="px-3 py-1">
                                     <button 
                                         class="bg-sky-200 hover:bg-sky-700 text-inherit rounded-sm p-1 w-full h-8 text-xs"
+                                        @click="toggleCarRouteVisibility(car.id)"
                                         @click="toggleCarRouteVisibility(car.id)"
                                     >
                                         {{ car.routeVisibility ? 'Verberg' : 'Toon' }}
@@ -168,6 +204,7 @@ const {
     carSpeed,
     scenario,
     isSimulating,
+    isWebSocketConnected,
     MAX_CARS,
     routeOptions,
     addCar,
@@ -183,13 +220,16 @@ const {
 } = useSimulationState();
 
 const handleStart = () => {
-    console.log('Simulation gestart');
-    console.log('Parameters:', collectParameters());
+    if (!isWebSocketConnected.value) {
+        console.warn('WebSocket niet verbonden. Simulatie kan niet starten.');
+        return;
+    }
+    console.log('Requested simulation start with parameters: ', collectParameters());
     startSimulation();
 }
 
 const handleStop = () => {
-    console.log('Simulation gestopt');
+    console.log('Requested simulation stop');
     stopSimulation();
 }
 </script>
