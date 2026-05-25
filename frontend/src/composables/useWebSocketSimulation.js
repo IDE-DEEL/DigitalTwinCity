@@ -1,15 +1,21 @@
 import { ref } from "vue";
+import { useToast } from "vue-toastification";
+import { TOAST_MESSAGES } from "../constants/toast_messages";
 
 const isWebSocketConnected = ref(false);
 let websocket = null;
 let isConnecting = false;
 let onSimulationUpdateCallback = null;
+let onSimulationEndedCallback = null;
+const responseHandlers = {};
+const toast = useToast();
 
 const WS_URL = "ws://localhost:8000/api/v1/digital-sim/ws/simulation"; // TODO: switch URL based on environmnent (dev vs prod)
 
-function connectWebSocket(onSimulationUpdate) {
-    // Store the callback for simulation updates
+function connectWebSocket(onSimulationUpdate, onSimulationEnded) {
+    // Store the callbacks
     onSimulationUpdateCallback = onSimulationUpdate;
+    onSimulationEndedCallback = onSimulationEnded;
     
     // Prevent duplicate connection attempts
     if (isConnecting || websocket !== null) {
@@ -24,12 +30,21 @@ function connectWebSocket(onSimulationUpdate) {
         websocket.onopen = () => {
             console.log("WebSocket connected to simulation backend");
             isWebSocketConnected.value = true;
+            isConnecting = false;
         };
         
         websocket.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
                 const result = data.result;
+                
+                // Check if there's a registered handler for this command response
+                if (responseHandlers[data.command]) {
+                    console.log("Using registered handler for:", data.command);
+                    responseHandlers[data.command](data);
+                    delete responseHandlers[data.command];
+                    return;
+                }
                 
                 switch (data.command) {
                     case "simulation_started":
@@ -42,7 +57,17 @@ function connectWebSocket(onSimulationUpdate) {
                         }
                         break;
                     case "simulation_stopped":
-                        console.log("simulation stopped on backend", result);
+                        console.log("simulation stopped on backend (manual stop)", result);
+                        break;
+                    case "simulation_ended":
+                        console.log("simulation ended on backend (auto-stopped)", data.reason, result);
+                        if (onSimulationUpdateCallback) {
+                            onSimulationUpdateCallback(result);
+                        }
+                        if (onSimulationEndedCallback) {
+                            console.log("Invoking simulation ended callback");
+                            onSimulationEndedCallback();
+                        }
                         break;
                     default:
                         console.warn("Unknown command received:", data.command);
@@ -56,12 +81,15 @@ function connectWebSocket(onSimulationUpdate) {
             console.error("WebSocket error:", error);
             isWebSocketConnected.value = false;
             isConnecting = false;
+            websocket = null;
         };
         
         websocket.onclose = () => {
             console.log("WebSocket connection closed");
             isWebSocketConnected.value = false;
             isConnecting = false;
+            websocket = null;
+            toast.error(TOAST_MESSAGES.WS_CONNECTION_ERROR);
         };
     } catch (error) {
         console.error("Error connecting to WebSocket:", error);
@@ -76,14 +104,20 @@ function disconnectWebSocket() {
         isWebSocketConnected.value = false;
     }
     onSimulationUpdateCallback = null;
+    onSimulationEndedCallback = null;
 }
 
 function sendWebSocketMessage(message) {
     if (websocket && websocket.readyState === WebSocket.OPEN) {
+        console.log("Sending message:", message.command);
         websocket.send(JSON.stringify(message));
     } else {
-        console.warn("WebSocket not connected. Cannot send message.");
+        console.warn("WebSocket not connected. Cannot send message. Websocket state:", websocket?.readyState);
     }
+}
+
+function registerResponseHandler(command, handler) {
+    responseHandlers[command] = handler;
 }
 
 export function useWebSocketSimulation() {
@@ -92,5 +126,6 @@ export function useWebSocketSimulation() {
         connectWebSocket,
         disconnectWebSocket,
         sendWebSocketMessage,
+        registerResponseHandler,
     };
 }

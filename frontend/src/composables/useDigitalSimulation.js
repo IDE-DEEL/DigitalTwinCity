@@ -1,21 +1,29 @@
-import { onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
+import { useToast } from "vue-toastification";
 import { useWebSocketSimulation } from "./useWebSocketSimulation";
 import { useDashboardParametersStore } from "../stores/dashboardParametersStore";
 import { useSimulationStateStore } from "../stores/simulationStateStore";
+import { TOAST_MESSAGES } from "../constants/toast_messages";
+
+const GET_STATS_TIMEOUT_IN_MILLIS = 5000;
+const CSV_EXPORT_TIMEOUT_IN_MILLIS = 20000;
+const isSimulating = ref(false);
+const hasSimulated = ref(false);
+const autoOpenStatsModal = ref(false);
 
 // ---
 // orchestrator composable
 // ---
 export function useDigitalSimulation() {
-    const { isWebSocketConnected, connectWebSocket, disconnectWebSocket, sendWebSocketMessage } = useWebSocketSimulation();
-    const { isSimulating, simulationStartPayload } = useDashboardParametersStore();
-    const { updateSimulationState, resetSimulationState } = useSimulationStateStore();
+    const { isWebSocketConnected, connectWebSocket, disconnectWebSocket, sendWebSocketMessage, registerResponseHandler } = useWebSocketSimulation();
+    const dashboardStore = useDashboardParametersStore();
+    const simulationStore = useSimulationStateStore();
 
     // ---
     // WebSocket lifecycle management
     // ---
     onMounted(() => {
-        connectWebSocket(updateSimulationState);
+        connectWebSocket(simulationStore.updateSimulationState, handleSimulationEnded);
     });
 
     onBeforeUnmount(() => {
@@ -31,7 +39,10 @@ export function useDigitalSimulation() {
             return;
         }
 
-        const parameters = simulationStartPayload.value;
+        simulationStore.resetSimulationState();
+
+        const parameters = dashboardStore.simulationStartPayload;
+        console.log("Starting simulation with parameters:", parameters);
         if (!parameters) {
             console.error("Parameters not available. Cannot start simulation.");
             return;
@@ -43,6 +54,7 @@ export function useDigitalSimulation() {
         });
 
         isSimulating.value = true;
+        hasSimulated.value = true;
     }
 
     function stopSimulation() {
@@ -56,12 +68,114 @@ export function useDigitalSimulation() {
         });
 
         isSimulating.value = false;
-        resetSimulationState();
     }
 
     function reconnectWebSocket() {
         disconnectWebSocket();
-        connectWebSocket(updateSimulationState);
+        connectWebSocket(simulationStore.updateSimulationState, handleSimulationEnded);
+    }
+
+    function handleSimulationEnded() {
+        isSimulating.value = false;
+        autoOpenStatsModal.value = true;
+    }
+
+        // ---
+    // validation
+    // ---
+    /**
+     * Validates if all houses in the scenario are reachable by at least one selected car route.
+     * Shows an info toast if unreachable houses are found.
+     * @returns {boolean} true if all houses are reachable, false if some are unreachable
+     */
+    function validateHousesReachability() {
+        const toast = useToast();
+        const payload = dashboardStore.simulationStartPayload;
+        
+        if (!payload || !payload.cars || !payload.scenario?.houses) {
+            return true;
+        }
+
+        // Get all selected car routes
+        const selectedRoutes = new Set(
+            payload.cars.map(car => car.routeName).filter(Boolean)
+        );
+
+        // Check if any house has no overlap with selected routes
+        const unreachableHouses = payload.scenario.houses.filter(house => {
+            // A house is unreachable if none of its routeNames match any selected car route
+            return !house.routeNames?.some(routeName => selectedRoutes.has(routeName));
+        });
+
+        if (unreachableHouses.length > 0) {
+            console.info(
+                `Found ${unreachableHouses.length} unreachable house(es):`,
+                unreachableHouses.map(h => h.houseInstanceId)
+            );
+            toast.info(TOAST_MESSAGES.UNREACHABLE_HOUSES);
+            return false;
+        }
+
+        return true;
+    }
+
+    // ---
+    // data retrieval
+    // ---
+    function getStats() {
+        return new Promise((resolve, reject) => {
+            if (!isWebSocketConnected.value) {
+                console.warn("WebSocket not connected. Cannot get stats.");
+                reject(new Error("WebSocket not connected"));
+                return;
+            }
+
+            const timeoutId = setTimeout(() => {
+                console.error(`Stats request timeout after ${GET_STATS_TIMEOUT_IN_MILLIS / 1000} seconds`);
+                reject(new Error("Request timeout: No response from server"));
+            }, GET_STATS_TIMEOUT_IN_MILLIS);
+
+            registerResponseHandler("get_stats", (response) => {
+                clearTimeout(timeoutId);
+
+                if (response.status === "success") {
+                    resolve(response.data);
+                } else {
+                    console.warn("Stats request error:", response.message);
+                    reject(new Error(response.message));
+                }
+            });
+
+            sendWebSocketMessage({ command: "get_stats" });
+        });
+    }
+
+    function exportDataAsCSV() {
+        return new Promise((resolve, reject) => {
+            if (!isWebSocketConnected.value) {
+                console.warn("WebSocket not connected. Cannot export data.");
+                reject(new Error("WebSocket not connected"));
+                return;
+            }
+
+            const timeoutId = setTimeout(() => {
+                console.error(`CSV export request timeout after ${CSV_EXPORT_TIMEOUT_IN_MILLIS / 1000} seconds`);
+                reject(new Error("Request timeout: No response from server"));
+            }, CSV_EXPORT_TIMEOUT_IN_MILLIS);
+
+            registerResponseHandler("export_data", (response) => {
+                clearTimeout(timeoutId);
+
+                if (response.status === "success") {
+                    resolve(response.data);
+                } else {
+                    console.warn("CSV export error:", response.message);
+                    reject(new Error(response.message));
+                }
+            });
+
+            sendWebSocketMessage({ command: "export_data" });
+        });
     }
 
     // ---
@@ -70,9 +184,14 @@ export function useDigitalSimulation() {
     return {
         isWebSocketConnected,
         isSimulating,
+        hasSimulated,
+        autoOpenStatsModal,
 
         startSimulation,
         stopSimulation,
         reconnectWebSocket,
+        validateHousesReachability,
+        getStats,
+        exportDataAsCSV,
     };
 }

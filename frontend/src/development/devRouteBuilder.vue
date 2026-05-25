@@ -49,19 +49,32 @@
         stroke="green"
         stroke-width="0.02"
       />
+
+      <!-- Route waypoints polyline -->
+      <polyline
+        v-if="routeWaypoints.length > 0"
+        :points="routeWaypoints.map(p => `${p.x},${p.y}`).join(' ')"
+        id="routePreview"
+        fill="none"
+        stroke="darkgreen"
+        stroke-width="0.01"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-dasharray="0.06 0.04"
+      />
+      <animate
+        xlink:href="#routePreview"
+        attributeName="stroke-dashoffset"
+        from="0"
+        to="-0.10"
+        dur="1.8s"
+        repeatCount="indefinite"
+      />
     </svg>
 
     <!-- Control panel -->
     <div class="absolute top-2 left-2 bg-white border border-blue-400 rounded p-3 shadow-lg max-w-[10rem] z-40">
       <div class="font-semibold text-sm mb-2">Route Builder</div>
-
-      <!-- Current route display -->
-      <div class="text-xs mb-2">
-        <div class="text-gray-600">Current route:</div>
-        <div class="font-mono text-xs bg-gray-50 p-1 rounded max-h-20 overflow-y-auto">
-          {{ routeDisplay }}
-        </div>
-      </div>
 
       <!-- Status -->
       <div class="text-xs mb-2">
@@ -106,6 +119,7 @@ import {
   getRotatedLanesForTile,
   OPPOSITE_DIRECTION,
 } from '../logic/service/routeBuilder.js';
+import { getWaypointPreviewFromTilePath } from '../logic/service/routeService.js';
 
 const isActive = defineModel('isActive', { type: Boolean, default: false });
 const routeTiles = ref([DEPOT_TILE]);
@@ -159,13 +173,14 @@ const possibleNextTiles = computed(() => {
   return valid;
 });
 
-// Display route as formatted text
-const routeDisplay = computed(() => {
-  return routeTiles.value.map((tile, index) => {
-    const isDepot = tile.x === DEPOT_TILE.x && tile.y === DEPOT_TILE.y;
-    const label = isDepot ? 'DEPOT' : `(${tile.x},${tile.y})`;
-    return label;
-  }).join(' → ');
+// Calculate route waypoints from tiles to preview the route as it's being built.
+const routeWaypoints = computed(() => {
+  try {
+    return getWaypointPreviewFromTilePath(routeTiles.value);
+  } catch (error) {
+    // If waypoint calculation fails, return empty array silently
+    return [];
+  }
 });
 
 /**

@@ -25,8 +25,10 @@
     >
       <div>Tile: ({{ hoverInfo.tileX }}, {{ hoverInfo.tileY }})</div>
       <div>Type: {{ hoverInfo.tileType ?? 'unknown' }}</div>
-      <div>Local: ({{ hoverInfo.localX }}, {{ hoverInfo.localY }})</div>
-      <div class="text-gray-500">Click to copy</div>
+      <div>Rotation: {{ hoverInfo.tileRotation }}°</div>
+      <div>Global x-y: ({{ hoverInfo.globalX }}, {{ hoverInfo.globalY }})</div>
+      <div>Local x-y: ({{ hoverInfo.localX }}, {{ hoverInfo.localY }})</div>
+      <div class="text-gray-500">Click to copy local x-y</div>
     </div>
 
     <div
@@ -43,7 +45,7 @@ import { ref, computed } from 'vue';
 import { MAP_COLUMNS, MAP_ROWS } from '../constants/constants.js';
 import { useMapStore } from '../stores';
 
-const { mapData } = useMapStore();
+const mapStore = useMapStore();
 
 const overlayRef = ref(null);
 const hoverInfo = ref(null);
@@ -72,15 +74,19 @@ function clamp(value, min, max) {
 }
 
 /**
- * Finds the type of a tile based on its coordinates.
+ * Finds the type and rotation of a tile based on its coordinates.
  * 
  * @param tileX - The x-coordinate of the tile.
  * @param tileY - The y-coordinate of the tile.
- * @returns The type of the tile, or null if not found.
+ * @returns An object with type and rotation properties, or null if not found.
  */
-function findTileType(tileX, tileY) {
-  const tile = mapData.value.find(t => t.x === tileX && t.y === tileY);
-  return tile?.type ?? null;
+function findTileData(tileX, tileY) {
+  const tile = mapStore.mapData.find(t => t.x === tileX && t.y === tileY);
+  if (!tile) return null;
+  return {
+    type: tile.type ?? null,
+    rotation: tile.rotation ?? 0,
+  };
 }
 
 /**
@@ -112,14 +118,23 @@ function handleMouseMove(event) {
   const localX = (clampedX - tileX * tileWidth) / tileWidth;
   const localY = (clampedY - tileY * tileHeight) / tileHeight;
 
+  const tileData = findTileData(tileX, tileY);
+
+  // Calculate global map coordinates
+  const globalX = roundCoord(tileX + localX);
+  const globalY = roundCoord(tileY + localY);
+
   hoverInfo.value = {
     mouseX: clampedX,
     mouseY: clampedY,
     tileX,
     tileY,
-    tileType: findTileType(tileX, tileY),
+    tileType: tileData?.type ?? null,
+    tileRotation: tileData?.rotation ?? 0,
     localX: roundCoord(localX),
     localY: roundCoord(localY),
+    globalX,
+    globalY,
     tileWidth,
     tileHeight,
   };

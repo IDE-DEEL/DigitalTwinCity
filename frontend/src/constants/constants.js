@@ -12,6 +12,13 @@ export const HOUSE_POSITION_FIRST = 'A';
 export const MAX_CARS = 5;
 export const MIN_CARS = 1;
 
+// simulation speeds
+export const SIMULATION_SPEED_OPTIONS = [
+    { value: '1x', numericValue: 1 },
+    { value: '2x', numericValue: 2 },
+    { value: 'Super snel', numericValue: 3 },
+];
+
 // custom colors for cars and routes
 export const CAR_ROUTE_COLORS = {
     '1': 'blue',

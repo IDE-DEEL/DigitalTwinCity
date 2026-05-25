@@ -11,9 +11,9 @@ import { rotatePointNormalized, normalizeDegree } from "../utils/rotation.js";
  * @throws {Error} If no tile is found at the given coordinates.
  */
 export function getTileMetadata(tileX, tileY) {
-    const { mapData } = useMapStore();
+    const mapStore = useMapStore();
 
-    const tile = mapData.value.find(t => t.x === tileX && t.y === tileY);
+    const tile = mapStore.mapData.find(t => t.x === tileX && t.y === tileY);
 
     if (!tile) {
         throw new Error(`Tile not found at coordinates (${tileX}, ${tileY})`);
