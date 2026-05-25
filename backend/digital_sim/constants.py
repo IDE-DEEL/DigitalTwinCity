@@ -24,8 +24,8 @@ HOUSE_ROUTE_NAMES_LIST_KEY = "routeNames"
 # --- --- --- --- --- --- --- --- --- --- ---
 
 # Simulation update frequency
-STEPS_PER_SECOND = 20
-DELTA_TIME_PER_STEP_IN_SECONDS = 1.0 / STEPS_PER_SECOND
+UPDATES_PER_SECOND = 20
+DELTA_TIME_PER_STEP_IN_SECONDS = 1.0 / UPDATES_PER_SECOND
 
 # Coordinate indices for waypoints
 X_COORD_IDX = 0
