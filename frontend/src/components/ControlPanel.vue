@@ -21,6 +21,14 @@
                     @input="setCarSpeed(Number($event.target.value))"
                     class="w-full accent-blue-200" 
                 />
+                <input 
+                    type="range" 
+                    min="0" 
+                    max="100" 
+                    :value="carSpeed"
+                    @input="setCarSpeed(Number($event.target.value))"
+                    class="w-full accent-blue-200" 
+                />
                 <span class="text-sm font-mono w-10">{{ carSpeed }}</span>
             </div>
          </div>
@@ -37,6 +45,14 @@
         <!-- Scenario dropdown -->
         <div>
             <label class="block text-sm font-semibold mb-1">Scenario:</label>
+            <select 
+                :value="scenario"
+                @change="setScenario($event.target.value)"
+                class="w-full p-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue outline-none bg-white text-dark"
+            >
+                <option>Rustig</option>
+                <option>Gemiddeld</option>
+                <option>Druk</option>
             <select 
                 :value="scenario"
                 @change="setScenario($event.target.value)"
@@ -97,6 +113,8 @@
                                     max="10"
                                     :value="car.packageCount"
                                     @input="updateCarPackageCount(car.id, Number($event.target.value))"
+                                    :value="car.packageCount"
+                                    @input="updateCarPackageCount(car.id, Number($event.target.value))"
                                     class="w-16 p-1 border border-gray-300 rounded-md text-sm"
                                 />
                             </td>
@@ -104,8 +122,17 @@
                                     <select 
                                         :value="car.route"
                                         @change="updateCarRoute(car.id, $event.target.value)"
+                                        :value="car.route"
+                                        @change="updateCarRoute(car.id, $event.target.value)"
                                         class="w-full p-1 border border-gray-300 rounded-md text-sm"
                                     >
+                                        <option
+                                            v-for="routeOption in routeOptions"
+                                            :key="routeOption.key"
+                                            :value="routeOption.value"
+                                        >
+                                            {{ routeOption.label }}
+                                        </option>
                                         <option
                                             v-for="routeOption in routeOptions"
                                             :key="routeOption.key"
@@ -118,6 +145,7 @@
                             <td class="px-3 py-1">
                                     <button 
                                         class="bg-sky-200 hover:bg-sky-700 text-inherit rounded-sm p-1 w-full h-8 text-xs"
+                                        @click="toggleCarRouteVisibility(car.id)"
                                         @click="toggleCarRouteVisibility(car.id)"
                                     >
                                         {{ car.routeVisibility ? 'Verberg' : 'Toon' }}
