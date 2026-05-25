@@ -38,6 +38,24 @@
 
         <!-- Map Container -->
         <div class="relative" :style="containerStyle">
+            <div class="absolute top-2 right-2 z-40">
+                <button
+                    type="button"
+                    class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
+                    @click="toggleLaneDebug"
+                    >
+                    {{ showDevLaneDebug ? 'Hide lane debug' : 'Show lane debug' }}
+                </button>
+
+                <button
+                    type="button"
+                    class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
+                    @click="toggleTileCoordDebug"
+                >
+                    {{ showDevTileCoordDebug ? 'Hide tile coords' : 'Show tile coords' }}
+                </button>
+            </div>
+
             <!-- Map grid -->
             <div class="map-grid" :style="gridStyle"> 
                 <div
@@ -71,6 +89,8 @@
                     :key="`route-${car.id}`"
                     :points="car.routeWaypoints.map(p => `${p.x},${p.y}`).join(' ')"
                     fill="none"
+                    :stroke="getRouteColorForCar(car.id)"
+                    stroke-width="0.01"
                     :stroke="getRouteColorForCar(car.id)"
                     stroke-width="0.01"
                     stroke-linecap="round"
@@ -122,6 +142,7 @@
                     class="absolute bg-black rounded-full z-10"
                     :style="vehicleStyle"
                 >
+                </div> -->
                 </div> -->
         </div>
     </div> 
@@ -224,8 +245,43 @@ const agentVehicleStyle = (agent) => {
     const height = '18px';
 
     const rotation = (agent.heading_deg || 0) - 90;
+// vehicle style - now for simulated agents
+const agentVehicleStyle = (agent) => {
+    if (!agent || !agent.position) return {};
+    
+    const xPercent = (agent.position[0] / MAP_COLUMNS) * 100;
+    const yPercent = (agent.position[1] / MAP_ROWS) * 100;
+    const width = '36px';
+    const height = '18px';
+
+    const rotation = (agent.heading_deg || 0) - 90;
 
     return {
+        width: width, 
+        height: height,
+        left: `calc(${xPercent}% - ${parseInt(width)/2}px)`,
+        top: `calc(${yPercent}% - ${parseInt(height)/2}px)`,
+        background: getRouteColorForCar(agent.id),
+        borderRadius: '2px',
+        transform: `rotate(${rotation}deg)`
+    };
+};
+
+// // vehicle style - MQTT
+// const vehicleStyle = computed(() => {
+//     const xPercent = (vehiclePosition.value.x / MAP_DIMENSION) * 100;
+//     const yPercent = (vehiclePosition.value.y / MAP_DIMENSION) * 100;
+//     const vehicleSize = '12px';
+
+//     return {
+//         width: vehicleSize, 
+//         height: vehicleSize,
+//         left: `calc(${xPercent}% - ${parseInt(vehicleSize)/2}px)`,
+//         top: `calc(${yPercent}% - ${parseInt(vehicleSize)/2}px)`,
+//         transform: `rotate(${vehiclePosition.value.rotation}deg)`,
+//         transition: 'all 0.5s linear'
+//     };
+// });
         width: width, 
         height: height,
         left: `calc(${xPercent}% - ${parseInt(width)/2}px)`,

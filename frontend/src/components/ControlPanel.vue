@@ -133,11 +133,19 @@
                                         >
                                             {{ routeOption.label }}
                                         </option>
+                                        <option
+                                            v-for="routeOption in routeOptions"
+                                            :key="routeOption.key"
+                                            :value="routeOption.value"
+                                        >
+                                            {{ routeOption.label }}
+                                        </option>
                                     </select>
                             </td>
                             <td class="px-3 py-1">
                                     <button 
                                         class="bg-sky-200 hover:bg-sky-700 text-inherit rounded-sm p-1 w-full h-8 text-xs"
+                                        @click="toggleCarRouteVisibility(car.id)"
                                         @click="toggleCarRouteVisibility(car.id)"
                                     >
                                         {{ car.routeVisibility ? 'Verberg' : 'Toon' }}
