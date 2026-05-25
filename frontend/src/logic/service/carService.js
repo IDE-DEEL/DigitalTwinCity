@@ -1,0 +1,18 @@
+import { getWaypointRouteByName } from "./routeService";
+
+/**
+ * Returns enriched car settings including the built waypoint route.
+ *
+ * @param {Array<Object>} cars - Array of car objects, each with id, packageCount, route, and routeVisibility properties.
+ * @param {Array<Object>} mapData - Array of all map tile objects, each with x and y properties.
+ * @returns {Array<Object>} An array of car objects, each enriched with a waypoints property containing the built route.
+ */
+export function buildCarsWithRoutes(cars, mapData) {
+  return cars.map((car) => ({
+    id: car.id,
+    packageCount: car.packageCount,
+    route: car.route,
+    routeVisibility: car.routeVisibility,
+    waypoints: getWaypointRouteByName(car.route, mapData),
+  }));
+}

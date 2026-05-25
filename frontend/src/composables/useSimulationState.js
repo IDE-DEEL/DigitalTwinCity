@@ -1,6 +1,6 @@
 import { ref, computed } from "vue";
 import { ROUTE_OPTIONS } from "../logic/domain/routes";
-import { buildCarsWithRoutes } from "../logic/service/routeService";
+import { buildCarsWithRoutes } from "../logic/service/carService";
 
 // refs
 const cars = ref([]);

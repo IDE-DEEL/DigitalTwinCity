@@ -1,7 +1,7 @@
 import { TILE_LANES } from '../domain/laneCoords.js';
 import { normalizeDegree, rotateCardinalDirection, rotatePointNormalized } from '../utils/rotation.js';
 
-const OPPOSITE_DIRECTION = {
+export const OPPOSITE_DIRECTION = {
   N: 'S',
   E: 'W',
   S: 'N',
@@ -17,7 +17,7 @@ const OPPOSITE_DIRECTION = {
  * @returns {string} The cardinal direction ('N', 'E', 'S', or 'W') from tileA to tileB.
  * @throws {Error} If tileB is not an orthogonal neighbor of tileA.
  */
-function getDirectionBetweenTiles(tileA, tileB) {
+export function getDirectionBetweenTiles(tileA, tileB) {
   const dx = tileB.x - tileA.x;
   const dy = tileB.y - tileA.y;
 
@@ -40,7 +40,7 @@ function getDirectionBetweenTiles(tileA, tileB) {
  * @returns {Object} The tile object at the specified coordinates.
  * @throws {Error} If no tile is found at the given coordinates.
  */
-function getMapTile(mapData, x, y) {
+export function getMapTile(mapData, x, y) {
   const tile = mapData.find((item) => item.x === x && item.y === y);
 
   if (!tile) {
@@ -57,7 +57,7 @@ function getMapTile(mapData, x, y) {
  * @returns {Array<Object>} An array of lane objects, each with id, tileX, tileY, tileType, from, to, and points (rotated to match the tile's orientation).
  * @throws {Error} If no lane definition is found for the tile type.
  */
-function getRotatedLanesForTile(tile) {
+export function getRotatedLanesForTile(tile) {
   const laneDefinition = TILE_LANES[tile.type];
 
   if (!laneDefinition) {
@@ -137,7 +137,7 @@ function findDepotEndLane(rotatedLanes, incomingDirection) {
  * @returns {Object} The lane object that matches the given incoming and outgoing directions.
  * @throws {Error} If no suitable lane is found for the specified directions.
  */
-function findConnectingLane(rotatedLanes, incomingDirection, outgoingDirection) {
+export function findConnectingLane(rotatedLanes, incomingDirection, outgoingDirection) {
   const lane = rotatedLanes.find(
     (candidate) =>
       candidate.from === incomingDirection && candidate.to === outgoingDirection

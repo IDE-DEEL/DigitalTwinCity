@@ -60,28 +60,57 @@ const overlayRef = ref(null);
 const hoverInfo = ref(null);
 const copiedMessage = ref('');
 
+/**
+ * Rounds a coordinate value to two decimals.
+ * 
+ * @param value - The coordinate value to round.
+ * @returns The rounded coordinate value.
+ */
 function roundCoord(value) {
   return Number(value.toFixed(2));
 }
 
+/**
+ * Restricts a value to stay within the given minimum and maximum bounds.
+ * 
+ * @param value - The value to clamp.
+ * @param min - The minimum value.
+ * @param max - The maximum value.
+ * @returns The clamped value.
+ */
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 
+/**
+ * Finds the type of a tile based on its coordinates.
+ * 
+ * @param tileX - The x-coordinate of the tile.
+ * @param tileY - The y-coordinate of the tile.
+ * @returns The type of the tile, or null if not found.
+ */
 function findTileType(tileX, tileY) {
   const tile = props.mapData.find(t => t.x === tileX && t.y === tileY);
   return tile?.type ?? null;
 }
 
+/**
+ * Calculates the mouse position relative to the overlay, determines which tile is being hovered 
+ * as well as the local tile coordinates, and updates hoverInfo for highlightiing and tooltip display.
+ * Clamps mouse coordinates to ensure they stay within the overlay bounds.
+ * 
+ * @param event  - Mouse event containing the cursor position.
+ */
 function handleMouseMove(event) {
-  const el = overlayRef.value;
-  if (!el) return;
+  const overlayElement = overlayRef.value;
+  if (!overlayElement) return;
 
-  const rect = el.getBoundingClientRect();
+  const rect = overlayElement.getBoundingClientRect();
 
   const mouseX = event.clientX - rect.left;
   const mouseY = event.clientY - rect.top;
 
+//   prevent cursor from going outside of the overlay, which could cause values to be out of bounds or incorrect
   const clampedX = clamp(mouseX, 0, rect.width - 0.0001);
   const clampedY = clamp(mouseY, 0, rect.height - 0.0001);
 
@@ -107,10 +136,18 @@ function handleMouseMove(event) {
   };
 }
 
+/**
+ * Clears hover info when mouse leaves the overlay, hiding highlights and tooltip.
+ */
 function handleMouseLeave() {
   hoverInfo.value = null;
 }
 
+/**
+ * Copies the current tile coordinates to the clipboard in the format { x: X, y: Y }, 
+ * and shows a temporary confirmation message.
+ * If copying fails, shows an error message instead.
+ */
 async function handleClick() {
   if (!hoverInfo.value) return;
 

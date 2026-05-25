@@ -1,6 +1,33 @@
 <template>
   <div class="w-full">
     <div class="border border-gray-400 rounded-lg w-full h-full bg-white flex items-center justify-center overflow-hidden">
+        <div v-if="isDevelopment" class="absolute top-6 left-1/2 -translate-x-1/2 z-40">
+            <!-- Developer tool buttons (only in development mode) -->
+            <button
+                type="button"
+                class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
+                @click="toggleLaneDebug"
+                >
+                {{ showDevLaneDebug ? 'Hide lane overlay' : 'Show lane overlay' }}
+            </button>
+
+            <button
+                type="button"
+                class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
+                @click="toggleTileCoordDebug"
+            >
+                {{ showDevTileCoordDebug ? 'Hide tile coords overlay' : 'Show tile coords overlay' }}
+            </button>
+
+            <button
+                type="button"
+                class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
+                @click="toggleRouteBuilder"
+            >
+                {{ showDevRouteBuilder ? 'Hide route builder' : 'Show route builder' }}
+            </button>
+        </div>
+
         <!-- Map Container -->
         <div class="relative" :style="containerStyle">
             <div class="absolute top-2 right-2 z-40">
@@ -43,6 +70,13 @@
                     :map-rows="MAP_ROWS"
                     :map-data="mapData"
                 />
+
+                <devTileCoordinateOverlay
+                    v-if="showDevTileCoordDebug"
+                    :map-columns="MAP_COLUMNS"
+                    :map-rows="MAP_ROWS"
+                    :map-data="mapData"
+                />
             </div> 
             <!-- Lanes (kleur kan later worden weggehaald)-->
             <svg 
@@ -50,21 +84,11 @@
                 :viewBox="`0 0 ${MAP_COLUMNS} ${MAP_ROWS}`"
                 :preserveAspectRatio="`none`"
             >
-                <!-- <polyline
-                    v-for="lane in lanes"
-                    :key="lane.id"
-                    :points="lane.points.map(p => `${p.x},${p.y}`).join(' ')"
-                    fill="none"
-                    stroke="blue"
-                    stroke-width="0.00"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                /> -->
 
                 <polyline
                     v-for="car in visibleCarsWithRoutes"
                     :key="`route-${car.id}`"
-                    :points="car.waypoints.map(p => `${p.x},${p.y}`).join(' ')"
+                    :points="car.waypoints.map(point => `${point.x},${point.y}`).join(' ')"
                     fill="none"
                     :stroke="getRouteColorForCar(car.id)"
                     stroke-width="0.01"
@@ -79,6 +103,14 @@
                     :map-rows="MAP_ROWS"
                 />
             </svg>
+
+            <devRouteBuilder
+                v-model:isActive="showDevRouteBuilder"
+                :map-columns="MAP_COLUMNS"
+                :map-rows="MAP_ROWS"
+                :map-data="mapData"
+            />
+
             <!-- Auto -->
                 <div
                     id="live-vehicle"
@@ -101,6 +133,9 @@ import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
 import { useSimulationState } from '../composables/useSimulationState.js';
 import devLaneDebugOverlay from '../development/devLaneDebugOverlay.vue';
 import devTileCoordinateOverlay from '../development/devTileCoordinateOverlay.vue';
+import devRouteBuilder from '../development/devRouteBuilder.vue';
+
+const isDevelopment = import.meta.env.DEV;
 
 const mapData = ref([]); 
 const componentDefinitions = ref({}); 
@@ -128,6 +163,14 @@ const toggleTileCoordDebug = () => {
 };
 // --- tile coordinate devtool end ---
 
+// --- route builder devtool start ---
+const showDevRouteBuilder = ref(false);
+
+const toggleRouteBuilder = () => {
+    showDevRouteBuilder.value = !showDevRouteBuilder.value;
+};
+// --- route builder devtool end ---
+
 // --- custom colors for car routes start ---
 const CAR_ROUTE_COLORS = {
     '1': 'blue',
@@ -143,6 +186,7 @@ const getRouteColorForCar = (carId) => {
 // --- custom colors for car routes end ---
 
 const MAP_DIMENSION = 5;
+// TODO: move to constants file in sprint 6
 // TODO: move to constants file in sprint 6
 const MAP_COLUMNS = 5;
 const MAP_ROWS = 4;
@@ -223,15 +267,19 @@ const getComponentPosition = (component) => {
 
 onMounted(async () => {
     // setupMqttClient();
+    // setupMqttClient();
     try {
         const data = await fetchMapData(); 
         mapData.value = data.mapData;
         componentDefinitions.value = data.componentDefinitions;
 
         setMapData(data.mapData);
+
+        setMapData(data.mapData);
         
         // Initialize the RFID mapper with loaded data
         initRfidMapper(data.mapData, data.rfidData);
+
 
     } catch (error) {
         console.error("Fout bij het laden:", error);
