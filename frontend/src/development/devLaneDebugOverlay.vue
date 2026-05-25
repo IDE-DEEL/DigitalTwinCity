@@ -1,7 +1,7 @@
 <template>
   <svg
     class="absolute inset-0 pointer-events-none"
-    :viewBox="`0 0 ${mapColumns} ${mapRows}`"
+    :viewBox="`0 0 ${MAP_COLUMNS} ${MAP_ROWS}`"
     preserveAspectRatio="none"
   >
     <polyline
@@ -39,18 +39,11 @@
 
 <script setup>
 import { computed } from "vue";
+import { MAP_COLUMNS, MAP_ROWS } from "../constants/constants";
 
 const props = defineProps({
   lanes: {
     type: Array,
-    required: true,
-  },
-  mapColumns: {
-    type: Number,
-    required: true,
-  },
-  mapRows: {
-    type: Number,
     required: true,
   },
 });

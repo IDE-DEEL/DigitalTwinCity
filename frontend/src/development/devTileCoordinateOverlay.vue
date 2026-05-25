@@ -40,21 +40,10 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import { MAP_COLUMNS, MAP_ROWS } from '../constants/constants.js';
+import { useMapStore } from '../stores';
 
-const props = defineProps({
-  mapColumns: {
-    type: Number,
-    required: true,
-  },
-  mapRows: {
-    type: Number,
-    required: true,
-  },
-  mapData: {
-    type: Array,
-    required: true,
-  },
-});
+const { mapData } = useMapStore();
 
 const overlayRef = ref(null);
 const hoverInfo = ref(null);
@@ -90,7 +79,7 @@ function clamp(value, min, max) {
  * @returns The type of the tile, or null if not found.
  */
 function findTileType(tileX, tileY) {
-  const tile = props.mapData.find(t => t.x === tileX && t.y === tileY);
+  const tile = mapData.value.find(t => t.x === tileX && t.y === tileY);
   return tile?.type ?? null;
 }
 
@@ -114,8 +103,8 @@ function handleMouseMove(event) {
   const clampedX = clamp(mouseX, 0, rect.width - 0.0001);
   const clampedY = clamp(mouseY, 0, rect.height - 0.0001);
 
-  const tileWidth = rect.width / props.mapColumns;
-  const tileHeight = rect.height / props.mapRows;
+  const tileWidth = rect.width / MAP_COLUMNS;
+  const tileHeight = rect.height / MAP_ROWS;
 
   const tileX = Math.floor(clampedX / tileWidth);
   const tileY = Math.floor(clampedY / tileHeight);

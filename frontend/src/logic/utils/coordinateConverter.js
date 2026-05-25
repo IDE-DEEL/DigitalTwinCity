@@ -1,4 +1,4 @@
-import { MAP_ROWS } from '../../constants/mapConstants';
+import { MAP_ROWS } from '../../constants/constants';
 /**
  * Coordinate system conversion utilities
  * 
@@ -13,11 +13,25 @@ import { MAP_ROWS } from '../../constants/mapConstants';
  * @param {Array<Object>} waypoints - Array of waypoint objects with x, y properties
  * @returns {Array<Object>} Converted waypoints in mathematical coordinate system
  */
-export function convertWaypointsSvgToMath(waypoints) {
+export function convertWaypointsArrayFromSvgToMath(waypoints) {
   return waypoints.map(point => ({
     x: point.x,
     y: MAP_ROWS - point.y
   }));
+}
+
+/**
+ * Convert waypoints from SVG coordinates (frontend) to mathematical coordinates (backend)
+ * Used when sending waypoints to backend for simulation
+ * 
+ * @param {Array<Object>} waypoints - Array of waypoint objects with x, y properties
+ * @returns {Array<Object>} Converted waypoints in mathematical coordinate system
+ */
+export function convertWaypointFromSvgToMath(waypoint) {
+  return {
+    x: waypoint.x,
+    y: MAP_ROWS - waypoint.y
+  };
 }
 
 /**

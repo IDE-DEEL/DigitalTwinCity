@@ -83,8 +83,7 @@ async def _run_simulation_loop(websocket: WebSocket, simulation_service: Simulat
             try:
                 await websocket.send_json({
                     "command": "simulation_update",
-                    "step": step_result.get("step"),
-                    "agents": step_result.get("agents", [])
+                    "result": step_result
                 })
             except Exception as e:
                 print(f"Error sending simulation update: {e}")

@@ -1,5 +1,5 @@
 from backend.digital_sim.domain.car_model import CarModel
-from backend.digital_sim.constants import ROUTE_WAYPOINTS_KEY, CAR_SETTINGS_KEY, CAR_TARGET_SPEED_KEY, SCENARIO_KEY
+from backend.digital_sim.constants import CAR_ROUTE_WAYPOINTS_KEY, CARS_KEY, CAR_TARGET_SPEED_KEY, SCENARIO_KEY, SCENARIO_NAME_KEY, SCENARIO_HOUSES_LIST_KEY, HOUSE_ROAD_COORDS_KEY
 
 
 class SimulationService:
@@ -14,30 +14,42 @@ class SimulationService:
         Start a new simulation with the given parameters.
         
         Args:
-            parameters: Dictionary containing carSettings, carSpeed, and scenario
+            parameters: Dictionary containing cars, carTargetSpeed, and scenario
         """
-        car_settings = parameters.get(CAR_SETTINGS_KEY, [])  # TODO: throw error if missing/empty
+        cars = parameters.get(CARS_KEY, [])  # TODO: throw error if missing/empty
         car_target_speed = parameters.get(CAR_TARGET_SPEED_KEY, 50)
-        scenario = parameters.get(SCENARIO_KEY, "rustig") # TODO: pass scenario to model later
 
-        # Convert route waypoints from dicts to tuples for each car configuration
-        for config in car_settings:
-            config[ROUTE_WAYPOINTS_KEY] = self._convert_waypoint_dicts_to_tuples(config.get(ROUTE_WAYPOINTS_KEY, []))
+        scenario = parameters.get(SCENARIO_KEY, {})
+        scenario_name = scenario.get(SCENARIO_NAME_KEY, "unknown")
+        houses = scenario.get(SCENARIO_HOUSES_LIST_KEY, [])
+
+        # Convert route waypoints from dicts to tuples for each car
+        for car in cars:
+            car[CAR_ROUTE_WAYPOINTS_KEY] = self._convert_waypoint_dicts_to_tuples(car.get(CAR_ROUTE_WAYPOINTS_KEY, []))
+        
+        # Convert house roadCoords from dicts to tuples for each house
+        for house in houses:
+            house[HOUSE_ROAD_COORDS_KEY] = self._convert_waypoint_dicts_to_tuples(house.get(HOUSE_ROAD_COORDS_KEY, []))
         
         # Create model with configuration
         self.model = CarModel(
-            car_settings=car_settings,
+            cars=cars,
             car_target_speed=car_target_speed,
+            scenario_name=scenario_name,
+            houses=houses
         )
         self.is_running = True
-        return {"status": "simulation_started", "agents": len(self.model.agents)}
+        return {
+            "status": "simulation_started",
+            **self.model.get_simulation_state()
+        }
     
     def step(self):
         """
         Execute one step of the simulation.
         
         Returns:
-            Dictionary with step information and agent status
+            Dictionary with complete simulation state (agents, houses, packages)
         """
         if not self.is_running or not self.model:
             return {"status": "simulation_not_running"}
@@ -46,10 +58,10 @@ class SimulationService:
         self.model.step()
         
         return {
-            "step": self.model.step_count,
-            "agents": self.model.get_agents_status()
+            "status": "simulation_update",
+            **self.model.get_simulation_state()
         }
-    
+
     def stop_simulation(self):
         """Stop the current simulation."""
         self.is_running = False
@@ -62,6 +74,8 @@ class SimulationService:
         """Convert list of waypoints from dict format to list of (x, y) tuples.
         Example input: [{"x": 1.0, "y": 2.0}, {"x": 3.0, "y": 4.0}]
         Output: [(1.0, 2.0), (3.0, 4.0)]
+        
+        Used for both car route waypoints and house detection zone coordinates.
 
         Args:
             waypoints: List of dictionaries with 'x' and 'y' keys

@@ -1,4 +1,5 @@
 import { TILE_LANES } from '../domain/laneCoords.js';
+import { useMapStore } from '../../stores/mapStore.js';
 import { normalizeDegree, rotateCardinalDirection, rotatePointNormalized } from '../utils/rotation.js';
 
 export const OPPOSITE_DIRECTION = {
@@ -34,14 +35,15 @@ export function getDirectionBetweenTiles(tileA, tileB) {
 /**
  * Looks up and returns the map tile at the given (x, y) coordinates.
  *
- * @param {Array<Object>} mapData - Array of tile objects, each with x and y properties.
  * @param {number} x - The x-coordinate of the tile to find.
  * @param {number} y - The y-coordinate of the tile to find.
  * @returns {Object} The tile object at the specified coordinates.
  * @throws {Error} If no tile is found at the given coordinates.
  */
-export function getMapTile(mapData, x, y) {
-  const tile = mapData.find((item) => item.x === x && item.y === y);
+export function getMapTile(x, y) {
+  const { mapData } = useMapStore();
+  
+  const tile = mapData.value.find((item) => item.x === x && item.y === y);
 
   if (!tile) {
     throw new Error(`No tile found at (${x}, ${y}).`);
@@ -75,7 +77,8 @@ export function getRotatedLanesForTile(tile) {
     to: rotateCardinalDirection(lane.to, rotation),
     points: lane.points.map((point) => {
       const rotatedPoint = rotatePointNormalized(point, rotation);
-
+    //   adjust the local waypoint coordinates by the tile's global position to get global waypoint coordinates
+    // TODO: move this specific logic to a separate function in sprint 6
       return {
         x: tile.x + rotatedPoint.x,
         y: tile.y + rotatedPoint.y,
@@ -156,11 +159,10 @@ export function findConnectingLane(rotatedLanes, incomingDirection, outgoingDire
  * Converts a sequence of tiles (tile path) into a sequence of chosen lanes for the route.
  *
  * @param {Array<Object>} tilePath - Array of tile objects representing the route, each with x and y properties.
- * @param {Array<Object>} mapData - Array of all map tile objects, each with x and y properties.
  * @returns {Array<Object>} An array of lane objects representing the chosen lanes for the route.
  * @throws {Error} If the tile path is invalid or a suitable lane cannot be found for any tile.
  */
-export function buildLaneSequenceFromTilePath(tilePath, mapData) {
+export function buildLaneSequenceFromTilePath(tilePath) {
   if (!Array.isArray(tilePath) || tilePath.length < 2) {
     throw new Error('tilePath must contain at least 2 tiles.');
   }
@@ -169,7 +171,7 @@ export function buildLaneSequenceFromTilePath(tilePath, mapData) {
 
   for (let index = 0; index < tilePath.length; index++) {
     const currentPathTile = tilePath[index];
-    const currentMapTile = getMapTile(mapData, currentPathTile.x, currentPathTile.y);
+    const currentMapTile = getMapTile(currentPathTile.x, currentPathTile.y);
     const rotatedLanes = getRotatedLanesForTile(currentMapTile);
 
     const isFirst = index === 0;
@@ -221,11 +223,10 @@ export function buildLaneSequenceFromTilePath(tilePath, mapData) {
  * Converts a sequence of tiles into a single list of global waypoints for the route.
  *
  * @param {Array<Object>} tilePath - Array of tile objects representing the route, each with x and y properties.
- * @param {Array<Object>} mapData - Array of all map tile objects, each with x and y properties.
  * @returns {Array<Object>} An array of waypoint objects, each with x and y properties, representing the full route.
  */
-export function buildWaypointRouteFromTilePath(tilePath, mapData) {
-  const laneSequence = buildLaneSequenceFromTilePath(tilePath, mapData);
+export function buildWaypointRouteFromTilePath(tilePath) {
+  const laneSequence = buildLaneSequenceFromTilePath(tilePath);
   const waypoints = [];
 
   laneSequence.forEach((lane, laneIndex) => {
