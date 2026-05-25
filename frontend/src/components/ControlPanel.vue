@@ -205,6 +205,12 @@ const handleStart = () => {
     }
     console.log('Requested simulation start with parameters: ', collectParameters());
     startSimulation();
+    if (!isWebSocketConnected.value) {
+        console.warn('WebSocket niet verbonden. Simulatie kan niet starten.');
+        return;
+    }
+    console.log('Requested simulation start with parameters: ', collectParameters());
+    startSimulation();
 }
 
 const handleStop = () => {
