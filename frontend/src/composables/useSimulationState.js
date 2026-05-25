@@ -1,14 +1,16 @@
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { ROUTE_OPTIONS } from "../logic/domain/routes";
 import { buildCarsWithRoutes } from "../logic/service/carService";
+import { convertWaypointsSvgToMath, convertPositionMathToSvg } from "../logic/utils/coordinateConverter";
 import { useWebSocketSimulation } from "./useWebSocketSimulation";
 
 // refs
 const cars = ref([]);
-const carSpeed = ref(50);
+const carTargetSpeed = ref(50);
 const scenario = ref('Rustig');
 const isSimulating = ref(false);
 const mapData = ref([]);
+const agentsState = ref([]);
 
 // constants
 const MAX_CARS = 5;
@@ -74,8 +76,8 @@ function toggleCarRouteVisibility(carId) {
 // ---
 // simulation logic
 // ---
-function setCarSpeed(value) {
-    carSpeed.value = value;
+function setCarTargetSpeed(value) {
+    carTargetSpeed.value = value;
 }
 
 function setScenario(value) {
@@ -113,6 +115,21 @@ function stopSimulation() {
     });
     
     isSimulating.value = false;
+    agentsState.value = [];
+}
+
+function updateAgentsState(agents) {
+    // ensure we convert agent positions back from mathematical coordinates (backend) to SVG coordinates (frontend)
+    const convertedAgents = agents.map(agent => ({
+        ...agent,
+        position: convertPositionMathToSvg(agent.position)
+    }));
+    agentsState.value = convertedAgents;
+}
+
+function reconnectWebSocket() {
+    disconnectWebSocket();
+    connectWebSocket(updateAgentsState);
 }
 
 // ---
@@ -165,9 +182,9 @@ const simulationStartPayload = computed(() => {
             id: car.id,
             packageCount: car.packageCount,
             routeName: car.route,
-            routeWaypoints: car.waypoints,
+            routeWaypoints: convertWaypointsSvgToMath(car.waypoints),
         })),
-        carSpeed: carSpeed.value,
+        carTargetSpeed: carTargetSpeed.value,
         scenario: scenario.value,
     };
 });
@@ -181,7 +198,7 @@ function collectParameters() {
 // ---
 export function useSimulationState() {
     onMounted(() => {
-        connectWebSocket();
+        connectWebSocket(updateAgentsState);
     });
 
     onBeforeUnmount(() => {
@@ -190,10 +207,11 @@ export function useSimulationState() {
 
     return {
         cars,
-        carSpeed,
+        carTargetSpeed: carTargetSpeed,
         scenario,
         isSimulating,
         mapData,
+        agentsState,
         MAX_CARS,
         routeOptions: ROUTE_OPTIONS,
         isWebSocketConnected,
@@ -203,11 +221,13 @@ export function useSimulationState() {
         updateCarPackageCount,
         updateCarRoute,
         toggleCarRouteVisibility,
-        setCarSpeed,
+        setCarTargetSpeed,
         setScenario,
         setMapData,
         startSimulation,
         stopSimulation,
+        updateAgentsState,
+        reconnectWebSocket,
         collectParameters,
 
         visibleCars,

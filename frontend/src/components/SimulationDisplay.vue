@@ -28,33 +28,6 @@
             </button>
         </div>
 
-        <div v-if="isDevelopment" class="absolute top-6 left-1/2 -translate-x-1/2 z-40">
-            <!-- Developer tool buttons (only in development mode) -->
-            <button
-                type="button"
-                class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
-                @click="toggleLaneDebug"
-                >
-                {{ showDevLaneDebug ? 'Hide lane overlay' : 'Show lane overlay' }}
-            </button>
-
-            <button
-                type="button"
-                class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
-                @click="toggleTileCoordDebug"
-            >
-                {{ showDevTileCoordDebug ? 'Hide tile coords overlay' : 'Show tile coords overlay' }}
-            </button>
-
-            <button
-                type="button"
-                class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
-                @click="toggleRouteBuilder"
-            >
-                {{ showDevRouteBuilder ? 'Hide route builder' : 'Show route builder' }}
-            </button>
-        </div>
-
         <!-- Map Container -->
         <div class="relative" :style="containerStyle">
             <div class="absolute top-2 right-2 z-40">
@@ -97,6 +70,13 @@
                     :map-rows="MAP_ROWS"
                     :map-data="mapData"
                 />
+
+                <devTileCoordinateOverlay
+                    v-if="showDevTileCoordDebug"
+                    :map-columns="MAP_COLUMNS"
+                    :map-rows="MAP_ROWS"
+                    :map-data="mapData"
+                />
             </div> 
             <!-- Lanes (kleur kan later worden weggehaald)-->
             <svg 
@@ -105,28 +85,15 @@
                 :preserveAspectRatio="`none`"
             >
 
-
                 <polyline
-                    v-for="car in visibleCarsWithRoutes"
-                    :key="`route-${car.id}`"
-                    :points="car.waypoints.map(point => `${point.x},${point.y}`).join(' ')"
                     v-for="car in visibleCarsWithRoutes"
                     :key="`route-${car.id}`"
                     :points="car.waypoints.map(point => `${point.x},${point.y}`).join(' ')"
                     fill="none"
                     :stroke="getRouteColorForCar(car.id)"
                     stroke-width="0.01"
-                    :stroke="getRouteColorForCar(car.id)"
-                    stroke-width="0.01"
                     stroke-linecap="round"
                     stroke-linejoin="round"
-                />
-
-                <devLaneDebugOverlay
-                    v-if="showDevLaneDebug"
-                    :lanes="lanes"
-                    :map-columns="MAP_COLUMNS"
-                    :map-rows="MAP_ROWS"
                 />
 
                 <devLaneDebugOverlay
@@ -144,21 +111,23 @@
                 :map-data="mapData"
             />
 
+            <!-- Auto (digital simulation) -->
+            <div
+                v-for="agent in agentsState"
+                :key="`agent-${agent.id}`"
+                class="absolute bg-black z-10 border-2"
+                :style="agentVehicleStyle(agent)"
+                :title="`Agent ${agent.id} - Speed: ${agent.speed?.toFixed(2)}`"
+            >
+            </div>
 
-            <devRouteBuilder
-                v-model:isActive="showDevRouteBuilder"
-                :map-columns="MAP_COLUMNS"
-                :map-rows="MAP_ROWS"
-                :map-data="mapData"
-            />
-
-            <!-- Auto -->
-                <div
+            <!-- Auto (MQTT)-->
+                <!-- <div
                     id="live-vehicle"
                     class="absolute bg-black rounded-full z-10"
                     :style="vehicleStyle"
                 >
-                </div>
+                </div> -->
         </div>
     </div> 
   </div>
@@ -172,13 +141,7 @@ import { useMqttVehicle } from '../composables/MqttConnection.js';
 import { normalizeDegree } from '../logic/utils/rotation.js';
 import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
 import { useSimulationState } from '../composables/useSimulationState.js';
-import devLaneDebugOverlay from '../development/devLaneDebugOverlay.vue';
-import devTileCoordinateOverlay from '../development/devTileCoordinateOverlay.vue';
-import devRouteBuilder from '../development/devRouteBuilder.vue';
-
-const isDevelopment = import.meta.env.DEV;
-
-import { useSimulationState } from '../composables/useSimulationState.js';
+import { MAP_COLUMNS, MAP_ROWS } from '../constants/mapConstants.js';
 import devLaneDebugOverlay from '../development/devLaneDebugOverlay.vue';
 import devTileCoordinateOverlay from '../development/devTileCoordinateOverlay.vue';
 import devRouteBuilder from '../development/devRouteBuilder.vue';
@@ -193,6 +156,7 @@ const { vehiclePosition,setupMqttClient } = useMqttVehicle();
 const {
     visibleCarsWithRoutes,
     setMapData,
+    agentsState,
 } = useSimulationState();
 
 // --- lane debug devtool start ---
@@ -232,57 +196,6 @@ const getRouteColorForCar = (carId) => {
     return CAR_ROUTE_COLORS[carId] ?? 'blue';
 };
 // --- custom colors for car routes end ---
-
-
-const { vehiclePosition,setupMqttClient } = useMqttVehicle();
-const {
-    visibleCarsWithRoutes,
-    setMapData,
-} = useSimulationState();
-
-// --- lane debug devtool start ---
-const showDevLaneDebug = ref(false);
-
-const toggleLaneDebug = () => {
-    showDevLaneDebug.value = !showDevLaneDebug.value;
-};
-// --- lane debug devtool end ---
-
-// --- tile coordinate devtool start ---
-const showDevTileCoordDebug = ref(false);
-
-const toggleTileCoordDebug = () => {
-    showDevTileCoordDebug.value = !showDevTileCoordDebug.value;
-};
-// --- tile coordinate devtool end ---
-
-// --- route builder devtool start ---
-const showDevRouteBuilder = ref(false);
-
-const toggleRouteBuilder = () => {
-    showDevRouteBuilder.value = !showDevRouteBuilder.value;
-};
-// --- route builder devtool end ---
-
-// --- custom colors for car routes start ---
-const CAR_ROUTE_COLORS = {
-    '1': 'blue',
-    '2': 'red',
-    '3': 'green',
-    '4': 'yellow',
-    '5': 'purple',
-};
-
-const getRouteColorForCar = (carId) => {
-    return CAR_ROUTE_COLORS[carId] ?? 'blue';
-};
-// --- custom colors for car routes end ---
-
-const MAP_DIMENSION = 5;
-// TODO: move to constants file in sprint 6
-const MAP_COLUMNS = 5;
-const MAP_ROWS = 4;
-const MAX_MAP_SCALE = 70;
 
 // container style
 const containerStyle = computed(() => {
@@ -293,21 +206,43 @@ const containerStyle = computed(() => {
     };
 });
 
-// vehicle style
-const vehicleStyle = computed(() => {
-    const xPercent = (vehiclePosition.value.x / MAP_DIMENSION) * 100;
-    const yPercent = (vehiclePosition.value.y / MAP_DIMENSION) * 100;
-    const vehicleSize = '12px';
+// vehicle style - now for simulated agents
+const agentVehicleStyle = (agent) => {
+    if (!agent || !agent.position) return {};
+    
+    const xPercent = (agent.position[0] / MAP_COLUMNS) * 100;
+    const yPercent = (agent.position[1] / MAP_ROWS) * 100;
+    const width = '36px';
+    const height = '18px';
+
+    const rotation = (agent.heading_deg || 0) - 90;
 
     return {
-        width: vehicleSize, 
-        height: vehicleSize,
-        left: `calc(${xPercent}% - ${parseInt(vehicleSize)/2}px)`,
-        top: `calc(${yPercent}% - ${parseInt(vehicleSize)/2}px)`,
-        transform: `rotate(${vehiclePosition.value.rotation}deg)`,
-        transition: 'all 0.5s linear'
+        width: width, 
+        height: height,
+        left: `calc(${xPercent}% - ${parseInt(width)/2}px)`,
+        top: `calc(${yPercent}% - ${parseInt(height)/2}px)`,
+        background: getRouteColorForCar(agent.id),
+        borderRadius: '2px',
+        transform: `rotate(${rotation}deg)`
     };
-});
+};
+
+// // vehicle style - MQTT
+// const vehicleStyle = computed(() => {
+//     const xPercent = (vehiclePosition.value.x / MAP_DIMENSION) * 100;
+//     const yPercent = (vehiclePosition.value.y / MAP_DIMENSION) * 100;
+//     const vehicleSize = '12px';
+
+//     return {
+//         width: vehicleSize, 
+//         height: vehicleSize,
+//         left: `calc(${xPercent}% - ${parseInt(vehicleSize)/2}px)`,
+//         top: `calc(${yPercent}% - ${parseInt(vehicleSize)/2}px)`,
+//         transform: `rotate(${vehiclePosition.value.rotation}deg)`,
+//         transition: 'all 0.5s linear'
+//     };
+// });
 
 
 // gridstyle
@@ -359,15 +294,19 @@ const getComponentPosition = (component) => {
 
 onMounted(async () => {
     // setupMqttClient();
+    // setupMqttClient();
     try {
         const data = await fetchMapData(); 
         mapData.value = data.mapData;
         componentDefinitions.value = data.componentDefinitions;
 
         setMapData(data.mapData);
+
+        setMapData(data.mapData);
         
         // Initialize the RFID mapper with loaded data
         initRfidMapper(data.mapData, data.rfidData);
+
 
     } catch (error) {
         console.error("Fout bij het laden:", error);

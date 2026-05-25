@@ -233,7 +233,10 @@ export function buildWaypointRouteFromTilePath(tilePath, mapData) {
       const isFirstPointOfLane = pointIndex === 0;
       const previousPoint = waypoints[waypoints.length - 1];
 
-      waypoints.push(point);
+      waypoints.push({
+        x: Number(point.x.toFixed(3)),
+        y: Number(point.y.toFixed(3)),
+      });
     });
   });
 
