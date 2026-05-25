@@ -5,7 +5,14 @@
          <div>
             <label class="block text-sm font-semibold mb-1">Snelheid:</label>
             <div class="flex items-center gap-3">
-                <input type="range" min="0" max="100" v-model="carSpeed" class="w-full accent-blue-200" />
+                <input 
+                    type="range" 
+                    min="0" 
+                    max="100" 
+                    :value="carSpeed"
+                    @input="setCarSpeed(Number($event.target.value))"
+                    class="w-full accent-blue-200" 
+                />
                 <span class="text-sm font-mono w-10">{{ carSpeed }}</span>
             </div>
          </div>
@@ -22,9 +29,14 @@
         <!-- Scenario dropdown -->
         <div>
             <label class="block text-sm font-semibold mb-1">Scenario:</label>
-            <select class="w-full p-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue outline-none bg-white text-dark" v-model="scenario">
-                <option>Placeholder 1</option>
-                <option>Placeholder 2</option>
+            <select 
+                :value="scenario"
+                @change="setScenario($event.target.value)"
+                class="w-full p-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue outline-none bg-white text-dark"
+            >
+                <option>Rustig</option>
+                <option>Gemiddeld</option>
+                <option>Druk</option>
             </select>
         </div> 
 
@@ -75,24 +87,30 @@
                                     type="number" 
                                     min="1" 
                                     max="10"
-                                    v-model.number="car.packageCount" 
+                                    :value="car.packageCount"
+                                    @input="updateCarPackageCount(car.id, Number($event.target.value))"
                                     class="w-16 p-1 border border-gray-300 rounded-md text-sm"
                                 />
                             </td>
                             <td class="px-3 py-1">
                                     <select 
-                                        v-model="car.route" 
+                                        :value="car.route"
+                                        @change="updateCarRoute(car.id, $event.target.value)"
                                         class="w-full p-1 border border-gray-300 rounded-md text-sm"
                                     >
-                                        <option value="0">Route 1</option>
-                                        <option value="1">Route 2</option>
-                                        <option value="2">Route 3</option>
+                                        <option
+                                            v-for="routeOption in routeOptions"
+                                            :key="routeOption.key"
+                                            :value="routeOption.value"
+                                        >
+                                            {{ routeOption.label }}
+                                        </option>
                                     </select>
                             </td>
                             <td class="px-3 py-1">
                                     <button 
                                         class="bg-sky-200 hover:bg-sky-700 text-inherit rounded-sm p-1 w-full h-8 text-xs"
-                                        @click="toggleRouteVisibility(car)"
+                                        @click="toggleCarRouteVisibility(car.id)"
                                     >
                                         {{ car.routeVisibility ? 'Verberg' : 'Toon' }}
                                     </button>
@@ -143,69 +161,35 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useSimulationState } from '../composables/useSimulationState';
 
-const carSpeed = ref(50)
-// const turn = ref(10) <-- used in the disabled turn degree slider
-const scenario = ref('Scenario 1')
-const isSimulating = ref(false);
-
-// constants
-const MAX_CARS = 5;
-
-// --- start of car management logic ---
-const cars = ref([]);
-
-function addCar() {
-    if (cars.value.length < MAX_CARS) {
-        const newCar = {
-            id: `${cars.value.length + 1}`,
-            packageCount: 1,
-            route: 0,
-            routeVisibility: false,
-        };
-        cars.value.push(newCar);
-    }
-}
-
-function removeCar() {
-    if (cars.value.length > 0) {
-        cars.value.pop();
-    }
-}
-
-function toggleRouteVisibility(car) {
-    car.routeVisibility = !car.routeVisibility;
-}
-// --- end of car management logic ---
-
-// --- start gathering parameter settings for simulation start logic ---
-const collectParameters = () => {
-    const carSettings = cars.value.map(car => ({
-        id: car.id,
-        packageCount: car.packageCount,
-        route: car.route,
-    }));
-
-    const simulationSettings = {
-        carSpeed: carSpeed.value,
-        scenario: scenario.value,
-    };
-
-    return {
-        carSettings,
-        simulationSettings
-    };
-}
-// --- end gathering parameter settings for simulation start logic ---
+const {
+    cars,
+    carSpeed,
+    scenario,
+    isSimulating,
+    MAX_CARS,
+    routeOptions,
+    addCar,
+    removeCar,
+    updateCarPackageCount,
+    updateCarRoute,
+    toggleCarRouteVisibility,
+    setCarSpeed,
+    setScenario,
+    startSimulation,
+    stopSimulation,
+    collectParameters,
+} = useSimulationState();
 
 const handleStart = () => {
-    // TODO: implement start logic, update isSimulating state if connection websocket is made and simulation actually starts
     console.log('Simulation gestart');
     console.log('Parameters:', collectParameters());
+    startSimulation();
 }
 
 const handleStop = () => {
-    // TODO: implement stop logic, update isSimulating state
     console.log('Simulation gestopt');
+    stopSimulation();
 }
 </script>

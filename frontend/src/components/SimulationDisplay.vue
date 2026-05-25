@@ -3,6 +3,24 @@
     <div class="border border-gray-400 rounded-lg w-full h-full bg-white flex items-center justify-center overflow-hidden">
         <!-- Map Container -->
         <div class="relative" :style="containerStyle">
+            <div class="absolute top-2 right-2 z-40">
+                <button
+                    type="button"
+                    class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
+                    @click="toggleLaneDebug"
+                    >
+                    {{ showDevLaneDebug ? 'Hide lane debug' : 'Show lane debug' }}
+                </button>
+
+                <button
+                    type="button"
+                    class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
+                    @click="toggleTileCoordDebug"
+                >
+                    {{ showDevTileCoordDebug ? 'Hide tile coords' : 'Show tile coords' }}
+                </button>
+            </div>
+
             <!-- Map grid -->
             <div class="map-grid" :style="gridStyle"> 
                 <div
@@ -18,6 +36,13 @@
                     :style="{ transform:`rotate(${component.rotation}deg)`}"
                     />
                 </div>
+
+                <devTileCoordinateOverlay
+                    v-if="showDevTileCoordDebug"
+                    :map-columns="MAP_COLUMNS"
+                    :map-rows="MAP_ROWS"
+                    :map-data="mapData"
+                />
             </div> 
             <!-- Lanes (kleur kan later worden weggehaald)-->
             <svg 
@@ -25,7 +50,7 @@
                 :viewBox="`0 0 ${MAP_COLUMNS} ${MAP_ROWS}`"
                 :preserveAspectRatio="`none`"
             >
-                <polyline
+                <!-- <polyline
                     v-for="lane in lanes"
                     :key="lane.id"
                     :points="lane.points.map(p => `${p.x},${p.y}`).join(' ')"
@@ -34,6 +59,24 @@
                     stroke-width="0.00"
                     stroke-linecap="round"
                     stroke-linejoin="round"
+                /> -->
+
+                <polyline
+                    v-for="car in visibleCarsWithRoutes"
+                    :key="`route-${car.id}`"
+                    :points="car.waypoints.map(p => `${p.x},${p.y}`).join(' ')"
+                    fill="none"
+                    :stroke="getRouteColorForCar(car.id)"
+                    stroke-width="0.01"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                />
+
+                <devLaneDebugOverlay
+                    v-if="showDevLaneDebug"
+                    :lanes="lanes"
+                    :map-columns="MAP_COLUMNS"
+                    :map-rows="MAP_ROWS"
                 />
             </svg>
             <!-- Auto -->
@@ -55,14 +98,52 @@ import { buildLane } from '../logic/service/laneBuilder.js';
 import { useMqttVehicle } from '../composables/MqttConnection.js';
 import { normalizeDegree } from '../logic/utils/rotation.js';
 import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
+import { useSimulationState } from '../composables/useSimulationState.js';
+import devLaneDebugOverlay from '../development/devLaneDebugOverlay.vue';
+import devTileCoordinateOverlay from '../development/devTileCoordinateOverlay.vue';
 
-const { vehiclePosition,setupMqttClient } = useMqttVehicle();
 const mapData = ref([]); 
 const componentDefinitions = ref({}); 
 const isLoading = ref(true);
-// const mapGrid = ref(null); 
+
+const { vehiclePosition,setupMqttClient } = useMqttVehicle();
+const {
+    visibleCarsWithRoutes,
+    setMapData,
+} = useSimulationState();
+
+// --- lane debug devtool start ---
+const showDevLaneDebug = ref(false);
+
+const toggleLaneDebug = () => {
+    showDevLaneDebug.value = !showDevLaneDebug.value;
+};
+// --- lane debug devtool end ---
+
+// --- tile coordinate devtool start ---
+const showDevTileCoordDebug = ref(false);
+
+const toggleTileCoordDebug = () => {
+    showDevTileCoordDebug.value = !showDevTileCoordDebug.value;
+};
+// --- tile coordinate devtool end ---
+
+// --- custom colors for car routes start ---
+const CAR_ROUTE_COLORS = {
+    '1': 'blue',
+    '2': 'red',
+    '3': 'green',
+    '4': 'yellow',
+    '5': 'purple',
+};
+
+const getRouteColorForCar = (carId) => {
+    return CAR_ROUTE_COLORS[carId] ?? 'blue';
+};
+// --- custom colors for car routes end ---
+
 const MAP_DIMENSION = 5;
-// TODO: move to constants file
+// TODO: move to constants file in sprint 6
 const MAP_COLUMNS = 5;
 const MAP_ROWS = 4;
 const MAX_MAP_SCALE = 70;
@@ -141,14 +222,17 @@ const getComponentPosition = (component) => {
 };
 
 onMounted(async () => {
-    setupMqttClient();
+    // setupMqttClient();
     try {
         const data = await fetchMapData(); 
         mapData.value = data.mapData;
         componentDefinitions.value = data.componentDefinitions;
+
+        setMapData(data.mapData);
         
         // Initialize the RFID mapper with loaded data
         initRfidMapper(data.mapData, data.rfidData);
+
     } catch (error) {
         console.error("Fout bij het laden:", error);
     } finally {
