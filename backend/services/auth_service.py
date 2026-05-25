@@ -11,7 +11,7 @@ from backend.data.db.database import get_db
 from backend.data.repositories.access_codes_repo import AccessCodesRepository
 from backend.domain.access_codes import AccessCode
 from backend.schemas.auth import LoginRequest
-from backend.services.access_code_lookup import build_access_code_lookup_hash
+from backend.services.access_code_lookup import build_access_code_lookup_hash, normalize_access_code
 
 logger = logging.getLogger(__name__)
 
@@ -21,11 +21,16 @@ class AuthService:
         self.repo = repo
 
     def verify_and_login(self, request: LoginRequest) -> tuple[str, str]:
-        raw_code = request.code
-        lookup_hash = build_access_code_lookup_hash(raw_code)
-        matched_code = self.repo.find_active_code_by_lookup_hash(lookup_hash)
+        raw_code = request.code.strip()
+        matched_code = None
 
-        if matched_code and not self._code_matches(raw_code, matched_code):
+        for candidate_code in dict.fromkeys([raw_code, normalize_access_code(raw_code)]):
+            lookup_hash = build_access_code_lookup_hash(candidate_code)
+            matched_code = self.repo.find_active_code_by_lookup_hash(lookup_hash)
+
+            if matched_code and self._code_matches(candidate_code, matched_code):
+                break
+
             matched_code = None
 
         if not matched_code:
