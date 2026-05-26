@@ -38,24 +38,6 @@
 
         <!-- Map Container -->
         <div class="relative" :style="containerStyle">
-            <div class="absolute top-2 right-2 z-40">
-                <button
-                    type="button"
-                    class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
-                    @click="toggleLaneDebug"
-                    >
-                    {{ showDevLaneDebug ? 'Hide lane debug' : 'Show lane debug' }}
-                </button>
-
-                <button
-                    type="button"
-                    class="px-3 py-1 text-sm rounded border border-gray-400 bg-white hover:bg-gray-100"
-                    @click="toggleTileCoordDebug"
-                >
-                    {{ showDevTileCoordDebug ? 'Hide tile coords' : 'Show tile coords' }}
-                </button>
-            </div>
-
             <!-- Map grid -->
             <div class="map-grid" :style="gridStyle"> 
                 <div
