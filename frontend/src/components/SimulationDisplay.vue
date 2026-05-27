@@ -2,9 +2,9 @@
 import { ref, computed, onMounted, onUnmounted, onBeforeUnmount, reactive, watch } from 'vue';
 import { fetchMapData } from '../logic/service/mapService.js'; 
 import { buildLane } from '../logic/service/laneBuilder.js';
-import { normalizeDegree } from '../logic/utils/rotation.
+import { normalizeDegree } from '../logic/utils/rotation.js';
 const factor_y = ref(0)
-const MAP_DIMENSION = 2;js';
+const MAP_DIMENSION = 2
 import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
 import { MAP_PIXEL_SIZE, normalizeTagId, store } from '../store.js'
 import '../assets/Display.css';
@@ -198,7 +198,7 @@ const carPositions = computed(() => {
   return store.car_data.map(car => {
 
   return Math.max(MIN_CAR_MOVE_MS, Math.round((distance / pixelsPerSecond) * 1000));
-}
+});
 
 const getMotionPosition = (motion, now) => {
   if (!motion) {
