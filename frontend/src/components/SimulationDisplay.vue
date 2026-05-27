@@ -6,7 +6,7 @@ import { normalizeDegree } from '../logic/utils/rotation.js';
 const factor_y = ref(0)
 const MAP_DIMENSION = 2
 import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
-import { MAP_PIXEL_SIZE, normalizeTagId, store } from '../store.js'
+import { normalizeTagId, store } from '../store.js'
 import '../assets/Display.css';
 
 const mapData = ref([]); 
@@ -31,7 +31,6 @@ const carMotionStates = new Map();
 const carRealSyncStates = new Map();
 const carObservedSpeeds = new Map();
 const carPositionsById = reactive({});
-const factor = 5.33;
 
 //real scale: tile -> 57.5 cm
 
@@ -188,17 +187,15 @@ const updateObservedSpeed = (carId, previousTagId, currentTagId, previousUpdateA
 const getMoveDuration = (carId, from, to) => {
   const distance = Math.hypot(to.x - from.x, to.y - from.y);
   const pixelsPerSecond = (carObservedSpeeds.get(carId) ?? getPixelsPerSecond()) * SCREEN_SPEED_MULTIPLIER;
+
+  return Math.max(MIN_CAR_MOVE_MS, Math.round((distance / pixelsPerSecond) * 1000));
+}
+
 // Update factor to scale the x and y coordinates of a tag or car
 const updateFactor = (event) => {
   factor_x.value = event.target.clientWidth / 57.5
   factor_y.value = event.target.clientHeight / 57.5
 }
-
-const carPositions = computed(() => {
-  return store.car_data.map(car => {
-
-  return Math.max(MIN_CAR_MOVE_MS, Math.round((distance / pixelsPerSecond) * 1000));
-});
 
 const getMotionPosition = (motion, now) => {
   if (!motion) {
@@ -221,8 +218,6 @@ const setCarDisplayPosition = (carId, carMeta, position, rotation = DEFAULT_CAR_
     x: position.x,
     y: position.y,
     rotation,
-    leftPercent: (position.x / MAP_PIXEL_SIZE) * 100,
-    topPercent: (position.y / MAP_PIXEL_SIZE) * 100,
   };
 }
 
@@ -366,8 +361,8 @@ const carPositions = computed(() => {
 
 const getCarSpriteStyle = (car) => {
   return {
-    left: `${car.leftPercent}%`,
-    top: `${car.topPercent}%`,
+    left: `${car.x * factor_x.value}px`,
+    top: `${car.y * factor_y.value}px`,
   };
 }
 
@@ -490,9 +485,10 @@ const vResize = {
             </div>
 
             <!-- RIFD Tags -->
-            <svg class="absolute inset-0 pointer-events-none"
+            <svg
             v-for="tag in store.tag_positions"
-            width=${MAP_DIMENSION} height=${MAP_DIMENSION}>
+            :key="tag.tag_id"
+            class="absolute inset-0 w-full h-full pointer-events-none">
                 <circle :cx="tag.tag_pos.x * factor_x" :cy="tag.tag_pos.y * factor_y" r="8" fill="black"></circle>
             </svg>
             
