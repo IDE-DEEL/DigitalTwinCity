@@ -188,17 +188,15 @@ const updateObservedSpeed = (carId, previousTagId, currentTagId, previousUpdateA
 const getMoveDuration = (carId, from, to) => {
   const distance = Math.hypot(to.x - from.x, to.y - from.y);
   const pixelsPerSecond = (carObservedSpeeds.get(carId) ?? getPixelsPerSecond()) * SCREEN_SPEED_MULTIPLIER;
+
+  return Math.max(MIN_CAR_MOVE_MS, Math.round((distance / pixelsPerSecond) * 1000));
+}
+
 // Update factor to scale the x and y coordinates of a tag or car
 const updateFactor = (event) => {
   factor_x.value = event.target.clientWidth / 57.5
   factor_y.value = event.target.clientHeight / 57.5
 }
-
-const carPositions = computed(() => {
-  return store.car_data.map(car => {
-
-  return Math.max(MIN_CAR_MOVE_MS, Math.round((distance / pixelsPerSecond) * 1000));
-});
 
 const getMotionPosition = (motion, now) => {
   if (!motion) {
