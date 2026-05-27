@@ -488,9 +488,10 @@ const vResize = {
             </div>
 
             <!-- RIFD Tags -->
-            <svg class="absolute inset-0 pointer-events-none"
+            <svg
             v-for="tag in store.tag_positions"
-            width=${MAP_DIMENSION} height=${MAP_DIMENSION}>
+            :key="tag.tag_id"
+            class="absolute inset-0 w-full h-full pointer-events-none">
                 <circle :cx="tag.tag_pos.x * factor_x" :cy="tag.tag_pos.y * factor_y" r="8" fill="black"></circle>
             </svg>
             
