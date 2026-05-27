@@ -12,9 +12,14 @@
           </label>
           <input 
             v-model="accessCode" 
+            @input="formatAccessCode"
             type="text" 
             id="code" 
-            placeholder="Voer je code in (bijv. A1b2C3d4)" 
+            placeholder="Voer je code in (bijv. A1B2C-3D4E5)"
+            maxlength="11"
+            pattern="[A-Z0-9]{5}-[A-Z0-9]{5}"
+            autocomplete="one-time-code"
+            autocapitalize="characters"
             class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             required
           />
@@ -47,6 +52,17 @@ const router = useRouter();
 const accessCode = ref('');
 const errorMessage = ref('');
 const isLoading = ref(false);
+
+const formatAccessCode = () => {
+  const alphanumericCode = accessCode.value
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .toUpperCase()
+    .slice(0, 10);
+  const firstGroup = alphanumericCode.slice(0, 5);
+  const secondGroup = alphanumericCode.slice(5);
+
+  accessCode.value = secondGroup ? `${firstGroup}-${secondGroup}` : firstGroup;
+};
 
 const handleLogin = async () => {
   errorMessage.value = '';

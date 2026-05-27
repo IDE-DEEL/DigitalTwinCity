@@ -65,6 +65,11 @@ services:
       - SESSION_COOKIE_SECURE=${SESSION_COOKIE_SECURE}
       - SESSION_COOKIE_SAMESITE=${SESSION_COOKIE_SAMESITE}
       - SESSION_COOKIE_DOMAIN=${SESSION_COOKIE_DOMAIN}
+      - MQTT_HOST=${MQTT_HOST}
+      - MQTT_PORT=${MQTT_PORT}
+      - MQTT_PATH=${MQTT_PATH}
+      - MQTT_USERNAME=${MQTT_USERNAME}
+      - MQTT_PASSWORD=${MQTT_PASSWORD}
     depends_on:
       postgres:
         condition: service_healthy

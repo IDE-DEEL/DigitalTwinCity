@@ -1,4 +1,5 @@
 import secrets
+import string
 import logging
 from datetime import datetime
 from fastapi import Depends, HTTPException
@@ -13,6 +14,16 @@ from backend.services.access_code_lookup import build_access_code_lookup_hash
 
 logger = logging.getLogger(__name__)
 
+ACCESS_CODE_ALPHABET = string.ascii_uppercase + string.digits
+ACCESS_CODE_GROUP_LENGTH = 5
+
+
+def generate_access_code() -> str:
+    left = ''.join(secrets.choice(ACCESS_CODE_ALPHABET) for _ in range(ACCESS_CODE_GROUP_LENGTH))
+    right = ''.join(secrets.choice(ACCESS_CODE_ALPHABET) for _ in range(ACCESS_CODE_GROUP_LENGTH))
+    return f"{left}-{right}"
+
+
 class AccessCodesService:
     def __init__(self, repo: AccessCodesRepository):
         self.repo = repo
@@ -21,7 +32,7 @@ class AccessCodesService:
         return self.repo.find_all()
 
     def create_code(self, data: AccessCodeCreate):
-        raw_code = secrets.token_urlsafe(8)
+        raw_code = generate_access_code()
 
         salt = bcrypt.gensalt()
         hashed_bytes = bcrypt.hashpw(raw_code.encode('utf-8'), salt)

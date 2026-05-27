@@ -40,7 +40,7 @@ concurrency:
 jobs:
   upstream-failed:
     name: Fail when upstream CI failed
-    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion != 'success'
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.conclusion != 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Stop deployment
@@ -51,7 +51,7 @@ jobs:
 
   prepare:
     name: Prepare deployment context
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     outputs:
       backend_image: ${{ steps.context.outputs.backend_image }}
@@ -132,8 +132,9 @@ jobs:
           frontend_expected="false"
 
           if [[ "${{ github.event_name }}" == "workflow_run" ]]; then
-            changed_files="$(git diff-tree --no-commit-id --name-only -r "$SOURCE_SHA" || true)"
-            if [[ -z "$changed_files" ]]; then
+            if git rev-parse "${SOURCE_SHA}^1" >/dev/null 2>&1; then
+              changed_files="$(git diff --name-only "${SOURCE_SHA}^1" "$SOURCE_SHA" || true)"
+            else
               changed_files="$(git show --format= --name-only "$SOURCE_SHA" || true)"
             fi
 

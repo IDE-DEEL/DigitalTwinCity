@@ -27,7 +27,7 @@ Triggers:
 |---|---|
 | Push naar `main` | Bouwt en scant de backend image, pusht daarna naar GHCR als de scan slaagt. |
 | Push naar `dev` | Bouwt en scant de backend image, pusht daarna naar GHCR als de scan slaagt. |
-| Pull request | Draait alleen bij wijzigingen in `backend/**`, deze workflow of de herbruikbare Docker workflow. |
+| Pull request naar `main` | Bouwt en scant alleen bij wijzigingen in `backend/**`, deze workflow of de herbruikbare Docker workflow. Pusht geen image en deployt niet. |
 | `workflow_dispatch` | Kan handmatig gestart worden. |
 
 De workflow bevat zelf geen buildstappen. Hij roept `docker-build-scan-publish.yml` aan met deze inputs:
@@ -63,7 +63,7 @@ Triggers:
 |---|---|
 | Push naar `main` | Bouwt en scant de frontend image, pusht daarna naar GHCR als de scan slaagt. |
 | Push naar `dev` | Bouwt en scant de frontend image, pusht daarna naar GHCR als de scan slaagt. |
-| Pull request | Draait alleen bij wijzigingen in `frontend/**`, deze workflow of de herbruikbare Docker workflow. |
+| Pull request naar `main` | Bouwt en scant alleen bij wijzigingen in `frontend/**`, deze workflow of de herbruikbare Docker workflow. Pusht geen image en deployt niet. |
 | `workflow_dispatch` | Kan handmatig gestart worden. |
 
 De workflow roept `docker-build-scan-publish.yml` aan met deze inputs:
@@ -190,7 +190,7 @@ Triggers:
 
 | Event | Gedrag |
 |---|---|
-| `workflow_run` op `main` | Start nadat de backend- of frontend-build workflow klaar is. |
+| `workflow_run` op push naar `main` | Start nadat de backend- of frontend-build workflow klaar is. Pull-request runs starten geen deployment. |
 | `workflow_dispatch` | Handmatige deployment met optionele image inputs. |
 
 Permissions:
@@ -227,7 +227,7 @@ Deze job draait op `ubuntu-latest` en bouwt de deployment-context.
 Belangrijkste taken:
 
 1. Checkout van de source commit die gedeployed moet worden.
-2. Bepalen welke bestanden in de source commit gewijzigd zijn.
+2. Bepalen welke bestanden in de source commit gewijzigd zijn ten opzichte van de vorige `main` commit.
 3. Bij automatische runs bepalen of backend-, frontend-, server- en/of deploy-wijzigingen een deployment vragen.
 4. Via de GitHub API controleren of de verwachte backend- en frontend-builds voor dezelfde commit klaar en succesvol zijn.
 5. De default image references bepalen.
@@ -391,7 +391,7 @@ Controleer in `Prepare deployment context` of `should_deploy=false` is gezet.
 Meest voorkomende oorzaken:
 
 - De andere verwachte build workflow voor dezelfde commit is nog niet klaar.
-- Er waren geen backend- of frontendwijzigingen in de source commit.
+- Er waren geen wijzigingen in `backend/`, `frontend/`, `server/` of `deploy/`.
 
 ### Handmatige CD weigert image input
 
