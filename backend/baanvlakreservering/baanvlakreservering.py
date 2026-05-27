@@ -5,104 +5,6 @@ from typing import Callable
 
 from backend.core.config import settings
 
-# start = [
-#     [[0],[1],[2],[0]],
-#     [[0],[3],[4],[0]],
-#     [[0],[5],[6],[0]],
-#     [[0],[7],[8],[0]]
-# ]
-#
-# crossroad_roundabout = [
-#     [[0],[1],[2],[0]],
-#     [[3],[4],[5],[6]],
-#     [[7],[8],[9],[10]],
-#     [[0],[11],[12],[0]]
-# ]
-#
-# t_junction_up = [
-#     [[0],[7],[8],[0]],
-#     [[4],[5],[5],[6]],
-#     [[1],[2],[2],[3]],
-#     [[0],[0],[0],[0]]
-# ]
-#
-# t_junction_right = [
-#     [[0],[1],[4],[0]],
-#     [[0],[2],[5],[7]],
-#     [[0],[2],[5],[8]],
-#     [[0],[3],[6],[0]]
-# ]
-#
-# t_junction_down = [
-#     [[0],[0],[0],[0]],
-#     [[3],[2],[5],[1]],
-#     [[6],[5],[5],[4]],
-#     [[0],[8],[7],[0]]
-# ]
-#
-# t_junction_left = [
-#     [[0],[6],[3],[0]],
-#     [[8],[5],[2],[0]],
-#     [[7],[5],[2],[0]],
-#     [[0],[4],[1],[0]]
-# ]
-#
-# straight_horizontal = [
-#     [[0],[0],[0],[0]],
-#     [[1],[2],[2],[3]],
-#     [[4],[5],[5],[6]],
-#     [[0],[0],[0],[0]]
-# ]
-#
-# straight_vertical = [
-#     [[0],[4],[1],[0]],
-#     [[0],[5],[2],[0]],
-#     [[0],[5],[2],[0]],
-#     [[0],[6],[3],[0]]
-# ]
-#
-# turn_NE = [
-#     [[0],[3],[6],[0]],
-#     [[0],[0],[5],[4]],
-#     [[0],[2],[0],[1]],
-#     [[0],[0],[0],[0]]
-# ]
-#
-# turn_ES = [
-#     [[0],[0],[0],[0]],
-#     [[0],[2],[0],[3]],
-#     [[0],[0],[5],[6]],
-#     [[0],[1],[4],[0]]
-# ]
-#
-# turn_SW = [
-#     [[0],[0],[0],[0]],
-#     [[1],[0],[2],[0]],
-#     [[4],[5],[0],[0]],
-#     [[0],[6],[3],[0]]
-# ]
-#
-# turn_WN = [
-#     [[0],[4],[1],[0]],
-#     [[6],[5],[0],[0]],
-#     [[3],[0],[2],[0]],
-#     [[0],[0],[0],[0]]
-# ]
-#
-#
-# '''
-# bereken alle commandos van te voren gebaseerd op wat de route is vanuit de front end, dan een lijst vullen met de commandos en per rfid tag het volgende commando doorsturen.
-# voor het genereren van de commandos of gewoon een variabele string die je elke keer weer in de lijst append of aan een variable +=
-# '''
-# # all zeros are for empty space to create a kind of x and y coordinates
-# # matrix has 4 rows and 5 columns.
-# # each
-# matrix = [
-#     [[turn_ES],            [t_junction_down],       [straight_horizontal],   [straight_horizontal],  [turn_SW]],
-#     [[t_junction_right],   [crossroad_roundabout],  [turn_SW],               [turn_ES],              [t_junction_left]],
-#     [[straight_vertical],  [turn_NE],               [crossroad_roundabout],  [t_junction_left],      [straight_vertical]],
-#     [[turn_NE],            [straight_horizontal],   [t_junction_up],         [t_junction_up],        [turn_WN]]
-# ]
 
 # ---------------- MQTT CONFIG ----------------
 MQTT_HOST = settings.MQTT_HOST
@@ -112,11 +14,13 @@ MQTT_USERNAME = settings.MQTT_USERNAME
 MQTT_PASSWORD = settings.MQTT_PASSWORD
 
 SUB_TOPIC = "car/auto_B/data/LastRFID"
-PUB_TOPIC_DIR = "car/auto_X/cmd/direction"
+PUB_TOPIC_DIR = "car/auto_B/cmd/direction"
 PUB_TOPIC_MOVE = "car/auto_B/cmd/Start"
 
 auto_1 = "auto_1"
 auto_2 = "auto_2"
+
+chosen_route = "route_1"
 
 # this is a list of routes with the commands and tags
 
@@ -190,14 +94,24 @@ def on_message(client, userdata, msg):
     car_data = [
         {"auto_id": "Auto B", "tag_id": rfid},
     ]
+
+    global index
+    index = 0
+
     notify_car_data_listeners()
     # ----- DECISION LOGIC -----
     if start == True:
         client.publish(PUB_TOPIC_MOVE, "True")
-        print("Car started...")
+        if rfid == route[chosen_route][index][0]:
+            client.publish(PUB_TOPIC_MOVE, "False")
+            client.publish(PUB_TOPIC_DIR, route[chosen_route][index][1])
+            client.publish(PUB_TOPIC_MOVE, "True")
+            index += 1
+            if len(route[chosen_route]) == index
+                index = 0
     elif start == False:
         client.publish(PUB_TOPIC_MOVE, "False")
-        print("Car stopped...")
+
     # elif start == True == False:
     #     response = ""
     #     history_start = True
