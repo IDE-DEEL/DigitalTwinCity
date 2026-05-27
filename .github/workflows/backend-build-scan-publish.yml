@@ -6,6 +6,8 @@ on:
       - main
       - dev
   pull_request:
+    branches:
+      - main
     paths:
       - "backend/**"
       - ".github/workflows/backend-build-scan-publish.yml"

@@ -1,6 +1,24 @@
 import { reactive } from 'vue'
 import { wsUrl } from './config/api'
 
+export const TAG_POSITION_SCALE = 5.33;
+export const MAP_PIXEL_SIZE = 100 * TAG_POSITION_SCALE;
+
+export const normalizeTagId = (tagId) => {
+  return String(tagId ?? '').replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
+}
+
+const normalizeCarData = (payload) => {
+  if (!Array.isArray(payload)) {
+    return [];
+  }
+
+  return payload.map((car) => ({
+    ...car,
+    tag_id: normalizeTagId(car.tag_id ?? car.rfid_tag ?? car.tag),
+  })).filter((car) => car.tag_id);
+}
+
 export const store = reactive({
   // De gedeelde data
 
@@ -86,7 +104,7 @@ export const connect = () => {
         break;
 
         case "car_data":
-            store.car_data = payload;
+            store.car_data = normalizeCarData(payload);
         break;
     }
   };
