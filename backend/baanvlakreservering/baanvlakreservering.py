@@ -17,29 +17,26 @@ SUB_TOPIC = "car/auto_B/data/LastRFID"
 PUB_TOPIC_DIR = "car/auto_B/cmd/direction"
 PUB_TOPIC_MOVE = "car/auto_B/cmd/Start"
 
-auto_1 = "auto_1"
-auto_2 = "auto_2"
-
 chosen_route = "route_1"
 
 # this is a list of routes with the commands and tags
 
-route_1 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
-route_2 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
-route_3 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
-route_4 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
-route_5 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
-route_6 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
-route_7 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
-route_8 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
-route_9 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
-route_10 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
-route_11 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
-route_12 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
-route_13 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
-
+# these will probably be made into JSON files
 route = {
     "route_1": [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]],
+    "route_2": [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]],
+    "route_3": [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]],
+    "route_4": [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]],
+    "route_5": [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]],
+    "route_6": [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]],
+    "route_7": [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]],
+    "route_8": [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]],
+    "route_9": [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]],
+    "route_10": [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]],
+    "route_11": [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]],
+    "route_12": [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]],
+    "route_13": [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]],
+
 }
 
 Tags = {
@@ -88,14 +85,14 @@ def on_connect(client, userdata, flags, reason_code, properties):
 
 def on_message(client, userdata, msg):
     rfid = msg.payload.decode().strip()
-
     print(f"RFID received: {rfid}")
-    global car_data
-    car_data = [
-        {"auto_id": "Auto B", "tag_id": rfid},
-    ]
 
+    global auto_B
+    global car_data
     global index
+
+    auto_B = rfid
+    car_data = [{"auto_id": "Auto B", "tag_id": rfid}]
     index = 0
 
     notify_car_data_listeners()
@@ -107,20 +104,12 @@ def on_message(client, userdata, msg):
             client.publish(PUB_TOPIC_DIR, route[chosen_route][index][1])
             client.publish(PUB_TOPIC_MOVE, "True")
             index += 1
-            if len(route[chosen_route]) == index
+            if len(route[chosen_route]) == index:
                 index = 0
     elif start == False:
         client.publish(PUB_TOPIC_MOVE, "False")
 
-    # elif start == True == False:
-    #     response = ""
-    #     history_start = True
-    # elif start == True and history_start == False:
-    #     response = ""
 
-    # # publish response
-    # client.publish(PUB_TOPIC_DIR, response)
-    # print("Sent:", response)
 
 # index for the loop
 # index = 0
