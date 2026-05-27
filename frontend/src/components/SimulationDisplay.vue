@@ -6,7 +6,7 @@ import { normalizeDegree } from '../logic/utils/rotation.js';
 const factor_y = ref(0)
 const MAP_DIMENSION = 2
 import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
-import { MAP_PIXEL_SIZE, normalizeTagId, store } from '../store.js'
+import { normalizeTagId, store } from '../store.js'
 import '../assets/Display.css';
 
 const mapData = ref([]); 
@@ -31,7 +31,6 @@ const carMotionStates = new Map();
 const carRealSyncStates = new Map();
 const carObservedSpeeds = new Map();
 const carPositionsById = reactive({});
-const factor = 5.33;
 
 //real scale: tile -> 57.5 cm
 
@@ -219,8 +218,6 @@ const setCarDisplayPosition = (carId, carMeta, position, rotation = DEFAULT_CAR_
     x: position.x,
     y: position.y,
     rotation,
-    leftPercent: (position.x / MAP_PIXEL_SIZE) * 100,
-    topPercent: (position.y / MAP_PIXEL_SIZE) * 100,
   };
 }
 
@@ -364,8 +361,8 @@ const carPositions = computed(() => {
 
 const getCarSpriteStyle = (car) => {
   return {
-    left: `${car.leftPercent}%`,
-    top: `${car.topPercent}%`,
+    left: `${car.x * factor_x.value}px`,
+    top: `${car.y * factor_y.value}px`,
   };
 }
 
