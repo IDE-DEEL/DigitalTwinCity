@@ -1,8 +1,10 @@
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, reactive, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, onBeforeUnmount, reactive, watch } from 'vue';
 import { fetchMapData } from '../logic/service/mapService.js'; 
 import { buildLane } from '../logic/service/laneBuilder.js';
-import { normalizeDegree } from '../logic/utils/rotation.js';
+import { normalizeDegree } from '../logic/utils/rotation.
+const factor_y = ref(0)
+const MAP_DIMENSION = 2;js';
 import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
 import { MAP_PIXEL_SIZE, normalizeTagId, store } from '../store.js'
 import '../assets/Display.css';
@@ -11,7 +13,7 @@ const mapData = ref([]);
 const componentDefinitions = ref({}); 
 const isLoading = ref(true);
 // const mapGrid = ref(null); 
-const MAP_DIMENSION = 2;
+const factor_x = ref(0)
 const MAX_MAP_SCALE = 70;
 const MIN_CAR_MOVE_MS = 300;
 const MIN_ROUTE_SPEED = 10;
@@ -29,6 +31,9 @@ const carMotionStates = new Map();
 const carRealSyncStates = new Map();
 const carObservedSpeeds = new Map();
 const carPositionsById = reactive({});
+const factor = 5.33;
+
+//real scale: tile -> 57.5 cm
 
 // container style
 const containerStyle = computed(() => {
@@ -183,6 +188,14 @@ const updateObservedSpeed = (carId, previousTagId, currentTagId, previousUpdateA
 const getMoveDuration = (carId, from, to) => {
   const distance = Math.hypot(to.x - from.x, to.y - from.y);
   const pixelsPerSecond = (carObservedSpeeds.get(carId) ?? getPixelsPerSecond()) * SCREEN_SPEED_MULTIPLIER;
+// Update factor to scale the x and y coordinates of a tag or car
+const updateFactor = (event) => {
+  factor_x.value = event.target.clientWidth / 57.5
+  factor_y.value = event.target.clientHeight / 57.5
+}
+
+const carPositions = computed(() => {
+  return store.car_data.map(car => {
 
   return Math.max(MIN_CAR_MOVE_MS, Math.round((distance / pixelsPerSecond) * 1000));
 }
@@ -433,6 +446,24 @@ onBeforeUnmount(() => {
     cancelAnimationFrame(animationFrameId);
   }
 });
+// Custom directive named 'v-resize' to update factors when resizing browser
+const vResize = {
+  mounted(el, binding) {
+    const observer = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        // Call function with every change
+        binding.value(entry); 
+      }
+    });
+    observer.observe(el);
+    el._resizeObserver = observer;
+  },
+  unmounted(el) {
+    if (el._resizeObserver) {
+      el._resizeObserver.disconnect();
+    }
+  }
+};
 </script>
 
 <template>
@@ -453,6 +484,7 @@ onBeforeUnmount(() => {
                     :alt="component.label"
                     class="w-full h-full object-contain"
                     :style="{ transform:`rotate(${component.rotation}deg)`}"
+                    v-resize="updateFactor"
                     />
                 </div>
             </div>
@@ -460,10 +492,8 @@ onBeforeUnmount(() => {
             <!-- RIFD Tags -->
             <svg class="absolute inset-0 pointer-events-none"
             v-for="tag in store.tag_positions"
-            :key="tag.tag_id"
-            :viewBox="`0 0 ${MAP_PIXEL_SIZE} ${MAP_PIXEL_SIZE}`"
-            width="100%" height="100%">
-                <circle :cx="tag.tag_pos.x" :cy="tag.tag_pos.y" r="8" fill="black"></circle>
+            width=${MAP_DIMENSION} height=${MAP_DIMENSION}>
+                <circle :cx="tag.tag_pos.x * factor_x" :cy="tag.tag_pos.y * factor_y" r="8" fill="black"></circle>
             </svg>
             
             <!-- Lanes (kleur kan later worden weggehaald) --

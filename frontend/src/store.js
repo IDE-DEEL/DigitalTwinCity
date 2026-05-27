@@ -34,21 +34,21 @@ export const store = reactive({
   ],
 
   tag_positions: [
-    {"tag_id": "53:3F:11:F7:32:00:01", "tag_pos": {"x": 93.5*TAG_POSITION_SCALE, "y": 53*TAG_POSITION_SCALE}},
-    {"tag_id": "53:2A:27:F7:32:00:01", "tag_pos": {"x": 84*TAG_POSITION_SCALE, "y": 31*TAG_POSITION_SCALE}},
-    {"tag_id": "53:5F:2D:F7:32:00:01", "tag_pos": {"x": 61.5*TAG_POSITION_SCALE, "y": 21*TAG_POSITION_SCALE}},
+    {"tag_id": "53:3F:11:F7:32:00:01", "tag_pos": {"x": 93.5, "y": 53}},
+    {"tag_id": "53:2A:27:F7:32:00:01", "tag_pos": {"x": 84, "y": 31}},
+    {"tag_id": "53:5F:2D:F7:32:00:01", "tag_pos": {"x": 61.5, "y": 21}},
     
-    {"tag_id": "CF:8D:0A:3E", "tag_pos": {"x": 53*TAG_POSITION_SCALE, "y": 21*TAG_POSITION_SCALE}},
-    {"tag_id": "3A:6E:0A:3E", "tag_pos": {"x": 30*TAG_POSITION_SCALE, "y": 31*TAG_POSITION_SCALE}},
-    {"tag_id": "10:8E:0A:3E", "tag_pos": {"x": 21*TAG_POSITION_SCALE, "y": 53*TAG_POSITION_SCALE}},
+    {"tag_id": "CF:8D:0A:3E", "tag_pos": {"x": 53, "y": 21}},
+    {"tag_id": "3A:6E:0A:3E", "tag_pos": {"x": 30, "y": 31}},
+    {"tag_id": "10:8E:0A:3E", "tag_pos": {"x": 21, "y": 53}},
     
-    {"tag_id": "53:D7:78:F6:32:00:01", "tag_pos": {"x": 21*TAG_POSITION_SCALE, "y": 61*TAG_POSITION_SCALE}},
-    {"tag_id": "53:0C:5F:F6:32:00:01", "tag_pos": {"x": 31*TAG_POSITION_SCALE, "y": 84*TAG_POSITION_SCALE}},
-    {"tag_id": "53:71:61:6A:62:00:01", "tag_pos": {"x": 53*TAG_POSITION_SCALE, "y": 93.5*TAG_POSITION_SCALE}},
+    {"tag_id": "53:D7:78:F6:32:00:01", "tag_pos": {"x": 21, "y": 61}},
+    {"tag_id": "53:0C:5F:F6:32:00:01", "tag_pos": {"x": 31, "y": 84}},
+    {"tag_id": "53:71:61:6A:62:00:01", "tag_pos": {"x": 53, "y": 93.5}},
     
-    {"tag_id": "53:66:C0:F5:32:00:01", "tag_pos": {"x": 61.5*TAG_POSITION_SCALE, "y": 93.5*TAG_POSITION_SCALE}},
-    {"tag_id": "53:78:C7:F5:32:00:01", "tag_pos": {"x": 84*TAG_POSITION_SCALE, "y": 84*TAG_POSITION_SCALE}},
-    {"tag_id": "53:B2:D1:F5:32:00:01", "tag_pos": {"x": 93.5*TAG_POSITION_SCALE, "y": 61.5*TAG_POSITION_SCALE}}
+    {"tag_id": "53:66:C0:F5:32:00:01​", "tag_pos": {"x": 61.5, "y": 93.5}},
+    {"tag_id": "53:78:C7:F5:32:00:01", "tag_pos": {"x": 84, "y": 84}},
+    {"tag_id": "53:B2:D1:F5:32:00:01", "tag_pos": {"x": 93.5, "y": 61.5}}
   ],
 
   routes: [
