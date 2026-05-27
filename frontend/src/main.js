@@ -70,7 +70,7 @@ function isStudentSession(session) {
     return Boolean(session) && session.role !== 'admin';
 }
 
-/* page_router.beforeEach(async (to) => {
+page_router.beforeEach(async (to) => {
     const publicPaths = ['/login', '/admin'];
     const requiresAuth = !publicPaths.includes(to.path);
     const session = await verifySession();
@@ -92,7 +92,7 @@ function isStudentSession(session) {
     }
 
     return true;
-}); */
+});
 
 const app = createApp(App)
 
