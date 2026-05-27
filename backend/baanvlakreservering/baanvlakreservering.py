@@ -23,7 +23,7 @@ chosen_route = "route_1"
 
 # these will probably be made into JSON files
 route = {
-    "route_1": [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]],
+    "route_1": [["9A:95:B3:DE:0A:41:89","left"], ["5A:55:C3:DA:0A:41:89","right"]],
     "route_2": [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]],
     "route_3": [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]],
     "route_4": [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]],
