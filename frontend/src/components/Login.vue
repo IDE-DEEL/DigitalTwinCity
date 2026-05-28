@@ -15,9 +15,9 @@
             @input="formatAccessCode"
             type="text" 
             id="code" 
-            placeholder="Voer je code in (bijv. A1B2C-3D4E5)"
+            placeholder="Bijv. A1B2C-3D4E5 of A1B2C3D4E5"
             maxlength="11"
-            pattern="[A-Z0-9]{5}-[A-Z0-9]{5}"
+            pattern="[A-Z0-9]{5}-?[A-Z0-9]{5}"
             autocomplete="one-time-code"
             autocapitalize="characters"
             class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
@@ -53,15 +53,22 @@ const accessCode = ref('');
 const errorMessage = ref('');
 const isLoading = ref(false);
 
-const formatAccessCode = () => {
-  const alphanumericCode = accessCode.value
-    .replace(/[^a-zA-Z0-9]/g, '')
+const normalizeAccessCodeForDisplay = (value) => {
+  const typedTrailingDash = value.endsWith('-');
+  const compact = value
     .toUpperCase()
+    .replace(/[^A-Z0-9]/g, '')
     .slice(0, 10);
-  const firstGroup = alphanumericCode.slice(0, 5);
-  const secondGroup = alphanumericCode.slice(5);
 
-  accessCode.value = secondGroup ? `${firstGroup}-${secondGroup}` : firstGroup;
+  if (compact.length > 5 || (compact.length === 5 && typedTrailingDash)) {
+    return `${compact.slice(0, 5)}-${compact.slice(5)}`;
+  }
+
+  return compact;
+};
+
+const formatAccessCode = () => {
+  accessCode.value = normalizeAccessCodeForDisplay(accessCode.value);
 };
 
 const handleLogin = async () => {
@@ -73,7 +80,7 @@ const handleLogin = async () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ code: accessCode.value.trim() })
+      body: JSON.stringify({ code: normalizeAccessCodeForDisplay(accessCode.value).trim() })
     });
 
     if (!response.ok) {
