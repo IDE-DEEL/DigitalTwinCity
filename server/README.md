@@ -68,6 +68,7 @@ docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.y
 |---|---|
 | `grafana` | Dashboards en Explore via `/grafana/`. |
 | `prometheus` | Metrics opslag en scraping. |
+| `alertmanager` | Ontvangt Prometheus-alerts en houdt notificatierouting klaar voor later. |
 | `loki` | Logopslag. |
 | `alloy` | Verzamelt container-, host- en journallogs. |
 | `node-exporter` | Hostmetrics. |
@@ -171,6 +172,7 @@ Persistente Docker volumes:
 | `caddy_config` | Caddy config-state. |
 | `prometheus_data` | Metrics historie. |
 | `grafana_data` | Grafana database, settings en plugin-state. |
+| `alertmanager_data` | Alertmanager runtime-state, zoals eventuele silences. |
 | `loki_data` | Logchunks en index. |
 | `alloy_data` | Alloy runtime-state voor logverzameling. |
 

@@ -53,10 +53,27 @@ services:
     restart: unless-stopped
     volumes:
       - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/rules:/etc/prometheus/rules:ro
       - prometheus_data:/prometheus
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"
+    networks:
+      - monitoring
+
+  # Alertmanager: Receives Prometheus alerts and keeps notification routing.
+  alertmanager:
+    image: prom/alertmanager:v0.32.1
+    profiles: ["monitoring"]
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager_data:/alertmanager
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+      - "--storage.path=/alertmanager"
+    expose:
+      - "9093"
     networks:
       - monitoring
 
@@ -133,6 +150,7 @@ services:
     expose:
       - "9115"
     networks:
+      - proxy
       - backend
       - monitoring
 
@@ -145,6 +163,7 @@ volumes:
   # Monitoring
   prometheus_data:
   grafana_data:
+  alertmanager_data:
 
   # Logging
   loki_data:
