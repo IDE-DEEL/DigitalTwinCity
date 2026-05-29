@@ -15,7 +15,7 @@
             @input="formatAccessCode"
             type="text" 
             id="code" 
-            placeholder="Bijv. A1B2C-3D4E5 of A1B2C3D4E5"
+            placeholder="Bijv. A1B2C-3D4E5"
             maxlength="11"
             pattern="[A-Z0-9]{5}-?[A-Z0-9]{5}"
             autocomplete="one-time-code"
