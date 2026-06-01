@@ -472,40 +472,64 @@ const generatePath = ((route_name) => {
     }
   }
 
-  // Collect all tag positions from the route
+   // Collect and scale all tag positions
   for (let i = 0; i < tags.length; i++) {
     for (let j = 0; j < store.tag_positions.length; j++) {
-      if (tags[i].tag_id === store.tag_positions[j].tag_id) {
-        positions.push(store.tag_positions[j].tag_pos)
+      // Added .trim() to handle hidden zero-width spaces in your data
+      if (tags[i].tag_id.trim() === store.tag_positions[j].tag_id.trim()) {
+        positions.push({
+          x: store.tag_positions[j].tag_pos.x * factor_x.value,
+          y: store.tag_positions[j].tag_pos.y * factor_y.value
+        })
         break;
       }
     }
   }
 
-  // One begin point is needed to start drawing the route
   if (positions.length === 0) return ''
+  if (positions.length === 1) return `M ${positions[0].x} ${positions[0].y}`
 
-  let startX = positions[0].x * factor_x.value
-  let startY = positions[0].y * factor_y.value
-  let path = `M ${startX} ${startY}`
+  let path = `M ${positions[0].x.toFixed(2)} ${positions[0].y.toFixed(2)}`
+  const tension = 0.35 // Restored natural corner curvature
 
-  for (let i = 1; i < positions.length; i++) {
-    const huidig = positions[i]
-    const vorig = positions[i - 1]
+  for (let i = 0; i < positions.length - 1; i++) {
+    const p0 = positions[i - 1] || positions[i]
+    const p1 = positions[i]
+    const p2 = positions[i + 1]
+    const p3 = positions[i + 2] || p2
 
-    const currentX = huidig.x * factor_x.value
-    const currentY = huidig.y * factor_y.value
-    const prevX = vorig.x * factor_x.value
-    const prevY = vorig.y * factor_y.value
+    // 1. Calculate angles of the heading vectors
+    const angleLeft = Math.atan2(p1.y - p0.y, p1.x - p0.x)
+    const angleCurrent = Math.atan2(p2.y - p1.y, p2.x - p1.x)
+    const angleRight = Math.atan2(p3.y - p2.y, p3.x - p2.x)
 
-    // Check if line is horizontal or vertical
-    if (vorig.x === huidig.x || vorig.y === huidig.y) {
-      path += ` L ${currentX} ${currentY}`
+    // 2. Measure heading deviations (in radians)
+    const diffLeft = Math.abs(Math.atan2(Math.sin(angleCurrent - angleLeft), Math.cos(angleCurrent - angleLeft)))
+    const diffRight = Math.abs(Math.atan2(Math.sin(angleRight - angleCurrent), Math.cos(angleRight - angleCurrent)))
+
+    // 3. Higher threshold (approx 25 degrees) to catch imperfectly aligned tags 
+    // on the top, left, and bottom sides of your factory map loop
+    const angleThreshold = 0.45 
+
+    const isLeftStraight = diffLeft < angleThreshold
+    const isRightStraight = diffRight < angleThreshold
+
+    // 4. Force control points flat if heading isn't turning
+    const t1 = isLeftStraight ? 0 : tension
+    const t2 = isRightStraight ? 0 : tension
+
+    // 5. Generate pristine control points
+    const cp1x = p1.x + (p2.x - p0.x) * t1
+    const cp1y = p1.y + (p2.y - p0.y) * t1
+    const cp2x = p2.x - (p3.x - p1.x) * t2
+    const cp2y = p2.y - (p3.y - p1.y) * t2
+
+    if (isLeftStraight && isRightStraight) {
+      // Clean, unwarped straight track segment
+      path += ` L ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`
     } else {
-      const controlX = prevX
-      const controlY = currentY
-      
-      path += ` Q ${controlX} ${controlY} ${currentX} ${currentY}`
+      // Fluid turn transitioning smoothly into a straight section
+      path += ` C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)}, ${cp2x.toFixed(2)} ${cp2y.toFixed(2)}, ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`
     }
   }
 
