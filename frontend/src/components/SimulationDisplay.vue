@@ -459,6 +459,58 @@ const vResize = {
     }
   }
 };
+
+const generatePath = ((route_name) => {
+  let tags = []
+  let positions = []
+  
+  // Collect all tags from the route
+  for (let i = 0; i < store.routes.length; i++) {
+    if (route_name === store.routes[i].route) {
+      tags = store.routes[i].tags
+      break;
+    }
+  }
+
+  // Collect all tag positions from the route
+  for (let i = 0; i < tags.length; i++) {
+    for (let j = 0; j < store.tag_positions.length; j++) {
+      if (tags[i].tag_id === store.tag_positions[j].tag_id) {
+        positions.push(store.tag_positions[j].tag_pos)
+        break;
+      }
+    }
+  }
+
+  // One begin point is needed to start drawing the route
+  if (positions.length === 0) return ''
+
+  let startX = positions[0].x * factor_x.value
+  let startY = positions[0].y * factor_y.value
+  let path = `M ${startX} ${startY}`
+
+  for (let i = 1; i < positions.length; i++) {
+    const huidig = positions[i]
+    const vorig = positions[i - 1]
+
+    const currentX = huidig.x * factor_x.value
+    const currentY = huidig.y * factor_y.value
+    const prevX = vorig.x * factor_x.value
+    const prevY = vorig.y * factor_y.value
+
+    // Check if line is horizontal or vertical
+    if (vorig.x === huidig.x || vorig.y === huidig.y) {
+      path += ` L ${currentX} ${currentY}`
+    } else {
+      const controlX = prevX
+      const controlY = currentY
+      
+      path += ` Q ${controlX} ${controlY} ${currentX} ${currentY}`
+    }
+  }
+
+  return path + "Z";
+})
 </script>
 
 <template>
@@ -491,38 +543,18 @@ const vResize = {
             class="absolute inset-0 w-full h-full pointer-events-none">
                 <circle :cx="tag.tag_pos.x * factor_x" :cy="tag.tag_pos.y * factor_y" r="8" fill="black"></circle>
             </svg>
-            
-            <!-- Lanes (kleur kan later worden weggehaald) --
-            <svg 
-                class="absolute inset-0 pointer-events-none"
-                :viewBox="`0 0 ${MAP_DIMENSION} ${MAP_DIMENSION}`"
-                :preserveAspectRatio="`none`"
-            >
-                <polyline
-                    v-for="lane in lanes"
-                    :key="lane.id"
-                    :points="lane.points.map(p => `${p.x},${p.y}`).join(' ')"
-                    fill="none"
-                    stroke="blue"
-                    stroke-width="0.00"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                />
-            </svg>-->
 
-            <!-- Routes --
+            <!-- Routes -->
             <svg class="absolute inset-0 pointer-events-none"
-            width=${MAP_DIMENSION} height=${MAP_DIMENSION}>
-
-                !-- We tonen alleen paden als 'visueel' true is
-                v-for="car in store.table_data.filter(c => c.visueel)"--
+            width=${MAP_DIMENSION} height=${MAP_DIMENSION}
+            v-for="car in store.table_data.filter(c => c.visueel === true)">
                 <path
-                    d="M 20 20 L 100 100 L 200 50 Q 300 200 400 100"
+                    :d="generatePath(car.route)"
                     fill="none"
                     stroke="#F54242"
                     stroke-width="4" />
 
-            </svg> -->
+            </svg>
 
             <!-- Auto -->
             <div
@@ -546,68 +578,3 @@ const vResize = {
     </div> 
   </div>
 </template>
-
-<style scoped>
-.car-sprite {
-    position: absolute;
-    z-index: 5;
-    width: 34px;
-    height: 48px;
-    pointer-events: none;
-    transform: translate(-50%, -50%);
-}
-
-.car-heading {
-    width: 100%;
-    height: 100%;
-    transition: transform 260ms ease-out;
-    transform-origin: center;
-}
-
-.car-body {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    border: 2px solid #111827;
-    border-radius: 8px 8px 6px 6px;
-    background: #4b5563;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.28);
-}
-
-.car-window {
-    position: absolute;
-    top: 8px;
-    left: 7px;
-    width: 16px;
-    height: 12px;
-    border-radius: 4px 4px 2px 2px;
-    background: #bfdbfe;
-    border: 1px solid #1f2937;
-}
-
-.car-hood {
-    position: absolute;
-    top: 24px;
-    left: 7px;
-    width: 16px;
-    height: 12px;
-    border-radius: 3px;
-    background: #374151;
-}
-
-.car-headlights {
-    position: absolute;
-    top: 2px;
-    left: 5px;
-    right: 5px;
-    display: flex;
-    justify-content: space-between;
-}
-
-.car-headlights span {
-    width: 6px;
-    height: 4px;
-    border-radius: 1px;
-    background: #fde68a;
-}
-</style>

@@ -52,9 +52,9 @@ export const store = reactive({
   ],
 
   routes: [
-    {"route": "Route 1"},
-    {"route": "Route 2"},
-    {"route": "Route 3"}
+    {"route": "Route 1", "tags": [{"tag_id": "53:3F:11:F7:32:00:01"}, {"tag_id": "53:2A:27:F7:32:00:01"}, {"tag_id": "53:5F:2D:F7:32:00:01"}]},
+    {"route": "Route 2", "tags": []},
+    {"route": "Route 3", "tags": []}
   ],
 
   scenarios: [
