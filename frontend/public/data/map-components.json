@@ -2,15 +2,7 @@
   {
     "id": "straight",
     "label": "straight line",
-    "imagePath": "/assets/straight.png",
-    "pathConnections": ["N", "S"],
-    "pathNodes": [
-      {
-        "from": "N",
-        "to": "S", 
-        "coords": [[0.5, 0.0],[0.5, 1.0]]}
-    ]
-
+    "imagePath": "/assets/straight.png"
   },
   {
     "id": "curve",
@@ -31,5 +23,10 @@
     "id": "roundabout",
     "label": "roundabout",
     "imagePath": "/assets/roundabout.png"
+  },
+  {
+    "id": "depot",
+    "label": "depot",
+    "imagePath": "/assets/depot.png"
   }
 ]
