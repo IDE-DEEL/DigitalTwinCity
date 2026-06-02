@@ -50,19 +50,25 @@ const formattedTime = computed(() => {
 <template>
   <aside>
     <div class="parameter-container">
-      <Slider class="slider-area" name="Auto snelheid" type="speed" v-model="store.speed"></Slider>
-      <DropDown class="scenario-area" name="Scenario's" type="scenario" :list="store.scenarios" v-model="store.chosen_scenario"></DropDown>
+      <!-- Slot voor de bovenste parameters -->
+      <slot name="parameters">
+        <Slider class="slider-area" name="Auto snelheid" type="speed" v-model="store.speed"></Slider>
+        <DropDown class="scenario-area" name="Scenario's" type="scenario" :list="store.scenarios" v-model="store.chosen_scenario"></DropDown>
+      </slot>
     </div>
 
     <Table></Table>
 
     <div class="simulation-container">
       <div class="state">
-        <Slider class="slider-area" name="Simulatie snelheid" v-model="store.sim_speed"></Slider>
-        <div class="button-area">
-          <button @click="start">Start</button>
-          <button @click="stop">Stop</button>
-        </div>
+        <!-- Slot voor de simulatie controls (slider + buttons) -->
+        <slot name="simulation-controls">
+          <Slider class="slider-area" name="Simulatie snelheid" v-model="store.sim_speed"></Slider>
+          <div class="button-area">
+            <button @click="start">Start</button>
+            <button @click="stop">Stop</button>
+          </div>
+        </slot>
       </div>
     
       <div class="block text-sm font-semibold mb-1 stats-box" style="font-variant-numeric: tabular-nums;">

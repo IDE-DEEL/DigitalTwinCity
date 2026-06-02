@@ -18,7 +18,7 @@ Alle beheeracties lopen via de beveiligde admin-endpoints onder `/api/v1/admin/a
 
 ## Aanmaken van codes
 
-Bij het aanmaken voert de beheerder een herkenbare naam en een vervaltijd in. De backend genereert daarna zelf de ruwe toegangscode. Deze ruwe code wordt eenmalig teruggegeven aan de frontend, zodat de beheerder de code kan delen met studenten of bezoekers.
+Bij het aanmaken voert de beheerder een herkenbare naam en een vervaltijd in. De backend genereert daarna zelf de ruwe toegangscode in het formaat `XXXXX-XXXXX`, waarbij de codegroepen alleen hoofdletters en cijfers bevatten. Deze ruwe code wordt eenmalig teruggegeven aan de frontend, zodat de beheerder de code kan delen met studenten of bezoekers.
 
 De ruwe toegangscode wordt niet leesbaar opgeslagen. Alleen een bcrypt-hash van de code staat in de database. Daardoor kan een bestaande code later wel worden gecontroleerd, maar niet opnieuw worden uitgelezen.
 
