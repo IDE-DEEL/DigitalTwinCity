@@ -13,12 +13,15 @@ MQTT_PATH = settings.MQTT_PATH
 MQTT_USERNAME = settings.MQTT_USERNAME
 MQTT_PASSWORD = settings.MQTT_PASSWORD
 
+# Current topics to subscribe and publish too. This is temporary, as some of it is mainly for a template.
 SUB_TOPIC = "car/auto_B/data/LastRFID"
 PUB_TOPIC_DIR = "car/auto_B/cmd/direction"
 PUB_TOPIC_MOVE = "car/auto_B/cmd/Start"
 
+# Chosen route from the front end. Currently is a placeholder.
 chosen_route = "route_1"
 
+# The specific directions to send to the robot.
 Direction = {
     "LEFT": 0,
     "RIGHT": 1,
@@ -26,8 +29,9 @@ Direction = {
     "ROUNDABOUT": 3,
     "RIGHT_ROUND": 4
 }
-# this is a list of routes with the commands and tags
 
+# This is a list of routes with the commands and tags.
+# The tags in the dict below are the tags where the robot has to change direction.
 # these will probably be made into JSON files
 route = {
     "route_1": [["9A:95:B3:DE:0A:41:89",Direction["LEFT"]], ["5A:55:C3:DA:0A:41:89",Direction["RIGHT"]], ["5A:65:C3:DA:0A:41:89", Direction["RIGHT_ROUND"]]],
@@ -46,6 +50,7 @@ route = {
 
 }
 
+# This is a dict of all the tags and their adjacent tags. This will go into a Json file.
 Tags = {
     "tag 1": ["adjacent tag", "adjacent tag", "adjacent tag"],
     "tag 2": ["adjacent tag", "adjacent tag", "adjacent tag"],
@@ -59,20 +64,24 @@ Tags = {
     "tag 10": ["adjacent tag", "adjacent tag", "adjacent tag"],
     "tag 11": ["adjacent tag", "adjacent tag", "adjacent tag"]
 
-}
+}# Stores the latest vehicle RFID data
 car_data = []
+
+# Registered listeners that should be notified whenever
+# new vehicle data is received
 car_data_listeners: list[Callable[[list[dict]], None]] = []
 
-
+# Returns the latest RFID data received from the vehicle.
 def getTag():
     return car_data
 
-
+# Registers a callback function that will be called
+# whenever new RFID data is received.
 def add_car_data_listener(listener: Callable[[list[dict]], None]):
     if listener not in car_data_listeners:
         car_data_listeners.append(listener)
 
-
+# Notify all registered listeners with the latest vehicle data.
 def notify_car_data_listeners():
     for listener in tuple(car_data_listeners):
         try:
@@ -81,6 +90,7 @@ def notify_car_data_listeners():
             print(f"Failed to notify car data listener: {exc}")
 
 
+# Global flag controlling whether the vehicle is allowed to move
 start = True
 # ---------------- CALLBACKS ----------------
 def on_connect(client, userdata, flags, reason_code, properties):
@@ -90,32 +100,53 @@ def on_connect(client, userdata, flags, reason_code, properties):
     else:
         print("Connection failed:", reason_code)
 
+# Called whenever a message is received on a subscribed topic.
+# Processes RFID scans and sends navigation commands based on the selected route.
 def on_message(client, userdata, msg):
     rfid = msg.payload.decode().strip()
     print(f"RFID received: {rfid}")
+
+    # Extract vehicle identifier from MQTT topic
     topic = msg.topic.decode().strip().split("/")
 
     global auto_B
     global car_data
     global index
 
+    # Store latest RFID scan
     auto_B = rfid
+    # Update vehicle status information
     car_data = [{"auto_id": topic[1], "tag_id": rfid}]
+    # Reset route index
     index = 0
 
+    # Notify listeners about updated RFID information
     notify_car_data_listeners()
 
     # ----- DECISION LOGIC -----
-    if start == True:
+    if start:
+        # Ensure vehicle is moving
         client.publish(f"car/{topic[1]}/cmd/Start", "True")
+
+        # Check whether the scanned RFID matches
+        # the current route waypoint
         if rfid == route[chosen_route][index][0]:
+
+            # Stop vehicle before changing direction
             client.publish(f"car/{topic[1]}/cmd/Start", "False")
+            # Send next direction command
             client.publish(f"car/{topic[1]}/cmd/direction", route[chosen_route][index][1])
+            # Resume movement
             client.publish(f"car/{topic[1]}/cmd/Start", "True")
+            # Advance to next route step
             index += 1
+
+            # Loop back to start when route completes
             if len(route[chosen_route]) == index:
                 index = 0
-    elif start == False:
+
+    elif not start:
+        # Emergency stop / manual stop mode
         client.publish(f"car/{topic[1]}/cmd/Start", "False")
 
 
@@ -137,20 +168,29 @@ def on_message(client, userdata, msg):
 #         index += 1
 
 
+# Creates and configures an MQTT client using secure
+# WebSocket transport.
 def create_client():
     client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, transport="websockets")
+    # Configure authentication
     client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
+    # Configure WebSocket path
     client.ws_set_options(path=MQTT_PATH)
+    # Enable TLS encryption
     client.tls_set(cert_reqs=ssl.CERT_REQUIRED)
+    # Register MQTT callbacks
     client.on_connect = on_connect
     client.on_message = on_message
+    # Configure automatic reconnection
     client.reconnect_delay_set(min_delay=1, max_delay=60)
     return client
 
-
+# Singleton MQTT client instance
 _client = None
 
 
+#  Starts the MQTT client in a background thread.
+#  Returns the existing client if already running.
 def start_mqtt_client():
     global _client
     if _client is not None:
@@ -163,6 +203,7 @@ def start_mqtt_client():
     return _client
 
 
+# Stops the MQTT client and disconnects from the broker.
 def stop_mqtt_client():
     global _client
     if _client is None:
@@ -173,6 +214,9 @@ def stop_mqtt_client():
     _client = None
 
 
+# Standalone execution mode.
+# Creates the MQTT client and blocks forever while
+# listening for RFID scans.
 if __name__ == "__main__":
     client = create_client()
     client.connect(MQTT_HOST, MQTT_PORT)
