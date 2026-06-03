@@ -4,7 +4,7 @@ import { fetchMapData } from '../logic/service/mapService.js';
 import { buildLane } from '../logic/service/laneBuilder.js';
 import { normalizeDegree } from '../logic/utils/rotation.js';
 const factor_y = ref(0)
-const MAP_DIMENSION = 2
+const MAP_DIMENSION = 3
 import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
 import { normalizeTagId, store } from '../store.js'
 import '../assets/Display.css';
@@ -193,8 +193,8 @@ const getMoveDuration = (carId, from, to) => {
 
 // Update factor to scale the x and y coordinates of a tag or car
 const updateFactor = (event) => {
-  factor_x.value = event.target.clientWidth / 57.5
-  factor_y.value = event.target.clientHeight / 57.5
+  factor_x.value = (event.target.clientWidth / 400)
+  factor_y.value = (event.target.clientHeight / 400)
 }
 
 const getMotionPosition = (motion, now) => {
@@ -475,15 +475,14 @@ const generatePath = ((route_name) => {
    // Collect and scale all tag positions
   for (let i = 0; i < tags.length; i++) {
     for (let j = 0; j < store.tag_positions.length; j++) {
-      // Added .trim() to handle hidden zero-width spaces in your data
-      if (tags[i].tag_id.trim() === store.tag_positions[j].tag_id.trim()) {
-        positions.push({
-          x: store.tag_positions[j].tag_pos.x * factor_x.value,
-          y: store.tag_positions[j].tag_pos.y * factor_y.value
-        })
-        break;
+        if (tags[i] === store.tag_positions[j].tag_id) {
+          positions.push({
+            x: store.tag_positions[j].tag_pos.x * factor_x.value,
+            y: store.tag_positions[j].tag_pos.y * factor_y.value
+          })
+          break;
       }
-    }
+      }
   }
 
   if (positions.length === 0) return ''
@@ -565,7 +564,7 @@ const generatePath = ((route_name) => {
             v-for="tag in store.tag_positions"
             :key="tag.tag_id"
             class="absolute inset-0 w-full h-full pointer-events-none">
-                <circle :cx="tag.tag_pos.x * factor_x" :cy="tag.tag_pos.y * factor_y" r="8" fill="black"></circle>
+                <circle :cx="tag.tag_pos.x * factor_x" :cy="tag.tag_pos.y * factor_y" r="7" fill="black"></circle>
             </svg>
 
             <!-- Routes -->
