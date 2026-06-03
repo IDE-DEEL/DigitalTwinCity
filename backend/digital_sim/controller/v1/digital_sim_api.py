@@ -5,7 +5,7 @@ from backend.digital_sim.service.simulation_service import SimulationService
 from backend.digital_sim.constants import UPDATES_PER_SECOND
 
 
-router = APIRouter(prefix="/api/v1/digital-sim")
+router = APIRouter(prefix="/digital-sim")
 
 @router.get("/status")
 async def get_status():

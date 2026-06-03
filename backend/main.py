@@ -11,6 +11,7 @@ from backend.api.v1 import car_commands_api, car_logs_api, track_segment_api
 from backend.baanvlakreservering.baanvlakreservering import start_mqtt_client, stop_mqtt_client
 from backend.data.db.database import Base, engine
 from backend.domain import track_segment, car_commands, car_logs # noqa: F401
+from backend.digital_sim.controller.v1 import digital_sim_api
 
 
 app = FastAPI(title="DEEL - Digital Twin",
@@ -55,6 +56,7 @@ app.include_router(digital_twin.router, prefix=api_v1_prefix)
 app.include_router(car_commands_api.router, prefix=api_v1_prefix)
 app.include_router(car_logs_api.router, prefix=api_v1_prefix)
 app.include_router(track_segment_api.router, prefix=api_v1_prefix)
+app.include_router(digital_sim_api.router, prefix=api_v1_prefix)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="localhost", port=8000)
