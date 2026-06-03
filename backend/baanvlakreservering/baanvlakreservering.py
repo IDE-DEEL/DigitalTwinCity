@@ -19,11 +19,18 @@ PUB_TOPIC_MOVE = "car/auto_B/cmd/Start"
 
 chosen_route = "route_1"
 
+Direction = {
+    "LEFT": 0,
+    "RIGHT": 1,
+    "STRAIGHT": 2,
+    "ROUNDABOUT": 3,
+    "RIGHT_ROUND": 4
+}
 # this is a list of routes with the commands and tags
 
 # these will probably be made into JSON files
 route = {
-    "route_1": [["9A:95:B3:DE:0A:41:89","left"], ["5A:55:C3:DA:0A:41:89","right"]],
+    "route_1": [["9A:95:B3:DE:0A:41:89",Direction["LEFT"]], ["5A:55:C3:DA:0A:41:89",Direction["RIGHT"]], ["5A:65:C3:DA:0A:41:89", Direction["RIGHT_ROUND"]]],
     "route_2": [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]],
     "route_3": [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]],
     "route_4": [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]],
@@ -78,36 +85,38 @@ start = True
 # ---------------- CALLBACKS ----------------
 def on_connect(client, userdata, flags, reason_code, properties):
     if reason_code == 0:
-        print("✅ Connected to MQTT")
+        print("Connected to MQTT")
         client.subscribe(SUB_TOPIC)
     else:
-        print("❌ Connection failed:", reason_code)
+        print("Connection failed:", reason_code)
 
 def on_message(client, userdata, msg):
     rfid = msg.payload.decode().strip()
     print(f"RFID received: {rfid}")
+    topic = msg.topic.decode().strip().split("/")
 
     global auto_B
     global car_data
     global index
 
     auto_B = rfid
-    car_data = [{"auto_id": "Auto B", "tag_id": rfid}]
+    car_data = [{"auto_id": topic[1], "tag_id": rfid}]
     index = 0
 
     notify_car_data_listeners()
+
     # ----- DECISION LOGIC -----
     if start == True:
-        client.publish(PUB_TOPIC_MOVE, "True")
+        client.publish(f"car/{topic[1]}/cmd/Start", "True")
         if rfid == route[chosen_route][index][0]:
-            client.publish(PUB_TOPIC_MOVE, "False")
-            client.publish(PUB_TOPIC_DIR, route[chosen_route][index][1])
-            client.publish(PUB_TOPIC_MOVE, "True")
+            client.publish(f"car/{topic[1]}/cmd/Start", "False")
+            client.publish(f"car/{topic[1]}/cmd/direction", route[chosen_route][index][1])
+            client.publish(f"car/{topic[1]}/cmd/Start", "True")
             index += 1
             if len(route[chosen_route]) == index:
                 index = 0
     elif start == False:
-        client.publish(PUB_TOPIC_MOVE, "False")
+        client.publish(f"car/{topic[1]}/cmd/Start", "False")
 
 
 
