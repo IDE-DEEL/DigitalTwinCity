@@ -459,6 +459,82 @@ const vResize = {
     }
   }
 };
+
+const generatePath = ((route_name) => {
+  let tags = []
+  let positions = []
+  
+  // Collect all tags from the route
+  for (let i = 0; i < store.routes.length; i++) {
+    if (route_name === store.routes[i].route) {
+      tags = store.routes[i].tags
+      break;
+    }
+  }
+
+   // Collect and scale all tag positions
+  for (let i = 0; i < tags.length; i++) {
+    for (let j = 0; j < store.tag_positions.length; j++) {
+      // Added .trim() to handle hidden zero-width spaces in your data
+      if (tags[i].tag_id.trim() === store.tag_positions[j].tag_id.trim()) {
+        positions.push({
+          x: store.tag_positions[j].tag_pos.x * factor_x.value,
+          y: store.tag_positions[j].tag_pos.y * factor_y.value
+        })
+        break;
+      }
+    }
+  }
+
+  if (positions.length === 0) return ''
+  if (positions.length === 1) return `M ${positions[0].x} ${positions[0].y}`
+
+  let path = `M ${positions[0].x.toFixed(2)} ${positions[0].y.toFixed(2)}`
+  const tension = 0.35 // Restored natural corner curvature
+
+  for (let i = 0; i < positions.length - 1; i++) {
+    const p0 = positions[i - 1] || positions[i]
+    const p1 = positions[i]
+    const p2 = positions[i + 1]
+    const p3 = positions[i + 2] || p2
+
+    // 1. Calculate angles of the heading vectors
+    const angleLeft = Math.atan2(p1.y - p0.y, p1.x - p0.x)
+    const angleCurrent = Math.atan2(p2.y - p1.y, p2.x - p1.x)
+    const angleRight = Math.atan2(p3.y - p2.y, p3.x - p2.x)
+
+    // 2. Measure heading deviations (in radians)
+    const diffLeft = Math.abs(Math.atan2(Math.sin(angleCurrent - angleLeft), Math.cos(angleCurrent - angleLeft)))
+    const diffRight = Math.abs(Math.atan2(Math.sin(angleRight - angleCurrent), Math.cos(angleRight - angleCurrent)))
+
+    // 3. Higher threshold (approx 25 degrees) to catch imperfectly aligned tags 
+    // on the top, left, and bottom sides of your factory map loop
+    const angleThreshold = 0.45 
+
+    const isLeftStraight = diffLeft < angleThreshold
+    const isRightStraight = diffRight < angleThreshold
+
+    // 4. Force control points flat if heading isn't turning
+    const t1 = isLeftStraight ? 0 : tension
+    const t2 = isRightStraight ? 0 : tension
+
+    // 5. Generate pristine control points
+    const cp1x = p1.x + (p2.x - p0.x) * t1
+    const cp1y = p1.y + (p2.y - p0.y) * t1
+    const cp2x = p2.x - (p3.x - p1.x) * t2
+    const cp2y = p2.y - (p3.y - p1.y) * t2
+
+    if (isLeftStraight && isRightStraight) {
+      // Clean, unwarped straight track segment
+      path += ` L ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`
+    } else {
+      // Fluid turn transitioning smoothly into a straight section
+      path += ` C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)}, ${cp2x.toFixed(2)} ${cp2y.toFixed(2)}, ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`
+    }
+  }
+
+  return path + "Z";
+})
 </script>
 
 <template>
@@ -491,38 +567,18 @@ const vResize = {
             class="absolute inset-0 w-full h-full pointer-events-none">
                 <circle :cx="tag.tag_pos.x * factor_x" :cy="tag.tag_pos.y * factor_y" r="8" fill="black"></circle>
             </svg>
-            
-            <!-- Lanes (kleur kan later worden weggehaald) --
-            <svg 
-                class="absolute inset-0 pointer-events-none"
-                :viewBox="`0 0 ${MAP_DIMENSION} ${MAP_DIMENSION}`"
-                :preserveAspectRatio="`none`"
-            >
-                <polyline
-                    v-for="lane in lanes"
-                    :key="lane.id"
-                    :points="lane.points.map(p => `${p.x},${p.y}`).join(' ')"
-                    fill="none"
-                    stroke="blue"
-                    stroke-width="0.00"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                />
-            </svg>-->
 
-            <!-- Routes --
+            <!-- Routes -->
             <svg class="absolute inset-0 pointer-events-none"
-            width=${MAP_DIMENSION} height=${MAP_DIMENSION}>
-
-                !-- We tonen alleen paden als 'visueel' true is
-                v-for="car in store.table_data.filter(c => c.visueel)"--
+            width=${MAP_DIMENSION} height=${MAP_DIMENSION}
+            v-for="car in store.table_data.filter(c => c.visueel === true)">
                 <path
-                    d="M 20 20 L 100 100 L 200 50 Q 300 200 400 100"
+                    :d="generatePath(car.route)"
                     fill="none"
                     stroke="#F54242"
                     stroke-width="4" />
 
-            </svg> -->
+            </svg>
 
             <!-- Auto -->
             <div
@@ -546,68 +602,3 @@ const vResize = {
     </div> 
   </div>
 </template>
-
-<style scoped>
-.car-sprite {
-    position: absolute;
-    z-index: 5;
-    width: 34px;
-    height: 48px;
-    pointer-events: none;
-    transform: translate(-50%, -50%);
-}
-
-.car-heading {
-    width: 100%;
-    height: 100%;
-    transition: transform 260ms ease-out;
-    transform-origin: center;
-}
-
-.car-body {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    border: 2px solid #111827;
-    border-radius: 8px 8px 6px 6px;
-    background: #4b5563;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.28);
-}
-
-.car-window {
-    position: absolute;
-    top: 8px;
-    left: 7px;
-    width: 16px;
-    height: 12px;
-    border-radius: 4px 4px 2px 2px;
-    background: #bfdbfe;
-    border: 1px solid #1f2937;
-}
-
-.car-hood {
-    position: absolute;
-    top: 24px;
-    left: 7px;
-    width: 16px;
-    height: 12px;
-    border-radius: 3px;
-    background: #374151;
-}
-
-.car-headlights {
-    position: absolute;
-    top: 2px;
-    left: 5px;
-    right: 5px;
-    display: flex;
-    justify-content: space-between;
-}
-
-.car-headlights span {
-    width: 6px;
-    height: 4px;
-    border-radius: 1px;
-    background: #fde68a;
-}
-</style>
