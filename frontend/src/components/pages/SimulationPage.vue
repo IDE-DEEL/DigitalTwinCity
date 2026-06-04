@@ -8,21 +8,11 @@ import { MAP_COLUMNS, MAP_ROWS } from '../../constants/constants.js'
 import { useCarColors } from '../../composables/useCarColors.js'
 import { buildLane } from '../../logic/service/laneBuilder.js';
 import { normalizeDegree } from '../../logic/utils/rotation.js';
+import { Slider, DropDown, RadioGroup, SimulationTable, WebSocketStatus } from '../CustomComponents.js'
+import { ControlPanel, SimulationDisplay, SimulationStatsModal, HouseLabelsOverlay } from '../AreaComponents.js'
+import { devTileCoordinateOverlay, devLaneDebugOverlay, devHouseDetectionZonesOverlay, devRouteBuilder } from '../../development/DevtoolComponents.js'
 import '../../assets/MainContent.css'
 import '../../assets/SimulationPage.css'
-import ControlPanel from '../ControlPanel.vue'
-import SimulationDisplay from '../SimulationDisplay.vue'
-import Slider from '../Slider.vue'
-import DropDown from '../DropDown.vue'
-import RadioGroup from '../RadioGroup.vue'
-import SimulationTable from '../SimulationTable.vue'
-import WebSocketStatus from '../WebSocketStatus.vue'
-import SimulationStatsModal from '../SimulationStatsModal.vue'
-import devTileCoordinateOverlay from '../../development/devTileCoordinateOverlay.vue'
-import devLaneDebugOverlay from '../../development/devLaneDebugOverlay.vue'
-import devHouseDetectionZonesOverlay from '../../development/devHouseDetectionZonesOverlay.vue'
-import devRouteBuilder from '../../development/devRouteBuilder.vue'
-import HouseLabelsOverlay from '../HouseLabelsOverlay.vue'
 
 /*
     =====================
@@ -181,7 +171,7 @@ const toggleRouteBuilder = () => {
 
             <template #svg-overlays>
                 <svg 
-                    class="absolute inset-0 pointer-events-none"
+                    class="route-svg"
                     :viewBox="`0 0 ${MAP_COLUMNS} ${MAP_ROWS}`"
                     :preserveAspectRatio="`none`"
                 >
