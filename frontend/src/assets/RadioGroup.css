@@ -32,6 +32,7 @@
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
   transition: background-color 150ms ease, color 150ms ease;
+  border: 1px groove var(--color-button-border);
 
   display: block;
   box-sizing: border-box;

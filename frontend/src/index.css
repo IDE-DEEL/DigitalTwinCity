@@ -13,6 +13,8 @@
 
     /* Additional colors */
     --color-text-white: white;
+    --color-primary-blue-hover: #5aafff;
+    --color-button-border: gray;
 
     /* Border-radius */
     --rounded-xs: 0.125rem;     /* 2px */
