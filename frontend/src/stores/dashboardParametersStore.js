@@ -18,7 +18,31 @@ export const useDashboardParametersStore = defineStore("dashboardParameters", ()
             maxPackages: 1,
             routeName: ROUTE_OPTIONS[0]?.value ?? '',
             routeVisibility: false,
-        }
+        },
+        {
+            id: '2',
+            maxPackages: 1,
+            routeName: ROUTE_OPTIONS[0]?.value ?? '',
+            routeVisibility: false,
+        },
+        {
+            id: '3',
+            maxPackages: 1,
+            routeName: ROUTE_OPTIONS[0]?.value ?? '',
+            routeVisibility: false,
+        },
+        {
+            id: '4',
+            maxPackages: 1,
+            routeName: ROUTE_OPTIONS[0]?.value ?? '',
+            routeVisibility: false,
+        },
+        {
+            id: '5',
+            maxPackages: 1,
+            routeName: ROUTE_OPTIONS[0]?.value ?? '',
+            routeVisibility: false,
+        },
     ]);
     const carTargetSpeed = ref(50);
     const scenario = ref('rustig');
