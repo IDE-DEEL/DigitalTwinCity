@@ -21,6 +21,7 @@ import SimulationStatsModal from '../SimulationStatsModal.vue'
 import devTileCoordinateOverlay from '../../development/devTileCoordinateOverlay.vue'
 import devLaneDebugOverlay from '../../development/devLaneDebugOverlay.vue'
 import devHouseDetectionZonesOverlay from '../../development/devHouseDetectionZonesOverlay.vue'
+import devRouteBuilder from '../../development/devRouteBuilder.vue'
 import HouseLabelsOverlay from '../HouseLabelsOverlay.vue'
 
 /*
@@ -175,9 +176,7 @@ const toggleRouteBuilder = () => {
         <SimulationDisplay class="display-field">
             <!-- Devtool: coordinate picker -->
             <template #map-grid-overlays>
-                <devTileCoordinateOverlay
-                    v-if="showDevTileCoordDebug"
-                />
+                <devTileCoordinateOverlay v-if="showDevTileCoordDebug"/>
             </template>
 
             <template #svg-overlays>
@@ -208,21 +207,20 @@ const toggleRouteBuilder = () => {
                         />
                     </polyline>
 
-                    <devLaneDebugOverlay
-                        v-if="showDevLaneDebug"
-                        :lanes="lanes"
-                    />
+                    <!-- Devtool: lane debug -->
+                    <devLaneDebugOverlay v-if="showDevLaneDebug" :lanes="lanes"/>
 
-                    <devHouseDetectionZonesOverlay
-                        v-if="showDevHouseDetectionZones"
-                        :scenario="dashboardStore.scenario"
-                    />
+                    <!-- Devtool: house detection zones -->
+                    <devHouseDetectionZonesOverlay v-if="showDevHouseDetectionZones" :scenario="dashboardStore.scenario"/>
 
                     <!-- House labels for packages -->
-                    <HouseLabelsOverlay
-                        :houses="simulationStore.housesWithLivePackageData"
-                    />
+                    <HouseLabelsOverlay :houses="simulationStore.housesWithLivePackageData"/>
                 </svg>
+            </template>
+
+            <!-- Devtool: route builder -->
+            <template #route-builder>
+                <devRouteBuilder v-model:isActive="showDevRouteBuilder"/>
             </template>
         </SimulationDisplay>
 

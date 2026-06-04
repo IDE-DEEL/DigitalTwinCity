@@ -587,6 +587,9 @@ const generatePath = ((route_name) => {
             <!-- SVG overlays -->
             <slot name="svg-overlays"></slot>
 
+            <!-- Simulation route builder -->
+            <slot name="route-builder"></slot>
+
             <!-- Auto -->
             <div
                 v-for="car in carPositions"
