@@ -42,6 +42,8 @@ const LABELS = {
     totalsSteps: "Stappen:",
     downloadCsv: "Download CSV",
     downloadingCsv: "Bezig met downloaden...",
+    statsRetrievalError: "Fout bij het ophalen van statistieken",
+    statsCsvError: "Fout bij het downloaden van CSV",
 
     // Misc
     closeButton: "x",

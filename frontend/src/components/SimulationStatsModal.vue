@@ -172,7 +172,7 @@ const loadStats = async () => {
         console.log("Stats loaded successfully:", data);
         stats.value = data;
     } catch (err) {
-        const errorMsg = err.message || 'Fout bij het ophalen van statistieken';
+        const errorMsg = err.message || getLabel('statsRetrievalError');
         error.value = errorMsg;
         console.error('Error loading stats:', err);
     } finally {
@@ -231,7 +231,7 @@ const handleDownloadCSV = async () => {
         link.click();
         document.body.removeChild(link);
     } catch (err) {
-        error.value = err.message || 'Fout bij het downloaden van CSV';
+        error.value = err.message || getLabel('statsCsvError');
         console.error('Error downloading CSV:', err);
     } finally {
         isDownloading.value = false;
