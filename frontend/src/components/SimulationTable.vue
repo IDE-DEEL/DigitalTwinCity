@@ -1,5 +1,8 @@
 <script setup>
+import { useCarColors } from '../composables/useCarColors.js'
 import "../assets/Table.css"
+
+const { getColorForCarAndRoute } = useCarColors();
 
 const props = defineProps({
   modelValue: {
@@ -38,7 +41,15 @@ const props = defineProps({
         </thead>
         <tbody v-for="(car, index) in props.modelValue" :key="index">
           <tr>
-            <td><input class="package-input" type="text" size=6 v-model="car.id""></input></td>
+            <td>
+                <div class="car-id-container">
+                    <div 
+                        class="car-id-color"
+                        :style="{ backgroundColor: getColorForCarAndRoute(car.id) }"
+                    ></div>
+                    <input class="package-input" type="text" size=6 v-model="car.id""></input>
+                </div>
+            </td>
             <td><input class="package-input" type="number" :min="props.minPackages" :max="props.maxPackages" v-model="car.maxPackages"></input></td>
             <td>
               <select v-model="car.routeName">
