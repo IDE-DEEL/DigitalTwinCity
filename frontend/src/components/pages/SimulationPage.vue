@@ -49,6 +49,16 @@ const handleReconnect = () => {
         reconnectCooldown.value = false;
     }, timeInMillis);
 }
+
+const handleStart = () => {
+    console.log('Requested simulation start with parameters: ', dashboardStore.collectParameters());
+    validateHousesReachability();
+    startSimulation();
+}
+
+const handleStop = () => {
+    stopSimulation();
+}
 </script>
 
 <template>
