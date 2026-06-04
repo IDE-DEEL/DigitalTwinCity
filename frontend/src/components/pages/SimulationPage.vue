@@ -1,7 +1,9 @@
 <script setup>
+import { ref } from 'vue'
 import { useDashboardParametersStore } from '../../stores/dashboardParametersStore'
 import { getLabel } from '../../constants/ui_labels.js'
 import { SIMULATION_SPEED_OPTIONS } from '../../constants/constants.js'
+import { useDigitalSimulation } from '../../composables/useDigitalSimulation.js'
 import '../../assets/MainContent.css'
 import ControlPanel from '../ControlPanel.vue'
 import SimulationDisplay from '../SimulationDisplay.vue'
@@ -9,11 +11,44 @@ import Slider from '../Slider.vue'
 import DropDown from '../DropDown.vue'
 import RadioGroup from '../RadioGroup.vue'
 import SimulationTable from '../SimulationTable.vue'
+import WebSocketStatus from '../WebSocketStatus.vue'
 
+// Stores and composables
 const dashboardStore = useDashboardParametersStore()
+
+const {
+    isWebSocketConnected,
+    isSimulating,
+    hasSimulated,
+    startSimulation,
+    stopSimulation,
+    reconnectWebSocket,
+    validateHousesReachability,
+    getStats,
+    exportDataAsCSV,
+} = useDigitalSimulation();
+
+// Refs and constants
+const reconnectCooldown = ref(false);
 
 const MAX_PACKAGES = 10
 const MIN_PACKAGES = 1
+
+// Button handlers
+const handleReconnect = () => {
+    if (reconnectCooldown.value) {
+        return;
+    }
+    
+    console.log("Attempting to reconnect WebSocket...");
+    reconnectWebSocket();
+    
+    reconnectCooldown.value = true;
+    const timeInMillis = 5000;
+    setTimeout(() => {
+        reconnectCooldown.value = false;
+    }, timeInMillis);
+}
 </script>
 
 <template>
@@ -25,6 +60,14 @@ const MIN_PACKAGES = 1
 
     <!-- Control Panel -->
     <ControlPanel class="control-panel">
+        <template #websocket-status>
+            <WebSocketStatus 
+                :is-connected="isWebSocketConnected"
+                :reconnect-cooldown="reconnectCooldown"
+                @reconnect="handleReconnect"
+            ></WebSocketStatus>
+        </template>
+
         <template #parameters>
             <Slider 
                 class="slider-area" 
