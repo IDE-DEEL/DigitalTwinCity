@@ -11,6 +11,12 @@ const LABELS = {
     carSpeed: 'Auto snelheid',
     scenario: 'Scenario\'s',
 
+    // ControlPanel car table
+    carId: "Auto ID",
+    packages: "Max. pakketten",
+    route: "Route",
+    route_visibility: "Visualisatie",
+
     // ControlPanel simulation controls
     simulationSpeed: 'Simulatie snelheid',
     startButton: 'Start',
