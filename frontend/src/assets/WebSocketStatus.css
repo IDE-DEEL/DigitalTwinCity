@@ -1,0 +1,44 @@
+.websocket-status-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: 1px solid rgb(252, 165, 165);
+  padding: 0.75rem;
+  background-color: rgb(254, 226, 226);
+  border-radius: var(--rounded-xs);
+}
+
+.websocket-status-indicator {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background-color: rgb(239, 68, 68);
+}
+
+.websocket-status-text {
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  color: rgb(159, 18, 57);
+}
+
+.websocket-status-button {
+  margin-left: auto;
+  background-color: var(--color-primary-blue);
+  color: var(--color-text-white);
+  border-radius: var(--rounded-xs);
+  width: 3rem;
+  height: 2rem;
+  font-size: var(--text-lg);
+  border: 1px groove var(--color-button-border);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.websocket-status-button:hover:not(:disabled) {
+  background-color: var(--color-primary-blue-hover);
+}
+
+.websocket-status-button--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

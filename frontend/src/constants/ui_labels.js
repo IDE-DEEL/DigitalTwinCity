@@ -7,6 +7,10 @@ const currentLanguage = document.documentElement.lang || defaultLanguage;
 
 const LABELS = {
   nl: {
+    // websocket status
+    websocketNotConnected: 'Niet verbonden met server',
+    websocketRefresh: '⟳',
+
     // ControlPanel parameters
     carSpeed: 'Auto snelheid',
     scenario: 'Scenario\'s',
