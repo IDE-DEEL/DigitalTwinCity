@@ -1,6 +1,6 @@
 <template>
   <svg
-    class="absolute inset-0 pointer-events-none"
+    class="svg-defaults"
     :viewBox="`0 0 ${MAP_COLUMNS} ${MAP_ROWS}`"
     preserveAspectRatio="none"
   >

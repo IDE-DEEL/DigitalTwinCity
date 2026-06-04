@@ -42,6 +42,12 @@
     --font-black: 900;
 }
 
+.svg-defaults {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
 @font-face {
   font-family: 'Bebas Neue';
   src: url('./assets/fonts/BebasNeue-Regular.ttf') format('truetype');

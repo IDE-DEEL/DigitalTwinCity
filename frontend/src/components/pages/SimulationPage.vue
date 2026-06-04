@@ -171,7 +171,7 @@ const toggleRouteBuilder = () => {
 
             <template #svg-overlays>
                 <svg 
-                    class="route-svg"
+                    class="svg-defaults"
                     :viewBox="`0 0 ${MAP_COLUMNS} ${MAP_ROWS}`"
                     :preserveAspectRatio="`none`"
                 >
