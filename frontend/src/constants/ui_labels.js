@@ -10,6 +10,11 @@ const LABELS = {
     // ControlPanel parameters
     carSpeed: 'Auto snelheid',
     scenario: 'Scenario\'s',
+
+    // ControlPanel simulation controls
+    simulationSpeed: 'Simulatie snelheid',
+    startButton: 'Start',
+    stopButton: 'Stop',
   },
 };
 
