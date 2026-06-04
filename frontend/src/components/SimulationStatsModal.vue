@@ -3,12 +3,12 @@
         <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl max-h-[80vh] overflow-auto">
             <!-- Header -->
             <div class="sticky top-0 bg-white border-b border-gray-300 p-6 flex items-center justify-between">
-                <h2 class="text-xl font-bold text-dark">Simulatiestatistieken</h2>
+                <h2 class="text-xl font-bold text-dark">{{ getLabel('statisticsTitle') }}</h2>
                 <button
                     @click="emit('close')"
                     class="text-gray-500 hover:text-gray-700 text-2xl font-bold leading-none"
                 >
-                    ×
+                    {{ getLabel('closeButton') }}
                 </button>
             </div>
 
@@ -16,7 +16,7 @@
             <div class="p-6 space-y-6">
                 <!-- Loading state -->
                 <div v-if="isLoading" class="text-center py-8">
-                    <p class="text-gray-600">Laden...</p>
+                    <p class="text-gray-600">{{ getLabel('loadingState') }}</p>
                 </div>
 
                 <!-- Error state -->
@@ -28,15 +28,15 @@
                 <div v-else-if="stats">
                     <!-- Per-agent table -->
                     <div>
-                        <h3 class="text-lg font-semibold mb-3 text-dark">Auto's</h3>
+                        <h3 class="text-lg font-semibold mb-3 text-dark">{{ getLabel('tableHeader') }}</h3>
                         <div class="overflow-x-auto">
                             <table class="w-full border-collapse text-sm">
                                 <thead>
                                     <tr class="bg-gray-100 border-b border-gray-300">
-                                        <th class="px-4 py-2 text-left font-semibold text-gray-700">Auto ID</th>
-                                        <th class="px-4 py-2 text-right font-semibold text-gray-700">Afstand</th>
-                                        <th class="px-4 py-2 text-right font-semibold text-gray-700">Rij tijd</th>
-                                        <th class="px-4 py-2 text-right font-semibold text-gray-700">Bezorgde pakketten</th>
+                                        <th class="px-4 py-2 text-left font-semibold text-gray-700">{{ getLabel('carId') }}</th>
+                                        <th class="px-4 py-2 text-right font-semibold text-gray-700">{{ getLabel('distance') }}</th>
+                                        <th class="px-4 py-2 text-right font-semibold text-gray-700">{{ getLabel('drivingTime') }}</th>
+                                        <th class="px-4 py-2 text-right font-semibold text-gray-700">{{ getLabel('packagesDelivered') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -61,22 +61,22 @@
 
                     <!-- Totals section -->
                     <div class="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-md p-4">
-                        <h3 class="text-lg font-semibold mb-3 text-dark">Totalen</h3>
+                        <h3 class="text-lg font-semibold mb-3 text-dark">{{ getLabel('statsTotals') }}</h3>
                         <div class="space-y-2">
                             <div class="flex justify-between items-center">
-                                <span class="text-gray-700">Totale afstand:</span>
+                                <span class="text-gray-700">{{ getLabel('totalDistance') }}:</span>
                                 <span class="font-mono font-bold text-gray-900">{{ stats.totals.total_distance.toFixed(2) }}</span>
                             </div>
                             <div class="flex justify-between items-center">
-                                <span class="text-gray-700">Totale rij tijd:</span>
+                                <span class="text-gray-700">{{ getLabel('totalDrivingTime') }}:</span>
                                 <span class="font-mono font-bold text-gray-900">{{ formatDrivingTime(stats.totals.total_time_driving) }}</span>
                             </div>
                             <div class="flex justify-between items-center">
-                                <span class="text-gray-700">Totale bezorgde pakketten:</span>
+                                <span class="text-gray-700">{{ getLabel('totalPackages') }}:</span>
                                 <span class="font-mono font-bold text-gray-900">{{ stats.totals.total_packages_delivered }}</span>
                             </div>
                             <div class="flex justify-between items-center text-sm text-gray-600 mt-2 pt-2 border-t border-blue-200">
-                                <span>Stap:</span>
+                                <span>{{ getLabel('totalsSteps') }}:</span>
                                 <span class="font-mono">{{ stats.step_count }}</span>
                             </div>
                         </div>
@@ -94,14 +94,14 @@
                                     : 'bg-green-500 hover:bg-green-600 text-white'
                             ]"
                         >
-                            {{ isDownloading ? 'Downloaden...' : 'Download CSV' }}
+                            {{ isDownloading ? getLabel('downloadingCsv') : getLabel('downloadCsv') }}
                         </button>
                     </div>
                 </div>
 
                 <!-- Empty state -->
                 <div v-else class="text-center py-8 text-gray-600">
-                    Geen simulatiedata beschikbaar
+                    {{ getLabel('emptyState') }}
                 </div>
             </div>
         </div>
@@ -111,6 +111,7 @@
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useCarColors } from '../composables/useCarColors';
+import { getLabel } from '../constants/ui_labels.js';
 
 const props = defineProps({
     isOpen: {
@@ -171,7 +172,7 @@ const loadStats = async () => {
         console.log("Stats loaded successfully:", data);
         stats.value = data;
     } catch (err) {
-        const errorMsg = err.message || 'Fout bij het ophalen van statistieken';
+        const errorMsg = err.message || getLabel('statsRetrievalError');
         error.value = errorMsg;
         console.error('Error loading stats:', err);
     } finally {
@@ -230,7 +231,7 @@ const handleDownloadCSV = async () => {
         link.click();
         document.body.removeChild(link);
     } catch (err) {
-        error.value = err.message || 'Fout bij het downloaden van CSV';
+        error.value = err.message || getLabel('statsCsvError');
         console.error('Error downloading CSV:', err);
     } finally {
         isDownloading.value = false;

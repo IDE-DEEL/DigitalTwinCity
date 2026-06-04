@@ -64,3 +64,23 @@ tbody:nth-child(even) {
     font-weight: bold;
     background-color: #e80202;
 }
+
+.car-id-container {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.car-id-color {
+    width: 4px;
+    height: 22px;
+    border-radius: var(--rounded-sm);
+}
+
+.route-visibility-button {
+    height: 22px;
+}
+
+.route-visibility-button:hover {
+    background-color: var(--color-primary-blue-hover);
+}

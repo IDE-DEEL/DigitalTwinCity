@@ -3,13 +3,15 @@ import { ref, computed, onMounted, onUnmounted, onBeforeUnmount, reactive, watch
 import { fetchMapData } from '../logic/service/mapService.js'; 
 import { buildLane } from '../logic/service/laneBuilder.js';
 import { normalizeDegree } from '../logic/utils/rotation.js';
+import { useMapStore } from '../stores/mapStore.js';
 const factor_y = ref(0)
 const MAP_DIMENSION = 2
 import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
 import { normalizeTagId, store } from '../store.js'
 import '../assets/Display.css';
 
-const mapData = ref([]); 
+const mapStore = useMapStore();
+
 const componentDefinitions = ref({}); 
 const isLoading = ref(true);
 // const mapGrid = ref(null); 
@@ -56,7 +58,7 @@ const gridStyle = computed(() => {
 });
 
 const mapComponents = computed(() => {
-    return mapData.value.map(item => {
+    return mapStore.mapData.map(item => {
         const def = componentDefinitions.value[item.type];
         
         if (!def) return null;
@@ -75,7 +77,7 @@ const mapComponents = computed(() => {
 });
 
 const lanePositions = computed(() => {
-    return mapData.value.map(item => ({
+    return mapStore.mapData.map(item => ({
         id: `${item.x}-${item.y}`,
         type: item.type,
         rotation: normalizeDegree(item.rotation || 0),
@@ -95,7 +97,7 @@ const getComponentPosition = (component) => {
 onMounted(async () => {
     try {
         const data = await fetchMapData(); 
-        mapData.value = data.mapData;
+        mapStore.setMapData(data.mapData);
         componentDefinitions.value = data.componentDefinitions;
         
         // Initialize the RFID mapper with loaded data
@@ -558,6 +560,8 @@ const generatePath = ((route_name) => {
                     v-resize="updateFactor"
                     />
                 </div>
+                <!-- Map grid overlays -->
+                <slot name="map-grid-overlays"></slot>
             </div>
 
             <!-- RIFD Tags -->
@@ -579,6 +583,12 @@ const generatePath = ((route_name) => {
                     stroke-width="4" />
 
             </svg>
+
+            <!-- SVG overlays -->
+            <slot name="svg-overlays"></slot>
+
+            <!-- Simulation route builder -->
+            <slot name="route-builder"></slot>
 
             <!-- Auto -->
             <div
