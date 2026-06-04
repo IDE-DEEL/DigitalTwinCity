@@ -49,6 +49,8 @@ const formattedTime = computed(() => {
 
 <template>
   <aside>
+    <slot name="websocket-status"></slot>
+
     <div class="parameter-container">
       <!-- Slot voor de bovenste parameters -->
       <slot name="parameters">
