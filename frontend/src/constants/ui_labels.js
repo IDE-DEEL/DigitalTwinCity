@@ -26,6 +26,25 @@ const LABELS = {
     simulationSpeed: "Simulatie snelheid",
     startButton: "Start",
     stopButton: "Stop",
+
+    // Statistics modal
+    statisticsButton: "Statistieken",
+    emptyState: "Geen simulatiedata beschikbaar",
+    loadingState: "Simulatiedata laden...",
+    statisticsTitle: "Simulatie Statistieken",
+    distance: "Afstand",
+    drivingTime: "Rij tijd",
+    packagesDelivered: "Bezorgde pakketten",
+    statsTotals: "Totalen",
+    totalDistance: "Totale afstand:",
+    totalDrivingTime: "Totale rij tijd:",
+    totalPackages: "Totaal bezorgde pakketten:",
+    totalsSteps: "Stappen:",
+    downloadCsv: "Download CSV",
+    downloadingCsv: "Bezig met downloaden...",
+
+    // Misc
+    closeButton: "x",
   },
 };
 

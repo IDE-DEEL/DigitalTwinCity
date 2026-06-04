@@ -9,3 +9,7 @@ button {
     font-size: 20px;
     cursor: pointer;
 }
+
+button:hover {
+    background-color: var(--color-primary-blue-hover);
+}

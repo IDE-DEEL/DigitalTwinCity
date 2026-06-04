@@ -12,6 +12,7 @@ import DropDown from '../DropDown.vue'
 import RadioGroup from '../RadioGroup.vue'
 import SimulationTable from '../SimulationTable.vue'
 import WebSocketStatus from '../WebSocketStatus.vue'
+import SimulationStatsModal from '../SimulationStatsModal.vue'
 
 // Stores and composables
 const dashboardStore = useDashboardParametersStore()
@@ -30,6 +31,7 @@ const {
 
 // Refs and constants
 const reconnectCooldown = ref(false);
+const isStatsModalOpen = ref(false);
 
 const MAX_PACKAGES = 10
 const MIN_PACKAGES = 1
@@ -59,6 +61,11 @@ const handleStart = () => {
 const handleStop = () => {
     stopSimulation();
 }
+
+const handleStats = () => {
+    isStatsModalOpen.value = true;
+}
+
 </script>
 
 <template>
@@ -118,12 +125,26 @@ const handleStop = () => {
                 :list="SIMULATION_SPEED_OPTIONS" 
                 v-model="dashboardStore.simulationSpeed"
             ></RadioGroup>
+
+            <div class="stats-button-container">
+                <button @click="handleStats"> {{ getLabel('statisticsButton') }} </button>
+            </div>
+
+
             <div class="button-area">
                 <button @click="handleStart"> {{ getLabel('startButton') }} </button>
                 <button @click="handleStop"> {{ getLabel('stopButton') }} </button>
             </div>
         </template>
     </ControlPanel>
+
+    <!-- Stats Modal -->
+    <SimulationStatsModal
+        :isOpen="isStatsModalOpen"
+        :getStats="getStats"
+        :exportDataAsCSV="exportDataAsCSV"
+        @close="isStatsModalOpen = false"
+    />
        
   </div>
 </template>

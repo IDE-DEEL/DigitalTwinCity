@@ -44,6 +44,10 @@
   color: var(--color-text-white);
 }
 
+.rg-active:hover {
+  background-color: var(--color-primary-blue-hover);
+}
+
 /* Inactive / unselected */
 .rg-inactive {
   background-color: #e5e7eb; /* bg-gray-200 */
