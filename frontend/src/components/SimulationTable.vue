@@ -32,6 +32,18 @@ const props = defineProps({
         default: () => []
     }
 })
+
+const handleMaxPackagesInput = (carId, event) => {
+    let value = Number(event.target.value);
+    
+    if (isNaN(value)) {
+        value = props.minPackages;
+    }
+
+    // Clamp value between min_packages and max_packages
+    value = Math.max(props.minPackages, Math.min(props.maxPackages, value));
+    event.target.value = value;
+}
 </script>
 
 <template>
@@ -56,7 +68,17 @@ const props = defineProps({
                     <input class="package-input" type="text" size=6 v-model="car.id""></input>
                 </div>
             </td>
-            <td><input class="package-input" type="number" :min="props.minPackages" :max="props.maxPackages" v-model="car.maxPackages"></input></td>
+            <td>
+                <input 
+                    class="package-input" 
+                    type="number" 
+                    :min="props.minPackages" 
+                    :max="props.maxPackages" 
+                    v-model="car.maxPackages"
+                    @blur="handleMaxPackagesInput(car.id, $event)"
+                    @keydown.enter="handleMaxPackagesInput(car.id, $event)"
+                ></input>
+            </td>
             <td>
               <select v-model="car.routeName">
                 <option v-for="routeOption in props.routeOptions" :key="routeOption.key" :value="routeOption.value">{{ routeOption.label }}</option>
