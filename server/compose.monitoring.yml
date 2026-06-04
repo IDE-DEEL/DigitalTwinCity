@@ -58,6 +58,8 @@ services:
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"
+      - '--storage.tsdb.retention.time=14d'
+      - "--storage.tsdb.retention.size=300MB"
     networks:
       - monitoring
 

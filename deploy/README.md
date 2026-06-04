@@ -106,7 +106,10 @@ Dit is wat er gebeurt als code naar `main` gaat.
 20. Docker Compose trekt de nieuwe images en start de stack.
 21. Het script voert de frontend- en backend-healthchecks uit.
 22. Als beide healthchecks slagen, wordt de nieuwe release `current`.
-23. Als iets faalt, probeert het script rollback naar de vorige release.
+23. Oude release-mappen worden opgeruimd volgens `RELEASES_TO_KEEP`.
+24. Backend- en frontendimages van verwijderde releases worden verwijderd als
+    geen bewaarde release-state ze nog gebruikt.
+25. Als iets faalt, probeert het script rollback naar de vorige release.
 
 Het belangrijkste punt: de nieuwe release wordt pas actief gemarkeerd nadat de
 healthchecks slagen.
@@ -169,6 +172,12 @@ Wat hoort waar:
   release gebruikt kan worden voor rollback.
 - `current` is een symlink naar de actieve release. Beheerders gebruiken deze
   map voor status- en logcommando's.
+
+Als een release-map wordt verwijderd, probeert het script ook de backend- en
+frontend-Dockerimages uit die release te verwijderen. Images blijven staan als
+ze nog in `current-release.env`, `previous-release.env` of een overgebleven
+`release.env` genoemd worden. Het script verwijdert geen gedeelde base images
+zoals PostgreSQL, Caddy, Mosquitto of monitoringimages.
 
 ## Serverstack
 

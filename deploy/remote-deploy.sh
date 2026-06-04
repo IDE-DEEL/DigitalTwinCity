@@ -175,6 +175,73 @@ pin_release_state_file() {
   fi
 }
 
+state_file_references_image() {
+  local state_file="$1"
+  local image_ref="$2"
+
+  [[ -f "$state_file" ]] || return 1
+  [[ "$(read_state_var "$state_file" BACKEND_IMAGE)" == "$image_ref" ]] && return 0
+  [[ "$(read_state_var "$state_file" FRONTEND_IMAGE)" == "$image_ref" ]] && return 0
+
+  return 1
+}
+
+release_image_is_still_referenced() {
+  local image_ref="$1"
+  local releases_dir="${DEPLOY_ROOT}/releases"
+  local state_file
+
+  for state_file in "$CURRENT_ENV_FILE" "$PREVIOUS_ENV_FILE"; do
+    if state_file_references_image "$state_file" "$image_ref"; then
+      return 0
+    fi
+  done
+
+  [[ -d "$releases_dir" ]] || return 1
+
+  while IFS= read -r -d '' state_file; do
+    if state_file_references_image "$state_file" "$image_ref"; then
+      return 0
+    fi
+  done < <(find "$releases_dir" -mindepth 2 -maxdepth 2 -type f -name release.env -print0)
+
+  return 1
+}
+
+remove_release_image_if_unused() {
+  local image_ref="$1"
+
+  [[ -n "$image_ref" ]] || return 0
+
+  if release_image_is_still_referenced "$image_ref"; then
+    log "Keeping release image still referenced by retained state: ${image_ref}"
+    return 0
+  fi
+
+  if ! docker image inspect "$image_ref" >/dev/null 2>&1; then
+    log "Release image already absent: ${image_ref}"
+    return 0
+  fi
+
+  log "Removing unreferenced release image: ${image_ref}"
+  if ! docker image rm "$image_ref" >/dev/null 2>&1; then
+    log "Could not remove release image ${image_ref}; Docker may still be using it."
+  fi
+}
+
+add_release_image_cleanup_candidate() {
+  local image_ref="$1"
+  local existing
+
+  [[ -n "$image_ref" ]] || return 0
+
+  for existing in "${image_cleanup_candidates[@]}"; do
+    [[ "$existing" == "$image_ref" ]] && return 0
+  done
+
+  image_cleanup_candidates+=("$image_ref")
+}
+
 run_healthchecks() {
   local urls_csv="$1"
   local attempts="${HEALTHCHECK_ATTEMPTS:-12}"
@@ -250,8 +317,10 @@ cleanup_old_releases() {
   local releases_dir="${DEPLOY_ROOT}/releases"
   local current_release_dir="$RELEASE_DIR"
   local previous_release_dir=""
+  local -a image_cleanup_candidates=()
   local kept_count=0
   local entry
+  local release_state_file
   local release_dir
 
   if ! [[ "$releases_to_keep" =~ ^[0-9]+$ ]]; then
@@ -283,8 +352,18 @@ cleanup_old_releases() {
     fi
 
     log "Removing old release: ${release_dir}"
+    release_state_file="${release_dir}/release.env"
+    if [[ -f "$release_state_file" ]]; then
+      add_release_image_cleanup_candidate "$(read_state_var "$release_state_file" BACKEND_IMAGE)"
+      add_release_image_cleanup_candidate "$(read_state_var "$release_state_file" FRONTEND_IMAGE)"
+    fi
+
     rm -rf -- "$release_dir"
   done < <(find "$releases_dir" -mindepth 1 -maxdepth 1 -type d -printf '%T@\t%p\0' | sort -z -nr)
+
+  for image_ref in "${image_cleanup_candidates[@]}"; do
+    remove_release_image_if_unused "$image_ref"
+  done
 }
 
 load_deployment_context() {

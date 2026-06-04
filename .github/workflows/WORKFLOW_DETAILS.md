@@ -346,7 +346,8 @@ Belangrijkste fases:
 12. Healthchecks draaien.
 13. Release promoten naar `current` als healthchecks slagen.
 14. Oude releases opruimen.
-15. Bij falen proberen terug te rollen naar de vorige release als rollback aan staat.
+15. Backend- en frontendimages van verwijderde releases opruimen als geen bewaarde release-state ze nog gebruikt.
+16. Bij falen proberen terug te rollen naar de vorige release als rollback aan staat.
 
 Standaard healthchecks:
 
