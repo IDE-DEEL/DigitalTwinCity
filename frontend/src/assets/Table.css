@@ -76,3 +76,11 @@ tbody:nth-child(even) {
     height: 22px;
     border-radius: var(--rounded-sm);
 }
+
+.route-visibility-button {
+    height: 22px;
+}
+
+.route-visibility-button:hover {
+    background-color: var(--color-primary-blue-hover);
+}

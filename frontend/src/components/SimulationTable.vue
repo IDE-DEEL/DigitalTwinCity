@@ -2,6 +2,8 @@
 import { useCarColors } from '../composables/useCarColors.js'
 import "../assets/Table.css"
 
+const emit = defineEmits(['toggle-route-visibility'])
+
 const { getColorForCarAndRoute } = useCarColors();
 
 const props = defineProps({
@@ -60,7 +62,13 @@ const props = defineProps({
                 <option v-for="routeOption in props.routeOptions" :key="routeOption.key" :value="routeOption.value">{{ routeOption.label }}</option>
               </select>
             </td>
-            <td><input type="checkbox" class="circle" v-model="car.visueel"></input></td>
+            <td>
+                <button 
+                    class="route-visibility-button"
+                    @click="emit('toggle-route-visibility', car.id)"
+                >
+                    {{ car.routeVisibility ? 'Verberg' : 'Toon' }}
+                </button></td>
           </tr>
         </tbody>
       </table>

@@ -107,6 +107,7 @@ const handleStop = () => {
                     getLabel('route'),
                     getLabel('route_visibility')
                 ]"
+                @toggle-route-visibility="dashboardStore.toggleCarRouteVisibility"
             ></SimulationTable>
         </template>
 
