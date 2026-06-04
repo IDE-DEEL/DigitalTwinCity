@@ -560,6 +560,8 @@ const generatePath = ((route_name) => {
                     v-resize="updateFactor"
                     />
                 </div>
+                <!-- Map grid overlays -->
+                <slot name="map-grid-overlays"></slot>
             </div>
 
             <!-- RIFD Tags -->
@@ -581,6 +583,9 @@ const generatePath = ((route_name) => {
                     stroke-width="4" />
 
             </svg>
+
+            <!-- SVG overlays -->
+            <slot name="svg-overlays"></slot>
 
             <!-- Auto -->
             <div

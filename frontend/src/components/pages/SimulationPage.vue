@@ -14,11 +14,20 @@ import RadioGroup from '../RadioGroup.vue'
 import SimulationTable from '../SimulationTable.vue'
 import WebSocketStatus from '../WebSocketStatus.vue'
 import SimulationStatsModal from '../SimulationStatsModal.vue'
+import devTileCoordinateOverlay from '../../development/devTileCoordinateOverlay.vue'
 
-// Environenment check
+/*
+    =====================
+    Development mode flag
+    =====================
+*/
 const isDevelopment = import.meta.env.DEV;
 
-// Stores and composables
+/*
+    =====================
+    Stores and composables
+    =====================
+*/
 const dashboardStore = useDashboardParametersStore()
 
 const {
@@ -33,15 +42,23 @@ const {
     exportDataAsCSV,
 } = useDigitalSimulation();
 
-// Refs and constants
+/*
+    =====================
+    Refs and constants
+    =====================
+*/
 const reconnectCooldown = ref(false);
 const isStatsModalOpen = ref(false);
 
 const MAX_PACKAGES = 10
 const MIN_PACKAGES = 1
 
-// Button handlers
-const handleReconnect = () => {
+/*  
+    =====================
+    Button handlers
+    =====================
+*/
+const handleWebsocketReconnect = () => {
     if (reconnectCooldown.value) {
         return;
     }
@@ -56,20 +73,31 @@ const handleReconnect = () => {
     }, timeInMillis);
 }
 
-const handleStart = () => {
+const handleSimulationStart = () => {
     console.log('Requested simulation start with parameters: ', dashboardStore.collectParameters());
     validateHousesReachability();
     startSimulation();
 }
 
-const handleStop = () => {
+const handleSimulationStop = () => {
     stopSimulation();
 }
 
-const handleStats = () => {
+const handleStatsOpen = () => {
     isStatsModalOpen.value = true;
 }
 
+/*  
+    =====================
+    Developer tools
+    =====================
+*/
+// Overlay for visualizing coordinates within tiles
+const showDevTileCoordDebug = ref(false);
+
+const toggleTileCoordDebug = () => {
+    showDevTileCoordDebug.value = !showDevTileCoordDebug.value;
+};
 </script>
 
 <template>
@@ -109,6 +137,15 @@ const handleStats = () => {
 
         <!-- Simulation area + Bottom bar -->
         <SimulationDisplay class="display-field">
+            <template #map-grid-overlays>
+                <devTileCoordinateOverlay
+                    v-if="showDevTileCoordDebug"
+                />
+            </template>
+
+            <template #svg-overlays>
+                <!-- SVG overlays content -->
+            </template>
         </SimulationDisplay>
 
         <!-- Control Panel -->
@@ -117,7 +154,7 @@ const handleStats = () => {
                 <WebSocketStatus 
                     :is-connected="isWebSocketConnected"
                     :reconnect-cooldown="reconnectCooldown"
-                    @reconnect="handleReconnect"
+                    @reconnect="handleWebsocketReconnect"
                 ></WebSocketStatus>
             </template>
 
@@ -163,13 +200,13 @@ const handleStats = () => {
                 ></RadioGroup>
 
                 <div class="stats-button-container">
-                    <button @click="handleStats"> {{ getLabel('statisticsButton') }} </button>
+                    <button @click="handleStatsOpen"> {{ getLabel('statisticsButton') }} </button>
                 </div>
 
 
                 <div class="button-area">
-                    <button @click="handleStart"> {{ getLabel('startButton') }} </button>
-                    <button @click="handleStop"> {{ getLabel('stopButton') }} </button>
+                    <button @click="handleSimulationStart"> {{ getLabel('startButton') }} </button>
+                    <button @click="handleSimulationStop"> {{ getLabel('stopButton') }} </button>
                 </div>
             </template>
         </ControlPanel>
