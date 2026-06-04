@@ -1,4 +1,4 @@
-export { default as DropDown } from "./Dropdown.vue";
+export { default as DropDown } from "./DropDown.vue";
 export { default as Input } from "./Input.vue";
 export { default as RadioGroup } from "./RadioGroup.vue";
 export { default as SimulationTable } from "./SimulationTable.vue";
