@@ -12,19 +12,20 @@ const LABELS = {
     websocketRefresh: '⟳',
 
     // ControlPanel parameters
-    carSpeed: 'Auto snelheid',
-    scenario: 'Scenario\'s',
+    carSpeed: "Auto snelheid",
+    scenario: "Scenario's",
 
     // ControlPanel car table
+    tableHeader: "Auto's",
     carId: "Auto ID",
     packages: "Max. pakketten",
     route: "Route",
     route_visibility: "Visualisatie",
 
     // ControlPanel simulation controls
-    simulationSpeed: 'Simulatie snelheid',
-    startButton: 'Start',
-    stopButton: 'Stop',
+    simulationSpeed: "Simulatie snelheid",
+    startButton: "Start",
+    stopButton: "Stop",
   },
 };
 

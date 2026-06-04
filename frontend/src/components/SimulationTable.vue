@@ -21,6 +21,10 @@ const props = defineProps({
         type: Array,
         default: () => []
     },
+    name: {
+        type: String,
+        default: "Auto's"
+    },
     headers: {
         type: Array,
         default: () => []
@@ -30,7 +34,7 @@ const props = defineProps({
 
 <template>
   <div>
-    <label class="block text-sm font-semibold mb-1">Auto's:</label>
+    <label class="block text-sm font-semibold mb-1">{{ props.name }}</label>
       <table class="table-container">
         <thead>
           <tr class="title-row">

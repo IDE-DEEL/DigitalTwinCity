@@ -100,6 +100,7 @@ const handleStop = () => {
                 :max-packages="MAX_PACKAGES" 
                 :min-packages="MIN_PACKAGES" 
                 :route-options="dashboardStore.routeOptions"
+                :name="getLabel('tableHeader')"
                 :headers="[
                     getLabel('carId'),
                     getLabel('packages'),
