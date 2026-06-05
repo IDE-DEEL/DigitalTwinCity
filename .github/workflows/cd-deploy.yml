@@ -12,11 +12,11 @@ on:
   workflow_dispatch:
     inputs:
       backend_image:
-        description: Immutable backend image to deploy; empty uses sha of selected commit
+        description: use an immutable sha-* tag ; if not provided, latest commit wil be used
         required: false
         default: ""
       frontend_image:
-        description: Immutable frontend image to deploy; empty uses sha of selected commit
+        description: use an immutable sha-* tag ; if not provided, latest commit wil be used
         required: false
         default: ""
       rollback_on_failure:

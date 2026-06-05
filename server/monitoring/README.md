@@ -160,7 +160,6 @@ Volgens `monitoring/prometheus/prometheus.yml` worden de volgende jobs gescraped
 | `mosquitto-exporter` | `mosquitto-exporter:9234` | MQTT broker metrics |
 | `caddy` | `caddy:2020` | Caddy request-, latency- en servermetrics |
 | `postgres-exporter` | `postgres-exporter:9187` | PostgreSQL metrics |
-| `backend` | `backend:8000/metrics` | Backend applicatie-metrics |
 | `blackbox_http` | via `blackbox-exporter:9115` | HTTP 2xx checks |
 | `blackbox_tcp` | via `blackbox-exporter:9115` | TCP connect checks |
 
@@ -395,7 +394,6 @@ docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.y
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://cadvisor:8080/metrics | head
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://mosquitto-exporter:9234/metrics | head
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://postgres-exporter:9187/metrics | head
-docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://backend:8000/metrics | head
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://caddy:2020/metrics | head
 ```
 
@@ -414,15 +412,6 @@ De exporter gebruikt:
 postgresql://${DT_PG_MONITOR_USER}:${DT_PG_MONITOR_PASS}@postgres:5432/${DT_PG_DB}?sslmode=require
 ```
 
-### Geen backend metrics
-
-Controleer of de backend draait en `/metrics` aanbiedt:
-
-```bash
-docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" ps backend
-docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" logs --tail=100 backend
-docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://backend:8000/metrics | head
-```
 
 ### Geen MQTT metrics
 

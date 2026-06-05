@@ -15,7 +15,7 @@ services:
       - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
       - grafana_data:/var/lib/grafana
     networks:
-      - proxy
+      - proxy_grafana
       - monitoring
 
   # Loki: The database for logs.
@@ -61,6 +61,8 @@ services:
       - '--storage.tsdb.retention.time=14d'
       - "--storage.tsdb.retention.size=300MB"
     networks:
+      - metrics_caddy
+      - metrics_backend
       - monitoring
 
   # Alertmanager: Receives Prometheus alerts and keeps notification routing.
@@ -77,6 +79,8 @@ services:
     expose:
       - "9093"
     networks:
+      - metrics_caddy
+      - metrics_backend
       - monitoring
 
   # Node exporter: Server/VM statistics.
@@ -127,7 +131,7 @@ services:
     depends_on:
       - mqtt
     networks:
-      - backend
+      - mqtt_internal
       - monitoring
     restart: unless-stopped
 
@@ -141,7 +145,7 @@ services:
     depends_on:
       - postgres
     networks:
-      - backend
+      - db
       - monitoring
 
   # Blackbox exporter: External accessibility.
@@ -152,14 +156,28 @@ services:
     expose:
       - "9115"
     networks:
-      - proxy
-      - backend
+      - proxy_frontend
+      - blackbox_backend
+      - blackbox_external
+      - mqtt_internal
       - monitoring
 
 networks:
-  proxy:
-  backend:
+  blackbox_external:
+  proxy_frontend:
+  proxy_grafana:
+  db:
+    internal: true
+  mqtt_internal:
+    internal: true
+  metrics_caddy:
+    internal: true
+  metrics_backend:
+    internal: true
+  blackbox_backend:
+    internal: true
   monitoring:
+    internal: true
 
 volumes:
   # Monitoring

@@ -45,12 +45,6 @@ scrape_configs:
     static_configs:
       - targets: ["postgres-exporter:9187"]
 
-  - job_name: "backend"
-    # Collects backend application metrics from prometheus_client
-    metrics_path: /metrics
-    static_configs:
-      - targets: ["backend:8000"]
-
   - job_name: "blackbox_http"
     # Pings web endpoints to see if they return HTTP 200 (OK)
     metrics_path: /probe
