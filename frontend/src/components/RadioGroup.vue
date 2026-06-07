@@ -1,7 +1,7 @@
 <script setup>
 import '../assets/RadioGroup.css';
 
-const model = defineModel({ type: String, default: "" });
+const model = defineModel({ type: Number, default: "" });
 const props = defineProps({ 
   name: String, 
   list: Array,
@@ -35,7 +35,7 @@ const props = defineProps({
             disabled ? 'rg-disabled' : ''
           ]"
         >
-          {{ option.value }}
+          {{ option.label }}
         </div>
       </label>
     </div>

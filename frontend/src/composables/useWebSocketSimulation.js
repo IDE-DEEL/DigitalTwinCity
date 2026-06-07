@@ -59,6 +59,9 @@ function connectWebSocket(onSimulationUpdate, onSimulationEnded) {
                     case "simulation_stopped":
                         console.log("simulation stopped on backend (manual stop)", result);
                         break;
+                    case "speed_updated":
+                        console.log("simulation speed updated on backend", data.simulationSpeed, "steps multiplier:", data.stepsMultiplier);
+                        break;
                     case "simulation_ended":
                         console.log("simulation ended on backend (auto-stopped)", data.reason, result);
                         if (onSimulationUpdateCallback) {

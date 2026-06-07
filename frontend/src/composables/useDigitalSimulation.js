@@ -1,4 +1,4 @@
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import { useToast } from "vue-toastification";
 import { useWebSocketSimulation } from "./useWebSocketSimulation";
 import { useDashboardParametersStore } from "../stores/dashboardParametersStore";
@@ -24,6 +24,19 @@ export function useDigitalSimulation() {
     // ---
     onMounted(() => {
         connectWebSocket(simulationStore.updateSimulationState, handleSimulationEnded);
+
+        // watch for changes in simulation speed to update the backend simulation
+        watch(
+            () => dashboardStore.simulationSpeed,
+            (newSpeed) => {
+                if (isSimulating.value && isWebSocketConnected.value) {
+                    sendWebSocketMessage({
+                        command: "set_speed",
+                        simulationSpeed: newSpeed,
+                    });
+                }
+            }
+        );
     });
 
     onBeforeUnmount(() => {

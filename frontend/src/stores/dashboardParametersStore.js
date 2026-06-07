@@ -46,7 +46,7 @@ export const useDashboardParametersStore = defineStore("dashboardParameters", ()
     ]);
     const carTargetSpeed = ref(50);
     const scenario = ref('rustig');
-    const simulationSpeed = ref('1x');
+    const simulationSpeed = ref(1);
 
     const mapStore = useMapStore();
     const mapData = computed(() => mapStore.mapData);
@@ -205,13 +205,6 @@ export const useDashboardParametersStore = defineStore("dashboardParameters", ()
         }));
     });
 
-    const simulationSpeedValue = computed(() => {
-        const speedOption = SIMULATION_SPEED_OPTIONS.find(
-            (option) => option.value === simulationSpeed.value
-        );
-        return speedOption ? speedOption.numericValue : 1;
-    });
-
     // ---
     // Simulation start payload getter
     // ---
@@ -219,7 +212,7 @@ export const useDashboardParametersStore = defineStore("dashboardParameters", ()
         return {
             cars: allCarsAndRoutesWithConvertedCoordinates.value,
             carTargetSpeed: carTargetSpeed.value,
-            simulationSpeed: simulationSpeedValue.value,
+            simulationSpeed: simulationSpeed.value,
             scenario: {
                 name: scenario.value,
                 houses: housesWithConvertedCoordinates.value,
