@@ -8,7 +8,7 @@ import { MAP_COLUMNS, MAP_ROWS } from '../../constants/constants.js'
 import { useCarColors } from '../../composables/useCarColors.js'
 import { buildLane } from '../../logic/service/laneBuilder.js';
 import { normalizeDegree } from '../../logic/utils/rotation.js';
-import { Slider, DropDown, RadioGroup, SimulationTable, WebSocketStatus } from '../CustomComponents.js'
+import { Slider, DropDown, RadioGroup, SimulationTable, WebSocketStatus, RoutePolyline } from '../CustomComponents.js'
 import { ControlPanel, SimulationDisplay, SimulationStatsModal, HouseLabelsOverlay } from '../AreaComponents.js'
 import { devTileCoordinateOverlay, devLaneDebugOverlay, devHouseDetectionZonesOverlay, devRouteBuilder } from '../../development/DevtoolComponents.js'
 import '../../assets/MainContent.css'
@@ -169,6 +169,7 @@ const toggleRouteBuilder = () => {
                 <devTileCoordinateOverlay v-if="showDevTileCoordDebug"/>
             </template>
 
+            <!-- SVG overlays -->
             <template #svg-overlays>
                 <svg 
                     class="svg-defaults"
@@ -177,25 +178,12 @@ const toggleRouteBuilder = () => {
                 >
 
                     <!-- Route polyline -->
-                    <polyline
+                    <RoutePolyline
                         v-for="car in dashboardStore.selectedCarsWithRoutes"
                         :key="`route-${car.id}`"
-                        :points="car.routeWaypoints.map(p => `${p.x},${p.y}`).join(' ')"
-                        fill="none"
+                        :waypoints="car.routeWaypoints"
                         :stroke="getColorForCarAndRoute(car.id)"
-                        stroke-width="0.01"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-dasharray="0.06 0.04"
-                        >
-                        <animate
-                            attributeName="stroke-dashoffset"
-                            from="0"
-                            to="-0.10"
-                            dur="1.8s"
-                            repeatCount="indefinite"
-                        />
-                    </polyline>
+                    />
 
                     <!-- Devtool: lane debug -->
                     <devLaneDebugOverlay v-if="showDevLaneDebug" :lanes="lanes"/>

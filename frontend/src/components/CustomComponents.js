@@ -6,3 +6,4 @@ export { default as Slider } from "./Slider.vue";
 export { default as Switch } from "./Switch.vue";
 export { default as Table } from "./Table.vue";
 export { default as WebSocketStatus } from "./WebSocketStatus.vue";
+export { default as RoutePolyline } from "./RoutePolyline.vue";
