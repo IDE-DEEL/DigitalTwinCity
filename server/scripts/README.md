@@ -14,13 +14,13 @@ scripts/
 
 De scripts zijn serverbeheer-scripts en hebben defaults voor de huidige OpenICT lab VM setup:
 
-- deployment root: `/opt/digitaltwin`, te overschrijven met `DEPLOY_ROOT`
+- deployment root: `/opt/digital-twin`, te overschrijven met `DEPLOY_ROOT`
 - Linux group voor teambeheer: `team`
 - Docker group voor beheerders: `docker`
 - Mosquitto UID: `1883`
 - PostgreSQL is alleen binnen Docker bereikbaar via de service `postgres`
 
-Als `DEPLOY_PATH` in GitHub Actions niet `/opt/digitaltwin` is, voer de scripts uit met dezelfde root:
+Als `DEPLOY_PATH` in GitHub Actions niet `/opt/digital-twin` is, voer de scripts uit met dezelfde root:
 
 ```bash
 sudo DEPLOY_ROOT=<DEPLOY_PATH> ./new-user.sh <username>
@@ -62,10 +62,12 @@ Let op: membership van de `docker` group geeft praktisch rootrechten op de host.
 Voor reguliere stackcommando's gebruik je liever de release-context:
 
 ```bash
-cd <DEPLOY_PATH>/current
+export DEPLOY_PATH="/opt/digital-twin"
+cd "$DEPLOY_PATH"
 set -a
-source ../../state/current-release.env
+. "$DEPLOY_PATH/state/current-release.env"
 set +a
+cd "$RELEASE_DIR"
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" ps
 ```
 

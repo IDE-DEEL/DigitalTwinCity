@@ -159,13 +159,15 @@ Gevolg:
 
 ## 7. Starten en status controleren
 
-Productiecommando's voer je uit vanuit `<DEPLOY_PATH>/current` nadat je de release-state hebt geladen:
+Productiecommando's voer je uit vanuit de actieve release nadat je de release-state hebt geladen:
 
 ```bash
-cd <DEPLOY_PATH>/current
+export DEPLOY_PATH="/opt/digital-twin"
+cd "$DEPLOY_PATH"
 set -a
-source ../../state/current-release.env
+. "$DEPLOY_PATH/state/current-release.env"
 set +a
+cd "$RELEASE_DIR"
 ```
 
 Start PostgreSQL plus TLS setup:
@@ -279,10 +281,12 @@ Let op: scripts in `docker-entrypoint-initdb.d` draaien alleen automatisch bij e
 Voor een bestaande deployment:
 
 ```bash
-cd <DEPLOY_PATH>/current
+export DEPLOY_PATH="/opt/digital-twin"
+cd "$DEPLOY_PATH"
 set -a
-source ../../state/current-release.env
+. "$DEPLOY_PATH/state/current-release.env"
 set +a
+cd "$RELEASE_DIR"
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec postgres bash /docker-entrypoint-initdb.d/01-create-groups.sh
 ```
 

@@ -3,7 +3,7 @@ name: digitaltwin
 services:
   # Grafana: The visualization tool for dashboards based on data from Prometheus and Loki.
   grafana:
-    image: grafana/grafana:13.1.0-25893932881
+    image: grafana/grafana:13.0.2-slim
     profiles: ["monitoring"]
     restart: unless-stopped
     environment:

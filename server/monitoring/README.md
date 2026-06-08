@@ -79,13 +79,15 @@ GF_SERVER_ROOT_URL=https://<DOMAIN>/grafana/
 
 ## 4. Compose-context
 
-In productie voer je beheercommando's uit vanuit de actieve release en source je eerst de release-state:
+In productie laad je eerst de release-state en voer je beheercommando's daarna uit vanuit de actieve release:
 
 ```bash
-cd <DEPLOY_PATH>/current
+export DEPLOY_PATH="/opt/digital-twin"
+cd "$DEPLOY_PATH"
 set -a
-source ../../state/current-release.env
+. "$DEPLOY_PATH/state/current-release.env"
 set +a
+cd "$RELEASE_DIR"
 ```
 
 Gebruik daarna steeds beide composebestanden en de app env file:
@@ -192,7 +194,7 @@ De alertnamen zijn componentgericht en zonder omgevingsspecifieke waarden gekoze
 
 ## 10. Logs
 
-Alloy verzamelt logs en schrijft ze naar Loki. Loki bewaart logs volgens `monitoring/loki/loki-config.yaml`; de huidige retention is `30d`.
+Alloy verzamelt logs en schrijft ze naar Loki. Loki bewaart logs volgens `monitoring/loki/loki-config.yaml`; de huidige retention is `14d`.
 
 Centraal verzamelde logbronnen:
 

@@ -69,7 +69,7 @@ probeert rollback als iets misgaat.
 | `deploy/remote-deploy.sh` | Remote deploy script. | Voert de echte deployment op de server uit. |
 | `deploy/shared.env.example` | Productie-env template. | Startpunt voor `<DEPLOY_PATH>/shared/.env`. |
 | `server/compose.yml` | Basis Docker Compose stack. | Draait Caddy, frontend, backend, MQTT, PostgreSQL en DuckDNS. |
-| `server/compose.monitoring.yml` | Monitoring Compose stack. | Draait Grafana, Prometheus, Loki, Alloy en exporters. |
+| `server/compose.monitoring.yml` | Monitoring Compose stack. | Draait Grafana, Prometheus, Alertmanager, Loki, Alloy en exporters via profile `monitoring`. |
 | `server/proxy/Caddyfile` | Caddy reverse proxy config. | Publiceert de applicatie via HTTPS. |
 | `server/mosquitto/` | MQTT configuratie. | Regelt MQTT listeners, ACL en WebSocket toegang. |
 | `server/postgresql/` | PostgreSQL configuratie. | Regelt databaseconfiguratie, TLS en rollen. |
@@ -89,19 +89,21 @@ Dit is wat er gebeurt als code naar `main` gaat.
 7. Als de scan goed genoeg is, pusht de workflow de image naar GHCR.
 8. De image krijgt een tag met de commit, bijvoorbeeld `sha-abc1234`.
 9. `CD Deploy` start na de succesvolle push-build op `main`.
-10. `CD Deploy` controleert of de backend- en frontendimage voor dezelfde commit
-   allebei bestaan.
+10. `CD Deploy` wacht tot de backend- en frontendbuild voor dezelfde commit
+   allebei succesvol afgerond zijn wanneer deployment nodig is.
 11. De deploy-job draait op de self-hosted runner.
 12. De runner maakt via SSH verbinding met de deployment-host.
 13. De runner maakt een release-map aan onder `<DEPLOY_PATH>/releases/`.
 14. De runner kopieert `server/`, `remote-deploy.sh` en deze README naar die
     release-map.
 15. De runner uploadt runtimewaarden zoals `BACKEND_IMAGE`, `FRONTEND_IMAGE`,
-    `GHCR_TOKEN` en `ROLLBACK_ON_FAILURE`.
+    `COMPOSE_PROFILES`, `GHCR_TOKEN`, `RELEASES_TO_KEEP` en
+    `ROLLBACK_ON_FAILURE`.
 16. Op de server start `remote-deploy.sh`.
 17. Het script controleert of Docker, Docker Compose, `curl` en
     `<DEPLOY_PATH>/shared/.env` bestaan.
-18. Het script maakt of normaliseert de Mosquitto password file.
+18. Het script maakt of normaliseert de Mosquitto password file uit
+    `<DEPLOY_PATH>/shared/mosquitto/mqtt-users.env`.
 19. Het script bewaart de huidige release als vorige release.
 20. Docker Compose trekt de nieuwe images en start de stack.
 21. Het script voert de frontend- en backend-healthchecks uit.
@@ -179,6 +181,34 @@ ze nog in `current-release.env`, `previous-release.env` of een overgebleven
 `release.env` genoemd worden. Het script verwijdert geen gedeelde base images
 zoals PostgreSQL, Caddy, Mosquitto of monitoringimages.
 
+## Release-state en defaults
+
+Elke release krijgt een `release.env`. Na een succesvolle deployment wordt die
+gekopieerd naar `<DEPLOY_PATH>/state/current-release.env`. Bij rollback gebruikt
+het script `<DEPLOY_PATH>/state/previous-release.env`.
+
+Belangrijke waarden in release-state:
+
+| Variabele | Betekenis | Default |
+| --- | --- | --- |
+| `APP_ENV_FILE` | Env file die Compose gebruikt. | `../../shared/.env` |
+| `BACKEND_IMAGE` | Immutable backend image voor deze release. | vanuit CD workflow |
+| `FRONTEND_IMAGE` | Immutable frontend image voor deze release. | vanuit CD workflow |
+| `COMPOSE_PROJECT_NAME` | Docker Compose projectnaam. | `digitaltwin`, of de vorige waarde |
+| `COMPOSE_PROFILES` | Actieve Compose profiles. | `monitoring` |
+| `DEPLOY_GROUP` | Linux group die rechten krijgt op release- en state-mappen. | primary group van de deploy user |
+| `FRONTEND_API_URL` | Optionele frontend API URL, gemapt naar `VITE_API_URL`. | leeg |
+| `HEALTHCHECK_URLS` | Komma-gescheiden healthcheck URLs. | `https://<DOMAIN>/health,https://<DOMAIN>/api/v1/health` |
+| `MOSQUITTO_PASSWORD_DIR` | Map met Mosquitto `passwd`. | `<DEPLOY_PATH>/shared/mosquitto/password` |
+| `MQTT_USERS_FILE` | Plaintext bronbestand voor MQTT users. | `<DEPLOY_PATH>/shared/mosquitto/mqtt-users.env` |
+| `RELEASES_TO_KEEP` | Aantal release-mappen dat minimaal bewaard blijft. | `5`, effectief minimaal `2` |
+| `RELEASE_DIR` | Absoluut pad naar de actieve release-map. | `<DEPLOY_PATH>/releases/<release-id>` |
+
+`remote-deploy.sh` accepteert ook `HEALTHCHECK_ATTEMPTS`,
+`HEALTHCHECK_INTERVAL_SECONDS`, `HEALTHCHECK_TIMEOUT_SECONDS` en
+`HEALTHCHECK_EXPECTED_STATUS`. Als die niet gezet zijn, gebruikt het script
+respectievelijk `12`, `10`, `5` en `200`.
+
 ## Serverstack
 
 De productieomgeving draait met Docker Compose. De composebestanden komen uit de
@@ -195,6 +225,7 @@ map `server/` en worden bij elke release naar de server gekopieerd.
 | `duckdns` | Houdt het DuckDNS-record actueel. |
 | `grafana` | Toont dashboards via `/grafana/`. |
 | `prometheus` | Verzamelt en bewaart metrics. |
+| `alertmanager` | Ontvangt Prometheus-alerts en houdt notificatierouting klaar voor later. |
 | `loki` | Bewaart logs. |
 | `alloy` | Verzamelt container-, host- en journallogs. |
 | `node-exporter` | Verzamelt hostmetrics. |
@@ -202,6 +233,11 @@ map `server/` en worden bij elke release naar de server gekopieerd.
 | `mosquitto-exporter` | Exporteert MQTT metrics. |
 | `postgres-exporter` | Exporteert PostgreSQL metrics. |
 | `blackbox-exporter` | Controleert bereikbaarheid van HTTP/TCP endpoints. |
+
+De monitoringservices staan in `compose.monitoring.yml` onder het Compose
+profile `monitoring`. De deployment zet standaard `COMPOSE_PROFILES=monitoring`,
+waardoor Grafana, Prometheus, Alertmanager, Loki, Alloy en exporters normaal
+mee starten.
 
 Publieke routes:
 
@@ -214,6 +250,12 @@ Publieke routes:
 
 PostgreSQL is niet publiek beschikbaar en staat ook niet open op de host.
 Alleen services binnen Docker verbinden met PostgreSQL via `postgres:5432`.
+MQTT is ook niet direct op de host gepubliceerd. Browserclients verbinden via
+Caddy met `wss://<DOMAIN>/mqtt`; interne containers gebruiken `mqtt:1883`.
+
+De composebestanden gebruiken gescheiden Docker-netwerken voor frontend, API,
+MQTT, Grafana, database, interne metrics en monitoring. Daardoor deelt een
+service alleen een netwerk met de containers waarmee hij echt moet praten.
 
 ## Eerste inrichting van een server
 
@@ -228,7 +270,9 @@ De server heeft minimaal nodig:
 - Docker Compose v2;
 - `curl`;
 - SSH-toegang;
-- een Linux user voor deployment.
+- een Linux user voor deployment;
+- toegang tot Docker en hostlogpaden zoals `/var/run/docker.sock`, `/var/log`
+  en `/var/log/journal` wanneer monitoring/logging actief is.
 
 Controleer Docker:
 
@@ -254,6 +298,7 @@ Voorbeeld met `/opt/digital-twin`:
 
 ```bash
 sudo mkdir -p /opt/digital-twin/releases /opt/digital-twin/shared /opt/digital-twin/state
+sudo mkdir -p /opt/digital-twin/shared/mosquitto/password
 sudo chown -R github:github /opt/digital-twin
 ```
 
@@ -352,6 +397,7 @@ Belangrijkste groepen:
 | PostgreSQL | `DT_PG_DB`, `DT_PG_ADMIN_*`, `DT_PG_DEVELOPER_*`, `DT_PG_MONITOR_*`, `DATABASE_URL` |
 | Backend auth | `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `SECRET_KEY` |
 | Browser/API | `CORS_ALLOW_ORIGINS`, `SESSION_COOKIE_*` |
+| Backend MQTT client | `MQTT_HOST`, `MQTT_PORT`, `MQTT_PATH`, `MQTT_USERNAME`, `MQTT_PASSWORD` |
 | Monitoring | `GF_SERVER_ROOT_URL`, `GRAFANA_PASSWORD` |
 
 Dit bestand hoort niet in Git. Het staat alleen op de server.
@@ -368,6 +414,18 @@ Formaat:
 
 ```text
 username=sterk-wachtwoord
+```
+
+Usernames mogen letters, cijfers, `_`, `.`, en `-` bevatten. Lege regels en
+regels die met `#` beginnen worden genegeerd. Voor deze stack moet minimaal de
+backend-user uit `.env` ook in dit bestand staan. Bijvoorbeeld:
+
+```dotenv
+backend_user=change_me_backend_password
+auto_A=change_me_auto_A_password
+auto_B=change_me_auto_B_password
+auto_C=change_me_auto_C_password
+auto_D=change_me_auto_D_password
 ```
 
 Tijdens deployment zet `remote-deploy.sh` dit automatisch om naar de gehashte
@@ -504,10 +562,12 @@ cat <DEPLOY_PATH>/state/current-release.env
 Gebruik productiecommando's vanuit de actieve release:
 
 ```bash
-cd <DEPLOY_PATH>/current
+export DEPLOY_PATH="/opt/digital-twin"
+cd "$DEPLOY_PATH"
 set -a
-source ../../state/current-release.env
+. "$DEPLOY_PATH/state/current-release.env"
 set +a
+cd "$RELEASE_DIR"
 ```
 
 Containerstatus:
@@ -522,6 +582,12 @@ Logs:
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" logs --tail=100 postgres-tls-setup postgres backend frontend caddy mqtt
 ```
 
+Monitoringlogs:
+
+```bash
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" logs --tail=100 grafana prometheus alertmanager loki alloy node-exporter cadvisor mosquitto-exporter postgres-exporter blackbox-exporter
+```
+
 Stack opnieuw starten:
 
 ```bash
@@ -534,13 +600,17 @@ Gebruik handmatige rollback alleen als automatische rollback niet gelukt is en
 je bewust naar de vorige release wilt.
 
 ```bash
-previous_env="<DEPLOY_PATH>/state/previous-release.env"
-previous_release="$(. "$previous_env"; printf '%s' "$RELEASE_DIR")"
-project_name="$(. "$previous_env"; printf '%s' "$COMPOSE_PROJECT_NAME")"
+export DEPLOY_PATH="/opt/digital-twin"
+cd "$DEPLOY_PATH"
+previous_env="$DEPLOY_PATH/state/previous-release.env"
+set -a
+. "$previous_env"
+set +a
+previous_release="$RELEASE_DIR"
 cd "$previous_release"
-docker compose --env-file ../../shared/.env -f compose.yml -f compose.monitoring.yml --project-name "$project_name" up -d --remove-orphans
-ln -sfn "$previous_release" <DEPLOY_PATH>/current
-cp "$previous_env" <DEPLOY_PATH>/state/current-release.env
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" up -d --remove-orphans
+ln -sfn "$previous_release" "$DEPLOY_PATH/current"
+cp "$previous_env" "$DEPLOY_PATH/state/current-release.env"
 ```
 
 Controleer daarna:

@@ -85,10 +85,12 @@ Alloy verzamelt deze Docker logs en stuurt ze naar Loki. Handige query in Grafan
 Productiecommando's voer je uit vanuit de actieve release:
 
 ```bash
-cd <DEPLOY_PATH>/current
+export DEPLOY_PATH="/opt/digital-twin"
+cd "$DEPLOY_PATH"
 set -a
-source ../../state/current-release.env
+. "$DEPLOY_PATH/state/current-release.env"
 set +a
+cd "$RELEASE_DIR"
 ```
 
 Config valideren:

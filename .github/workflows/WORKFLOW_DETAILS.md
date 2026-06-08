@@ -322,7 +322,8 @@ De CD workflow kopieert:
 - GHCR credentials
 - compose profile
 - deploy group
-- healthcheck defaults
+- optionele healthcheck URLs
+- release-retentie
 
 De remote command sourcet `runtime.env` en verwijdert het bestand direct voor `remote-deploy.sh` start.
 
@@ -436,8 +437,12 @@ De job toont `docker compose ps` en logs van `postgres-tls-setup`, `postgres`, `
 Controleer daarna op de server:
 
 ```bash
-cd <DEPLOY_PATH>/current
-project_name="$(. ../../state/current-release.env; printf '%s' "$COMPOSE_PROJECT_NAME")"
-docker compose --env-file ../../shared/.env -f compose.yml -f compose.monitoring.yml --project-name "$project_name" ps
-docker compose --env-file ../../shared/.env -f compose.yml -f compose.monitoring.yml --project-name "$project_name" logs --tail=100 postgres-tls-setup postgres backend frontend caddy
+export DEPLOY_PATH="/opt/digital-twin"
+cd "$DEPLOY_PATH"
+set -a
+. "$DEPLOY_PATH/state/current-release.env"
+set +a
+cd "$RELEASE_DIR"
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" ps
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" logs --tail=100 postgres-tls-setup postgres backend frontend caddy
 ```

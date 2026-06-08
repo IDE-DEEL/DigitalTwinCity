@@ -99,18 +99,17 @@ Huidige regels:
 | Gebruiker | Rechten |
 |---|---|
 | `backend_user` | `topic readwrite car/#` |
-| `auto_A` | `topic readwrite car/auto_A/#` |
-| `auto_B` | `topic readwrite car/auto_B/#` |
-| `auto_C` | `topic readwrite car/auto_C/#` |
-| `auto_D` | `topic readwrite car/auto_D/#` |
+| `auto_A` t/m `auto_Z` | `topic readwrite car/<username>/#` |
 
 Pas `acl/clients.acl` aan wanneer de topicstructuur wijzigt. Herstart daarna de broker vanuit de actieve release:
 
 ```bash
-cd <DEPLOY_PATH>/current
+export DEPLOY_PATH="/opt/digital-twin"
+cd "$DEPLOY_PATH"
 set -a
-source ../../state/current-release.env
+. "$DEPLOY_PATH/state/current-release.env"
 set +a
+cd "$RELEASE_DIR"
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" restart mqtt
 ```
 
@@ -183,10 +182,12 @@ Let op: gebruik `-c` alleen wanneer je de password file bewust opnieuw wilt make
 Herstart na wijzigingen:
 
 ```bash
-cd <DEPLOY_PATH>/current
+export DEPLOY_PATH="/opt/digital-twin"
+cd "$DEPLOY_PATH"
 set -a
-source ../../state/current-release.env
+. "$DEPLOY_PATH/state/current-release.env"
 set +a
+cd "$RELEASE_DIR"
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" restart mqtt
 ```
 
@@ -241,13 +242,15 @@ Handige LogQL query in Grafana Explore:
 
 ## 8. Beheercommando's
 
-Productiecommando's voer je uit vanuit `<DEPLOY_PATH>/current` nadat je de release-state hebt geladen:
+Productiecommando's voer je uit vanuit de actieve release nadat je de release-state hebt geladen:
 
 ```bash
-cd <DEPLOY_PATH>/current
+export DEPLOY_PATH="/opt/digital-twin"
+cd "$DEPLOY_PATH"
 set -a
-source ../../state/current-release.env
+. "$DEPLOY_PATH/state/current-release.env"
 set +a
+cd "$RELEASE_DIR"
 ```
 
 Start of herstart alleen Mosquitto:
