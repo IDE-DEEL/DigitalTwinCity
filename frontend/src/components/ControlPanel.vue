@@ -52,7 +52,7 @@ const formattedTime = computed(() => {
     <div class="parameter-container">
       <!-- Slot voor de bovenste parameters -->
       <slot name="parameters">
-        <Slider class="slider-area" name="Auto snelheid" type="speed" v-model="store.speed"></Slider>
+        <Slider class="slider-area" name="Auto snelheid" type="speed" v-model="store.speed" min=0 max=100></Slider>
         <DropDown class="scenario-area" name="Scenario's" type="scenario" :list="store.scenarios" v-model="store.chosen_scenario"></DropDown>
       </slot>
     </div>
@@ -63,7 +63,6 @@ const formattedTime = computed(() => {
       <div class="state">
         <!-- Slot voor de simulatie controls (slider + buttons) -->
         <slot name="simulation-controls">
-          <Slider class="slider-area" name="Simulatie snelheid" v-model="store.sim_speed"></Slider>
           <div class="button-area">
             <button @click="start">Start</button>
             <button @click="stop">Stop</button>

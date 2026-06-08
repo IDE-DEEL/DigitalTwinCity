@@ -1,6 +1,5 @@
 button {
-    width: 80px;
-    height: 42px;
+    padding: 10px;
     background-color: var(--color-primary-blue);
     place-items: center;
     color: white;

@@ -23,10 +23,11 @@ export const store = reactive({
   // De gedeelde data
 
   table_data: [
-    {"auto_id": "Auto 1", "pakketje": 2, "route": "Route 1", "visueel": true},
-    {"auto_id": "Auto 2", "pakketje": 4, "route": "Route 3", "visueel": false},
-    {"auto_id": "Auto 3", "pakketje": 1, "route": "Route 2", "visueel": true},
-    {"auto_id": "Auto 4", "pakketje": 2, "route": "Route 1", "visueel": false}
+    {"status": true, "auto_id": "Auto A", "energie": 100, "pakketje": 2, "route": "Route 1", "visueel": true},
+    {"status": true, "auto_id": "Auto B", "energie": 100, "pakketje": 4, "route": "Route 3", "visueel": false},
+    {"status": true, "auto_id": "Auto C", "energie": 100, "pakketje": 1, "route": "Route 2", "visueel": true},
+    {"status": true, "auto_id": "Auto D", "energie": 100, "pakketje": 2, "route": "Route 1", "visueel": false},
+    {"status": true, "auto_id": "Auto E", "energie": 100, "pakketje": 2, "route": "Route 1", "visueel": false}
   ],
 
   car_data: [
@@ -64,17 +65,19 @@ export const store = reactive({
 
     //Tile 2
     {"tag_id": "1B", "tag_pos": {"x": 440, "y": 150}},
-    {"tag_id": "2B", "tag_pos": {"x": 550, "y": 40}},
-    {"tag_id": "3B", "tag_pos": {"x": 650, "y": 40}},
-    {"tag_id": "4B", "tag_pos": {"x": 760, "y": 150}},
-    {"tag_id": "5B", "tag_pos": {"x": 760, "y": 250}},
-    /*{"tag_id": "6B", "tag_pos": {"x": 0, "y": 0}},
-    {"tag_id": "7B", "tag_pos": {"x": 0, "y": 0}},
-    {"tag_id": "8B", "tag_pos": {"x": 0, "y": 0}},*/
+    {"tag_id": "2B", "tag_pos": {"x": 515, "y": 119}},
+    {"tag_id": "3B", "tag_pos": {"x": 550, "y": 40}},
+    
+    {"tag_id": "4B", "tag_pos": {"x": 650, "y": 40}},
+    {"tag_id": "5B", "tag_pos": {"x": 685, "y": 119}},
+    {"tag_id": "6B", "tag_pos": {"x": 760, "y": 150}},
+    
+    {"tag_id": "7B", "tag_pos": {"x": 760, "y": 250}},
+    {"tag_id": "8B", "tag_pos": {"x": 685, "y": 290}},
     {"tag_id": "9B", "tag_pos": {"x": 650, "y": 360}},
     
     {"tag_id": "10B", "tag_pos": {"x": 440, "y": 259}},
-    //{"tag_id": "11B", "tag_pos": {"x": 0, "y": 0}},
+    {"tag_id": "11B", "tag_pos": {"x": 515, "y": 290}},
     {"tag_id": "12B", "tag_pos": {"x": 550, "y": 360}},
 
     //Tile 3
@@ -129,8 +132,8 @@ export const store = reactive({
   ],
 
     routes: [
-    {"route": "Route 1", "tags": ["1A", "2A", "3A", "4A", "1B", "2B", "3B"]},
-    {"route": "Route 2", "tags": []},
+    {"route": "Route 1", "tags": ["1A", "2A", "3A", "4A", "1B", "2B", "5B", "8B", "9B", "1D", "2D", "3D", "4D", "1F", "2F", "3F", "4F"], "color": ""},
+    {"route": "Route 2", "tags": ["5A", "6A", "7A", "10B", "11B", "12B", "5D"]},
     {"route": "Route 3", "tags": []}
   ],
 

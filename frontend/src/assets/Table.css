@@ -12,6 +12,7 @@
     background-color: var(--color-table-gray1);
     text-align: center;
     border: none;
+    padding: 12px;
 }
 
 table {
@@ -20,47 +21,44 @@ table {
 
 tr {
     line-height: 16px;
+    font-size: 18px;
+}
+
+td {
+    padding: 8px;
 }
 
 tbody:nth-child(even) {
     background-color: var(--color-table-gray2);
 }
 
+.visualize {
+    width: 100px;
+    height: 40px;
+    background-color: var(--color-primary-blue);
+    place-items: center;
+    color: white;
+    border: 1px groove gray;
+    border-radius: 4px;
+    font-size: 20px;
+    cursor: pointer;
+}
+
 .circle {
     appearance: none;
     -webkit-appearance: none;
     display: inline-grid;
-    width: 12px;
-    height: 12px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
-    cursor: pointer;
     transition: background-color 0.2s ease, border-color 0.2s ease;
     background-color: var(--color-primary-red);
 }
 
-.circle:checked {
+.circle.is-active {
     background-color: var(--color-primary-green);
 }
 
 .package-input {
     text-align: center;
-}
-
-.add-car {
-    width: 48px;
-    height: 24px;
-    position: relative;
-    font-size: 14px;
-    font-weight: bold;
-    border-color: black;
-    background-color: var(--color-table-gray1);
-}
-
-.remove-car {
-    width: 20px;
-    height: 20px;
-    position: relative;
-    font-size: 10px;
-    font-weight: bold;
-    background-color: #e80202;
 }

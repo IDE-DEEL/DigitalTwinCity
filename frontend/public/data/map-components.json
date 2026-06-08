@@ -2,27 +2,27 @@
   {
     "id": "straight",
     "label": "straight line",
-    "imagePath": "/assets/straight.png"
+    "imagePath": "/assets/board/straight.png"
   },
   {
     "id": "curve",
     "label": "curve",
-    "imagePath": "/assets/curve.png"
+    "imagePath": "/assets/board/curve.png"
   },
   {
     "id": "t_split",
     "label": "t split",
-    "imagePath": "/assets/t_split.png"
+    "imagePath": "/assets/board/t_split.png"
   },
   {
     "id": "cross_split",
     "label": "cross split",
-    "imagePath": "/assets/cross_split.png"
+    "imagePath": "/assets/board/cross_split.png"
   },
   {
     "id": "roundabout",
     "label": "roundabout",
-    "imagePath": "/assets/roundabout.png"
+    "imagePath": "/assets/board/roundabout.png"
   },
   {
     "id": "depot",

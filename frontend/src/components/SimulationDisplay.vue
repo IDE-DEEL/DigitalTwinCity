@@ -14,7 +14,7 @@ const componentDefinitions = ref({});
 const isLoading = ref(true);
 // const mapGrid = ref(null); 
 const factor_x = ref(0)
-const MAX_MAP_SCALE = 70;
+const MAX_MAP_SCALE = 90;
 const MIN_CAR_MOVE_MS = 300;
 const MIN_ROUTE_SPEED = 10;
 const MAX_ROUTE_SPEED = 100;
@@ -486,53 +486,35 @@ const generatePath = ((route_name) => {
   }
 
   if (positions.length === 0) return ''
-  if (positions.length === 1) return `M ${positions[0].x} ${positions[0].y}`
+  if (positions.length === 1) return `M ${positions[0].x.toFixed(2)} ${positions[0].y.toFixed(2)}`
 
+  // 3. Start path at the first tag
   let path = `M ${positions[0].x.toFixed(2)} ${positions[0].y.toFixed(2)}`
-  const tension = 0.35 // Restored natural corner curvature
 
+  // 4. Generate the path using Midpoint Quadratic Splines
   for (let i = 0; i < positions.length - 1; i++) {
-    const p0 = positions[i - 1] || positions[i]
-    const p1 = positions[i]
-    const p2 = positions[i + 1]
-    const p3 = positions[i + 2] || p2
+    const current = positions[i]
+    const next = positions[i + 1]
+    
+    // Calculate the midpoint between the current tag and the next tag
+    const midX = (current.x + next.x) / 2
+    const midY = (current.y + next.y) / 2
 
-    // 1. Calculate angles of the heading vectors
-    const angleLeft = Math.atan2(p1.y - p0.y, p1.x - p0.x)
-    const angleCurrent = Math.atan2(p2.y - p1.y, p2.x - p1.x)
-    const angleRight = Math.atan2(p3.y - p2.y, p3.x - p2.x)
-
-    // 2. Measure heading deviations (in radians)
-    const diffLeft = Math.abs(Math.atan2(Math.sin(angleCurrent - angleLeft), Math.cos(angleCurrent - angleLeft)))
-    const diffRight = Math.abs(Math.atan2(Math.sin(angleRight - angleCurrent), Math.cos(angleRight - angleCurrent)))
-
-    // 3. Higher threshold (approx 25 degrees) to catch imperfectly aligned tags 
-    // on the top, left, and bottom sides of your factory map loop
-    const angleThreshold = 0.45 
-
-    const isLeftStraight = diffLeft < angleThreshold
-    const isRightStraight = diffRight < angleThreshold
-
-    // 4. Force control points flat if heading isn't turning
-    const t1 = isLeftStraight ? 0 : tension
-    const t2 = isRightStraight ? 0 : tension
-
-    // 5. Generate pristine control points
-    const cp1x = p1.x + (p2.x - p0.x) * t1
-    const cp1y = p1.y + (p2.y - p0.y) * t1
-    const cp2x = p2.x - (p3.x - p1.x) * t2
-    const cp2y = p2.y - (p3.y - p1.y) * t2
-
-    if (isLeftStraight && isRightStraight) {
-      // Clean, unwarped straight track segment
-      path += ` L ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`
+    if (i === 0) {
+      // First segment: draw a straight line from start to the first midpoint
+      path += ` L ${midX.toFixed(2)} ${midY.toFixed(2)}`
     } else {
-      // Fluid turn transitioning smoothly into a straight section
-      path += ` C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)}, ${cp2x.toFixed(2)} ${cp2y.toFixed(2)}, ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`
+      // Middle segments: use the previous tag as a control point, 
+      // curving smoothly through the midpoints.
+      path += ` Q ${current.x.toFixed(2)} ${current.y.toFixed(2)}, ${midX.toFixed(2)} ${midY.toFixed(2)}`
     }
   }
 
-  return path + "Z";
+  // 5. Final segment: draw a straight line from the last midpoint to the final tag
+  const lastPos = positions[positions.length - 1]
+  path += ` L ${lastPos.x.toFixed(2)} ${lastPos.y.toFixed(2)}`
+
+  return path
 })
 </script>
 
