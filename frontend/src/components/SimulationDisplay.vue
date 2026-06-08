@@ -4,7 +4,7 @@ import { fetchMapData } from '../logic/service/mapService.js';
 import { buildLane } from '../logic/service/laneBuilder.js';
 import { normalizeDegree } from '../logic/utils/rotation.js';
 const factor_y = ref(0)
-const MAP_DIMENSION = 3
+const MAP_DIMENSION = 7
 import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
 import { normalizeTagId, store } from '../store.js'
 import '../assets/Display.css';
@@ -541,15 +541,15 @@ const generatePath = ((route_name) => {
                 </div>
             </div>
 
-            <!-- RIFD Tags -->
+            <!-- RIFD Tags --
             <svg
             v-for="tag in store.tag_positions"
             :key="tag.tag_id"
             class="absolute inset-0 w-full h-full pointer-events-none">
                 <circle :cx="tag.tag_pos.x * factor_x" :cy="tag.tag_pos.y * factor_y" r="7" fill="black"></circle>
-            </svg>
+            </svg>-->
 
-            <!-- Routes -->
+            <!-- Routes --
             <svg class="absolute inset-0 pointer-events-none"
             width=${MAP_DIMENSION} height=${MAP_DIMENSION}
             v-for="car in store.table_data.filter(c => c.visueel === true)">
@@ -559,7 +559,7 @@ const generatePath = ((route_name) => {
                     stroke="#F54242"
                     stroke-width="4" />
 
-            </svg>
+            </svg>-->
 
             <!-- Auto -->
             <div
