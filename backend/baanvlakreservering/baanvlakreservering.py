@@ -21,6 +21,14 @@ PUB_TOPIC_MOVE = "car/auto_B/cmd/Start"
 # Chosen route from the front end. Currently is a placeholder.
 chosen_route = "route_1"
 
+# The cars last scanned tag. This is for later use so we can check the adjacency.
+cars = {
+    "auto_A": "",
+    "auto_B": ""
+}
+
+car_stopped = []
+
 # The specific directions to send to the robot.
 Direction = {
     "LEFT": 0,
@@ -63,9 +71,12 @@ Tags = {
     "tag 9": ["adjacent tag", "adjacent tag", "adjacent tag"],
     "tag 10": ["adjacent tag", "adjacent tag", "adjacent tag"],
     "tag 11": ["adjacent tag", "adjacent tag", "adjacent tag"]
-
-}# Stores the latest vehicle RFID data
+}
+# Stores the latest vehicle RFID data
 car_data = []
+
+# any car that has been stopped and the car it has been stopped by with the tag.
+stopped_cars = []
 
 # Registered listeners that should be notified whenever
 # new vehicle data is received
@@ -92,6 +103,10 @@ def notify_car_data_listeners():
 
 # Global flag controlling whether the vehicle is allowed to move
 start = True
+
+# Reset route index
+index = 0
+
 # ---------------- CALLBACKS ----------------
 def on_connect(client, userdata, flags, reason_code, properties):
     if reason_code == 0:
@@ -109,16 +124,14 @@ def on_message(client, userdata, msg):
     # Extract vehicle identifier from MQTT topic
     topic = msg.topic.decode().strip().split("/")
 
-    global auto_B
-    global car_data
     global index
+    global car_data
 
-    # Store latest RFID scan
-    auto_B = rfid
+    # Store latest RFID scan attatched to a car
+    cars[topic[1]] = rfid
     # Update vehicle status information
     car_data = [{"auto_id": topic[1], "tag_id": rfid}]
-    # Reset route index
-    index = 0
+
 
     # Notify listeners about updated RFID information
     notify_car_data_listeners()
@@ -127,6 +140,17 @@ def on_message(client, userdata, msg):
     if start:
         # Ensure vehicle is moving
         client.publish(f"car/{topic[1]}/cmd/Start", "True")
+
+        # stops the car if there is any other car in the adjacent tags
+        if cars in Tags[rfid]:
+            client.publish(f"car/{topic[1]}/cmd/Start", "False")
+            car_stopped.append([topic[1], "cause car", "cause car tag"])
+
+
+        if len(car_stopped) != 0:
+            for i in car_stopped:
+                if cars[i[1]] != i[2]:
+                    client.publish(f"car/{i[0]}/cmd/Start", "True")
 
         # Check whether the scanned RFID matches
         # the current route waypoint
@@ -216,10 +240,9 @@ def stop_mqtt_client():
 
 # Standalone execution mode.
 # Creates the MQTT client and blocks forever while
-# listening for RFID scans.
+# =listening for RFID scans.
 if __name__ == "__main__":
     client = create_client()
     client.connect(MQTT_HOST, MQTT_PORT)
     print("Waiting for RFID scans...")
     client.loop_forever()
-
