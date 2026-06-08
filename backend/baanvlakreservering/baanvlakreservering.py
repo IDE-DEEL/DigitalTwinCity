@@ -142,15 +142,17 @@ def on_message(client, userdata, msg):
         client.publish(f"car/{topic[1]}/cmd/Start", "True")
 
         # stops the car if there is any other car in the adjacent tags.
-        if cars in Tags[rfid]:
-            client.publish(f"car/{topic[1]}/cmd/Start", "False")
-            car_stopped.append([topic[1], "cause car", "cause car tag"])
+        for i in cars:
+            if cars[i] in Tags[rfid]:
+                client.publish(f"car/{topic[1]}/cmd/Start", "False")
+                car_stopped.append([topic[1], i, cars[i]])
 
         # checks if the car that made the other stop, has moved from their tag and starts the stopped car in that case.
         if len(car_stopped) != 0:
             for i in car_stopped:
                 if cars[i[1]] != i[2]:
                     client.publish(f"car/{i[0]}/cmd/Start", "True")
+                    car_stopped.remove(i)
 
         # Check whether the scanned RFID matches
         # the current route waypoint
@@ -172,6 +174,7 @@ def on_message(client, userdata, msg):
     elif not start:
         # Emergency stop / manual stop mode
         client.publish(f"car/{topic[1]}/cmd/Start", "False")
+
 
 # Creates and configures an MQTT client using secure
 # WebSocket transport.
