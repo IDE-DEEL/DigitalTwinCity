@@ -138,15 +138,15 @@ def on_message(client, userdata, msg):
 
     # ----- DECISION LOGIC -----
     if start:
-        # Ensure vehicle is moving
+        # Ensure vehicle is moving.
         client.publish(f"car/{topic[1]}/cmd/Start", "True")
 
-        # stops the car if there is any other car in the adjacent tags
+        # stops the car if there is any other car in the adjacent tags.
         if cars in Tags[rfid]:
             client.publish(f"car/{topic[1]}/cmd/Start", "False")
             car_stopped.append([topic[1], "cause car", "cause car tag"])
 
-
+        # checks if the car that made the other stop, has moved from their tag and starts the stopped car in that case.
         if len(car_stopped) != 0:
             for i in car_stopped:
                 if cars[i[1]] != i[2]:
@@ -165,32 +165,13 @@ def on_message(client, userdata, msg):
             # Advance to next route step
             index += 1
 
-            # Loop back to start when route completes
+            # Loop back to start when route completes.
             if len(route[chosen_route]) == index:
                 index = 0
 
     elif not start:
         # Emergency stop / manual stop mode
         client.publish(f"car/{topic[1]}/cmd/Start", "False")
-
-
-
-# index for the loop
-# index = 0
-#
-#     # check to make sure that cars arent on the same track position.
-#     if auto_1 == auto_2 or auto_2 == auto_1:
-#         # send stop to car
-#         time.sleep(1)  # for specific car
-#
-#     # check to see if the car is at the destination tag and sends new command.
-#     if auto_1 == route_1[index][1] or auto_2 == route_1[index][1]:
-#         if Tags[auto_1][1] == auto_2 or Tags[auto_1][2] == auto_2:
-#             time.sleep(1)
-#         client.publish(TOPIC, route_1[index][0])
-#         print("Sent:", route_1[index][0])
-#         index += 1
-
 
 # Creates and configures an MQTT client using secure
 # WebSocket transport.
