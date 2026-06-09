@@ -5,7 +5,7 @@ import { buildLane } from '../logic/service/laneBuilder.js';
 import { normalizeDegree } from '../logic/utils/rotation.js';
 import { useMapStore } from '../stores/mapStore.js';
 const factor_y = ref(0)
-const MAP_DIMENSION = 2
+const MAP_DIMENSION = 3
 import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
 import { normalizeTagId, store } from '../store.js'
 import '../assets/Display.css';
@@ -16,7 +16,7 @@ const componentDefinitions = ref({});
 const isLoading = ref(true);
 // const mapGrid = ref(null); 
 const factor_x = ref(0)
-const MAX_MAP_SCALE = 70;
+const MAX_MAP_SCALE = 90;
 const MIN_CAR_MOVE_MS = 300;
 const MIN_ROUTE_SPEED = 10;
 const MAX_ROUTE_SPEED = 100;
@@ -195,8 +195,8 @@ const getMoveDuration = (carId, from, to) => {
 
 // Update factor to scale the x and y coordinates of a tag or car
 const updateFactor = (event) => {
-  factor_x.value = event.target.clientWidth / 57.5
-  factor_y.value = event.target.clientHeight / 57.5
+  factor_x.value = (event.target.clientWidth / 400)
+  factor_y.value = (event.target.clientHeight / 400)
 }
 
 const getMotionPosition = (motion, now) => {
@@ -477,65 +477,76 @@ const generatePath = ((route_name) => {
    // Collect and scale all tag positions
   for (let i = 0; i < tags.length; i++) {
     for (let j = 0; j < store.tag_positions.length; j++) {
-      // Added .trim() to handle hidden zero-width spaces in your data
-      if (tags[i].tag_id.trim() === store.tag_positions[j].tag_id.trim()) {
-        positions.push({
-          x: store.tag_positions[j].tag_pos.x * factor_x.value,
-          y: store.tag_positions[j].tag_pos.y * factor_y.value
-        })
-        break;
+        if (tags[i] === store.tag_positions[j].tag_id) {
+          positions.push({
+            x: store.tag_positions[j].tag_pos.x * factor_x.value,
+            y: store.tag_positions[j].tag_pos.y * factor_y.value
+          })
+          break;
       }
-    }
+      }
   }
 
   if (positions.length === 0) return ''
-  if (positions.length === 1) return `M ${positions[0].x} ${positions[0].y}`
+  if (positions.length === 1) return `M ${positions[0].x.toFixed(2)} ${positions[0].y.toFixed(2)}`
 
   let path = `M ${positions[0].x.toFixed(2)} ${positions[0].y.toFixed(2)}`
-  const tension = 0.35 // Restored natural corner curvature
+  const k = 0.2; 
 
   for (let i = 0; i < positions.length - 1; i++) {
-    const p0 = positions[i - 1] || positions[i]
-    const p1 = positions[i]
-    const p2 = positions[i + 1]
-    const p3 = positions[i + 2] || p2
+    const p1 = positions[i];
+    const p2 = positions[i + 1];
 
-    // 1. Calculate angles of the heading vectors
-    const angleLeft = Math.atan2(p1.y - p0.y, p1.x - p0.x)
-    const angleCurrent = Math.atan2(p2.y - p1.y, p2.x - p1.x)
-    const angleRight = Math.atan2(p3.y - p2.y, p3.x - p2.x)
+    // Controleer of de punten exact verticaal of horizontaal op één lijn liggen
+    // We gebruiken een kleine marge (0.5 pixel) voor het geval dat er afrondingsverschillen zijn
+    const isStraightHorizontal = Math.abs(p1.y - p2.y) < 0.5;
+    const isStraightVertical = Math.abs(p1.x - p2.x) < 0.5;
 
-    // 2. Measure heading deviations (in radians)
-    const diffLeft = Math.abs(Math.atan2(Math.sin(angleCurrent - angleLeft), Math.cos(angleCurrent - angleLeft)))
-    const diffRight = Math.abs(Math.atan2(Math.sin(angleRight - angleCurrent), Math.cos(angleRight - angleCurrent)))
-
-    // 3. Higher threshold (approx 25 degrees) to catch imperfectly aligned tags 
-    // on the top, left, and bottom sides of your factory map loop
-    const angleThreshold = 0.45 
-
-    const isLeftStraight = diffLeft < angleThreshold
-    const isRightStraight = diffRight < angleThreshold
-
-    // 4. Force control points flat if heading isn't turning
-    const t1 = isLeftStraight ? 0 : tension
-    const t2 = isRightStraight ? 0 : tension
-
-    // 5. Generate pristine control points
-    const cp1x = p1.x + (p2.x - p0.x) * t1
-    const cp1y = p1.y + (p2.y - p0.y) * t1
-    const cp2x = p2.x - (p3.x - p1.x) * t2
-    const cp2y = p2.y - (p3.y - p1.y) * t2
-
-    if (isLeftStraight && isRightStraight) {
-      // Clean, unwarped straight track segment
-      path += ` L ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`
+    if (isStraightHorizontal || isStraightVertical) {
+      // Als het een recht stuk is, dwingen we een KAARSRECHTE lijn af!
+      path += ` L ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`;
     } else {
-      // Fluid turn transitioning smoothly into a straight section
-      path += ` C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)}, ${cp2x.toFixed(2)} ${cp2y.toFixed(2)}, ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`
+      // Alleen als de lijn écht de hoek om moet, berekenen we een vloeiende bocht
+      let cp1x, cp1y, cp2x, cp2y;
+
+      // Stuurpunt 1
+      if (i === 0) {
+        cp1x = p1.x + (p2.x - p1.x) * k;
+        cp1y = p1.y + (p2.y - p1.y) * k;
+      } else {
+        const p0 = positions[i - 1];
+        cp1x = p1.x + (p2.x - p0.x) * k;
+        cp1y = p1.y + (p2.y - p0.y) * k;
+      }
+
+      // Stuurpunt 2
+      if (i === positions.length - 2) {
+        cp2x = p2.x - (p2.x - p1.x) * k;
+        cp2y = p2.y - (p2.y - p1.y) * k;
+      } else {
+        const p3 = positions[i + 2];
+        cp2x = p2.x - (p3.x - p1.x) * k;
+        cp2y = p2.y - (p3.y - p1.y) * k;
+      }
+
+      path += ` C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)}, ${cp2x.toFixed(2)} ${cp2y.toFixed(2)}, ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`;
     }
   }
 
-  return path + "Z";
+  return path;
+})
+
+const getRouteColor = ((carRouteName) => {
+  const foundRoute = store.routes.find(r => r.route === carRouteName);
+  if (foundRoute && foundRoute.color) {
+    return foundRoute.color;
+  }
+  
+  return "#ccc";
+})
+
+const selectTag = ((tag) => {
+  store.chosen_tag = tag
 })
 </script>
 
@@ -564,13 +575,25 @@ const generatePath = ((route_name) => {
                 <slot name="map-grid-overlays"></slot>
             </div>
 
-            <!-- RIFD Tags -->
-            <svg
-            v-for="tag in store.tag_positions"
-            :key="tag.tag_id"
-            class="absolute inset-0 w-full h-full pointer-events-none">
-                <circle :cx="tag.tag_pos.x * factor_x" :cy="tag.tag_pos.y * factor_y" r="8" fill="black"></circle>
-            </svg>
+            <!-- RFID Tags Container -->
+            <div 
+              v-if="store.show_tags" 
+            >
+              <div
+                v-for="tag in store.tag_positions"
+                :key="tag.tag_id"
+                class="absolute cursor-pointer rounded-full bg-black flex items-center justify-center"
+                :style="{
+                  left: (tag.tag_pos.x * factor_x) + 'px',
+                  top: (tag.tag_pos.y * factor_y) + 'px',
+                  width: '14px',
+                  height: '14px',
+                  transform: 'translate(-50%, -50%)'
+                }"
+                @click="selectTag(tag)"
+              >
+              </div>
+            </div>
 
             <!-- Routes -->
             <svg class="absolute inset-0 pointer-events-none"
@@ -579,7 +602,7 @@ const generatePath = ((route_name) => {
                 <path
                     :d="generatePath(car.route)"
                     fill="none"
-                    stroke="#F54242"
+                    :stroke="getRouteColor(car.route)"
                     stroke-width="4" />
 
             </svg>

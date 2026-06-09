@@ -54,7 +54,7 @@ const formattedTime = computed(() => {
     <div class="parameter-container">
       <!-- Slot voor de bovenste parameters -->
       <slot name="parameters">
-        <Slider class="slider-area" name="Auto snelheid" type="speed" v-model="store.speed"></Slider>
+        <Slider class="slider-area" name="Auto snelheid" type="speed" v-model="store.speed" min=0 max=100></Slider>
         <DropDown class="scenario-area" name="Scenario's" type="scenario" :list="store.scenarios" v-model="store.chosen_scenario"></DropDown>
       </slot>
     </div>
@@ -68,17 +68,23 @@ const formattedTime = computed(() => {
       <div class="state">
         <!-- Slot voor de simulatie controls (slider + buttons) -->
         <slot name="simulation-controls">
-          <Slider class="slider-area" name="Simulatie snelheid" v-model="store.sim_speed"></Slider>
-          <div class="button-area">
-            <button @click="start">Start</button>
-            <button @click="stop">Stop</button>
+          <div class="timer-area">
+            <!-- Deze nieuwe div houdt de twee knoppen netjes naast elkaar -->
+            <div class="timer-button-row">
+              <button class="timer-button" @click="start">Start</button>
+              <button class="timer-button" @click="stop">Stop</button>
+            </div>
+            <!-- De tijd komt hier nu automatisch strak onder te staan -->
+            <p>Tijd: {{ formattedTime }}</p>
+          </div>
+
+          <div class="score-area">
+            <p>Score 1: 100</p>
+            <p>Score 2: 200</p>
+            <p>Score 3: 55</p>
+            <p>Totale Score: {{ store.score }}</p>
           </div>
         </slot>
-      </div>
-    
-      <div class="block text-sm font-semibold mb-1 stats-box" style="font-variant-numeric: tabular-nums;">
-        <p>Score: {{ store.score }}</p>
-        <p>Tijd: {{ formattedTime }}</p>
       </div>
     </div>
   </aside>

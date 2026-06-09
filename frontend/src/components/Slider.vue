@@ -4,7 +4,7 @@ import { send_data } from '../store.js'
 import '../assets/Slider.css';
 
 const model = defineModel({ type: Number, default: 0 });
-const props = defineProps({ name: String, type: String });
+const props = defineProps({ name: String, type: String, min: Number, max: Number });
 
 watch(model, () => {
   send_data(props.type, model.value)
@@ -24,8 +24,8 @@ watch(model, () => {
         
         <input 
           type="range" 
-          min="0" 
-          max="100" 
+          min=min 
+          max=max
           class="custom-slider" 
           v-model.number="model"
         />

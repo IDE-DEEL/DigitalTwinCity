@@ -2,31 +2,192 @@
   {
     "id": "straight",
     "label": "straight line",
-    "imagePath": "/assets/straight.png"
+    "imagePath": "/assets/board/straight/straight.png"
   },
+  {
+    "id": "straight1",
+    "label": "straight line1",
+    "imagePath": "/assets/board/straight/straight1.png"
+  },
+  {
+    "id": "straight2",
+    "label": "straight line2",
+    "imagePath": "/assets/board/straight/straight2.png"
+  },
+  {
+    "id": "straight3",
+    "label": "straight line3",
+    "imagePath": "/assets/board/straight/straight3.png"
+  },
+  {
+    "id": "straight4",
+    "label": "straight line4",
+    "imagePath": "/assets/board/straight/straight4.png"
+  },
+  {
+    "id": "straight5",
+    "label": "straight line5",
+    "imagePath": "/assets/board/straight/straight5.png"
+  },
+  {
+    "id": "straight6",
+    "label": "straight line6",
+    "imagePath": "/assets/board/straight/straight6.png"
+  },
+  {
+    "id": "straight7",
+    "label": "straight line7",
+    "imagePath": "/assets/board/straight/straight7.png"
+  },
+  {
+    "id": "straight8",
+    "label": "straight line8",
+    "imagePath": "/assets/board/straight/straight8.png"
+  },
+  {
+    "id": "straight9",
+    "label": "straight line9",
+    "imagePath": "/assets/board/straight/straight9.png"
+  },
+  {
+    "id": "straight10",
+    "label": "straight line10",
+    "imagePath": "/assets/board/straight/straight10.png"
+  },
+  {
+    "id": "straight11",
+    "label": "straight line11",
+    "imagePath": "/assets/board/straight/straight11.png"
+  },
+  {
+    "id": "straight12",
+    "label": "straight line12",
+    "imagePath": "/assets/board/straight/straight12.png"
+  },
+  
   {
     "id": "curve",
     "label": "curve",
-    "imagePath": "/assets/curve.png"
+    "imagePath": "/assets/board/curve/curve.png"
   },
+  {
+    "id": "curve1",
+    "label": "curve1",
+    "imagePath": "/assets/board/curve/curve1.png"
+  },
+  {
+    "id": "curve2",
+    "label": "curve2",
+    "imagePath": "/assets/board/curve/curve2.png"
+  },
+  {
+    "id": "curve3",
+    "label": "curve3",
+    "imagePath": "/assets/board/curve/curve3.png"
+  },
+  {
+    "id": "curve4",
+    "label": "curve4",
+    "imagePath": "/assets/board/curve/curve4.png"
+  },
+  {
+    "id": "curve5",
+    "label": "curve5",
+    "imagePath": "/assets/board/curve/curve5.png"
+  },
+  {
+    "id": "curve6",
+    "label": "curve6",
+    "imagePath": "/assets/board/curve/curve6.png"
+  },
+  
   {
     "id": "t_split",
     "label": "t split",
-    "imagePath": "/assets/t_split.png"
+    "imagePath": "/assets/board/t_split/t_split.png"
   },
+  {
+    "id": "t_split1",
+    "label": "t split1",
+    "imagePath": "/assets/board/t_split/t_split1.png"
+  },
+  {
+    "id": "t_split2",
+    "label": "t split2",
+    "imagePath": "/assets/board/t_split/t_split2.png"
+  },
+  {
+    "id": "t_split3",
+    "label": "t split3",
+    "imagePath": "/assets/board/t_split/t_split3.png"
+  },
+  {
+    "id": "t_split4",
+    "label": "t split4",
+    "imagePath": "/assets/board/t_split/t_split4.png"
+  },
+  {
+    "id": "t_split5",
+    "label": "t split5",
+    "imagePath": "/assets/board/t_split/t_split5.png"
+  },
+  {
+    "id": "t_split6",
+    "label": "t split6",
+    "imagePath": "/assets/board/t_split/t_split6.png"
+  },
+  {
+    "id": "t_split7",
+    "label": "t split7",
+    "imagePath": "/assets/board/t_split/t_split7.png"
+  },
+  {
+    "id": "t_split8",
+    "label": "t split8",
+    "imagePath": "/assets/board/t_split/t_split8.png"
+  },
+  {
+    "id": "t_split_in",
+    "label": "t split",
+    "imagePath": "/assets/board/t_split/t_split_in.png"
+  },
+  
+  {
+    "id": "t_split_out",
+    "label": "t split",
+    "imagePath": "/assets/board/t_split/t_split_out.png"
+  },
+  
   {
     "id": "cross_split",
     "label": "cross split",
-    "imagePath": "/assets/cross_split.png"
+    "imagePath": "/assets/board/cross_split.png"
   },
+  
   {
     "id": "roundabout",
     "label": "roundabout",
-    "imagePath": "/assets/roundabout.png"
+    "imagePath": "/assets/board/roundabout.png"
+  },
+  
+  {
+    "id": "depot_middle",
+    "label": "depot",
+    "imagePath": "/assets/board/depot/depot_middle.png"
   },
   {
-    "id": "depot",
+    "id": "depot_right",
     "label": "depot",
-    "imagePath": "/assets/depot.png"
+    "imagePath": "/assets/board/depot/depot_right.png"
+  },
+  {
+    "id": "depot_corner",
+    "label": "depot",
+    "imagePath": "/assets/board/depot/depot_corner.png"
+  },
+  {
+    "id": "depot_down",
+    "label": "depot",
+    "imagePath": "/assets/board/depot/depot_down.png"
   }
 ]

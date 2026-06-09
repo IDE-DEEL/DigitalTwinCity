@@ -3,13 +3,19 @@
   height: 100%;
 }
 
+.visualize-panel {
+  padding: 28px;
+  background-color: var(--color-primary-gray2);
+  flex: 0 1 25%;
+}
+
 .display-field {
-  flex: 3;
+  flex: 2;
   background-color: var(--color-primary-gray3);
 }
 
 .control-panel {
   padding: 28px;
   background-color: var(--color-primary-gray2);
-  flex: 0 1 500px;
+  flex: 0 1 25%;
 }
