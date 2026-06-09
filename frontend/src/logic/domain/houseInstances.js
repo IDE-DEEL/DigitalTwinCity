@@ -1,13 +1,3 @@
-// import { HOUSE_POSITION_FIRST } from "../../constants/constants"
-
-const HOUSE_TYPES = {
-    APARTMENT: "apartment",
-    FLAT: "flat",
-    DETACHED: "detached",
-    SEMI_DETACHED: "semiDetached",
-    TERRACED: "terraced",
-}
-
 export const HOUSE_INSTANCES = [
     // first/top row of the map, from left to right
     {
