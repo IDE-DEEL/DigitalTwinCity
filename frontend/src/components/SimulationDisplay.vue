@@ -614,23 +614,25 @@ const selectTag = ((tag) => {
             <slot name="route-builder"></slot>
 
             <!-- Auto -->
-            <div
-                v-for="car in carPositions"
-                :key="car.id"
-                class="car-sprite"
-                :style="getCarSpriteStyle(car)"
-            >
-                <div class="car-heading" :style="getCarHeadingStyle(car)">
-                    <div class="car-body">
-                        <div class="car-window"></div>
-                        <div class="car-hood"></div>
-                        <div class="car-headlights">
-                            <span></span>
-                            <span></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+             <slot name="car">
+                 <div
+                     v-for="car in carPositions"
+                     :key="car.id"
+                     class="car-sprite"
+                     :style="getCarSpriteStyle(car)"
+                 >
+                     <div class="car-heading" :style="getCarHeadingStyle(car)">
+                         <div class="car-body">
+                             <div class="car-window"></div>
+                             <div class="car-hood"></div>
+                             <div class="car-headlights">
+                                 <span></span>
+                                 <span></span>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+             </slot>
         </div>
     </div> 
   </div>

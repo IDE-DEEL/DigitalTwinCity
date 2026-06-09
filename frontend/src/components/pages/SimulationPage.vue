@@ -8,7 +8,7 @@ import { MAP_COLUMNS, MAP_ROWS } from '../../constants/constants.js'
 import { useCarColors } from '../../composables/useCarColors.js'
 import { buildLane } from '../../logic/service/laneBuilder.js';
 import { normalizeDegree } from '../../logic/utils/rotation.js';
-import { Slider, DropDown, RadioGroup, SimulationTable, WebSocketStatus, RoutePolyline } from '../CustomComponents.js'
+import { Slider, DropDown, RadioGroup, SimulationTable, WebSocketStatus, RoutePolyline, Car } from '../CustomComponents.js'
 import { ControlPanel, SimulationDisplay, SimulationStatsModal, HouseLabelsOverlay } from '../AreaComponents.js'
 import { devTileCoordinateOverlay, devLaneDebugOverlay, devHouseDetectionZonesOverlay, devRouteBuilder } from '../../development/DevtoolComponents.js'
 import '../../assets/MainContent.css'
@@ -167,6 +167,21 @@ const toggleRouteBuilder = () => {
             <!-- Devtool: coordinate picker -->
             <template #map-grid-overlays>
                 <devTileCoordinateOverlay v-if="showDevTileCoordDebug"/>
+            </template>
+
+            <!-- Car sprites -->
+            <template #car>
+                <Car
+                    v-for="car in simulationStore.agentState"
+                    :key="`car-${car.id}`"
+                    :car="car"
+                    :bodyColor="getColorForCarAndRoute(car.id)"
+                    :cargoCount="car.packages_in_cargo.length"
+                    :title="`Car ${car.id} - ${car.packages_in_cargo.length} packages`"
+                    :factorX="MAP_COLUMNS"
+                    :factorY="MAP_ROWS"
+                    :isDigitalTwin="false"
+                />
             </template>
 
             <!-- SVG overlays -->
