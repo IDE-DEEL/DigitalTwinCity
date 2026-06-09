@@ -58,30 +58,30 @@ const gridStyle = computed(() => {
 });
 
 const mapComponents = computed(() => {
-    return mapStore.mapData.map(item => {
-        const def = componentDefinitions.value[item.type];
+    return mapStore.mapData.map(tile => {
+        const def = componentDefinitions.value[tile.variant];
         
         if (!def) return null;
 
-        const rotation = normalizeDegree(item.rotation || 0);
+        const rotation = normalizeDegree(tile.rotation || 0);
 
         return {
-            key: `${item.x}-${item.y}`, 
+            key: `${tile.x}-${tile.y}`, 
             imagePath: def.imagePath,
             label: def.label,
-            x: item.x,
-            y: item.y,
+            x: tile.x,
+            y: tile.y,
             rotation: rotation,
         };
     }).filter(c => c !== null);
 });
 
 const lanePositions = computed(() => {
-    return mapStore.mapData.map(item => ({
-        id: `${item.x}-${item.y}`,
-        type: item.type,
-        rotation: normalizeDegree(item.rotation || 0),
-        position: { x: item.x, y: item.y },
+    return mapStore.mapData.map(tile => ({
+        id: `${tile.x}-${tile.y}`,
+        type: tile.type,
+        rotation: normalizeDegree(tile.rotation || 0),
+        position: { x: tile.x, y: tile.y },
     }));
 })
 

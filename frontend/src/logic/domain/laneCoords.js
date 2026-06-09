@@ -291,94 +291,6 @@ export const TILE_LANES = {
       },
     ],
   },
-//   replaced loop with similar entry/exit logic as other tiles -- TODO: remove in sprint 6 if not needed
-//   roundabout: {
-//     lanes: [
-//       // Loop
-//       {
-//         from: 'LOOP',
-//         to: 'LOOP',
-//         isLoop: true,
-//         points: [
-//           { x: 0.2, y: 0.5 },
-//           { x: 0.29, y: 0.29 },
-//           { x: 0.5, y: 0.2 },
-//           { x: 0.71, y: 0.29 },
-//           { x: 0.8, y: 0.5 },
-//           { x: 0.71, y: 0.71 },
-//           { x: 0.5, y: 0.8 },
-//           { x: 0.29, y: 0.71 },
-//           { x: 0.2, y: 0.5 }, 
-//         ],
-//       },
-//       // Entries
-//       {
-//         from: 'N',
-//         to: 'LOOP',
-//         points: [
-//           { x: SOUTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_LOWER },
-//           { x: 0.35, y: 0.21 },
-//         ]
-//       },
-//       {
-//         from: 'W',
-//         to: 'LOOP',
-//         points: [
-//           { x: EDGE_OFFSET_LOWER,  y: EASTBOUND_Y_LANE_CENTER }, 
-//           { x: 0.22, y: 0.65 },
-//         ],
-//       },
-//       {
-//         from: 'S',
-//         to: 'LOOP',
-//         points: [
-//           { x: NORTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_UPPER },   
-//           { x: 0.66, y: 0.78 },
-//         ],
-//       },
-//       {
-//         from: 'E',
-//         to: 'LOOP',
-//         points: [
-//           { x: EDGE_OFFSET_UPPER,  y: WESTBOUND_Y_LANE_CENTER },  
-//           { x: 0.79, y: 0.33 },
-//         ],
-//       },
-//       // Exits
-//       {
-//         from: 'LOOP',
-//         to: 'N',
-//         points: [
-//           { x: 0.65, y: 0.21 }, 
-//           { x: NORTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_LOWER },   
-//         ],
-//       },
-//       {
-//         from: 'LOOP',
-//         to: 'W',
-//         points: [
-//           { x: 0.21, y: 0.35 },
-//           { x: EDGE_OFFSET_LOWER,  y: WESTBOUND_Y_LANE_CENTER },  
-//         ],
-//       },
-//       {
-//         from: 'LOOP',
-//         to: 'S',
-//         points: [
-//           { x: 0.35, y: 0.79 },
-//           { x: SOUTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_UPPER },
-//         ],
-//       },
-//       {
-//         from: 'LOOP',
-//         to: 'E',
-//         points: [
-//           { x: 0.79, y: 0.65 },
-//           { x: EDGE_OFFSET_UPPER, y: EASTBOUND_Y_LANE_CENTER },
-//         ],
-//       },
-//     ],
-//   },
   roundabout: {
     lanes: [
       {
@@ -574,6 +486,104 @@ export const TILE_LANES = {
         ]
       },
     ],
+  },
+  t_split_out: {
+    lanes: [
+      {
+        from: 'S',
+        to: 'N',
+        points: [
+            { x: NORTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_UPPER },
+            { x: NORTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_LOWER },
+        ],
+      },
+      {
+        from: 'S',
+        to: 'W',
+        points: [
+            { x: NORTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_UPPER },
+            { x: 0.61, y: 0.78 },
+            { x: 0.55, y: 0.64 },
+            { x: 0.47, y: 0.54 },
+            { x: 0.37, y: 0.45 },
+            { x: 0.25, y: 0.4 },
+            { x: EDGE_OFFSET_LOWER, y: WESTBOUND_Y_LANE_CENTER },
+        ],
+      },
+      {
+        from: 'W',
+        to: 'N',
+        points: [
+            { x: EDGE_OFFSET_LOWER, y: EASTBOUND_Y_LANE_CENTER },
+            { x: 0.26, y: 0.62 },
+            { x: 0.4, y: 0.57 },
+            { x: 0.5, y: 0.5 },
+            { x: 0.58, y: 0.38 },
+            { x: 0.62, y: 0.26 },
+            { x: NORTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_LOWER },
+        ],
+      },
+      {
+        from: 'N',
+        to: 'W',
+        points: [
+            { x: SOUTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_LOWER },
+            { x: 0.36, y: 0.24 },
+            { x: 0.31, y: 0.32 },
+            { x: 0.22, y: 0.36 },
+            { x: EDGE_OFFSET_LOWER, y: WESTBOUND_Y_LANE_CENTER },
+        ],
+      },
+    ]
+  },
+  t_split_in: {
+    lanes: [
+      {
+        from: 'W',
+        to: 'E',
+        points: [
+            { x: EDGE_OFFSET_LOWER, y: EASTBOUND_Y_LANE_CENTER },
+            { x: EDGE_OFFSET_UPPER, y: EASTBOUND_Y_LANE_CENTER },
+        ],
+      },
+      {
+        from: 'N',
+        to: 'E',
+        points: [
+            { x: SOUTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_LOWER },
+            { x: 0.37, y: 0.26 },
+            { x: 0.41, y: 0.38 },
+            { x: 0.5, y: 0.5 },
+            { x: 0.6, y: 0.57 },
+            { x: 0.74, y: 0.61 },
+            { x: EDGE_OFFSET_UPPER, y: EASTBOUND_Y_LANE_CENTER },
+        ],
+      },
+      {
+        from: 'W',
+        to: 'N',
+        points: [
+            { x: EDGE_OFFSET_LOWER, y: EASTBOUND_Y_LANE_CENTER },
+            { x: 0.26, y: 0.62 },
+            { x: 0.4, y: 0.57 },
+            { x: 0.5, y: 0.5 },
+            { x: 0.58, y: 0.38 },
+            { x: 0.62, y: 0.26 },
+            { x: NORTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_LOWER },
+        ],
+      },
+      {
+        from: 'N',
+        to: 'W',
+        points: [
+            { x: SOUTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_LOWER },
+            { x: 0.36, y: 0.24 },
+            { x: 0.31, y: 0.32 },
+            { x: 0.22, y: 0.36 },
+            { x: EDGE_OFFSET_LOWER, y: WESTBOUND_Y_LANE_CENTER },
+        ],
+      },
+    ]
   },
   depot: {
     lanes: [

@@ -1,9 +1,10 @@
 // map dimensions
-export const MAP_COLUMNS = 5;  // X range: 0-5
-export const MAP_ROWS = 4;     // Y range: 0-4
+export const MAP_COLUMNS = 7;           // X range: 0-6
+export const MAP_ROWS = MAP_COLUMNS;    // Y range: 0-6
 
 // map tiles
-export const DEPOT_TILE = { x: 4, y: 2 };
+export const DEPOT_ENTRANCE = { x: 4, y: 6 };
+export const DEPOT_EXIT = { x: 6, y: 4 };
 
 // identifiers for different houses on the same tile (irrelevant with the current map)
 export const HOUSE_POSITION_FIRST = 'A';

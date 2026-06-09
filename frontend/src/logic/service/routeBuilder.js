@@ -97,7 +97,7 @@ export function getRotatedLanesForTile(tile) {
  */
 function findDepotStartLane(rotatedLanes, nextDirection) {
   const lane = rotatedLanes.find(
-    (candidate) => candidate.from === 'E' && candidate.to === nextDirection
+    (candidate) => candidate.from === 'S' && candidate.to === nextDirection
   );
 
   if (!lane) {
@@ -184,7 +184,7 @@ export function buildLaneSequenceFromTilePath(tilePath, allowIncompleteRoute = f
       const nextTile = tilePath[index + 1];
       const nextDirection = getDirectionBetweenTiles(currentPathTile, nextTile);
 
-      if (currentMapTile.type !== 'depot') {
+      if (currentMapTile.type !== 't_split_out') {
         throw new Error('First tile in route must be the depot tile.');
       }
 
@@ -198,7 +198,7 @@ export function buildLaneSequenceFromTilePath(tilePath, allowIncompleteRoute = f
         getDirectionBetweenTiles(previousTile, currentPathTile)
       ];
 
-      if (currentMapTile.type !== 'depot') {
+      if (currentMapTile.type !== 't_split_in') {
         throw new Error('Last tile in route must be the depot tile.');
       }
 

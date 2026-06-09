@@ -1,4 +1,4 @@
-import { DEPOT_TILE } from "../../constants/constants";
+import { DEPOT_ENTRANCE, DEPOT_EXIT } from "../../constants/constants";
 
 /**
  * routes are pre-defined sequences of tiles
@@ -11,99 +11,21 @@ import { DEPOT_TILE } from "../../constants/constants";
  */
 export const ROUTES_TILES = {
     route_a: {
-        label: "Route A",
+        label: 'Route A',
         tiles: [
-            DEPOT_TILE,
+            DEPOT_EXIT,
+            { x: 6, y: 3 },
+            { x: 6, y: 2 },
+            { x: 5, y: 2 },
+            { x: 4, y: 2 },
             { x: 4, y: 1 },
             { x: 3, y: 1 },
             { x: 3, y: 2 },
-            { x: 2, y: 2 },
-            { x: 2, y: 3 },
             { x: 3, y: 3 },
-            { x: 4, y: 3 },
-            DEPOT_TILE,
-        ],
-    },
-    route_b: {
-        label: "Route B",
-        tiles: [
-            DEPOT_TILE,
-            { x: 4, y: 1 },
-            { x: 4, y: 0 },
-            { x: 3, y: 0 },
-            { x: 2, y: 0 },
-            { x: 1, y: 0 },
-            { x: 0, y: 0 },
-            { x: 0, y: 1 },
-            { x: 1, y: 1 },
-            { x: 1, y: 2 },
-            { x: 2, y: 2 },
-            { x: 3, y: 2 },
-            { x: 3, y: 3 },
-            { x: 2, y: 3 },
-            { x: 2, y: 2 },
-            { x: 3, y: 2 },
-            { x: 3, y: 1 },
-            { x: 4, y: 1 },
-            DEPOT_TILE,
-        ],
-    },
-    route_c: {
-        label: 'Route C',
-        tiles: [
-            DEPOT_TILE,
-            { x: 4, y: 3 },
-            { x: 3, y: 3 },
-            { x: 3, y: 2 },
-            { x: 2, y: 2 },
-            { x: 2, y: 1 },
-            { x: 1, y: 1 },
-            { x: 1, y: 2 },
-            { x: 2, y: 2 },
-            { x: 3, y: 2 },
-            { x: 3, y: 3 },
-            { x: 4, y: 3 },
-            DEPOT_TILE
-        ],
-    },
-    counterclockwise: {
-        label: "Counterclockwise",
-        tiles: [
-            DEPOT_TILE,
-            { x: 4, y: 1 },
-            { x: 4, y: 0 },
-            { x: 3, y: 0 },
-            { x: 2, y: 0 },
-            { x: 1, y: 0 },
-            { x: 0, y: 0 },
-            { x: 0, y: 1 },
-            { x: 0, y: 2 },
-            { x: 0, y: 3 },
-            { x: 1, y: 3 },
-            { x: 2, y: 3 },
-            { x: 3, y: 3 },
-            { x: 4, y: 3 },
-            DEPOT_TILE,
-        ],
-    },
-    clockwise: {
-        label: 'Clockwise',
-        tiles: [
-            DEPOT_TILE,
-            { x: 4, y: 3 },
-            { x: 3, y: 3 },
-            { x: 2, y: 3 },
-            { x: 1, y: 3 },
-            { x: 0, y: 3 },
-            { x: 0, y: 2 },
-            { x: 0, y: 1 },
-            { x: 0, y: 0 },
-            { x: 1, y: 0 },
-            { x: 2, y: 0 },
-            { x: 3, y: 0 },
-            { x: 4, y: 0 },
-            { x: 4, y: 1 },
-            DEPOT_TILE
+            { x: 3, y: 4 },
+            { x: 3, y: 5 },
+            { x: 4, y: 5 },
+            DEPOT_ENTRANCE
         ],
     },
 };
