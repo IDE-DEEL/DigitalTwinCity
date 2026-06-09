@@ -1,7 +1,9 @@
 import { getHousesForScenarioByValue } from "../domain/scenarios";
 import { HOUSE_INSTANCES } from "../domain/houseInstances";
-import { getTileMetadata, getRotatedHouseCoordinatesForTile } from "./houseBuilder";
+// import { getTileMetadata, getRotatedHouseCoordinatesForTile } from "./houseBuilder";
+import { buildHouseCoordinates } from "./houseBuilder";
 import { findRoutesForHouse, findHousesForRoute } from "./houseRouteMatchingService";
+import { useMapStore } from "../../stores/mapStore.js";
 import { ROUTES_TILES } from "../domain/routes";
 
 /**
@@ -15,15 +17,8 @@ export function getHousesByScenarioKey(scenarioKey) {
 
     return Object.entries(houses).map(([houseInstanceId, expectedPackages]) => {
         const instance = HOUSE_INSTANCES.find(house => house.id === houseInstanceId);
-        const tileMetadata = getTileMetadata(instance.tileX, instance.tileY);
-        
-        const coordinates = getRotatedHouseCoordinatesForTile(
-            tileMetadata.type,
-            tileMetadata.rotation,
-            instance.tileX,
-            instance.tileY,
-            instance.positionId
-        );
+
+        const coordinates = buildHouseCoordinates(instance);
 
         return {
             houseInstanceId,

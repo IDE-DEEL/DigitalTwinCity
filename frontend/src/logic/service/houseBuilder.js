@@ -1,87 +1,36 @@
-import { TILE_HOUSES } from "../domain/houseCoords";
+// import { TILE_HOUSES } from "../domain/houseCoords";
 import { useMapStore } from "../../stores/mapStore.js";
 import { rotatePointNormalized, normalizeDegree } from "../utils/rotation.js";
 
-/**
- * Retrieves the metadata for a tile based on its coordinates from the map data.
- *
- * @param {number} tileX - The x-coordinate of the tile within the map.
- * @param {number} tileY - The y-coordinate of the tile within the map.
- * @returns {Object} An object with type and rotation properties.
- * @throws {Error} If no tile is found at the given coordinates.
- */
-export function getTileMetadata(tileX, tileY) {
-    const mapStore = useMapStore();
-
-    const tile = mapStore.mapData.find(t => t.x === tileX && t.y === tileY);
-
-    if (!tile) {
-        throw new Error(`Tile not found at coordinates (${tileX}, ${tileY})`);
-    }
+export function buildHouseCoordinates(instance) {
+    const detectionZoneRadius = 0.1;
+    const roadCoords = generateRoadCoordsFromCenter(
+        instance.roadCenter,
+        detectionZoneRadius
+    );
 
     return {
-        type: tile.type,
-        rotation: tile.rotation || 0,
+        roadCoords: localToGlobalCoordsArray(roadCoords, instance.tileX, instance.tileY),
+        labelCoords: localToGlobalCoords(instance.labelCoords, instance.tileX, instance.tileY),
+        supportedLanes: instance.supportedLanes
     };
 }
 
 /**
- * Retrieves the local coordinates for a house on a tile based on the tile type.
- *
- * @param {string} tileType - The type of tile to get house coordinates for.
- * @param {string} housePositionId - The identifier for the house position on the tile (e.g., 'A').
- * @returns {Object} An object with roadCoords, labelCoords, and supportedLanes.
- * @throws {Error} If no house coordinates are found for the tile type.
+ * Creates a square detection zone around a central point for a house, which can be used to determine when a car is close enough to the house for package pickup/dropoff.
+ * @param {Object} centerPoint - { x y } Local coordinates of the center point within the tile (0-1 range).
+ * @param {number} radius - Half the width of the square (default 0.1)
+ * @returns {Array<Object>} Array of four points representing the corners of the square around the center point
  */
-export function getLocalHouseCoordinates(tileType, housePositionId) {
-    const tileHouses = TILE_HOUSES[tileType];
-    if (!tileHouses || !tileHouses.houses[housePositionId]) {
-        throw new Error(`No house coordinates found for tile type "${tileType}" and position "${housePositionId}".`);
-    }
-
-    const house = tileHouses.houses[housePositionId];
-    return {
-        roadCoords: house.roadCoords,
-        labelCoords: house.labelCoords,
-        supportedLanes: house.supportedLanes
-    };
-}
-
-/**
- * Helper function to rotate an array of points
- * 
- * @param {Array<Object>} pointsArray - Array of points with x, y properties
- * @param {number} rotation - The rotation in degrees (0, 90, 180, 270)
- * @returns {Array<Object>} Array of rotated points
- */
-function rotatePointsArray(pointsArray, rotation) {
-    return pointsArray.map(point => rotatePointNormalized(point, rotation));
-}
-
-/**
- * Rotates local coordinates within a tile based on the tile's rotation.
- * Each coordinate is rotated around the center of the tile (0.5, 0.5).
- * Handles both single points and arrays of points.
- *
- * @param {Object} localCoords - Object with roadCoords (array or single) and labelCoords (single point).
- * @param {number} rotationDegree - The rotation in degrees (0, 90, 180, 270).
- * @returns {Object} An object with rotated roadCoords and labelCoords.
- */
-export function rotateLocalCoords(localCoords, rotationDegree) {
-    const rotation = normalizeDegree(rotationDegree);
-
-    // Handle roadCoords as array (new) or single point (legacy)
-    let rotatedRoadCoords;
-    if (Array.isArray(localCoords.roadCoords)) {
-        rotatedRoadCoords = rotatePointsArray(localCoords.roadCoords, rotation);
-    } else {
-        rotatedRoadCoords = rotatePointNormalized(localCoords.roadCoords, rotation);
-    }
-
-    return {
-        roadCoords: rotatedRoadCoords,
-        labelCoords: rotatePointNormalized(localCoords.labelCoords, rotation),
-    };
+export function generateRoadCoordsFromCenter(centerPoint, radius = 0.1) {
+    const { x, y } = centerPoint;
+    
+    return [
+        { x: x - radius, y: y - radius }, // top-left
+        { x: x + radius, y: y - radius }, // top-right
+        { x: x + radius, y: y + radius }, // bottom-right
+        { x: x - radius, y: y + radius }, // bottom-left
+    ];
 }
 
 /**
@@ -116,27 +65,5 @@ export function localToGlobalCoords(rotatedCoords, tileX, tileY) {
     return {
         x: tileX + rotatedCoords.x,
         y: tileY + rotatedCoords.y,
-    };
-}
-
-/**
- * Gets the house coordinates for a tile, with rotation applied.
- * Combines local coordinate retrieval, tile rotation, and global conversion of coordinates.
- *
- * @param {string} tileType - The type of the tile.
- * @param {number} rotationDegree - The rotation of the tile in degrees.
- * @param {number} tileX - The x-coordinate of the tile within the map.
- * @param {number} tileY - The y-coordinate of the tile within the map.
- * @param {string} housePositionId - The identifier for the house position on the tile (e.g., 'A').
- * @returns {Object} An object with rotated and translated roadCoords and labelCoords.
- */
-export function getRotatedHouseCoordinatesForTile(tileType, rotationDegree, tileX, tileY, housePositionId) {
-    const localCoords = getLocalHouseCoordinates(tileType, housePositionId);
-    const rotatedCoords = rotateLocalCoords(localCoords, rotationDegree);
-    
-    return {
-        roadCoords: localToGlobalCoords(rotatedCoords.roadCoords, tileX, tileY),
-        labelCoords: localToGlobalCoords(rotatedCoords.labelCoords, tileX, tileY),
-        supportedLanes: localCoords.supportedLanes,
     };
 }
