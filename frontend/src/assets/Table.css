@@ -25,7 +25,7 @@ tr {
 }
 
 td {
-    padding: 8px;
+    padding: 6px;
 }
 
 tbody:nth-child(even) {
@@ -34,7 +34,7 @@ tbody:nth-child(even) {
 
 .visualize {
     width: 100px;
-    height: 40px;
+    height: 38px;
     background-color: var(--color-primary-blue);
     place-items: center;
     color: white;

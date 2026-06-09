@@ -138,7 +138,7 @@ export const store = reactive({
 
     routes: [
     {"route": "Route 1", "tags": ["1A", "2A", "3A", "4A", "1B", "2B", "13B", "5B", "14B", "9B", "1D", "2D", "3D", "4D", "1F", "2F", "3F", "4F"], "color": "#ff0000"},
-    {"route": "Route 2", "tags": ["5A", "6A", "7A", "10B", "11B", "12B", "5D"], "color": "#07cf00"},
+    {"route": "Route 2", "tags": ["5A", "6A", "7A", "10B", "11B", "12B", "5D", "6D", "7D", "8D", "5F", "7F", "11E"], "color": "#07cf00"},
     {"route": "Route 3", "tags": []}
   ],
 
@@ -147,12 +147,15 @@ export const store = reactive({
     "Placeholder 2",
     "Placeholder 3"
   ],
+
+  chosen_tag: {"tag_id": "1A", "tag_pos": {"x": 155, "y": 350}},
+  show_tags: false,
   
   chosen_scenario: '',
   speed: 50,
   sim_speed: 20,
   max_packages: 12,
-  score: 0,
+  score: 355,
   active: false,
   time: "00:00",
 

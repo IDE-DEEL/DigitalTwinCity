@@ -12,8 +12,7 @@ const showTopBar = computed(() => route.path !== '/login' && route.path !== '/ad
   <div class="app-container">
 
     <!-- Topbar -->
-    <!-- ><TopBar v-if="showTopBar" class="topbar"/> -->
-    <TopBar class="topbar"/>
+    <TopBar v-if="showTopBar" class="topbar"/>
     <router-view></router-view>
 
   </div>

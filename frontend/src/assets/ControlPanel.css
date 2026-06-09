@@ -19,14 +19,6 @@ aside {
   width: 100%;
 }
 
-.state {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-end;
-  gap: 20px;
-  width: 100%;
-}
-
 .slider-area {
   flex: 2;
 }
@@ -35,19 +27,68 @@ aside {
   flex: 2;
 }
 
-.button-area {
+.timer-button-row {
   flex: 1;
   display: flex;
-  gap: 10px; 
+  gap: 8px; 
 }
 
-/* De Score & Tijd box */
-.stats-box {
+.state {
   display: flex;
   flex-direction: row;
-  font-size: 24px;
-  gap: 200px;
-  padding: 12px;
-  border-radius: 6px;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
   width: 100%;
+}
+
+.timer-area {
+  display: flex;
+  flex-direction: column;    
+  align-items: flex-start; 
+  gap: 16px;                 
+  flex-shrink: 0;            
+}
+
+.timer-area p {
+  margin: 0;
+  font-size: 30px;
+  font-weight: bold;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.score-area {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 160px;
+}
+
+.score-area p {
+  margin: 0;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.score-area p:last-child {
+  font-size: 30px;
+  font-weight: bold;
+  margin-top: 8px;           
+  border-top: 1px solid #000000;
+  padding-top: 8px;
+  line-height: 1;            
+}
+
+.timer-button {
+    width: 88px;
+    height: 36px;
+    padding: 0px;
+    background-color: var(--color-primary-blue);
+    place-items: center;
+    color: white;
+    border: 1px groove gray;
+    border-radius: 4px;
+    font-size: 20px;
+    cursor: pointer;
 }

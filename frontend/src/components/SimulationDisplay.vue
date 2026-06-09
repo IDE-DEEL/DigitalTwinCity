@@ -542,6 +542,10 @@ const getRouteColor = ((carRouteName) => {
   
   return "#ccc";
 })
+
+const selectTag = ((tag) => {
+  store.chosen_tag = tag
+})
 </script>
 
 <template>
@@ -567,13 +571,25 @@ const getRouteColor = ((carRouteName) => {
                 </div>
             </div>
 
-            <!-- RIFD Tags -->
-            <svg
-            v-for="tag in store.tag_positions"
-            :key="tag.tag_id"
-            class="absolute inset-0 w-full h-full pointer-events-none">
-                <circle :cx="tag.tag_pos.x * factor_x" :cy="tag.tag_pos.y * factor_y" r="7" fill="black"></circle>
-            </svg>
+            <!-- RFID Tags Container -->
+            <div 
+              v-if="store.show_tags" 
+            >
+              <div
+                v-for="tag in store.tag_positions"
+                :key="tag.tag_id"
+                class="absolute cursor-pointer rounded-full bg-black flex items-center justify-center"
+                :style="{
+                  left: (tag.tag_pos.x * factor_x) + 'px',
+                  top: (tag.tag_pos.y * factor_y) + 'px',
+                  width: '14px',
+                  height: '14px',
+                  transform: 'translate(-50%, -50%)'
+                }"
+                @click="selectTag(tag)"
+              >
+              </div>
+            </div>
 
             <!-- Routes -->
             <svg class="absolute inset-0 pointer-events-none"

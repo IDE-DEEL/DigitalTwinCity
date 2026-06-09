@@ -33,8 +33,19 @@ async function verifySession() {
             credentials: 'include'
         });
 
-        return response.ok ? response.json() : null;
-    } catch {
+        if (!response.ok) {
+            return null;
+        }
+
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            console.error("Fout: Server stuurde geen JSON terug, maar:", contentType);
+            return null;
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error("Netwerkfout tijdens sessiecontrole:", error);
         return null;
     }
 }
@@ -73,7 +84,7 @@ function isStudentSession(session) {
     return Boolean(session) && session.role !== 'admin';
 }
 
-/*page_router.beforeEach(async (to) => {
+page_router.beforeEach(async (to) => {
     const publicPaths = ['/login', '/admin'];
     const requiresAuth = !publicPaths.includes(to.path);
     const session = await verifySession();
@@ -95,7 +106,7 @@ function isStudentSession(session) {
     }
 
     return true;
-});*/
+});
 
 const pinia = createPinia()
 const app = createApp(App)
