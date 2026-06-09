@@ -594,7 +594,7 @@ depot_down: {
         {
           from: 'W',
           to: 'E',
-          carId: [1, 2],
+          carId: ['1', '2'],
           route: "end",
           points: [
             { x: EDGE_OFFSET_LOWER, y: 0.53 },
@@ -607,7 +607,7 @@ depot_down: {
         {
           from: 'W',
           to: 'E',
-          carId: [3],
+          carId: ['3'],
           route: "end",
           points: [
             { x: EDGE_OFFSET_LOWER, y: 0.53 },
@@ -621,7 +621,7 @@ depot_down: {
         {
           from: 'W',
           to: 'E',
-          carId: [4],
+          carId: ['4'],
           route: "end",
           points: [
             { x: EDGE_OFFSET_LOWER, y: 0.53 },
@@ -635,7 +635,7 @@ depot_down: {
       {
         from: 'W',
         to: 'E',
-        carId: [5],
+        carId: ['5'],
         route: "end",
         points: [
           { x: EDGE_OFFSET_LOWER, y: 0.53 },
@@ -645,7 +645,7 @@ depot_down: {
       {
         from: 'W',
         to: 'E',
-        carId: [4],
+        carId: ['4'],
         route: "start",
         points: [
           { x: EDGE_OFFSET_UPPER, y: 0.23 },
@@ -654,7 +654,7 @@ depot_down: {
       {
         from: 'W',
         to: 'E',
-        carId: [5],
+        carId: ['5'],
         route: "start",
         points: [
           { x: EDGE_OFFSET_UPPER, y: 0.53 },
@@ -667,7 +667,7 @@ depot_down: {
       {
         from: 'S',
         to: 'E',
-        carId: [1],
+        carId: ['1'],
         route: "end",
         points: [
             { x: 0.3, y: EDGE_OFFSET_UPPER },
@@ -682,7 +682,7 @@ depot_down: {
       {
         from: 'S',
         to: 'E',
-        carId: [2],
+        carId: ['2'],
         route: "end",
         points: [
           { x: 0.3, y: EDGE_OFFSET_UPPER },
@@ -696,7 +696,7 @@ depot_down: {
       {
         from: 'S',
         to: 'E',
-        carId: [3],
+        carId: ['3'],
         route: "end",
         points: [
             { x: 0.42, y: 0.98 },
@@ -708,7 +708,7 @@ depot_down: {
       {
           from: 'W',
           to: 'E',
-          carId: [1],
+          carId: ['1'],
           route: "start",
           points: [
               { x: EDGE_OFFSET_UPPER, y: 0.31 },
@@ -717,7 +717,7 @@ depot_down: {
         {
           from: 'W',
           to: 'E',
-          carId: [2],
+          carId: ['2'],
           route: "start",
           points: [
               { x: EDGE_OFFSET_UPPER, y: 0.61 },
@@ -726,7 +726,7 @@ depot_down: {
         {
           from: 'W',
           to: 'E',
-          carId: [3],
+          carId: ['3'],
           route: "start",
           points: [
             { x: EDGE_OFFSET_UPPER, y: 0.91 },
@@ -739,7 +739,7 @@ depot_down: {
         {
             from: 'W',
             to: 'N',
-            carId: [4],
+            carId: ['4'],
             points: [
                 { x: EDGE_OFFSET_LOWER, y: 0.23 },
                 { x: 0.25, y: 0.23 },
@@ -751,7 +751,7 @@ depot_down: {
         {
           from: 'W',
           to: 'N',
-          carId: [5],
+          carId: ['5'],
           points: [
             { x: EDGE_OFFSET_LOWER, y: 0.53 },
             { x: 0.24, y: 0.53 },
@@ -769,7 +769,7 @@ depot_down: {
       {
         from: 'W',
         to: 'N',
-        carId: [1],
+        carId: ['1'],
         points: [
           { x: EDGE_OFFSET_LOWER, y: 0.31 },
           { x: 0.27, y: 0.29 },
@@ -781,7 +781,7 @@ depot_down: {
       {
         from: 'W',
         to: 'N',
-        carId: [2],
+        carId: ['2'],
         points: [
           { x: EDGE_OFFSET_LOWER, y: 0.61 },
           { x: 0.28, y: 0.61 },
@@ -794,7 +794,7 @@ depot_down: {
       {
         from: 'W',
         to: 'N',
-        carId: [3],
+        carId: ['3'],
         points: [
           { x: EDGE_OFFSET_LOWER, y: 0.91 },
           { x: 0.28, y: 0.91 },
@@ -807,12 +807,40 @@ depot_down: {
       {
         from: 'S',
         to: 'N',
-        carId: [4, 5],
+        carId: ['4', '5'],
         points: [
           { x: 0.53, y: EDGE_OFFSET_UPPER },
           { x: 0.53, y: EDGE_OFFSET_LOWER },
         ],
       },
     ],
+  },
+}
+
+/**
+ * Defines the sequence of depot tiles that each car must traverse when
+ * starting (leaving) and ending (entering) a route.
+ * This ensures cars follow the correct path through the depot.
+ */
+export const DEPOT_ROUTE_SEQUENCES = {
+  1: {
+    start: ['depot_middle', 'depot_right'],
+    end: ['depot_down', 'depot_middle'],
+  },
+  2: {
+    start: ['depot_middle', 'depot_right'],
+    end: ['depot_down', 'depot_middle'],
+  },
+  3: {
+    start: ['depot_middle', 'depot_right'],
+    end: ['depot_down', 'depot_middle'],
+  },
+  4: {
+    start: ['depot_down', 'depot_corner', 'depot_right'],
+    end: ['depot_down'],
+  },
+  5: {
+    start: ['depot_down', 'depot_corner', 'depot_right'],
+    end: ['depot_down'],
   },
 }
