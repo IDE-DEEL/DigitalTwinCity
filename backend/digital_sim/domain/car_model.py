@@ -25,12 +25,11 @@ class CarModel(mesa.Model):
         self.delta_time = DELTA_TIME_PER_STEP_IN_SECONDS
         self.simulation_time = 0.0
         self.car_target_speed = car_target_speed / 100
-        self.routes = {}
         self.houses = {}
         self.scenario_name = scenario_name
         
-        self._setup_cars_and_routes(cars, self.car_target_speed)
-        self._setup_houses(houses or [], houses_on_routes or {})
+        routes = self._setup_cars_and_routes(cars, self.car_target_speed)
+        self._setup_houses(houses or [], houses_on_routes or {}, routes)
         
         self.datacollector = mesa.DataCollector(
             model_reporters={
@@ -153,22 +152,23 @@ class CarModel(mesa.Model):
 
         return houses_status
 
-    def _setup_cars_and_routes(self, cars: list[dict], car_target_speed: int):
+    def _setup_cars_and_routes(self, cars: list[dict], car_target_speed: int) -> dict:
         """Create routes and agents based on car settings from frontend."""
-        routes_added = set()
+        routes_by_name = {}
 
         for car in cars:
             route_name = car.get(CAR_ROUTE_NAME_KEY)
             max_packages = car.get(CAR_MAX_PACKAGES_KEY, 1)
+            waypoints = car.get(CAR_ROUTE_WAYPOINTS_KEY)
 
-            # Prevent duplicate route objects
-            if route_name not in routes_added:
-                waypoints = car.get(CAR_ROUTE_WAYPOINTS_KEY)
-                self.routes[route_name] = Route(name=route_name, waypoints=waypoints, houses=[])
-                routes_added.add(route_name)
-            
-            route = self.routes[route_name]
+            route = Route(name=route_name, waypoints=waypoints, houses=[])
+            if route_name not in routes_by_name:
+                routes_by_name[route_name] = []
+            routes_by_name[route_name].append(route)
+
             CarAgent(model=self, car_target_speed=car_target_speed, route=route, max_packages=max_packages)
+
+        return routes_by_name
     
     def is_simulation_complete(self) -> bool:
         """
@@ -205,7 +205,7 @@ class CarModel(mesa.Model):
                 return True
         return False
     
-    def _setup_houses(self, houses: list[dict], houses_on_routes: dict):
+    def _setup_houses(self, houses: list[dict], houses_on_routes: dict, routes_by_name: dict):
         """Create house objects and link them to routes and packages.
         
         Uses housesOnRoutes if provided (new format with ordered houses per route),
@@ -225,11 +225,10 @@ class CarModel(mesa.Model):
             self.houses[house.id] = house
         
         # Link houses to routes using housesOnRoutes
-        for route_name, route_houses_data in houses_on_routes.items():
-            route = self.routes.get(route_name)
-            if not route:
-                continue
-            for house_id in route_houses_data:
-                house = self.houses.get(house_id)
-                if house:
-                    route.houses.append(house)
+        for route_name, route_houses_data in houses_on_routes.items():        
+            routes = routes_by_name.get(route_name, [])
+            for route in routes:
+                for house_id in route_houses_data:
+                    house = self.houses.get(house_id)
+                    if house:
+                        route.houses.append(house)
