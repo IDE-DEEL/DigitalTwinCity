@@ -6,9 +6,6 @@ export const MAP_ROWS = MAP_COLUMNS;    // Y range: 0-6
 export const DEPOT_ENTRANCE = { x: 4, y: 6 };
 export const DEPOT_EXIT = { x: 6, y: 4 };
 
-// identifiers for different houses on the same tile (irrelevant with the current map)
-export const HOUSE_POSITION_FIRST = 'A';
-
 // cars
 export const MAX_CARS = 5;
 export const MIN_CARS = 1;
