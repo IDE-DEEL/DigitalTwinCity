@@ -4,7 +4,7 @@ import { fetchMapData } from '../logic/service/mapService.js';
 import { buildLane } from '../logic/service/laneBuilder.js';
 import { normalizeDegree } from '../logic/utils/rotation.js';
 const factor_y = ref(0)
-const MAP_DIMENSION = 7
+const MAP_DIMENSION = 3
 import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
 import { normalizeTagId, store } from '../store.js'
 import '../assets/Display.css';
@@ -488,33 +488,59 @@ const generatePath = ((route_name) => {
   if (positions.length === 0) return ''
   if (positions.length === 1) return `M ${positions[0].x.toFixed(2)} ${positions[0].y.toFixed(2)}`
 
-  // 3. Start path at the first tag
   let path = `M ${positions[0].x.toFixed(2)} ${positions[0].y.toFixed(2)}`
+  const k = 0.2; 
 
-  // 4. Generate the path using Midpoint Quadratic Splines
   for (let i = 0; i < positions.length - 1; i++) {
-    const current = positions[i]
-    const next = positions[i + 1]
-    
-    // Calculate the midpoint between the current tag and the next tag
-    const midX = (current.x + next.x) / 2
-    const midY = (current.y + next.y) / 2
+    const p1 = positions[i];
+    const p2 = positions[i + 1];
 
-    if (i === 0) {
-      // First segment: draw a straight line from start to the first midpoint
-      path += ` L ${midX.toFixed(2)} ${midY.toFixed(2)}`
+    // Controleer of de punten exact verticaal of horizontaal op één lijn liggen
+    // We gebruiken een kleine marge (0.5 pixel) voor het geval dat er afrondingsverschillen zijn
+    const isStraightHorizontal = Math.abs(p1.y - p2.y) < 0.5;
+    const isStraightVertical = Math.abs(p1.x - p2.x) < 0.5;
+
+    if (isStraightHorizontal || isStraightVertical) {
+      // Als het een recht stuk is, dwingen we een KAARSRECHTE lijn af!
+      path += ` L ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`;
     } else {
-      // Middle segments: use the previous tag as a control point, 
-      // curving smoothly through the midpoints.
-      path += ` Q ${current.x.toFixed(2)} ${current.y.toFixed(2)}, ${midX.toFixed(2)} ${midY.toFixed(2)}`
+      // Alleen als de lijn écht de hoek om moet, berekenen we een vloeiende bocht
+      let cp1x, cp1y, cp2x, cp2y;
+
+      // Stuurpunt 1
+      if (i === 0) {
+        cp1x = p1.x + (p2.x - p1.x) * k;
+        cp1y = p1.y + (p2.y - p1.y) * k;
+      } else {
+        const p0 = positions[i - 1];
+        cp1x = p1.x + (p2.x - p0.x) * k;
+        cp1y = p1.y + (p2.y - p0.y) * k;
+      }
+
+      // Stuurpunt 2
+      if (i === positions.length - 2) {
+        cp2x = p2.x - (p2.x - p1.x) * k;
+        cp2y = p2.y - (p2.y - p1.y) * k;
+      } else {
+        const p3 = positions[i + 2];
+        cp2x = p2.x - (p3.x - p1.x) * k;
+        cp2y = p2.y - (p3.y - p1.y) * k;
+      }
+
+      path += ` C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)}, ${cp2x.toFixed(2)} ${cp2y.toFixed(2)}, ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`;
     }
   }
 
-  // 5. Final segment: draw a straight line from the last midpoint to the final tag
-  const lastPos = positions[positions.length - 1]
-  path += ` L ${lastPos.x.toFixed(2)} ${lastPos.y.toFixed(2)}`
+  return path;
+})
 
-  return path
+const getRouteColor = ((carRouteName) => {
+  const foundRoute = store.routes.find(r => r.route === carRouteName);
+  if (foundRoute && foundRoute.color) {
+    return foundRoute.color;
+  }
+  
+  return "#ccc";
 })
 </script>
 
@@ -541,25 +567,25 @@ const generatePath = ((route_name) => {
                 </div>
             </div>
 
-            <!-- RIFD Tags --
+            <!-- RIFD Tags -->
             <svg
             v-for="tag in store.tag_positions"
             :key="tag.tag_id"
             class="absolute inset-0 w-full h-full pointer-events-none">
                 <circle :cx="tag.tag_pos.x * factor_x" :cy="tag.tag_pos.y * factor_y" r="7" fill="black"></circle>
-            </svg>-->
+            </svg>
 
-            <!-- Routes --
+            <!-- Routes -->
             <svg class="absolute inset-0 pointer-events-none"
             width=${MAP_DIMENSION} height=${MAP_DIMENSION}
             v-for="car in store.table_data.filter(c => c.visueel === true)">
                 <path
                     :d="generatePath(car.route)"
                     fill="none"
-                    stroke="#F54242"
+                    :stroke="getRouteColor(car.route)"
                     stroke-width="4" />
 
-            </svg>-->
+            </svg>
 
             <!-- Auto -->
             <div

@@ -80,6 +80,11 @@ export const store = reactive({
     {"tag_id": "11B", "tag_pos": {"x": 515, "y": 290}},
     {"tag_id": "12B", "tag_pos": {"x": 550, "y": 360}},
 
+    {"tag_id": "13B", "tag_pos": {"x": 600, "y": 89}},
+    {"tag_id": "14B", "tag_pos": {"x": 715, "y": 204.5}},
+    {"tag_id": "15B", "tag_pos": {"x": 600, "y": 320}},
+    {"tag_id": "16B", "tag_pos": {"x": 485, "y": 204.5}},
+    
     //Tile 3
     {"tag_id": "1C", "tag_pos": {"x": 150, "y": 450}},
     {"tag_id": "2C", "tag_pos": {"x": 150, "y": 550}},
@@ -132,8 +137,8 @@ export const store = reactive({
   ],
 
     routes: [
-    {"route": "Route 1", "tags": ["1A", "2A", "3A", "4A", "1B", "2B", "5B", "8B", "9B", "1D", "2D", "3D", "4D", "1F", "2F", "3F", "4F"], "color": ""},
-    {"route": "Route 2", "tags": ["5A", "6A", "7A", "10B", "11B", "12B", "5D"]},
+    {"route": "Route 1", "tags": ["1A", "2A", "3A", "4A", "1B", "2B", "13B", "5B", "14B", "9B", "1D", "2D", "3D", "4D", "1F", "2F", "3F", "4F"], "color": "#ff0000"},
+    {"route": "Route 2", "tags": ["5A", "6A", "7A", "10B", "11B", "12B", "5D"], "color": "#07cf00"},
     {"route": "Route 3", "tags": []}
   ],
 
