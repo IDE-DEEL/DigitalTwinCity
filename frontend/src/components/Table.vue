@@ -1,11 +1,9 @@
 <script setup>
 import "../assets/Table.css"
 import { watch } from 'vue'
-import { store, send_data } from '../store.js'
+import { useDigitalTwinStore } from '../stores/digital-twin.js'
 
-watch(() => {
-  send_data("car_table", store.table_data)
-})
+const store = useDigitalTwinStore()
 
 function update_car(car, newValue) {
   const id_exists = store.table_data.some(item => item.auto_id === newValue && item !== car)
