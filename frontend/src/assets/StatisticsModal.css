@@ -19,7 +19,7 @@
   width: 500px;
   margin: 0px auto;
   padding: 20px 30px;
-  background-color: var(--color-primary-gray3);
+  background-color: var(--color-primary-gray2);
   border-radius: 4px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
   transition: all 0.3s ease;

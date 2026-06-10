@@ -130,9 +130,9 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
     ],
 
     scenarios: [
-        "Placeholder 1",
-        "Placeholder 2",
-        "Placeholder 3"
+        "Rustig",
+        "Gemiddeld",
+        "Druk"
     ],
 
     results: {
