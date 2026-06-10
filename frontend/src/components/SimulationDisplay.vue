@@ -119,16 +119,36 @@ const lerp = (start, end, progress) => {
   return start + (end - start) * progress;
 }
 
-const getHeadingAngle = (from, to) => {
+const lastCarAngles = new Map();
+
+const getHeadingAngle = (carId, from, to) => {
   const dx = to.x - from.x;
   const dy = to.y - from.y;
 
   if (Math.hypot(dx, dy) < 0.5) {
-    return DEFAULT_CAR_ROTATION;
+    return lastCarAngles.get(carId) ?? DEFAULT_CAR_ROTATION;
   }
 
-  return Math.atan2(dy, dx) * (180 / Math.PI) + 90;
-}
+  let targetAngle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+  
+  const previousAngle = lastCarAngles.get(carId);
+  
+  if (previousAngle !== undefined) {
+    let angleDifference = targetAngle - previousAngle;
+    
+    while (angleDifference < -180) {
+      targetAngle += 360;
+      angleDifference = targetAngle - previousAngle;
+    }
+    while (angleDifference > 180) {
+      targetAngle -= 360;
+      angleDifference = targetAngle - previousAngle;
+    }
+  }
+
+  lastCarAngles.set(carId, targetAngle);
+  return targetAngle;
+};
 
 const orderedTags = computed(() => {
   return store.tag_positions.map((tag, index) => ({
@@ -223,7 +243,7 @@ const setCarDisplayPosition = (carId, carMeta, position, rotation = DEFAULT_CAR_
 
 const startMotion = (carId, carMeta, from, to, targetTagId, mode) => {
   const duration = getMoveDuration(carId, from, to);
-  const rotation = getHeadingAngle(from, to);
+  const rotation = getHeadingAngle(carId, from, to);
 
   carMotionStates.set(carId, {
     carMeta,
