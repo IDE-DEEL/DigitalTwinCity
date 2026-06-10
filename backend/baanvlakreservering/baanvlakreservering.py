@@ -1,7 +1,10 @@
 import paho.mqtt.client as mqtt
 import ssl
-from ..score.scoreCalculator import TripData, calculate_score
-from ..score.config import WEIGHTS, TRIP
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "score"))
+from score.scoreCalculator import TripData, calculate_score
+from score.config import  WEIGHTS, TRIP
 from typing import Callable
 
 from backend.core.config import settings

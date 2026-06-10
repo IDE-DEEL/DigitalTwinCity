@@ -3,6 +3,14 @@ const rawApiUrl = runtimeEnv.VITE_API_URL || import.meta.env.VITE_API_URL || '';
 
 export const API_BASE_URL = rawApiUrl.replace(/\/$/, '');
 
+function fallbackApiBaseUrl() {
+  if (import.meta.env.DEV) {
+    return 'http://localhost:8000';
+  }
+
+  return globalThis.window?.location?.origin || 'http://localhost:8000';
+}
+
 export function apiUrl(path) {
   if (/^https?:\/\//.test(path)) {
     return path;
@@ -18,8 +26,7 @@ export function wsUrl(path) {
   }
 
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-  const localhostUrl = "http://localhost:8000";
-  const baseUrl = API_BASE_URL || localhostUrl || '';
+  const baseUrl = API_BASE_URL || fallbackApiBaseUrl();
   const url = new URL(normalizedPath, baseUrl);
 
   url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
