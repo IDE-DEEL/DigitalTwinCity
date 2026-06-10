@@ -135,6 +135,16 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
         "Placeholder 3"
     ],
 
+    results: {
+        "environment": 0,
+        "economic": 0,
+        "social": 0,
+        "energy": 0,
+        "safety": 0,
+        "maintenance": 0,
+        "total": 0
+    },
+
     chosen_tag: {"tag_id": "1A", "tag_pos": {"x": 155, "y": 350}},
     show_tags: false,
     
@@ -142,7 +152,6 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
     speed: 50,
     sim_speed: 20,
     max_packages: 12,
-    score: 80,
     active: false,
     time: "00:00",
 
@@ -195,6 +204,9 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
           case 'car_energy':
             this.updateEnergy(payload)
             break
+
+          case 'results':
+            this.results = payload
         }
       }
 
