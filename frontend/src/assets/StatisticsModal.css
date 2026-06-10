@@ -63,6 +63,18 @@
   padding: 5px 5px;
 }
 
+.download-csv-button {
+  float: right;
+  background-color: #35bb00;
+  width: 158px;
+  height: 38px;
+  padding: 0px;
+}
+
+.download-csv-button:hover {
+  background-color: #3ae02b;
+}
+
 .modal-default-button {
   float: right;
   width: 38px;

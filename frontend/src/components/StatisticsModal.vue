@@ -3,6 +3,30 @@ import '../assets/StatisticsModal.css'
 import { useDigitalTwinStore } from '../stores/digital-twin.js'
 
 const store = useDigitalTwinStore()
+
+const handleDownloadCSV = () => {
+    // 1. Bouw de CSV tekst op vanuit de store
+    const r = store.results;
+    const csvData = [
+        ['Categorie', 'Score'],
+        ['Omgeving', Number(r.environment || 0).toFixed(1)],
+        ['Economie', Number(r.economic || 0).toFixed(1)],
+        ['Sociaal', Number(r.social || 0).toFixed(1)],
+        ['Energie', Number(r.energy || 0).toFixed(1)],
+        ['Veiligheid', Number(r.safety || 0).toFixed(1)],
+        ['Onderhoudbaarheid', Number(r.maintenance || 0).toFixed(1)],
+        ['Totale score', Number(r.total || 0).toFixed(1)]
+    ].map(row => row.join(',')).join('\n');
+
+    const timestamp = new Date().toISOString().split('T')[0];
+
+    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `DEEL-simulation_${timestamp}.csv`;
+    link.click();
+};
+
 </script>
 
 <template>
@@ -12,6 +36,10 @@ const store = useDigitalTwinStore()
       <div class="modal-header">
         <slot name="header">
         </slot>
+
+        <button class="download-csv-button" @click="handleDownloadCSV">
+          <p>Download CSV</p>
+        </button>
 
         <button class="modal-default-button" @click="$emit('close')">
           <p>X</p>
