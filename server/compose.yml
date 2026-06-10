@@ -41,6 +41,8 @@ services:
   frontend:
     image: ${FRONTEND_IMAGE}
     restart: unless-stopped
+    environment:
+      - VITE_API_URL=${FRONTEND_API_URL}
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/health"]
       interval: 10s
