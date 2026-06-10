@@ -63,6 +63,14 @@ tbody:nth-child(even) {
     text-align: center;
 }
 
+.package-input:disabled {
+    cursor: not-allowed;
+}
+
+.route-select:disabled {
+    cursor: not-allowed;
+}
+
 .add-car {
     width: 48px;
     height: 24px;

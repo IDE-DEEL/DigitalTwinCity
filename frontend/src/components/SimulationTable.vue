@@ -30,6 +30,10 @@ const props = defineProps({
     headers: {
         type: Array,
         default: () => []
+    },
+    disabled: {
+        type: Boolean,
+        default: false
     }
 })
 
@@ -74,13 +78,18 @@ const handleMaxPackagesInput = (carId, event) => {
                     type="number" 
                     :min="props.minPackages" 
                     :max="props.maxPackages" 
+                    :disabled="props.disabled"
                     v-model="car.maxPackages"
                     @blur="handleMaxPackagesInput(car.id, $event)"
                     @keydown.enter="handleMaxPackagesInput(car.id, $event)"
                 ></input>
             </td>
             <td>
-              <select v-model="car.routeName">
+              <select 
+                v-model="car.routeName" 
+                :disabled="props.disabled"
+                class="route-select"
+              >
                 <option v-for="routeOption in props.routeOptions" :key="routeOption.key" :value="routeOption.value">{{ routeOption.label }}</option>
               </select>
             </td>

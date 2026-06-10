@@ -266,6 +266,7 @@ const toggleRouteBuilder = () => {
                     :min-packages="MIN_PACKAGES" 
                     :route-options="dashboardStore.routeOptions"
                     :name="getLabel('tableHeader')"
+                    :disabled="isSimulating"
                     :headers="[
                         getLabel('carId'),
                         getLabel('packages'),
