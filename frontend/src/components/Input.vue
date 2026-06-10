@@ -1,14 +1,13 @@
 <script setup>
 import "../assets/NumberInput.css"
-import { watch } from 'vue'
-import { send_data } from '../store.js'
 
 const model = defineModel({ type: String, default: "" });
-const props = defineProps({ name: String, type: String});
 
-watch(model, () => {
-  send_data(props.type, model.value)
+defineProps({
+  name: String,
+  type: String,
 })
+
 </script>
 
 <template>

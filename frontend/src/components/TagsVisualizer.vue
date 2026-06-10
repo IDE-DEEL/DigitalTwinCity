@@ -1,6 +1,8 @@
 <script setup>
 import '../assets/TagsVisualizer.css';
-import { store } from '../store'
+import { useDigitalTwinStore } from '../stores/digital-twin.js'
+
+const store = useDigitalTwinStore();
 
 function show_tags() {
     store.show_tags = !store.show_tags
@@ -8,8 +10,10 @@ function show_tags() {
 </script>
 
 <template>
-    <h2 class="title">RFID-Tags:</h2>
-    <button class="visualize_tag" @click="show_tags()">{{ store.show_tags ? 'Verberg' : 'Toon' }}</button>
+    <div class="tags">
+        <h2 class="title">RFID-Tags:</h2>
+        <button class="visualize_tag" @click="show_tags()">{{ store.show_tags ? 'Verberg' : 'Toon' }}</button>
+    </div>
     <div class="tags-container">
         <table class="vertical-table">
             <tbody>

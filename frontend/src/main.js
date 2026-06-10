@@ -4,15 +4,12 @@ import App from '../src/App.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import DigitalTwinPage from './components/pages/DigitalTwinPage.vue'
 import SimulationPage from './components/pages/SimulationPage.vue'
-import { connect } from './store.js'
 import Login from './components/Login.vue'
 import AdminPage from './components/pages/AdminPage.vue'
 import { apiUrl } from './config/api'
 import './index.css'
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
-
-connect();
 
 const page_router = createRouter({
     history: createWebHistory(),
@@ -84,7 +81,7 @@ function isStudentSession(session) {
     return Boolean(session) && session.role !== 'admin';
 }
 
-page_router.beforeEach(async (to) => {
+/*page_router.beforeEach(async (to) => {
     const publicPaths = ['/login', '/admin'];
     const requiresAuth = !publicPaths.includes(to.path);
     const session = await verifySession();
@@ -106,7 +103,7 @@ page_router.beforeEach(async (to) => {
     }
 
     return true;
-});
+});*/
 
 const pinia = createPinia()
 const app = createApp(App)

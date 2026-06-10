@@ -1,25 +1,26 @@
 <script setup>
 import "../assets/Table.css"
 import { watch } from 'vue'
-import { store, send_data } from '../store.js'
+import { useDigitalTwinStore } from '../stores/digital-twin.js'
 
-watch(() => {
-  send_data("car_table", store.table_data)
-})
-
-function update_car(car, newValue) {
-  const id_exists = store.table_data.some(item => item.auto_id === newValue && item !== car)
-  
-  if (id_exists) {
-    alert('Dit auto_id is al bezet!')
-    return
-  }
-
-  car.auto_id = newValue
-}
+const store = useDigitalTwinStore()
 
 function visualizing(car) {
   car.visueel = !car.visueel
+}
+
+function send_packages(car) {
+  store.sendData('packages', {
+    car_id: car.auto_id,
+    packages: car.pakketje
+  })
+}
+
+function send_route(car) {
+  store.sendData('route', {
+    car_id: car.auto_id,
+    route: car.route
+  })
 }
 </script>
 
@@ -30,7 +31,7 @@ function visualizing(car) {
         <thead>
           <tr class="title-row">
             <th>Status</th>
-            <th>Auto ID</th>
+            <th>ID</th>
             <th>Energie</th>
             <th>Pakketjes</th>
             <th>Route</th>
@@ -42,11 +43,21 @@ function visualizing(car) {
             <td>
               <div class="circle" :class="{ 'is-active': car.status }"></div>
             </td>
-            <td><input class="package-input" type="text" size=6 v-model="car.auto_id" @change="update_car(car, $event.target.value)"></input></td>
-            <td>{{ car.energie}} %</td>
-            <td><input class="package-input" type="number" min=0 :max=store.max_packages v-model="car.pakketje"></input></td>
+            <td>{{ car.auto_id }}</td>
+            <td>{{ car.energie }} %</td>
             <td>
-              <select v-model="car.route">
+              <input class="package-input" 
+                     type="number" 
+                     min=0 
+                     :max=store.max_packages 
+                     v-model="car.pakketje" 
+                     @change="send_packages(car)">
+              </input>
+            </td>
+            <td>
+              <select class="route-select" 
+                      v-model="car.route" 
+                      @change="send_route(car)">
                 <option v-for="r in store.routes" :key="r.route" :value="r.route">{{ r.route }}</option>
               </select>
             </td>

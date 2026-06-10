@@ -12,7 +12,7 @@
     background-color: var(--color-table-gray1);
     text-align: center;
     border: none;
-    padding: 12px;
+    padding: 10px;
 }
 
 table {
@@ -59,41 +59,43 @@ tbody:nth-child(even) {
     background-color: var(--color-primary-green);
 }
 
+.package-input::-webkit-inner-spin-button,
+.package-input::-webkit-outer-spin-button {
+    opacity: 1 !important;
+}
+
 .package-input {
     text-align: center;
-}
-
-.add-car {
-    width: 48px;
-    height: 24px;
-    position: relative;
-    font-size: 14px;
-    font-weight: bold;
-    border-color: black;
     background-color: var(--color-table-gray1);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+    padding: 4px 2px 4px 8px;
+    font-size: 16px;
+    color: inherit;
+    cursor: pointer;
+    width: 70px;
 }
 
-.remove-car {
-    width: 20px;
-    height: 20px;
-    position: relative;
-    font-size: 10px;
-    font-weight: bold;
-    background-color: #e80202;
+.package-input:focus {
+    outline: none;
+    border-color: var(--color-primary-blue);
+    background-color: var(--color-primary-gray1);
 }
 
-.car-id-container {
-    display: flex;
-    align-items: center;
-    gap: 4px;
+.route-select {
+    text-align: center;
+    background-color: var(--color-table-gray1);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+    padding: 4px 24px 4px 8px;
+    font-size: 16px;
+    color: inherit;
+    cursor: pointer;
+    width: 95px;
 }
 
-.car-id-color {
-    width: 4px;
-    height: 22px;
-    border-radius: var(--rounded-sm);
-}
-
-.route-visibility-button:hover {
-    background-color: var(--color-primary-blue-hover);
+.route-select:focus {
+    outline: none;
+    border-color: var(--color-primary-blue);
+    background-color: var(--color-primary-gray1);
 }
