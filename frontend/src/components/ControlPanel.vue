@@ -74,10 +74,8 @@ const formattedTime = computed(() => {
           </div>
 
           <div class="score-area">
-            <p>Score 1: 100</p>
-            <p>Score 2: 200</p>
-            <p>Score 3: 55</p>
-            <p>Totale Score: {{ store.score }}</p>
+            <button class="statistics-button">Statistieken</button>
+            <p>Score: {{ store.score }}%</p>
           </div>
         </slot>
       </div>

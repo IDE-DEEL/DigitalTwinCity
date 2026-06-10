@@ -46,7 +46,7 @@ aside {
   display: flex;
   flex-direction: column;    
   align-items: flex-start; 
-  gap: 16px;                 
+  gap: 10px;                 
   flex-shrink: 0;            
 }
 
@@ -56,6 +56,15 @@ aside {
   font-weight: bold;
   white-space: nowrap;
   line-height: 1;
+}
+
+.timer-area p:last-child {
+  font-size: 30px;
+  font-weight: bold;
+  margin-top: 8px;           
+  border-top: 1px solid #000000;
+  padding-top: 8px;
+  line-height: 1;            
 }
 
 .score-area {
@@ -83,6 +92,19 @@ aside {
 .timer-button {
     width: 88px;
     height: 36px;
+    padding: 0px;
+    background-color: var(--color-primary-blue);
+    place-items: center;
+    color: white;
+    border: 1px groove gray;
+    border-radius: 4px;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.statistics-button {
+    width: 160px;
+    height: 40px;
     padding: 0px;
     background-color: var(--color-primary-blue);
     place-items: center;

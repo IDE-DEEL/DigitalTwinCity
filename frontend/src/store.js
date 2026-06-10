@@ -155,7 +155,7 @@ export const store = reactive({
   speed: 50,
   sim_speed: 20,
   max_packages: 12,
-  score: 355,
+  score: 80,
   active: false,
   time: "00:00",
 

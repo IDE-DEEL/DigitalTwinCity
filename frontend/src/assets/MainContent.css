@@ -6,7 +6,7 @@
 .visualize-panel {
   padding: 28px;
   background-color: var(--color-primary-gray2);
-  flex: 0 1 25%;
+  flex: 0 1 21%;
 }
 
 .display-field {
@@ -15,7 +15,7 @@
 }
 
 .control-panel {
-  padding: 28px;
+  padding: 30px;
   background-color: var(--color-primary-gray2);
-  flex: 0 1 25%;
+  flex: 0 1 35%;
 }
