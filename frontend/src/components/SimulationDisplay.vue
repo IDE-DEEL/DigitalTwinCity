@@ -4,8 +4,9 @@ import { fetchMapData } from '../logic/service/mapService.js';
 import { buildLane } from '../logic/service/laneBuilder.js';
 import { normalizeDegree } from '../logic/utils/rotation.js';
 import { useMapStore } from '../stores/mapStore.js';
+import { MAP_COLUMNS } from '../constants/constants.js'
 const factor_y = ref(0)
-const MAP_DIMENSION = 3
+const MAP_DIMENSION = MAP_COLUMNS;
 import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
 import { normalizeTagId, store } from '../store.js'
 import '../assets/Display.css';
