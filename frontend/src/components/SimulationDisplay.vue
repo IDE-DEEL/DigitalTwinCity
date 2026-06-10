@@ -1,14 +1,17 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, onBeforeUnmount, reactive, watch } from 'vue';
+import { storeToRefs } from 'pinia';
 import { fetchMapData } from '../logic/service/mapService.js'; 
 import { buildLane } from '../logic/service/laneBuilder.js';
 import { normalizeDegree } from '../logic/utils/rotation.js';
 const factor_y = ref(0)
 const MAP_DIMENSION = 3
 import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
-import { normalizeTagId, store } from '../store.js'
+import { normalizeTagId, useDigitalTwinStore } from '../stores/digital-twin.js'
 import '../assets/Display.css';
 
+const store = useDigitalTwinStore();
+const { show_tags, active, table_data } = storeToRefs(store);
 const mapData = ref([]); 
 const componentDefinitions = ref({}); 
 const isLoading = ref(true);
@@ -32,7 +35,7 @@ const carRealSyncStates = new Map();
 const carObservedSpeeds = new Map();
 const carPositionsById = reactive({});
 
-//real scale: tile -> 57.5 cm
+//real scale: tile -> 40 cm
 
 // container style
 const containerStyle = computed(() => {

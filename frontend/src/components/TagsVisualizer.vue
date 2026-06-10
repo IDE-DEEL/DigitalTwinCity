@@ -1,6 +1,8 @@
 <script setup>
 import '../assets/TagsVisualizer.css';
-import { store } from '../store'
+import { useDigitalTwinStore } from '../stores/digital-twin.js'
+
+const store = useDigitalTwinStore();
 
 function show_tags() {
     store.show_tags = !store.show_tags
