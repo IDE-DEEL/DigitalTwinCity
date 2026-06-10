@@ -146,6 +146,9 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
     active: false,
     time: "00:00",
 
+    factor_x: 0,
+    factor_y: 0,
+
     socket: null
   }),
 
