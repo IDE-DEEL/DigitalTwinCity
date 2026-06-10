@@ -35,7 +35,9 @@ Direction = {
     "RIGHT": 1,
     "STRAIGHT": 2,
     "ROUNDABOUT": 3,
-    "RIGHT_ROUND": 4
+    "RIGHT_ROUND": 4,
+    "HUB_LEFT": 5,
+    "HUB_RIGHT":6
 }
 
 # This is a list of routes with the commands and tags.
@@ -72,6 +74,13 @@ Tags = {
     "tag 10": ["adjacent tag", "adjacent tag", "adjacent tag"],
     "tag 11": ["adjacent tag", "adjacent tag", "adjacent tag"]
 }
+
+# Reset route index per car
+index = {
+    "auto_A": 0,
+    "auto_B": 0
+}
+
 # Stores the latest vehicle RFID data
 car_data = []
 
@@ -105,7 +114,6 @@ def notify_car_data_listeners():
 start = True
 
 # Reset route index
-index = 0
 
 # ---------------- CALLBACKS ----------------
 def on_connect(client, userdata, flags, reason_code, properties):
@@ -156,20 +164,20 @@ def on_message(client, userdata, msg):
 
         # Check whether the scanned RFID matches
         # the current route waypoint
-        if rfid == route[chosen_route][index][0]:
+        if rfid == route[chosen_route][index[topic[1]]][0]:
 
             # Stop vehicle before changing direction
             client.publish(f"car/{topic[1]}/cmd/Start", "False")
             # Send next direction command
-            client.publish(f"car/{topic[1]}/cmd/direction", route[chosen_route][index][1])
+            client.publish(f"car/{topic[1]}/cmd/direction", route[chosen_route][index[topic[1]]][1])
             # Resume movement
             client.publish(f"car/{topic[1]}/cmd/Start", "True")
             # Advance to next route step
-            index += 1
+            index[topic[1]] += 1
 
             # Loop back to start when route completes.
-            if len(route[chosen_route]) == index:
-                index = 0
+            if len(route[chosen_route]) == index[topic[1]]:
+                index[topic[1]] = 0
 
     elif not start:
         # Emergency stop / manual stop mode
