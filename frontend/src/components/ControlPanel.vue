@@ -5,6 +5,7 @@ import Slider from './Slider.vue'
 import Input from './Input.vue'
 import DropDown from './DropDown.vue'
 import Table from './Table.vue'
+import StatisticsModal from './StatisticsModal.vue'
 import { useDigitalTwinStore } from '../stores/digital-twin.js'
 import '../assets/Button.css'
 import '../assets/ControlPanel.css'
@@ -12,6 +13,7 @@ import '../assets/ControlPanel.css'
 const timer = ref(null)
 const elapsedTime = ref(0) // Time in milliseconds
 const store = useDigitalTwinStore()
+const showModal = ref(false)
 
 function start(event) {
   if (!store.active) {
@@ -43,7 +45,6 @@ const formattedTime = computed(() => {
 
   return `${pad(minutes)}:${pad(seconds)}:${pad(milliseconds)}`
 })
-
 </script>
 
 <template>
@@ -94,9 +95,14 @@ const formattedTime = computed(() => {
           </div>
 
           <div class="score-area">
-            <button class="statistics-button">Statistieken</button>
+            <button class="statistics-button" @click="showModal = true">Statistieken</button>
             <p>Score: {{ store.score }}%</p>
           </div>
+          <StatisticsModal v-if="showModal" @close="showModal = false">
+            <template #header>
+              <h2>Scores</h2>
+            </template>
+          </StatisticsModal>
         </slot>
       </div>
     </div>
