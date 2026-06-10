@@ -15,7 +15,7 @@ MQTT_PASSWORD = settings.MQTT_PASSWORD
 
 # Current topics to subscribe and publish too. This is temporary, as some of it is mainly for a template.
 SUB_TOPIC = "car/auto_B/data/LastRFID"
-PUB_TOPIC_DIR = "car/auto_B/cmd/direction"
+PUB_TOPIC_DIR = "car/auto_B/cmd/Direction"
 PUB_TOPIC_MOVE = "car/auto_B/cmd/Start"
 
 # Chosen route from the front end. Currently is a placeholder.
@@ -170,7 +170,7 @@ def on_message(client, userdata, msg):
             # Stop vehicle before changing direction
             client.publish(f"car/{topic[1]}/cmd/Start", "False")
             # Send next direction command
-            client.publish(f"car/{topic[1]}/cmd/direction", route[chosen_route][index[topic[1]]][1])
+            client.publish(f"car/{topic[1]}/cmd/Direction", route[chosen_route][index[topic[1]]][1])
             # Resume movement
             client.publish(f"car/{topic[1]}/cmd/Start", "True")
             # Advance to next route step
