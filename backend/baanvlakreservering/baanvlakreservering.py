@@ -153,7 +153,8 @@ def on_message(client, userdata, msg):
         for i in cars:
             if cars[i] in Tags[rfid]:
                 client.publish(f"car/{topic[1]}/cmd/Start", "False")
-                car_stopped.append([topic[1], i, cars[i]])
+                if topic[1] not in car_stopped:
+                    car_stopped.append([topic[1], i, cars[i]])
 
         # checks if the car that made the other stop, has moved from their tag and starts the stopped car in that case.
         if len(car_stopped) != 0:
