@@ -4,7 +4,7 @@ import { send_data } from '../store.js'
 import '../assets/Slider.css';
 
 const model = defineModel({ type: Number, default: 0 });
-const props = defineProps({ name: String, type: String, min: Number, max: Number });
+const props = defineProps({ name: String, type: String, min: Number, max: Number, disabled: { type: Boolean, default: false } });
 
 watch(model, () => {
   send_data(props.type, model.value)
@@ -28,6 +28,7 @@ watch(model, () => {
           max=max
           class="custom-slider" 
           v-model.number="model"
+          :disabled="disabled"
         />
         
         <span class="dot dot-right"></span>

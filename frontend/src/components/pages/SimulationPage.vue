@@ -243,13 +243,15 @@ const toggleRouteBuilder = () => {
             <template #parameters>
                 <Slider 
                     class="slider-area" 
-                    :name="getLabel('carSpeed')" 
+                    :name="getLabel('carSpeed')"
+                    :disabled="isSimulating"
                     type="speed" 
                     v-model="dashboardStore.carTargetSpeed"
                 ></Slider>
                 <DropDown 
                     class="scenario-area" 
-                    :name="getLabel('scenario')" 
+                    :name="getLabel('scenario')"
+                    :disabled="isSimulating"
                     type="scenario" 
                     :list="dashboardStore.scenarioOptions" 
                     v-model="dashboardStore.scenario"
@@ -286,13 +288,13 @@ const toggleRouteBuilder = () => {
             <!-- Simulation speed, start and stop controls + stats modal open button -->
             <template #simulation-controls>
                 <div class="stats-button-container">
-                    <button @click="handleStatsOpen"> {{ getLabel('statisticsButton') }} </button>
+                    <button @click="handleStatsOpen" :disabled="!hasSimulated"> {{ getLabel('statisticsButton') }} </button>
                 </div>
 
 
                 <div class="button-area">
-                    <button @click="handleSimulationStart"> {{ getLabel('startButton') }} </button>
-                    <button @click="handleSimulationStop"> {{ getLabel('stopButton') }} </button>
+                    <button @click="handleSimulationStart" :disabled="isSimulating"> {{ getLabel('startButton') }} </button>
+                    <button @click="handleSimulationStop" :disabled="!isSimulating"> {{ getLabel('stopButton') }} </button>
                 </div>
             </template>
         </ControlPanel>
