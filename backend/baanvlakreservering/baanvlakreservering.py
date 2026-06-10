@@ -1,6 +1,7 @@
 import paho.mqtt.client as mqtt
 import ssl
-import time
+from ..score.scoreCalculator import TripData, calculate_score
+from ..score.config import WEIGHTS, TRIP
 from typing import Callable
 
 from backend.core.config import settings
@@ -179,6 +180,7 @@ def on_message(client, userdata, msg):
             # Loop back to start when route completes.
             if len(route[chosen_route]) == index[topic[1]]:
                 index[topic[1]] = 0
+                calculate_score(TRIP, WEIGHTS)
 
     elif not start:
         # Emergency stop / manual stop mode
