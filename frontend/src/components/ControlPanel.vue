@@ -64,6 +64,8 @@ const formattedTime = computed(() => {
         <Table></Table>
     </slot>
 
+    <slot name="simulation-statistics"></slot>
+
     <div class="simulation-container">
       <div class="state">
         <!-- Slot voor de simulatie controls (slider + buttons) -->

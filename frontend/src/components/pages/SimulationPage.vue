@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useMapStore, useDashboardParametersStore, useSimulationStateStore } from '../../stores'
 import { getLabel } from '../../constants/ui_labels.js'
 import { SIMULATION_SPEED_OPTIONS } from '../../constants/constants.js'
@@ -34,6 +34,7 @@ const {
     isWebSocketConnected,
     isSimulating,
     hasSimulated,
+    autoOpenStatsModal,
     startSimulation,
     stopSimulation,
     reconnectWebSocket,
@@ -104,6 +105,16 @@ const handleSimulationStop = () => {
 const handleStatsOpen = () => {
     isStatsModalOpen.value = true;
 }
+
+watch(
+    () => autoOpenStatsModal.value,
+    (newValue) => {
+        if (newValue) {
+            isStatsModalOpen.value = true;
+            autoOpenStatsModal.value = false;
+        }
+    }
+);
 
 /*  
     =====================
@@ -263,15 +274,17 @@ const toggleRouteBuilder = () => {
                 ></SimulationTable>
             </template>
 
-            <!-- Simulation speed, start and stop controls + stats modal open button -->
-            <template #simulation-controls>
+            <template #simulation-statistics>
                 <RadioGroup 
                     class="radio-group-area" 
                     :name="getLabel('simulationSpeed')" 
                     :list="SIMULATION_SPEED_OPTIONS" 
                     v-model="dashboardStore.simulationSpeed"
                 ></RadioGroup>
+            </template>
 
+            <!-- Simulation speed, start and stop controls + stats modal open button -->
+            <template #simulation-controls>
                 <div class="stats-button-container">
                     <button @click="handleStatsOpen"> {{ getLabel('statisticsButton') }} </button>
                 </div>
