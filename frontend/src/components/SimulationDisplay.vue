@@ -20,22 +20,6 @@ const componentDefinitions = ref({});
 const isLoading = ref(true);
 // const mapGrid = ref(null); 
 const MAX_MAP_SCALE = 90;
-const MIN_CAR_MOVE_MS = 300;
-const MIN_ROUTE_SPEED = 10;
-const MAX_ROUTE_SPEED = 100;
-const PIXELS_PER_SECOND_PER_SPEED = 2.3;
-const SCREEN_SPEED_MULTIPLIER = 0.40;
-const MIN_OBSERVED_PIXELS_PER_SECOND = 20;
-const MAX_OBSERVED_PIXELS_PER_SECOND = 350;
-const OBSERVED_SPEED_SMOOTHING = 0.55;
-const TAG_TIMEOUT_MS = 5000;
-const DEFAULT_CAR_ROTATION = 0;
-
-let animationFrameId = null;
-const carMotionStates = new Map();
-const carRealSyncStates = new Map();
-const carObservedSpeeds = new Map();
-const carPositionsById = reactive({});
 
 //real scale: tile -> 40 cm
 
