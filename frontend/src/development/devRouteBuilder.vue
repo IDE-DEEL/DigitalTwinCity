@@ -112,7 +112,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import { DEPOT_TILE, MAP_COLUMNS, MAP_ROWS } from '../constants/constants';
+import { DEPOT_ENTRANCE, DEPOT_EXIT, MAP_COLUMNS, MAP_ROWS } from '../constants/constants';
 import {
   getDirectionBetweenTiles,
   getMapTile,
@@ -122,7 +122,7 @@ import {
 import { getWaypointPreviewFromTilePath } from '../logic/service/routeService.js';
 
 const isActive = defineModel('isActive', { type: Boolean, default: false });
-const routeTiles = ref([DEPOT_TILE]);
+const routeTiles = ref([DEPOT_EXIT]);   // Start route at depot exit tile
 const copyFeedback = ref('');
 
 const currentTile = computed(() => {
@@ -131,9 +131,11 @@ const currentTile = computed(() => {
 
 // For a route to be complete it needs to consist of multiple tiles and end at the depot
 const routeComplete = computed(() => {
+    const lastTile = routeTiles.value[routeTiles.value.length - 1];
+
   return routeTiles.value.length > 1 && 
-         routeTiles.value[routeTiles.value.length - 1].x === DEPOT_TILE.x &&
-         routeTiles.value[routeTiles.value.length - 1].y === DEPOT_TILE.y;
+         lastTile.x === DEPOT_ENTRANCE.x &&
+         lastTile.y === DEPOT_ENTRANCE.y;
 });
 
 const possibleNextTiles = computed(() => {
@@ -249,7 +251,7 @@ function selectTile(tile) {
  * Reset the route back to the starting depot.
  */
 function resetRoute() {
-  routeTiles.value = [DEPOT_TILE];
+  routeTiles.value = [DEPOT_EXIT];
   copyFeedback.value = '';
 }
 
@@ -270,9 +272,14 @@ function copyRoute() {
 
   const tilesStr = routeTiles.value
     .map(tile => {
-      if (tile.x === DEPOT_TILE.x && tile.y === DEPOT_TILE.y) {
-        return `${indent}DEPOT_TILE`;
+      if (tile.x === DEPOT_EXIT.x && tile.y === DEPOT_EXIT.y) {
+        return `${indent}DEPOT_EXIT`;
       }
+
+      if (tile.x === DEPOT_ENTRANCE.x && tile.y === DEPOT_ENTRANCE.y) {
+        return `${indent}DEPOT_ENTRANCE`;
+      }
+
       return `${indent}{ x: ${tile.x}, y: ${tile.y} }`;
     })
     .join(',\n');

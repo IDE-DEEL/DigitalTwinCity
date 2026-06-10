@@ -34,8 +34,8 @@
 
 <script setup>
 import { computed } from "vue";
-import { getTileMetadata, getLocalHouseCoordinates, localToGlobalCoords } from "../logic/service/houseBuilder.js";
-import { rotatePointNormalized, normalizeDegree } from "../logic/utils/rotation.js";
+import { buildHouseCoordinates } from "../logic/service/houseBuilder.js";
+import { useMapStore } from "../stores/mapStore.js";
 import { HOUSE_INSTANCES } from "../logic/domain/houseInstances.js";
 import { getHousesForScenarioByValue } from "../logic/domain/scenarios.js";
 import { MAP_COLUMNS, MAP_ROWS } from '../constants/constants.js';
@@ -72,42 +72,52 @@ function rotatePointsArray(pointsArray, rotationDegree) {
 }
 
 /**
- * Get the houses active in the current scenario and build detection zones with rotation
+ * Get the houses active in the current scenario and build detection zones
  */
 const detectionZones = computed(() => {
   try {
-    const scenarioHouses = getHousesForScenarioByValue(props.scenario);
-    
-    return Object.keys(scenarioHouses).map((houseInstanceId) => {
-      const instance = HOUSE_INSTANCES.find((h) => h.id === houseInstanceId);
-      
-      if (!instance) return null;
+    const scenarioHouses =
+      getHousesForScenarioByValue(props.scenario);
 
-      // Get tile metadata to extract rotation
-      const tileMetadata = getTileMetadata(instance.tileX, instance.tileY);
-      
-      // Get local house coordinates for the tile type
-      const localCoords = getLocalHouseCoordinates(tileMetadata.type, instance.positionId);
-      
-      // Rotate each point in the roadCoords array based on tile rotation
-      const rotatedRoadCoords = rotatePointsArray(
-        localCoords.roadCoords,
-        tileMetadata.rotation
-      );
-      
-      // Transform each rotated point to global coordinates
-      const globalRoadCoords = rotatedRoadCoords.map((coord) =>
-        localToGlobalCoords(coord, instance.tileX, instance.tileY)
-      );
-      
-      return {
-        houseInstanceId,
-        points: globalRoadCoords,
-        labelPos: calculateCentroid(globalRoadCoords),
-      };
-    }).filter((zone) => zone !== null);
+    const mapStore = useMapStore();
+
+    return Object.keys(scenarioHouses)
+      .map((houseInstanceId) => {
+        const instance = HOUSE_INSTANCES.find(
+          h => h.id === houseInstanceId
+        );
+
+        if (!instance) {
+          return null;
+        }
+
+        const tile = mapStore.mapData.find(
+          t =>
+            t.x === instance.tileX &&
+            t.y === instance.tileY
+        );
+
+        const coordinates = buildHouseCoordinates(
+          instance,
+          tile?.rotation || 0
+        );
+
+        return {
+          houseInstanceId,
+          points: coordinates.roadCoords,
+          labelPos: calculateCentroid(
+            coordinates.roadCoords
+          ),
+        };
+      })
+      .filter(Boolean);
+
   } catch (error) {
-    console.error("Error building detection zones:", error);
+    console.error(
+      "Error building detection zones:",
+      error
+    );
+
     return [];
   }
 });

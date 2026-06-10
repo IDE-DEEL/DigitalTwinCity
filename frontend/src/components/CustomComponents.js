@@ -7,3 +7,4 @@ export { default as Switch } from "./Switch.vue";
 export { default as Table } from "./Table.vue";
 export { default as WebSocketStatus } from "./WebSocketStatus.vue";
 export { default as RoutePolyline } from "./RoutePolyline.vue";
+export { default as Car } from "./Car.vue";

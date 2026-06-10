@@ -101,8 +101,16 @@ function getRotatedSupportedLanes(house) {
     const tile = mapStore.mapData.find(t => t.x === house.tileX && t.y === house.tileY);
     const rotation = normalizeDegree(tile.rotation || 0);
 
-    return house.supportedLanes.map(lane => ({
+    return house.supportedLanes
+
+    // TODO:
+    // find out why this return works but:
+    // using house.supportedLanes in main function doesn't and
+    // this also doesnt work:
+    /**
+     * return house.supportedLanes.map(lane => ({
         from: rotateCardinalDirection(lane.from, rotation),
         to: rotateCardinalDirection(lane.to, rotation),
     }));
+     */
 }

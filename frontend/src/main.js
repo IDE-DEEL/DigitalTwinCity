@@ -33,8 +33,19 @@ async function verifySession() {
             credentials: 'include'
         });
 
-        return response.ok ? response.json() : null;
-    } catch {
+        if (!response.ok) {
+            return null;
+        }
+
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            console.error("Fout: Server stuurde geen JSON terug, maar:", contentType);
+            return null;
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error("Netwerkfout tijdens sessiecontrole:", error);
         return null;
     }
 }

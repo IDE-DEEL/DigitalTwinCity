@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useMapStore, useDashboardParametersStore, useSimulationStateStore } from '../../stores'
 import { getLabel } from '../../constants/ui_labels.js'
 import { SIMULATION_SPEED_OPTIONS } from '../../constants/constants.js'
@@ -8,7 +8,7 @@ import { MAP_COLUMNS, MAP_ROWS } from '../../constants/constants.js'
 import { useCarColors } from '../../composables/useCarColors.js'
 import { buildLane } from '../../logic/service/laneBuilder.js';
 import { normalizeDegree } from '../../logic/utils/rotation.js';
-import { Slider, DropDown, RadioGroup, SimulationTable, WebSocketStatus, RoutePolyline } from '../CustomComponents.js'
+import { Slider, DropDown, RadioGroup, SimulationTable, WebSocketStatus, RoutePolyline, Car } from '../CustomComponents.js'
 import { ControlPanel, SimulationDisplay, SimulationStatsModal, HouseLabelsOverlay } from '../AreaComponents.js'
 import { devTileCoordinateOverlay, devLaneDebugOverlay, devHouseDetectionZonesOverlay, devRouteBuilder } from '../../development/DevtoolComponents.js'
 import '../../assets/MainContent.css'
@@ -34,6 +34,7 @@ const {
     isWebSocketConnected,
     isSimulating,
     hasSimulated,
+    autoOpenStatsModal,
     startSimulation,
     stopSimulation,
     reconnectWebSocket,
@@ -105,6 +106,16 @@ const handleStatsOpen = () => {
     isStatsModalOpen.value = true;
 }
 
+watch(
+    () => autoOpenStatsModal.value,
+    (newValue) => {
+        if (newValue) {
+            isStatsModalOpen.value = true;
+            autoOpenStatsModal.value = false;
+        }
+    }
+);
+
 /*  
     =====================
     Developer tools
@@ -167,6 +178,21 @@ const toggleRouteBuilder = () => {
             <!-- Devtool: coordinate picker -->
             <template #map-grid-overlays>
                 <devTileCoordinateOverlay v-if="showDevTileCoordDebug"/>
+            </template>
+
+            <!-- Car sprites -->
+            <template #car>
+                <Car
+                    v-for="car in simulationStore.agentState"
+                    :key="`car-${car.id}`"
+                    :car="car"
+                    :bodyColor="getColorForCarAndRoute(car.id)"
+                    :cargoCount="car.packages_in_cargo.length"
+                    :title="`Car ${car.id} - ${car.packages_in_cargo.length} packages`"
+                    :factorX="MAP_COLUMNS"
+                    :factorY="MAP_ROWS"
+                    :isDigitalTwin="false"
+                />
             </template>
 
             <!-- SVG overlays -->
@@ -248,15 +274,17 @@ const toggleRouteBuilder = () => {
                 ></SimulationTable>
             </template>
 
-            <!-- Simulation speed, start and stop controls + stats modal open button -->
-            <template #simulation-controls>
+            <template #simulation-statistics>
                 <RadioGroup 
                     class="radio-group-area" 
                     :name="getLabel('simulationSpeed')" 
                     :list="SIMULATION_SPEED_OPTIONS" 
                     v-model="dashboardStore.simulationSpeed"
                 ></RadioGroup>
+            </template>
 
+            <!-- Simulation speed, start and stop controls + stats modal open button -->
+            <template #simulation-controls>
                 <div class="stats-button-container">
                     <button @click="handleStatsOpen"> {{ getLabel('statisticsButton') }} </button>
                 </div>
