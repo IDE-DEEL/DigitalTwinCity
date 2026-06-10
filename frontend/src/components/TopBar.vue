@@ -28,7 +28,10 @@ const handleLogout = async () => {
 
 <template>
   <header>
-    <h1>Explore The Digital Twin</h1>
+    <div class="title-container">
+      <img src="../../public/assets/hu-logo.png" alt="HU Logo" width="60" height="60">
+      <h1>Explore The Digital Twin</h1>
+    </div>
     <div class="button-container">
       <button 
         @click="handleLogout" 
