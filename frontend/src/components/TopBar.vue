@@ -5,7 +5,7 @@ import '../assets/TopBar.css'
 
 <template>
   <header>
-    <h1>DEEL - Digital Twin</h1>
+    <h1>Explore The Digital Twin</h1>
     <Switch/>
   </header>
 </template>
