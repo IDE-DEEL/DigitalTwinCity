@@ -48,6 +48,8 @@ const formattedTime = computed(() => {
 
 <template>
   <aside>
+    <slot name="websocket-status"></slot>
+
     <div class="parameter-container">
       <!-- Slot voor de bovenste parameters -->
       <slot name="parameters">
@@ -70,7 +72,12 @@ const formattedTime = computed(() => {
       </slot>
     </div>
 
-    <Table></Table>
+    <!-- Slot for car table -->
+    <slot name="car-table">
+        <Table></Table>
+    </slot>
+
+    <slot name="simulation-statistics"></slot>
 
     <div class="simulation-container">
       <div class="state">

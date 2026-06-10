@@ -4,8 +4,10 @@ import { storeToRefs } from 'pinia';
 import { fetchMapData } from '../logic/service/mapService.js'; 
 import { buildLane } from '../logic/service/laneBuilder.js';
 import { normalizeDegree } from '../logic/utils/rotation.js';
+import { useMapStore } from '../stores/mapStore.js';
+import { MAP_COLUMNS } from '../constants/constants.js'
 const factor_y = ref(0)
-const MAP_DIMENSION = 3
+const MAP_DIMENSION = 3;
 import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
 import { normalizeTagId, useDigitalTwinStore } from '../stores/digital-twin.js'
 import '../assets/Display.css';
@@ -13,6 +15,8 @@ import '../assets/Display.css';
 const store = useDigitalTwinStore();
 const { show_tags, active, table_data } = storeToRefs(store);
 const mapData = ref([]); 
+const mapStore = useMapStore();
+
 const componentDefinitions = ref({}); 
 const isLoading = ref(true);
 // const mapGrid = ref(null); 
@@ -59,30 +63,30 @@ const gridStyle = computed(() => {
 });
 
 const mapComponents = computed(() => {
-    return mapData.value.map(item => {
-        const def = componentDefinitions.value[item.type];
+    return mapStore.mapData.map(tile => {
+        const def = componentDefinitions.value[tile.variant];
         
         if (!def) return null;
 
-        const rotation = normalizeDegree(item.rotation || 0);
+        const rotation = normalizeDegree(tile.rotation || 0);
 
         return {
-            key: `${item.x}-${item.y}`, 
+            key: `${tile.x}-${tile.y}`, 
             imagePath: def.imagePath,
             label: def.label,
-            x: item.x,
-            y: item.y,
+            x: tile.x,
+            y: tile.y,
             rotation: rotation,
         };
     }).filter(c => c !== null);
 });
 
 const lanePositions = computed(() => {
-    return mapData.value.map(item => ({
-        id: `${item.x}-${item.y}`,
-        type: item.type,
-        rotation: normalizeDegree(item.rotation || 0),
-        position: { x: item.x, y: item.y },
+    return mapStore.mapData.map(tile => ({
+        id: `${tile.x}-${tile.y}`,
+        type: tile.type,
+        rotation: normalizeDegree(tile.rotation || 0),
+        position: { x: tile.x, y: tile.y },
     }));
 })
 
@@ -98,7 +102,7 @@ const getComponentPosition = (component) => {
 onMounted(async () => {
     try {
         const data = await fetchMapData(); 
-        mapData.value = data.mapData;
+        mapStore.setMapData(data.mapData);
         componentDefinitions.value = data.componentDefinitions;
         
         // Initialize the RFID mapper with loaded data
@@ -592,6 +596,8 @@ const selectTag = ((tag) => {
                     v-resize="updateFactor"
                     />
                 </div>
+                <!-- Map grid overlays -->
+                <slot name="map-grid-overlays"></slot>
             </div>
 
             <!-- RFID Tags Container -->
@@ -626,24 +632,32 @@ const selectTag = ((tag) => {
 
             </svg>
 
+            <!-- SVG overlays -->
+            <slot name="svg-overlays"></slot>
+
+            <!-- Simulation route builder -->
+            <slot name="route-builder"></slot>
+
             <!-- Auto -->
-            <div
-                v-for="car in carPositions"
-                :key="car.id"
-                class="car-sprite"
-                :style="getCarSpriteStyle(car)"
-            >
-                <div class="car-heading" :style="getCarHeadingStyle(car)">
-                    <div class="car-body">
-                        <div class="car-window"></div>
-                        <div class="car-hood"></div>
-                        <div class="car-headlights">
-                            <span></span>
-                            <span></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+             <slot name="car">
+                 <div
+                     v-for="car in carPositions"
+                     :key="car.id"
+                     class="car-sprite"
+                     :style="getCarSpriteStyle(car)"
+                 >
+                     <div class="car-heading" :style="getCarHeadingStyle(car)">
+                         <div class="car-body">
+                             <div class="car-window"></div>
+                             <div class="car-hood"></div>
+                             <div class="car-headlights">
+                                 <span></span>
+                                 <span></span>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+             </slot>
         </div>
     </div> 
   </div>

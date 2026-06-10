@@ -18,7 +18,8 @@ export function wsUrl(path) {
   }
 
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-  const baseUrl = API_BASE_URL || globalThis.window?.location?.origin || '';
+  const localhostUrl = "http://localhost:8000";
+  const baseUrl = API_BASE_URL || localhostUrl || '';
   const url = new URL(normalizedPath, baseUrl);
 
   url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';

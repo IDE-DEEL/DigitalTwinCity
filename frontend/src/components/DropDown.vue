@@ -15,7 +15,12 @@ defineProps({
   <div>
     <label class="block text-sm font-semibold mb-1">{{ name }}:</label>
       <select class="w-full p-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue outline-none bg-white text-dark" v-model="model">
-        <option v-for="value in list">{{ value }}</option>
+        <!-- For object list with {value, label} -->
+        <option v-if="isObjectList" v-for="item in list" :key="item.value" :value="item.value">
+          {{ item.label }}
+        </option>
+        <!-- For simple string list -->
+        <option v-else v-for="value in list">{{ value }}</option>
       </select>
   </div> 
 </template>

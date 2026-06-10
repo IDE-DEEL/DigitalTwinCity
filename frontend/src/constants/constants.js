@@ -1,12 +1,10 @@
 // map dimensions
-export const MAP_COLUMNS = 5;  // X range: 0-5
-export const MAP_ROWS = 4;     // Y range: 0-4
+export const MAP_COLUMNS = 7;           // X range: 0-6
+export const MAP_ROWS = MAP_COLUMNS;    // Y range: 0-6
 
 // map tiles
-export const DEPOT_TILE = { x: 4, y: 2 };
-
-// identifiers for different houses on the same tile (irrelevant with the current map)
-export const HOUSE_POSITION_FIRST = 'A';
+export const DEPOT_ENTRANCE = { x: 4, y: 6 };
+export const DEPOT_EXIT = { x: 6, y: 4 };
 
 // cars
 export const MAX_CARS = 5;
@@ -14,9 +12,9 @@ export const MIN_CARS = 1;
 
 // simulation speeds
 export const SIMULATION_SPEED_OPTIONS = [
-    { value: '1x', numericValue: 1 },
-    { value: '2x', numericValue: 2 },
-    { value: 'Super snel', numericValue: 3 },
+    { value: 1, label: '1x' },
+    { value: 2, label: '2x' },
+    { value: 3, label: 'Super snel' },
 ];
 
 // custom colors for cars and routes

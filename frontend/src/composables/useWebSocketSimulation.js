@@ -1,6 +1,7 @@
 import { ref } from "vue";
 import { useToast } from "vue-toastification";
 import { TOAST_MESSAGES } from "../constants/toast_messages";
+import { wsUrl } from "../config/api";
 
 const isWebSocketConnected = ref(false);
 let websocket = null;
@@ -10,7 +11,8 @@ let onSimulationEndedCallback = null;
 const responseHandlers = {};
 const toast = useToast();
 
-const WS_URL = "ws://localhost:8000/api/v1/digital-sim/ws/simulation"; // TODO: switch URL based on environmnent (dev vs prod)
+const URI = "/api/v1/digital-sim/ws/simulation";
+const WS_URL = wsUrl(URI);
 
 function connectWebSocket(onSimulationUpdate, onSimulationEnded) {
     // Store the callbacks
@@ -58,6 +60,9 @@ function connectWebSocket(onSimulationUpdate, onSimulationEnded) {
                         break;
                     case "simulation_stopped":
                         console.log("simulation stopped on backend (manual stop)", result);
+                        break;
+                    case "speed_updated":
+                        console.log("simulation speed updated on backend", data.simulationSpeed, "steps multiplier:", data.stepsMultiplier);
                         break;
                     case "simulation_ended":
                         console.log("simulation ended on backend (auto-stopped)", data.reason, result);

@@ -3,9 +3,10 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from backend.digital_sim.service.simulation_service import SimulationService
 from backend.digital_sim.constants import UPDATES_PER_SECOND
+from backend.digital_sim.utils.sim_speed_util import get_steps_multiplier
 
 
-router = APIRouter(prefix="/api/v1/digital-sim")
+router = APIRouter(prefix="/digital-sim")
 
 @router.get("/status")
 async def get_status():
@@ -19,6 +20,7 @@ async def websocket_simulation_endpoint(websocket: WebSocket):
     
     simulation_service = SimulationService()
     simulation_task = None
+    simulation_config = {"steps_multiplier": 1}
     
     try:
         while True:
@@ -38,11 +40,11 @@ async def websocket_simulation_endpoint(websocket: WebSocket):
                     
                     # Get simulation speed and convert to steps multiplier
                     simulation_speed = parameters.get("simulationSpeed", 1)
-                    steps_multiplier = _get_steps_multiplier(simulation_speed)
+                    simulation_config["steps_multiplier"] = get_steps_multiplier(simulation_speed)
                     
                     # Create simulation loop to advance simulation steps
                     simulation_task = asyncio.create_task(
-                        _run_simulation_loop(websocket, simulation_service, steps_multiplier)
+                        _run_simulation_loop(websocket, simulation_service, simulation_config)
                     )
                 
                 case "stop":
@@ -54,6 +56,16 @@ async def websocket_simulation_endpoint(websocket: WebSocket):
                     await websocket.send_json({
                         "command": "simulation_stopped",
                         "result": result
+                    })
+                
+                case "set_speed":
+                    simulation_speed = data.get("simulationSpeed", 1)
+                    simulation_config["steps_multiplier"] = get_steps_multiplier(simulation_speed)
+
+                    await websocket.send_json({
+                        "command": "speed_updated",
+                        "simulationSpeed": simulation_speed,
+                        "stepsMultiplier": simulation_config["steps_multiplier"]
                     })
                 
                 case "get_stats":
@@ -102,7 +114,7 @@ async def websocket_simulation_endpoint(websocket: WebSocket):
         })
 
 
-async def _run_simulation_loop(websocket: WebSocket, simulation_service: SimulationService, steps_multiplier: int = 1):
+async def _run_simulation_loop(websocket: WebSocket, simulation_service: SimulationService, simulation_config: dict):
     """
     Run the simulation loop and send updates to the websocket client.
     This is a background task started by the API.
@@ -113,12 +125,14 @@ async def _run_simulation_loop(websocket: WebSocket, simulation_service: Simulat
     Args:
         websocket: The WebSocket connection to send updates to
         simulation_service: The simulation service instance for this client
-        steps_multiplier: Number of simulation steps to execute per update cycle
+        simulation_config: Configuration dictionary containing simulation settings
     """
     update_interval = 1.0 / UPDATES_PER_SECOND
     
     try:
         while simulation_service.is_running:
+            steps_multiplier = simulation_config.get("steps_multiplier", 1)
+
             # Execute multiple steps based on multiplier
             for _ in range(steps_multiplier):
                 step_result = simulation_service.execute_step()
@@ -155,19 +169,3 @@ async def _run_simulation_loop(websocket: WebSocket, simulation_service: Simulat
     except Exception as e:
         print(f"[digital_sim_api] Error in simulation loop: {e}")
 
-def _get_steps_multiplier(simulation_speed: int) -> int:
-    """
-    Convert simulation speed value to steps multiplier.
-    
-    Args:
-        simulation_speed: Numeric value from frontend (1, 2, or 3)
-        
-    Returns:
-        Number of steps to execute per update cycle
-    """
-    speed_to_multiplier = {
-        1: 1,      # 1x speed: 1 step per update
-        2: 2,      # 2x speed: 2 steps per update
-        3: 200,    # Super fast: many steps per update
-    }
-    return speed_to_multiplier.get(simulation_speed, 1)

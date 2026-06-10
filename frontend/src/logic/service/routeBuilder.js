@@ -1,6 +1,7 @@
 import { TILE_LANES } from '../domain/laneCoords.js';
 import { useMapStore } from '../../stores/mapStore.js';
 import { normalizeDegree, rotateCardinalDirection, rotatePointNormalized } from '../utils/rotation.js';
+import { convertWaypointFromLocalToGlobal } from '../utils/coordinateConverter.js';
 
 export const OPPOSITE_DIRECTION = {
   N: 'S',
@@ -76,13 +77,8 @@ export function getRotatedLanesForTile(tile) {
     from: rotateCardinalDirection(lane.from, rotation),
     to: rotateCardinalDirection(lane.to, rotation),
     points: lane.points.map((point) => {
-      const rotatedPoint = rotatePointNormalized(point, rotation);
-    //   adjust the local waypoint coordinates by the tile's global position to get global waypoint coordinates
-    // TODO: move this specific logic to a separate function in sprint 6
-      return {
-        x: tile.x + rotatedPoint.x,
-        y: tile.y + rotatedPoint.y,
-      };
+        const rotatedPoint = rotatePointNormalized(point, rotation);
+        return convertWaypointFromLocalToGlobal(rotatedPoint, tile.x, tile.y);
     }),
   }));
 }
@@ -97,7 +93,7 @@ export function getRotatedLanesForTile(tile) {
  */
 function findDepotStartLane(rotatedLanes, nextDirection) {
   const lane = rotatedLanes.find(
-    (candidate) => candidate.from === 'E' && candidate.to === nextDirection
+    (candidate) => candidate.from === 'S' && candidate.to === nextDirection
   );
 
   if (!lane) {
@@ -184,7 +180,7 @@ export function buildLaneSequenceFromTilePath(tilePath, allowIncompleteRoute = f
       const nextTile = tilePath[index + 1];
       const nextDirection = getDirectionBetweenTiles(currentPathTile, nextTile);
 
-      if (currentMapTile.type !== 'depot') {
+      if (currentMapTile.type !== 't_split_out') {
         throw new Error('First tile in route must be the depot tile.');
       }
 
@@ -198,7 +194,7 @@ export function buildLaneSequenceFromTilePath(tilePath, allowIncompleteRoute = f
         getDirectionBetweenTiles(previousTile, currentPathTile)
       ];
 
-      if (currentMapTile.type !== 'depot') {
+      if (currentMapTile.type !== 't_split_in') {
         throw new Error('Last tile in route must be the depot tile.');
       }
 
@@ -228,7 +224,7 @@ export function buildLaneSequenceFromTilePath(tilePath, allowIncompleteRoute = f
  * @param {Array<Object>} laneSequence - Array of lane objects representing the chosen lanes for the route.
  * @returns {Array<Object>} An array of waypoint objects, each with x and y properties, representing the route.
  */
-function buildWaypointsFromLaneSequence(laneSequence) {
+export function buildWaypointsFromLaneSequence(laneSequence) {
   const waypoints = [];
 
   laneSequence.forEach((lane) => {
