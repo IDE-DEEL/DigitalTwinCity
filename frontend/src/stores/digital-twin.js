@@ -176,10 +176,6 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
             this.chosen_scenario = payload
             break
 
-          case 'car_table':
-            this.table_data = payload
-            break
-
           case 'activation':
             this.active = payload === 'start'
             break
@@ -187,12 +183,51 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
           case 'car_data':
             this.car_data = payload
             break
+
+          case 'car_packages':
+            this.updatePackages(payload)
+            break
+
+          case 'car_status':
+            this.updateStatus(payload)
+            break
+
+          case 'car_energy':
+            this.updateEnergy(payload)
+            break
         }
       }
 
       this.socket.onclose = () => {
         console.log('WebSocket disconnected')
         this.socket = null
+      }
+    },
+
+    findCar(id) {
+      return this.table_data.find(
+        c => c.auto_id === id
+      )
+    },
+
+    updatePackages(payload) {
+      const car = this.findCar(payload.car_id)
+      if (car) {
+        car.pakketje = payload.packages
+      }
+    },
+
+    updateStatus(payload) {
+      const car = this.findCar(payload.car_id)
+      if (car) {
+        car.status = payload.status
+      }
+    },
+
+    updateEnergy(payload) {
+      const car = this.findCar(payload.car_id)
+      if (car) {
+        car.energie = payload.energy
       }
     },
 
@@ -211,15 +246,5 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
         console.error('Socket is not open')
       }
     },
-
-    setSpeed(value) {
-      this.speed = value
-      this.sendData('speed', value)
-    },
-
-    setScenario(value) {
-      this.chosen_scenario = value
-      this.sendData('scenario', value)
-    }
   }
 })

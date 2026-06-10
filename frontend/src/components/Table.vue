@@ -5,19 +5,22 @@ import { useDigitalTwinStore } from '../stores/digital-twin.js'
 
 const store = useDigitalTwinStore()
 
-function update_car(car, newValue) {
-  const id_exists = store.table_data.some(item => item.auto_id === newValue && item !== car)
-  
-  if (id_exists) {
-    alert('Dit auto_id is al bezet!')
-    return
-  }
-
-  car.auto_id = newValue
-}
-
 function visualizing(car) {
   car.visueel = !car.visueel
+}
+
+function send_packages(car) {
+  store.sendData('packages', {
+    car_id: car.auto_id,
+    packages: car.pakketje
+  })
+}
+
+function send_route(car) {
+  store.sendData('route', {
+    car_id: car.auto_id,
+    route: car.route
+  })
 }
 </script>
 
@@ -41,10 +44,20 @@ function visualizing(car) {
               <div class="circle" :class="{ 'is-active': car.status }"></div>
             </td>
             <td>{{ car.auto_id }}</td>
-            <td>{{ car.energie}} %</td>
-            <td><input class="package-input" type="number" min=0 :max=store.max_packages v-model="car.pakketje"></input></td>
+            <td>{{ car.energie }} %</td>
             <td>
-              <select class="route-select" v-model="car.route">
+              <input class="package-input" 
+                     type="number" 
+                     min=0 
+                     :max=store.max_packages 
+                     v-model="car.pakketje" 
+                     @change="send_packages(car)">
+              </input>
+            </td>
+            <td>
+              <select class="route-select" 
+                      v-model="car.route" 
+                      @change="send_route(car)">
                 <option v-for="r in store.routes" :key="r.route" :value="r.route">{{ r.route }}</option>
               </select>
             </td>
