@@ -19,14 +19,6 @@ aside {
   width: 100%;
 }
 
-.state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  width: 100%;
-}
-
 .slider-area {
   flex: 2;
 }
@@ -43,11 +35,16 @@ aside {
 
 .state {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
   gap: 20px;
   width: 100%;
+}
+
+.button-area {
+    display: flex;
+    gap: 8px;
 }
 
 .timer-area {
