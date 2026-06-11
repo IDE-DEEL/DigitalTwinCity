@@ -35,9 +35,8 @@
 <script setup>
 import { computed } from "vue";
 import { buildHouseCoordinates } from "../logic/service/houseBuilder.js";
+import { getAllHouseInstances, getHousesForScenario } from "../logic/service/houseService.js";
 import { useMapStore } from "../stores/mapStore.js";
-import { HOUSE_INSTANCES } from "../logic/domain/houseInstances.js";
-import { getHousesForScenarioByValue } from "../logic/domain/scenarios.js";
 import { MAP_COLUMNS, MAP_ROWS } from '../constants/constants.js';
 
 const props = defineProps({
@@ -70,13 +69,14 @@ function calculateCentroid(points) {
 const detectionZones = computed(() => {
     try {
         const scenarioHouses =
-            getHousesForScenarioByValue(props.scenario);
+            getHousesForScenario(props.scenario);
 
         const mapStore = useMapStore();
+        const houseInstances = getAllHouseInstances();
 
         return Object.keys(scenarioHouses)
             .map((houseInstanceId) => {
-                const instance = HOUSE_INSTANCES.find(
+                const instance = houseInstances.find(
                     h => h.id === houseInstanceId
                 );
 

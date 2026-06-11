@@ -67,3 +67,11 @@ export function buildOrderedHouseInstancesOnRoutes(housesWithRoutes) {
 
     return routesWithHouseIds;
 }
+
+export function getAllHouseInstances() {
+    return HOUSE_INSTANCES;
+}
+
+export function getHousesForScenario(scenarioKey) {
+    return getHousesForScenarioByValue(scenarioKey);
+}
