@@ -111,10 +111,14 @@ tbody:nth-child(even) {
 .car-id-container {
     display: flex;
     align-items: center;
+    justify-content: center;
+    position: relative;
     gap: 4px;
 }
 
 .car-id-color {
+    position: absolute;
+    left: 0;
     width: 4px;
     height: 22px;
     border-radius: var(--rounded-sm);
