@@ -69,7 +69,7 @@ const handleMaxPackagesInput = (carId, event) => {
                         class="car-id-color"
                         :style="{ backgroundColor: getColorForCarAndRoute(car.id) }"
                     ></div>
-                    <input class="package-input" type="text" size=6 v-model="car.id""></input>
+                    <input class="package-input" type="text" size=6 v-model="car.id" disabled></input>
                 </div>
             </td>
             <td>
