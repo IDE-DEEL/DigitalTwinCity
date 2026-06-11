@@ -11,3 +11,24 @@ h1 {
     font-family: 'Bebas Neue', sans-serif;
     font-size: 58px;
 }
+
+.title-container {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    height: 100%;
+}
+
+.button-container {
+    display: grid;
+    grid-template-columns: 150px 150px; 
+    column-gap: 160px; 
+    align-items: center;
+    height: 100%;
+}
+
+.button-container button {
+    width: 100%; 
+    height: 38px;
+    padding: 0px;
+}

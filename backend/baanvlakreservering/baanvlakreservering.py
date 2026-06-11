@@ -1,6 +1,10 @@
 import paho.mqtt.client as mqtt
 import ssl
-import time
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "score"))
+from score.scoreCalculator import TripData, calculate_score
+from score.config import  WEIGHTS, TRIP
 from typing import Callable
 
 from backend.core.config import settings
@@ -15,7 +19,7 @@ MQTT_PASSWORD = settings.MQTT_PASSWORD
 
 # Current topics to subscribe and publish too. This is temporary, as some of it is mainly for a template.
 SUB_TOPIC = "car/auto_B/data/LastRFID"
-PUB_TOPIC_DIR = "car/auto_B/cmd/direction"
+PUB_TOPIC_DIR = "car/auto_B/cmd/Direction"
 PUB_TOPIC_MOVE = "car/auto_B/cmd/Start"
 
 # Chosen route from the front end. Currently is a placeholder.
@@ -170,7 +174,7 @@ def on_message(client, userdata, msg):
             # Stop vehicle before changing direction
             client.publish(f"car/{topic[1]}/cmd/Start", "False")
             # Send next direction command
-            client.publish(f"car/{topic[1]}/cmd/direction", route[chosen_route][index[topic[1]]][1])
+            client.publish(f"car/{topic[1]}/cmd/Direction", route[chosen_route][index[topic[1]]][1])
             # Resume movement
             client.publish(f"car/{topic[1]}/cmd/Start", "True")
             # Advance to next route step
@@ -179,6 +183,7 @@ def on_message(client, userdata, msg):
             # Loop back to start when route completes.
             if len(route[chosen_route]) == index[topic[1]]:
                 index[topic[1]] = 0
+                calculate_score(TRIP, WEIGHTS)
 
     elif not start:
         # Emergency stop / manual stop mode

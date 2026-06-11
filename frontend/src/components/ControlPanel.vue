@@ -5,16 +5,18 @@ import Slider from './Slider.vue'
 import Input from './Input.vue'
 import DropDown from './DropDown.vue'
 import Table from './Table.vue'
-import { store, send_data } from '../store.js'
+import StatisticsModal from './StatisticsModal.vue'
+import { useDigitalTwinStore } from '../stores/digital-twin.js'
 import '../assets/Button.css'
 import '../assets/ControlPanel.css'
 
 const timer = ref(null)
 const elapsedTime = ref(0) // Time in milliseconds
+const store = useDigitalTwinStore()
+const showModal = ref(false)
 
 function start(event) {
   if (!store.active) {
-    send_data("activation", "start")
     store.active = true
 
     if (store.active) {
@@ -29,7 +31,6 @@ function start(event) {
 }
 
 function stop(event) {
-  send_data("activation", "stop")
   store.active = false
   clearInterval(timer.value)
 }
@@ -44,7 +45,6 @@ const formattedTime = computed(() => {
 
   return `${pad(minutes)}:${pad(seconds)}:${pad(milliseconds)}`
 })
-
 </script>
 
 <template>
@@ -54,8 +54,22 @@ const formattedTime = computed(() => {
     <div class="parameter-container">
       <!-- Slot voor de bovenste parameters -->
       <slot name="parameters">
-        <Slider class="slider-area" name="Auto snelheid" type="speed" v-model="store.speed" min=0 max=100></Slider>
-        <DropDown class="scenario-area" name="Scenario's" type="scenario" :list="store.scenarios" v-model="store.chosen_scenario"></DropDown>
+        <Slider class="slider-area" 
+                name="Auto snelheid" 
+                type="speed" 
+                v-model="store.speed" 
+                min=0 
+                max=100 
+                @change="store.sendData('speed', store.speed)">
+        </Slider>
+        
+        <DropDown class="scenario-area" 
+                  name="Scenario's" 
+                  type="scenario" 
+                  :list="store.scenarios" 
+                  v-model="store.chosen_scenario"
+                  @change="store.sendData('scenario', store.chosen_scenario)">
+        </DropDown>
       </slot>
     </div>
 
@@ -81,11 +95,14 @@ const formattedTime = computed(() => {
           </div>
 
           <div class="score-area">
-            <p>Score 1: 100</p>
-            <p>Score 2: 200</p>
-            <p>Score 3: 55</p>
-            <p>Totale Score: {{ store.score }}</p>
+            <button class="statistics-button" @click="showModal = true">Statistieken</button>
+            <p>Score: {{ store.results.total}}</p>
           </div>
+          <StatisticsModal v-if="showModal" @close="showModal = false">
+            <template #header>
+              <h2>Statistieken</h2>
+            </template>
+          </StatisticsModal>
         </slot>
       </div>
     </div>

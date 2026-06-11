@@ -1,18 +1,20 @@
 <script setup>
-import { watch, computed } from 'vue'
-import { send_data } from '../store.js'
+const model = defineModel({
+  type: String,
+  default: "",
+})
 
-const model = defineModel({ type: String, default: "" });
-const props = defineProps({ name: String, type: String, list: Array, disabled: { type: Boolean, default: false } });
+defineProps({
+    name: String,
+    type: String,
+    list: Array,
+    disabled: { type: Boolean, default: false },
+})
 
 // Determine if list contains objects with {value, label} or just strings
 const isObjectList = computed(() => 
   props.list && props.list.length > 0 && typeof props.list[0] === 'object'
 )
-
-watch(model, () => {
-  send_data(props.type, model.value)
-})
 </script>
 
 <template>

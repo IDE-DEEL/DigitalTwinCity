@@ -1,5 +1,11 @@
+.tags {
+  display: flex;
+  gap: 40px;
+}
+
 .title {
   font-weight: bold;
+  font-size: 20px;
 }
 
 .vertical-table {
@@ -35,7 +41,7 @@
 }
 
 .visualize_tag {
-    width: 88px;
+    width: 120px;
     height: 38px;
     padding: 0px;
     background-color: var(--color-primary-blue);
