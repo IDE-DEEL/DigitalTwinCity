@@ -72,6 +72,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - ${ALERTMANAGER_SMTP_AUTH_PASSWORD_FILE:-../../shared/alertmanager/smtp_auth_password}:/etc/alertmanager/secrets/smtp_auth_password:ro
       - alertmanager_data:/alertmanager
     command:
       - "--config.file=/etc/alertmanager/alertmanager.yml"
@@ -82,6 +83,7 @@ services:
       - metrics_caddy
       - metrics_backend
       - monitoring
+      - smtp_external
 
   # Node exporter: Server/VM statistics.
   node-exporter:
@@ -178,6 +180,7 @@ networks:
     internal: true
   monitoring:
     internal: true
+  smtp_external:
 
 volumes:
   # Monitoring

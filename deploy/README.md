@@ -73,7 +73,7 @@ probeert rollback als iets misgaat.
 | `server/proxy/Caddyfile` | Caddy reverse proxy config. | Publiceert de applicatie via HTTPS. |
 | `server/mosquitto/` | MQTT configuratie. | Regelt MQTT listeners, ACL en WebSocket toegang. |
 | `server/postgresql/` | PostgreSQL configuratie. | Regelt databaseconfiguratie, TLS en rollen. |
-| `server/monitoring/` | Monitoringconfiguratie. | Bevat dashboards, metrics en loggingconfiguratie. |
+| `server/monitoring/` | Monitoringconfiguratie. | Bevat dashboards, metrics, loggingconfiguratie en Alertmanager e-mailnotificaties. |
 
 ## Hoe werkt een normale deployment?
 
@@ -159,6 +159,8 @@ De deployment maakt en gebruikt deze structuur:
       mqtt-users.env
       password/
         passwd
+    alertmanager/
+      smtp_auth_password
   state/
     current-release.env
     previous-release.env
@@ -197,6 +199,7 @@ Belangrijke waarden in release-state:
 | `COMPOSE_PROJECT_NAME` | Docker Compose projectnaam. | `digitaltwin`, of de vorige waarde |
 | `COMPOSE_PROFILES` | Actieve Compose profiles. | `monitoring` |
 | `DEPLOY_GROUP` | Linux group die rechten krijgt op release- en state-mappen. | primary group van de deploy user |
+| `ALERTMANAGER_SMTP_AUTH_PASSWORD_FILE` | Optioneel pad naar het Alertmanager SMTP-secretbestand. | `../../shared/alertmanager/smtp_auth_password` |
 | `FRONTEND_API_URL` | Optionele frontend API URL, gemapt naar `VITE_API_URL`. | leeg |
 | `HEALTHCHECK_URLS` | Komma-gescheiden healthcheck URLs. | `https://<DOMAIN>/health,https://<DOMAIN>/api/v1/health` |
 | `MOSQUITTO_PASSWORD_DIR` | Map met Mosquitto `passwd`. | `<DEPLOY_PATH>/shared/mosquitto/password` |
@@ -225,7 +228,7 @@ map `server/` en worden bij elke release naar de server gekopieerd.
 | `duckdns` | Houdt het DuckDNS-record actueel. |
 | `grafana` | Toont dashboards via `/grafana/`. |
 | `prometheus` | Verzamelt en bewaart metrics. |
-| `alertmanager` | Ontvangt Prometheus-alerts en houdt notificatierouting klaar voor later. |
+| `alertmanager` | Ontvangt Prometheus-alerts en verstuurt e-mailnotificaties via Gmail SMTP. |
 | `loki` | Bewaart logs. |
 | `alloy` | Verzamelt container-, host- en journallogs. |
 | `node-exporter` | Verzamelt hostmetrics. |
@@ -238,6 +241,14 @@ De monitoringservices staan in `compose.monitoring.yml` onder het Compose
 profile `monitoring`. De deployment zet standaard `COMPOSE_PROFILES=monitoring`,
 waardoor Grafana, Prometheus, Alertmanager, Loki, Alloy en exporters normaal
 mee starten.
+
+Alertmanager is werkend ingericht met receiver `email-user`. Firing en resolved
+alerts worden via Gmail SMTP verzonden naar
+`paco.chrispijn@student.hu.nl`. Het SMTP-wachtwoord staat standaard op
+`<DEPLOY_PATH>/shared/alertmanager/smtp_auth_password` en wordt via
+`ALERTMANAGER_SMTP_AUTH_PASSWORD_FILE` naar
+`/etc/alertmanager/secrets/smtp_auth_password` in de container gemount. Zet de
+echte secretwaarde niet in deze README.
 
 Publieke routes:
 
@@ -256,6 +267,8 @@ Caddy met `wss://<DOMAIN>/mqtt`; interne containers gebruiken `mqtt:1883`.
 De composebestanden gebruiken gescheiden Docker-netwerken voor frontend, API,
 MQTT, Grafana, database, interne metrics en monitoring. Daardoor deelt een
 service alleen een netwerk met de containers waarmee hij echt moet praten.
+Alertmanager gebruikt daarnaast het niet-interne netwerk `smtp_external` voor
+outbound SMTP-verkeer naar Gmail.
 
 ## Eerste inrichting van een server
 
@@ -299,6 +312,7 @@ Voorbeeld met `/opt/digital-twin`:
 ```bash
 sudo mkdir -p /opt/digital-twin/releases /opt/digital-twin/shared /opt/digital-twin/state
 sudo mkdir -p /opt/digital-twin/shared/mosquitto/password
+sudo mkdir -p /opt/digital-twin/shared/alertmanager
 sudo chown -R github:github /opt/digital-twin
 ```
 
@@ -401,6 +415,18 @@ Belangrijkste groepen:
 | Monitoring | `GF_SERVER_ROOT_URL`, `GRAFANA_PASSWORD` |
 
 Dit bestand hoort niet in Git. Het staat alleen op de server.
+
+Alertmanager gebruikt daarnaast een apart secretbestand voor Gmail SMTP:
+
+```text
+<DEPLOY_PATH>/shared/alertmanager/smtp_auth_password
+```
+
+Dit bestand bevat alleen het SMTP/app-wachtwoord. In de container wordt dit
+gelezen als `/etc/alertmanager/secrets/smtp_auth_password`. De hostlocatie kan
+worden overschreven met `ALERTMANAGER_SMTP_AUTH_PASSWORD_FILE`; zonder override
+gebruikt Compose `../../shared/alertmanager/smtp_auth_password` vanaf de
+release-map.
 
 ### 8. Maak MQTT users aan
 

@@ -6,7 +6,7 @@ De stack bestaat uit:
 
 - **Grafana**: dashboards, Explore, Prometheus datasource en Loki datasource
 - **Prometheus**: opslag en scraping van metrics
-- **Alertmanager**: ontvangt Prometheus-alerts en houdt notificatierouting klaar voor later
+- **Alertmanager**: ontvangt Prometheus-alerts en verstuurt e-mailnotificaties via Gmail SMTP
 - **Loki**: opslag en querying van logs
 - **Alloy**: verzamelt Docker-, host- en journallogs en stuurt ze naar Loki
 - **Node Exporter**: host/VM metrics zoals CPU, RAM, disk en netwerk
@@ -23,7 +23,8 @@ De stack bestaat uit:
 monitoring/
 ├─ README.md
 ├─ alertmanager/
-│  └─ alertmanager.yml
+│  ├─ alertmanager.yml
+│  └─ smtp_auth_password.example
 ├─ alloy/
 │  └─ config.alloy
 ├─ grafana/
@@ -56,7 +57,7 @@ monitoring/
 6. Grafana laadt automatisch dashboards uit `monitoring/grafana/dashboards/`.
 7. Prometheus laadt alert rules uit `monitoring/prometheus/rules/`.
 8. Prometheus stuurt firing alerts naar Alertmanager via `http://alertmanager:9093`.
-9. Alertmanager groepeert alerts, maar gebruikt nu alleen een placeholder receiver zonder notificatiekanaal.
+9. Alertmanager groepeert alerts en stuurt firing en resolved meldingen naar de ingestelde e-mailontvanger.
 10. Verkeer naar Grafana loopt extern via Caddy op het subpad `/grafana`.
 
 ## 3. Voorwaarden
@@ -70,6 +71,22 @@ monitoring/
   - `DT_PG_DB`
   - `DT_PG_MONITOR_USER`
   - `DT_PG_MONITOR_PASS`
+
+Voor Alertmanager e-mailnotificaties moet het Gmail SMTP-wachtwoord standaard op de server staan als:
+
+```text
+<DEPLOY_PATH>/shared/alertmanager/smtp_auth_password
+```
+
+`compose.monitoring.yml` mount dit bestand via `${ALERTMANAGER_SMTP_AUTH_PASSWORD_FILE:-../../shared/alertmanager/smtp_auth_password}`. Zet `ALERTMANAGER_SMTP_AUTH_PASSWORD_FILE` wanneer het secretbestand op een andere plek staat of wanneer je lokaal vanuit `server/` test.
+
+In de container moet dit secretbestand beschikbaar zijn op:
+
+```text
+/etc/alertmanager/secrets/smtp_auth_password
+```
+
+De echte secretwaarde hoort niet in README's of andere documentatie.
 
 Voor Grafana achter `/grafana` is `GF_SERVER_ROOT_URL` in `compose.monitoring.yml` gekoppeld aan de omgeving. Zet deze variabele op:
 
@@ -178,7 +195,19 @@ De externe HTTP target staat hardcoded in `monitoring/prometheus/prometheus.yml`
 
 De basisalerts staan in `monitoring/prometheus/rules/availability-alerts.yml`. Prometheus laadt deze map via `rule_files` in `monitoring/prometheus/prometheus.yml`.
 
-Deze alerts zijn technisch voorbereid voor notificaties via Alertmanager, maar versturen nog geen berichten. De huidige Alertmanager-configuratie in `monitoring/alertmanager/alertmanager.yml` gebruikt een receiver `no-notifications-configured` zonder e-mail, webhook, Slack, Teams of ander extern kanaal. De keuze voor het notificatieprogramma blijft daarmee open.
+Alertmanager is werkend ingericht voor e-mailnotificaties via Gmail SMTP. De configuratie in `monitoring/alertmanager/alertmanager.yml` gebruikt receiver `email-user`, leest het SMTP-wachtwoord uit `/etc/alertmanager/secrets/smtp_auth_password` en stuurt meldingen naar `paco.chrispijn@student.hu.nl`. `send_resolved: true` staat aan, dus herstelmeldingen worden ook verzonden.
+
+In `compose.monitoring.yml` heeft Alertmanager naast de interne metrics- en monitoringnetwerken ook het niet-interne netwerk `smtp_external`. Dat netwerk is nodig voor outbound SMTP-verkeer naar Gmail.
+
+De huidige route groepeert alerts op `alertname` en `component`:
+
+| Instelling | Waarde |
+|---|---|
+| `group_wait` | `30s` |
+| `group_interval` | `5m` |
+| `repeat_interval` | `4h` |
+| SMTP server | `smtp.gmail.com:587` met TLS |
+| Afzender | `digitaltwin678@gmail.com` |
 
 | Alertnaam | Component | Trigger | Betekenis |
 |---|---|---|---|
@@ -187,7 +216,7 @@ Deze alerts zijn technisch voorbereid voor notificaties via Alertmanager, maar v
 | `FrontendExternNietBereikbaar` | Frontend | `probe_success{job="blackbox_http", instance=~"https://.*"} == 0 or up{job="blackbox_http", instance=~"https://.*"} == 0` gedurende 2 minuten | De publieke HTTPS-route naar de frontend reageert niet succesvol of de probe kan niet worden uitgevoerd. |
 | `DatabaseNietBereikbaar` | Database | `pg_up{job="postgres-exporter"} == 0 or up{job="postgres-exporter"} == 0` gedurende 2 minuten | PostgreSQL is niet bereikbaar voor de exporter, of de exporter zelf is niet bereikbaar. |
 | `MQTTNietBereikbaar` | MQTT | `probe_success{job="blackbox_tcp", instance="mqtt:1883"} == 0 or up{job="blackbox_tcp", instance="mqtt:1883"} == 0` gedurende 2 minuten | De MQTT broker accepteert geen TCP-connectie op poort `1883` of de probe kan niet worden uitgevoerd. |
-| `AlertmanagerNietBereikbaar` | Monitoring | `up{job="alertmanager"} == 0` gedurende 2 minuten | Prometheus kan Alertmanager niet scrapen, waardoor firing alerts niet kunnen worden doorgestuurd naar latere notificatiekanalen. |
+| `AlertmanagerNietBereikbaar` | Monitoring | `up{job="alertmanager"} == 0` gedurende 2 minuten | Prometheus kan Alertmanager niet scrapen, waardoor firing alerts niet kunnen worden doorgestuurd naar e-mailnotificaties. |
 | `PrometheusNietBereikbaar` | Monitoring | `up{job="prometheus"} == 0` gedurende 2 minuten | Prometheus kan de eigen metrics endpoint niet scrapen. |
 
 De alertnamen zijn componentgericht en zonder omgevingsspecifieke waarden gekozen, zodat ze herbruikbaar blijven in lokale, test- en productieomgevingen.
@@ -467,7 +496,7 @@ docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.y
 
 Controleer daarna of `monitoring/prometheus/rules/availability-alerts.yml` via `compose.monitoring.yml` read-only is gemount naar `/etc/prometheus/rules`.
 
-### Alertmanager ontvangt geen alerts
+### Alertmanager ontvangt geen alerts of verstuurt geen e-mail
 
 Controleer of `alertmanager` draait en of Prometheus de target kent:
 
@@ -477,7 +506,14 @@ docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.y
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" logs --tail=100 alertmanager
 ```
 
-Controleer daarna of `monitoring/alertmanager/alertmanager.yml` via `compose.monitoring.yml` read-only is gemount naar `/etc/alertmanager/alertmanager.yml`.
+Controleer daarna:
+
+- `monitoring/alertmanager/alertmanager.yml` is via `compose.monitoring.yml` read-only gemount naar `/etc/alertmanager/alertmanager.yml`.
+- `${ALERTMANAGER_SMTP_AUTH_PASSWORD_FILE:-../../shared/alertmanager/smtp_auth_password}` wijst naar een bestaand bestand op de host.
+- `/etc/alertmanager/secrets/smtp_auth_password` bestaat in de container en bevat het Gmail SMTP/app-wachtwoord.
+- Alertmanager zit op het netwerk `smtp_external`, zodat outbound SMTP naar `smtp.gmail.com:587` mogelijk is.
+- De receiver heet `email-user` en het doeladres klopt.
+- Gmail accepteert authenticatie voor `digitaltwin678@gmail.com`.
 
 ## 15. Data persistentie
 

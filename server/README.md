@@ -72,7 +72,7 @@ De monitoring-services hebben in `compose.monitoring.yml` het profile `monitorin
 |---|---|---|---|
 | `grafana` | `grafana/grafana:13.0.2-slim` | Dashboards en Explore via `/grafana/`. | `proxy_grafana`, `monitoring` |
 | `prometheus` | `prom/prometheus:v3.11.3` | Metrics opslag, scraping en alert rules. | `metrics_caddy`, `metrics_backend`, `monitoring` |
-| `alertmanager` | `prom/alertmanager:v0.32.1` | Ontvangt Prometheus-alerts en houdt notificatierouting klaar. | `metrics_caddy`, `metrics_backend`, `monitoring` |
+| `alertmanager` | `prom/alertmanager:v0.32.1` | Ontvangt Prometheus-alerts en verstuurt e-mailnotificaties via Gmail SMTP. | `metrics_caddy`, `metrics_backend`, `monitoring`, `smtp_external` |
 | `loki` | `grafana/loki:3.7.2` | Logopslag met filesystem backend. | `monitoring` |
 | `alloy` | `grafana/alloy:v1.16.1` | Verzamelt Docker-, host- en journallogs en stuurt ze naar Loki. | `monitoring` |
 | `node-exporter` | `prom/node-exporter:v1.11.1` | Hostmetrics. | `monitoring` |
@@ -98,6 +98,7 @@ De compose-bestanden gebruiken gescheiden netwerken in plaats van een brede appl
 | `blackbox_backend` | `internal: true` | Blackbox checks richting backend. |
 | `monitoring` | `internal: true` | Prometheus, Grafana, Loki, Alloy en exporters onderling. |
 | `blackbox_external` | niet-internal Docker-netwerk | Laat blackbox-exporter publieke HTTPS targets controleren. |
+| `smtp_external` | niet-internal Docker-netwerk | Laat Alertmanager outbound SMTP-verkeer naar Gmail sturen. |
 
 Caddy publiceert als enige service hostpoorten `80` en `443`. PostgreSQL, Prometheus, Loki, Alertmanager, exporters en MQTT worden niet direct naar de host gepubliceerd.
 
@@ -138,7 +139,7 @@ Gebruik `../deploy/shared.env.example` als template. De belangrijkste groepen va
 | Database | `DT_PG_DB`, `DT_PG_ADMIN_*`, `DT_PG_DEVELOPER_*`, `DT_PG_MONITOR_*`, `DATABASE_URL` |
 | Backend auth en cookies | `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `SECRET_KEY`, `CORS_ALLOW_ORIGINS`, `SESSION_COOKIE_*` |
 | Backend MQTT client | `MQTT_HOST`, `MQTT_PORT`, `MQTT_PATH`, `MQTT_USERNAME`, `MQTT_PASSWORD` |
-| Monitoring | `GF_SERVER_ROOT_URL`, `GRAFANA_PASSWORD` |
+| Monitoring | `GF_SERVER_ROOT_URL`, `GRAFANA_PASSWORD`, `ALERTMANAGER_SMTP_AUTH_PASSWORD_FILE` optioneel |
 | Deployment-state | `APP_ENV_FILE`, `COMPOSE_PROJECT_NAME`, `COMPOSE_PROFILES`, `MOSQUITTO_PASSWORD_DIR` |
 
 MQTT plaintext bronusers staan niet in `.env`, maar in:
@@ -154,6 +155,28 @@ Tijdens deployment maakt `deploy/remote-deploy.sh` daar automatisch de gehashte 
 ```
 
 Die map wordt via `${MOSQUITTO_PASSWORD_DIR:-./mosquitto/password}` read-only gemount op `/mosquitto/config/password`.
+
+Alertmanager is geconfigureerd voor e-mailnotificaties via Gmail SMTP. De configuratie staat in:
+
+```text
+server/monitoring/alertmanager/alertmanager.yml
+```
+
+De huidige route groepeert alerts op `alertname` en `component` en stuurt firing en resolved meldingen naar `paco.chrispijn@student.hu.nl`. Het SMTP-wachtwoord wordt niet in de YAML gezet. Compose mount standaard dit serverbestand:
+
+```text
+<DEPLOY_PATH>/shared/alertmanager/smtp_auth_password
+```
+
+De mount kan worden overschreven met `ALERTMANAGER_SMTP_AUTH_PASSWORD_FILE`, bijvoorbeeld voor een lokale of afwijkende productie-locatie.
+
+Binnen de Alertmanager-container wordt dit gelezen als:
+
+```text
+/etc/alertmanager/secrets/smtp_auth_password
+```
+
+Zorg dat dit secretbestand in de runtime beschikbaar is en commit het echte wachtwoord niet in documentatie.
 
 ## Handmatig starten
 
