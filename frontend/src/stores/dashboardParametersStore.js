@@ -189,7 +189,6 @@ export const useDashboardParametersStore = defineStore("dashboardParameters", ()
         }
 
         try {
-            // TODO: console log when a simulation is started in which a house on the selected scenario isn't serviced by any of the selected routes (for future toast.info)
             return buildOrderedHouseInstancesOnRoutes(housesLinkedToRoutes.value);
         } catch (error) {
             console.error("Error building ordered house instances on routes:", error);
