@@ -1,10 +1,12 @@
 <script setup>
+import { computed } from 'vue'
+
 const model = defineModel({
   type: String,
   default: "",
 })
 
-defineProps({
+const props = defineProps({
     name: String,
     type: String,
     list: Array,
