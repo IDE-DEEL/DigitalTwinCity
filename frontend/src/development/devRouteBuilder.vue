@@ -158,15 +158,19 @@ const possibleNextTiles = computed(() => {
 
         // Check if tile exists
         try {
-            getMapTile(candidate.x, candidate.y); // TODO: check if this is necessary, previously had const tile = but went unused
+            const tile =getMapTile(candidate.x, candidate.y); // TODO: check if this is necessary, previously had const tile = but went unused
+
+            // Exclude depot tiles (except entrance/exit)
+            if (isDepotTile(tile)) {
+                continue;
+            }
 
             // Validate lane connection
             try {
                 validateConnection(current, candidate);
                 valid.push(candidate);
-            } catch (e) {
-                console.warn(e);
-                // Lane connection doesn't exist, skip
+            } catch {
+                // Lane connection doesn't exist, skip silently
             }
         } catch (e) {
             console.warn(e);
@@ -181,9 +185,8 @@ const possibleNextTiles = computed(() => {
 const routeWaypoints = computed(() => {
     try {
         return getWaypointPreviewFromTilePath(routeTiles.value);
-    } catch (error) {
-        console.warn("Error calculating route waypoints:", error);
-        // If waypoint calculation fails, return empty array
+    } catch {
+        // If waypoint calculation fails, return empty array silently
         return [];
     }
 });
@@ -241,6 +244,17 @@ function validateConnection(fromTile, toTile) {
             }
         }
     }
+}
+
+/**
+ * Checks if a tile is a depot tile (excluding entrance and exit).
+ * 
+ * @param {Object} tile - The tile to check, with type property.
+ * @returns {boolean} True if the tile is a depot tile, false otherwise.
+ */
+function isDepotTile(tile) {
+    const depotTypes = ['depot_down', 'depot_corner', 'depot_middle', 'depot_right'];
+    return depotTypes.includes(tile.type);
 }
 
 /**
