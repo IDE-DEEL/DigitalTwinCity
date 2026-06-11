@@ -28,7 +28,7 @@ Triggers:
 | Push naar `main` | Bouwt en scant de backend image, pusht daarna naar GHCR als de scan slaagt. |
 | Push naar `dev` | Bouwt en scant de backend image, pusht daarna naar GHCR als de scan slaagt. |
 | Pull request naar `main` | Bouwt en scant alleen bij wijzigingen in `backend/**`, deze workflow of de herbruikbare Docker workflow. Pusht geen image en deployt niet. |
-| `workflow_dispatch` | Kan handmatig gestart worden. |
+| `workflow_dispatch` | Kan handmatig gestart worden, bouwt en scant de backend image en pusht daarna naar GHCR als de scan slaagt. |
 
 De workflow bevat zelf geen buildstappen. Hij roept `docker-build-scan-publish.yml` aan met deze inputs:
 
@@ -64,7 +64,7 @@ Triggers:
 | Push naar `main` | Bouwt en scant de frontend image, pusht daarna naar GHCR als de scan slaagt. |
 | Push naar `dev` | Bouwt en scant de frontend image, pusht daarna naar GHCR als de scan slaagt. |
 | Pull request naar `main` | Bouwt en scant alleen bij wijzigingen in `frontend/**`, deze workflow of de herbruikbare Docker workflow. Pusht geen image en deployt niet. |
-| `workflow_dispatch` | Kan handmatig gestart worden. |
+| `workflow_dispatch` | Kan handmatig gestart worden, bouwt en scant de frontend image en pusht daarna naar GHCR als de scan slaagt. |
 
 De workflow roept `docker-build-scan-publish.yml` aan met deze inputs:
 
@@ -117,7 +117,7 @@ Stappen:
 
 1. Checkout van de repository.
 2. Docker Buildx initialiseren.
-3. Inloggen op GHCR, maar alleen buiten pull requests en alleen op `main` of `dev`.
+3. Inloggen op GHCR, maar alleen buiten pull requests op `main` of `dev`, of bij een handmatige `workflow_dispatch` run.
 4. Repositorynaam naar lowercase zetten voor GHCR.
 5. Image tag bepalen op basis van de korte commit SHA.
 6. Image lokaal bouwen met `docker/build-push-action`.
@@ -125,7 +125,7 @@ Stappen:
 8. Markdown-overzicht met aantallen en top findings maken.
 9. Trivy rapporten uploaden als artifact.
 10. Workflow laten falen als `critical_count` niet `0` is.
-11. De gescande image pushen naar GHCR, maar alleen buiten pull requests en alleen op `main` of `dev`.
+11. De gescande image pushen naar GHCR, maar alleen buiten pull requests op `main` of `dev`, of bij een handmatige `workflow_dispatch` run.
 
 Image tags:
 
@@ -228,7 +228,7 @@ Belangrijkste taken:
 
 1. Checkout van de source commit die gedeployed moet worden.
 2. Bepalen welke bestanden in de source commit gewijzigd zijn ten opzichte van de vorige `main` commit.
-3. Bij automatische runs bepalen of backend-, frontend-, server- en/of deploy-wijzigingen een deployment vragen.
+3. Bij automatische runs bepalen of backend-, frontend-, server-, deploy- en/of backend/frontend caller-workflowwijzigingen een deployment vragen.
 4. Via de GitHub API controleren of de verwachte backend- en frontend-builds voor dezelfde commit klaar en succesvol zijn.
 5. De default image references bepalen.
 6. Handmatige image inputs valideren.
@@ -237,9 +237,9 @@ Belangrijkste taken:
 Wanneer `should_deploy=false` wordt gezet:
 
 - Een verwachte backend- of frontend-build voor dezelfde commit is nog niet klaar.
-- De automatische run bevat geen wijzigingen in `backend/`, `frontend/`, `server/` of `deploy/`.
+- De automatische run bevat geen wijzigingen in `backend/`, `frontend/`, `server/`, `deploy/`, `.github/workflows/backend-build-scan-publish.yml` of `.github/workflows/frontend-build-scan-publish.yml`.
 
-Bij app-, server- en deploy-wijzigingen wacht de workflow dus logisch tot beide app-images van dezelfde commit bestaan. Een te vroeg getriggerde deploy-run wordt overgeslagen in plaats van een halve release uit te rollen.
+Bij app-, server-, deploy- en backend/frontend caller-workflowwijzigingen wacht de workflow dus logisch tot beide app-images van dezelfde commit bestaan. Een te vroeg getriggerde deploy-run wordt overgeslagen in plaats van een halve release uit te rollen.
 
 Outputs:
 
@@ -322,8 +322,7 @@ De CD workflow kopieert:
 - GHCR credentials
 - compose profile
 - deploy group
-- optionele healthcheck URLs
-- release-retentie
+- healthcheck defaults
 
 De remote command sourcet `runtime.env` en verwijdert het bestand direct voor `remote-deploy.sh` start.
 
@@ -393,7 +392,7 @@ Controleer in `Prepare deployment context` of `should_deploy=false` is gezet.
 Meest voorkomende oorzaken:
 
 - De andere verwachte build workflow voor dezelfde commit is nog niet klaar.
-- Er waren geen wijzigingen in `backend/`, `frontend/`, `server/` of `deploy/`.
+- Er waren geen wijzigingen in `backend/`, `frontend/`, `server/`, `deploy/`, `.github/workflows/backend-build-scan-publish.yml` of `.github/workflows/frontend-build-scan-publish.yml`.
 
 ### Handmatige CD weigert image input
 

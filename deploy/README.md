@@ -625,8 +625,8 @@ curl -fsS https://<DOMAIN>/api/v1/health
 | Probleem | Waarschijnlijke oorzaak | Eerste controle |
 | --- | --- | --- |
 | Build faalt op Trivy | Image bevat `CRITICAL` vulnerability of scanfinding. | GitHub job summary en artifact `*-trivy-reports-*`. |
-| Image wordt niet gepusht | Run draait niet op `main` of `dev`, of het is een pull request. | Event en branch van de workflowrun. |
-| CD wordt overgeslagen | Een verwachte build voor dezelfde commit is nog niet klaar, of er zijn geen wijzigingen in `backend/`, `frontend/`, `server/` of `deploy/`. | Job `Prepare deployment context`, output `should_deploy`. |
+| Image wordt niet gepusht | Run is een pull request, of draait niet op `main`, `dev` of handmatig via `workflow_dispatch`. | Event en branch van de workflowrun. |
+| CD wordt overgeslagen | Een verwachte build voor dezelfde commit is nog niet klaar, of er zijn geen relevante app-, server-, deploy- of caller-workflowwijzigingen. | Job `Prepare deployment context`, output `should_deploy`. |
 | Secrets ontbreken | GitHub Actions secrets zijn niet of verkeerd ingesteld. | `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`, `DEPLOY_PATH`. |
 | SSH host key ophalen faalt | Hostname, poort of netwerk klopt niet. | `DEPLOY_HOST` mag geen `user@host` of `ssh://...` bevatten. |
 | SSH authenticatie faalt | Public key staat niet bij de deploy user. | `~/.ssh/authorized_keys` van `DEPLOY_USER`. |
