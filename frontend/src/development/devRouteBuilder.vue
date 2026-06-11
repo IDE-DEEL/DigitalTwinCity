@@ -9,67 +9,76 @@
       :viewBox="`0 0 ${MAP_COLUMNS} ${MAP_ROWS}`"
       :preserveAspectRatio="`none`"
     >
-      <!-- Current tile highlight (depot at start, current tile during building) -->
-      <rect
-        v-if="currentTile"
-        :x="currentTile.x"
-        :y="currentTile.y"
-        width="1"
-        height="1"
-        fill="none"
-        stroke="gold"
-        stroke-width="0.06"
-        stroke-dasharray="0.1"
-      />
+        <!-- Route tiles (in green) -->
+        <rect
+            v-for="(tile, idx) in routeTiles"
+            :key="`route-${idx}`"
+            :x="tile.x"
+            :y="tile.y"
+            width="1"
+            height="1"
+            fill="rgba(100, 255, 100, 0.15)"
+            stroke="green"
+            stroke-width="0.02"
+        />
 
-      <!-- Possible next tiles (in blue) -->
-      <rect
-        v-for="tile in possibleNextTiles"
-        :key="`possible-${tile.x}-${tile.y}`"
-        :x="tile.x"
-        :y="tile.y"
-        width="1"
-        height="1"
-        fill="rgba(100, 150, 255, 0.2)"
-        stroke="blue"
-        stroke-width="0.04"
-        class="pointer-events-auto cursor-pointer"
-        @click="selectTile(tile)"
-      />
+        <!-- Possible next tiles (in blue) -->
+        <rect
+            v-for="tile in possibleNextTiles"
+            :key="`possible-${tile.x}-${tile.y}`"
+            :x="tile.x"
+            :y="tile.y"
+            width="1"
+            height="1"
+            fill="rgba(100, 150, 255, 0.2)"
+            stroke="blue"
+            stroke-width="0.04"
+            class="pointer-events-auto cursor-pointer"
+            @click="selectTile(tile)"
+        />
 
-      <!-- Route tiles (in green) -->
-      <rect
-        v-for="(tile, idx) in routeTiles"
-        :key="`route-${idx}`"
-        :x="tile.x"
-        :y="tile.y"
-        width="1"
-        height="1"
-        fill="rgba(100, 255, 100, 0.15)"
-        stroke="green"
-        stroke-width="0.02"
-      />
+        <!-- Current tile highlight (depot at start, current tile during building) -->
+        <rect
+            v-if="currentTile"
+            :x="currentTile.x"
+            :y="currentTile.y"
+            id="currentTileHighlight"
+            width="1"
+            height="1"
+            fill="none"
+            stroke="red"
+            stroke-width="0.04"
+            stroke-dasharray="0.1"
+        />
+        <animate
+            xlink:href="#currentTileHighlight"
+            attributeName="stroke-dashoffset"
+            from="0"
+            to="-0.2"
+            dur="1.8s"
+            repeatCount="indefinite"
+        />
 
-      <!-- Route waypoints polyline -->
-      <polyline
-        v-if="routeWaypoints.length > 0"
-        :points="routeWaypoints.map(p => `${p.x},${p.y}`).join(' ')"
-        id="routePreview"
-        fill="none"
-        stroke="darkgreen"
-        stroke-width="0.01"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-dasharray="0.06 0.04"
-      />
-      <animate
-        xlink:href="#routePreview"
-        attributeName="stroke-dashoffset"
-        from="0"
-        to="-0.10"
-        dur="1.8s"
-        repeatCount="indefinite"
-      />
+        <!-- Route waypoints polyline -->
+        <polyline
+            v-if="routeWaypoints.length > 0"
+            :points="routeWaypoints.map(p => `${p.x},${p.y}`).join(' ')"
+            id="routePreview"
+            fill="none"
+            stroke="darkgreen"
+            stroke-width="0.01"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-dasharray="0.06 0.04"
+        />
+        <animate
+            xlink:href="#routePreview"
+            attributeName="stroke-dashoffset"
+            from="0"
+            to="-0.10"
+            dur="1.8s"
+            repeatCount="indefinite"
+        />
     </svg>
 
     <!-- Control panel -->
