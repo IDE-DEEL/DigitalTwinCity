@@ -41,84 +41,77 @@ import { getHousesForScenarioByValue } from "../logic/domain/scenarios.js";
 import { MAP_COLUMNS, MAP_ROWS } from '../constants/constants.js';
 
 const props = defineProps({
-  scenario: {
-    type: String,
-    required: true,
-  },
+    scenario: {
+        type: String,
+        required: true,
+    },
 });
 
 /**
  * Calculate the average point for zone label positioning
  */
 function calculateCentroid(points) {
-  if (points.length === 0) return { x: 0, y: 0 };
+    if (points.length === 0) return { x: 0, y: 0 };
   
-  const sum = points.reduce(
-    (acc, p) => ({ x: acc.x + p.x, y: acc.y + p.y }),
-    { x: 0, y: 0 }
-  );
+    const sum = points.reduce(
+        (acc, p) => ({ x: acc.x + p.x, y: acc.y + p.y }),
+        { x: 0, y: 0 }
+    );
   
-  return {
-    x: sum.x / points.length,
-    y: sum.y / points.length,
-  };
-}
-
-/**
- * Rotate an array of points around the tile center (0.5, 0.5)
- */
-function rotatePointsArray(pointsArray, rotationDegree) {
-  return pointsArray.map((point) => rotatePointNormalized(point, rotationDegree));
+    return {
+        x: sum.x / points.length,
+        y: sum.y / points.length,
+    };
 }
 
 /**
  * Get the houses active in the current scenario and build detection zones
  */
 const detectionZones = computed(() => {
-  try {
-    const scenarioHouses =
-      getHousesForScenarioByValue(props.scenario);
+    try {
+        const scenarioHouses =
+            getHousesForScenarioByValue(props.scenario);
 
-    const mapStore = useMapStore();
+        const mapStore = useMapStore();
 
-    return Object.keys(scenarioHouses)
-      .map((houseInstanceId) => {
-        const instance = HOUSE_INSTANCES.find(
-          h => h.id === houseInstanceId
-        );
+        return Object.keys(scenarioHouses)
+            .map((houseInstanceId) => {
+                const instance = HOUSE_INSTANCES.find(
+                    h => h.id === houseInstanceId
+                );
 
-        if (!instance) {
-          return null;
-        }
+                if (!instance) {
+                    return null;
+                }
 
-        const tile = mapStore.mapData.find(
-          t =>
-            t.x === instance.tileX &&
+                const tile = mapStore.mapData.find(
+                    t =>
+                        t.x === instance.tileX &&
             t.y === instance.tileY
+                );
+
+                const coordinates = buildHouseCoordinates(
+                    instance,
+                    tile?.rotation || 0
+                );
+
+                return {
+                    houseInstanceId,
+                    points: coordinates.roadCoords,
+                    labelPos: calculateCentroid(
+                        coordinates.roadCoords
+                    ),
+                };
+            })
+            .filter(Boolean);
+
+    } catch (error) {
+        console.error(
+            "Error building detection zones:",
+            error
         );
 
-        const coordinates = buildHouseCoordinates(
-          instance,
-          tile?.rotation || 0
-        );
-
-        return {
-          houseInstanceId,
-          points: coordinates.roadCoords,
-          labelPos: calculateCentroid(
-            coordinates.roadCoords
-          ),
-        };
-      })
-      .filter(Boolean);
-
-  } catch (error) {
-    console.error(
-      "Error building detection zones:",
-      error
-    );
-
-    return [];
-  }
+        return [];
+    }
 });
 </script>

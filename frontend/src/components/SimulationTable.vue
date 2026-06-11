@@ -1,16 +1,16 @@
 <script setup>
-import { useCarColors } from '../composables/useCarColors.js'
-import "../assets/Table.css"
+import { useCarColors } from '../composables/useCarColors.js';
+import "../assets/Table.css";
 
-const emit = defineEmits(['toggle-route-visibility'])
+const emit = defineEmits(['toggle-route-visibility']);
 
 const { getColorForCarAndRoute } = useCarColors();
 
 const props = defineProps({
-  modelValue: {
-    type: Array,
-    default: () => []
-  },
+    modelValue: {
+        type: Array,
+        default: () => []
+    },
     maxPackages: {
         type: Number,
         default: 10
@@ -35,7 +35,7 @@ const props = defineProps({
         type: Boolean,
         default: false
     }
-})
+});
 
 const handleMaxPackagesInput = (carId, event) => {
     let value = Number(event.target.value);
@@ -47,7 +47,7 @@ const handleMaxPackagesInput = (carId, event) => {
     // Clamp value between min_packages and max_packages
     value = Math.max(props.minPackages, Math.min(props.maxPackages, value));
     event.target.value = value;
-}
+};
 </script>
 
 <template>
@@ -69,7 +69,7 @@ const handleMaxPackagesInput = (carId, event) => {
                         class="car-id-color"
                         :style="{ backgroundColor: getColorForCarAndRoute(car.id) }"
                     ></div>
-                    <input class="package-input" type="text" size=6 v-model="car.id" disabled></input>
+                    <input class="package-input" type="text" size=6 v-model="car.id" disabled>
                 </div>
             </td>
             <td>
@@ -82,7 +82,7 @@ const handleMaxPackagesInput = (carId, event) => {
                     v-model="car.maxPackages"
                     @blur="handleMaxPackagesInput(car.id, $event)"
                     @keydown.enter="handleMaxPackagesInput(car.id, $event)"
-                ></input>
+                >
             </td>
             <td>
               <select 

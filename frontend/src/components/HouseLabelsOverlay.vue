@@ -37,38 +37,39 @@ import { ref, watch } from 'vue';
 import { useDigitalSimulation } from '../composables/useDigitalSimulation';
 
 const props = defineProps({
-  houses: {
-    type: Array,
-    required: true
-  }
+    houses: {
+        type: Array,
+        required: true
+    }
 });
 
 const TEXT_Y_OFFSET = 0.01;
 const DEFAULT_CIRCLE_RADIUS = 0.08;
+const durationInMillis = 800;
 
 const animatedHouses = ref(new Set());
 const previousExpectedPackageCounts = ref({});
 const { isSimulating } = useDigitalSimulation();
 
 watch(
-  () => props.houses,
-  (newHouses) => {
-    if (!isSimulating.value) return;
+    () => props.houses,
+    (newHouses) => {
+        if (!isSimulating.value) return;
 
-    newHouses.forEach(house => {
-      const currentCount = house.expectedPackages;
-      const previousCount = previousExpectedPackageCounts.value[house.houseInstanceId];
+        newHouses.forEach(house => {
+            const currentCount = house.expectedPackages;
+            const previousCount = previousExpectedPackageCounts.value[house.houseInstanceId];
 
-      // If count decreased (package was delivered), trigger animation
-      if (previousCount !== undefined && currentCount < previousCount) {
-        triggerAnimation(house.houseInstanceId);
-      }
+            // If count decreased (package was delivered), trigger animation
+            if (previousCount !== undefined && currentCount < previousCount) {
+                triggerAnimation(house.houseInstanceId);
+            }
 
-      // Update the previous count
-      previousExpectedPackageCounts.value[house.houseInstanceId] = currentCount;
-    });
-  },
-  { deep: true }
+            // Update the previous count
+            previousExpectedPackageCounts.value[house.houseInstanceId] = currentCount;
+        });
+    },
+    { deep: true }
 );
 
 function triggerAnimation(houseInstanceId) {
@@ -77,7 +78,7 @@ function triggerAnimation(houseInstanceId) {
     // Remove animation class after animation completes
     setTimeout(() => {
         animatedHouses.value.delete(houseInstanceId);
-    }, 800);
+    }, durationInMillis);
 }
 </script>
 

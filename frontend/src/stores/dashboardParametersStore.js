@@ -8,6 +8,8 @@ import { getHousesWithRoutesByScenarioKey, buildOrderedHouseInstancesOnRoutes } 
 import { useMapStore } from "./mapStore";
 import { MAX_CARS, MIN_CARS, SIMULATION_SPEED_OPTIONS } from "../constants/constants";
 
+const defaultCarSpeed = 50;
+
 export const useDashboardParametersStore = defineStore("dashboardParameters", () => {
     // ---
     // State
@@ -44,7 +46,7 @@ export const useDashboardParametersStore = defineStore("dashboardParameters", ()
             routeVisibility: false,
         },
     ]);
-    const carTargetSpeed = ref(50);
+    const carTargetSpeed = ref(defaultCarSpeed);
     const scenario = ref('rustig');
     const simulationSpeed = ref(1);
 
@@ -57,10 +59,10 @@ export const useDashboardParametersStore = defineStore("dashboardParameters", ()
     function addCar() {
         if (cars.value.length < MAX_CARS) {
             const newCar = {
-            id: `${cars.value.length + 1}`,
-            maxPackages: 1,
-            routeName: ROUTE_OPTIONS[0]?.value ?? '',
-            routeVisibility: false,
+                id: `${cars.value.length + 1}`,
+                maxPackages: 1,
+                routeName: ROUTE_OPTIONS[0]?.value ?? '',
+                routeVisibility: false,
             };
             cars.value.push(newCar);
         }
@@ -176,7 +178,7 @@ export const useDashboardParametersStore = defineStore("dashboardParameters", ()
         }
 
         try {
-            return housesLinkedToRoutes.value.map(({ routeNames, ...house }) => house);
+            return housesLinkedToRoutes.value.map(({ ...house }) => house);
         } catch (error) {
             console.error("Error building base scenario houses:", error);
             return [];

@@ -11,10 +11,10 @@ import { convertWaypointFromLocalToGlobal } from "../utils/coordinateConverter.j
  * @returns {Array<Object>} An array of car objects, each enriched with a routeWaypoints property containing the built route.
  */
 export function addWaypointsToCarRoute(cars) {
-  return cars.map((car) => ({
-    ...car,
-    routeWaypoints: injectDepotLanesForCar(getWaypointRouteByName(car.routeName), car.id),
-  }));
+    return cars.map((car) => ({
+        ...car,
+        routeWaypoints: injectDepotLanesForCar(getWaypointRouteByName(car.routeName), car.id),
+    }));
 }
 
 /**
@@ -25,59 +25,59 @@ export function addWaypointsToCarRoute(cars) {
  * @returns {Array<Object>} The complete waypoints including depot entry and exit.
  */
 function injectDepotLanesForCar(baseWaypoints, carId) {
-  const sequence = DEPOT_ROUTE_SEQUENCES[carId];
-  const mapStore = useMapStore();
+    const sequence = DEPOT_ROUTE_SEQUENCES[carId];
+    const mapStore = useMapStore();
 
-  if (!sequence) {
-    console.warn(`No depot route sequence defined for carId ${carId}, returning base waypoints`);
-    return baseWaypoints;
-  }
+    if (!sequence) {
+        console.warn(`No depot route sequence defined for carId ${carId}, returning base waypoints`);
+        return baseWaypoints;
+    }
 
-  // Collect start depot lanes
-  const startLanes = [];
-  for (const depotTileName of sequence.start) {
-    const lanes = getDepotLanesForCarAndRoute(depotTileName, carId, 'start');
+    // Collect start depot lanes
+    const startLanes = [];
+    for (const depotTileName of sequence.start) {
+        const lanes = getDepotLanesForCarAndRoute(depotTileName, carId, 'start');
 
-    const tile = mapStore.mapData.find(
-        tile => tile.type === depotTileName
-    );
+        const tile = mapStore.mapData.find(
+            tile => tile.type === depotTileName
+        );
 
-    const globalLanes = lanes.map(lane =>
-    convertLaneToGlobal(
-        lane,
-        tile.x,
-        tile.y
-    )
-    );
+        const globalLanes = lanes.map(lane =>
+            convertLaneToGlobal(
+                lane,
+                tile.x,
+                tile.y
+            )
+        );
 
-    startLanes.push(...globalLanes);
-  }
+        startLanes.push(...globalLanes);
+    }
 
-  // Collect end depot lanes
-  const endLanes = [];
-  for (const depotTileName of sequence.end) {
-    const lanes = getDepotLanesForCarAndRoute(depotTileName, carId, 'end');
+    // Collect end depot lanes
+    const endLanes = [];
+    for (const depotTileName of sequence.end) {
+        const lanes = getDepotLanesForCarAndRoute(depotTileName, carId, 'end');
 
-    const tile = mapStore.mapData.find(
-        tile => tile.type === depotTileName
-    );
+        const tile = mapStore.mapData.find(
+            tile => tile.type === depotTileName
+        );
 
-    const globalLanes = lanes.map(lane =>
-    convertLaneToGlobal(
-        lane,
-        tile.x,
-        tile.y
-    )
-    );
+        const globalLanes = lanes.map(lane =>
+            convertLaneToGlobal(
+                lane,
+                tile.x,
+                tile.y
+            )
+        );
 
-    endLanes.push(...globalLanes);
-  }
+        endLanes.push(...globalLanes);
+    }
 
-  // Convert lanes to waypoints
-  const startWaypoints = buildWaypointsFromLaneSequence(startLanes);
-  const endWaypoints = buildWaypointsFromLaneSequence(endLanes);
+    // Convert lanes to waypoints
+    const startWaypoints = buildWaypointsFromLaneSequence(startLanes);
+    const endWaypoints = buildWaypointsFromLaneSequence(endLanes);
 
-  return [...startWaypoints, ...baseWaypoints, ...endWaypoints];
+    return [...startWaypoints, ...baseWaypoints, ...endWaypoints];
 }
 
 /**
@@ -89,18 +89,18 @@ function injectDepotLanesForCar(baseWaypoints, carId) {
  * @returns {Array<Object>} Array of lane objects matching the criteria.
  */
 function getDepotLanesForCarAndRoute(depotTileName, carId, routeType) {
-  const tileDefinition = TILE_LANES[depotTileName];
+    const tileDefinition = TILE_LANES[depotTileName];
 
-  if (!tileDefinition) {
-    throw new Error(`Depot tile "${depotTileName}" not found in TILE_LANES.`);
-  }
+    if (!tileDefinition) {
+        throw new Error(`Depot tile "${depotTileName}" not found in TILE_LANES.`);
+    }
 
-  return tileDefinition.lanes.filter((lane) => {
-    const hasCarId = lane.carId && lane.carId.includes(carId);
-    const matchesRoute = !lane.route || lane.route === routeType;
+    return tileDefinition.lanes.filter((lane) => {
+        const hasCarId = lane.carId && lane.carId.includes(carId);
+        const matchesRoute = !lane.route || lane.route === routeType;
 
-    return hasCarId && matchesRoute;
-  });
+        return hasCarId && matchesRoute;
+    });
 }
 
 function convertLaneToGlobal(lane, tileX, tileY) {

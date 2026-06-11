@@ -4,10 +4,10 @@ import { normalizeDegree, rotateCardinalDirection, rotatePointNormalized } from 
 import { convertWaypointFromLocalToGlobal } from '../utils/coordinateConverter.js';
 
 export const OPPOSITE_DIRECTION = {
-  N: 'S',
-  E: 'W',
-  S: 'N',
-  W: 'E',
+    N: 'S',
+    E: 'W',
+    S: 'N',
+    W: 'E',
 };
 
 /**
@@ -20,17 +20,17 @@ export const OPPOSITE_DIRECTION = {
  * @throws {Error} If tileB is not an orthogonal neighbor of tileA.
  */
 export function getDirectionBetweenTiles(tileA, tileB) {
-  const dx = tileB.x - tileA.x;
-  const dy = tileB.y - tileA.y;
+    const dx = tileB.x - tileA.x;
+    const dy = tileB.y - tileA.y;
 
-  if (dx === 0 && dy === -1) return 'N';
-  if (dx === 1 && dy === 0) return 'E';
-  if (dx === 0 && dy === 1) return 'S';
-  if (dx === -1 && dy === 0) return 'W';
+    if (dx === 0 && dy === -1) return 'N';
+    if (dx === 1 && dy === 0) return 'E';
+    if (dx === 0 && dy === 1) return 'S';
+    if (dx === -1 && dy === 0) return 'W';
 
-  throw new Error(
-    `Tiles (${tileA.x},${tileA.y}) and (${tileB.x},${tileB.y}) are not cardinal neighbors.`
-  );
+    throw new Error(
+        `Tiles (${tileA.x},${tileA.y}) and (${tileB.x},${tileB.y}) are not cardinal neighbors.`
+    );
 }
 
 /**
@@ -42,15 +42,15 @@ export function getDirectionBetweenTiles(tileA, tileB) {
  * @throws {Error} If no tile is found at the given coordinates.
  */
 export function getMapTile(x, y) {
-  const mapStore = useMapStore();
+    const mapStore = useMapStore();
   
-  const tile = mapStore.mapData.find((item) => item.x === x && item.y === y);
+    const tile = mapStore.mapData.find((item) => item.x === x && item.y === y);
 
-  if (!tile) {
-    throw new Error(`No tile found at (${x}, ${y}).`);
-  }
+    if (!tile) {
+        throw new Error(`No tile found at (${x}, ${y}).`);
+    }
 
-  return tile;
+    return tile;
 }
 
 /**
@@ -61,26 +61,26 @@ export function getMapTile(x, y) {
  * @throws {Error} If no lane definition is found for the tile type.
  */
 export function getRotatedLanesForTile(tile) {
-  const laneDefinition = TILE_LANES[tile.type];
+    const laneDefinition = TILE_LANES[tile.type];
 
-  if (!laneDefinition) {
-    throw new Error(`No lane definition found for tile type "${tile.type}".`);
-  }
+    if (!laneDefinition) {
+        throw new Error(`No lane definition found for tile type "${tile.type}".`);
+    }
 
-  const rotation = normalizeDegree(tile.rotation || 0);
+    const rotation = normalizeDegree(tile.rotation || 0);
 
-  return laneDefinition.lanes.map((lane, index) => ({
-    id: `${tile.x}-${tile.y}-${index}`,
-    tileX: tile.x,
-    tileY: tile.y,
-    tileType: tile.type,
-    from: rotateCardinalDirection(lane.from, rotation),
-    to: rotateCardinalDirection(lane.to, rotation),
-    points: lane.points.map((point) => {
-        const rotatedPoint = rotatePointNormalized(point, rotation);
-        return convertWaypointFromLocalToGlobal(rotatedPoint, tile.x, tile.y);
-    }),
-  }));
+    return laneDefinition.lanes.map((lane, index) => ({
+        id: `${tile.x}-${tile.y}-${index}`,
+        tileX: tile.x,
+        tileY: tile.y,
+        tileType: tile.type,
+        from: rotateCardinalDirection(lane.from, rotation),
+        to: rotateCardinalDirection(lane.to, rotation),
+        points: lane.points.map((point) => {
+            const rotatedPoint = rotatePointNormalized(point, rotation);
+            return convertWaypointFromLocalToGlobal(rotatedPoint, tile.x, tile.y);
+        }),
+    }));
 }
 
 /**
@@ -92,17 +92,17 @@ export function getRotatedLanesForTile(tile) {
  * @throws {Error} If no suitable start lane is found for the specified direction.
  */
 function findDepotStartLane(rotatedLanes, nextDirection) {
-  const lane = rotatedLanes.find(
-    (candidate) => candidate.from === 'S' && candidate.to === nextDirection
-  );
-
-  if (!lane) {
-    throw new Error(
-      `No depot start lane found for leaving depot towards "${nextDirection}".`
+    const lane = rotatedLanes.find(
+        (candidate) => candidate.from === 'S' && candidate.to === nextDirection
     );
-  }
 
-  return lane;
+    if (!lane) {
+        throw new Error(
+            `No depot start lane found for leaving depot towards "${nextDirection}".`
+        );
+    }
+
+    return lane;
 }
 
 /**
@@ -114,17 +114,17 @@ function findDepotStartLane(rotatedLanes, nextDirection) {
  * @throws {Error} If no suitable end lane is found for the specified direction.
  */
 function findDepotEndLane(rotatedLanes, incomingDirection) {
-  const lane = rotatedLanes.find(
-    (candidate) => candidate.from === incomingDirection && candidate.to === 'E'
-  );
-
-  if (!lane) {
-    throw new Error(
-      `No depot end lane found for entering depot from "${incomingDirection}".`
+    const lane = rotatedLanes.find(
+        (candidate) => candidate.from === incomingDirection && candidate.to === 'E'
     );
-  }
 
-  return lane;
+    if (!lane) {
+        throw new Error(
+            `No depot end lane found for entering depot from "${incomingDirection}".`
+        );
+    }
+
+    return lane;
 }
 
 /**
@@ -137,18 +137,18 @@ function findDepotEndLane(rotatedLanes, incomingDirection) {
  * @throws {Error} If no suitable lane is found for the specified directions.
  */
 export function findConnectingLane(rotatedLanes, incomingDirection, outgoingDirection) {
-  const lane = rotatedLanes.find(
-    (candidate) =>
-      candidate.from === incomingDirection && candidate.to === outgoingDirection
-  );
-
-  if (!lane) {
-    throw new Error(
-      `No connecting lane found for from="${incomingDirection}" to="${outgoingDirection}".`
+    const lane = rotatedLanes.find(
+        (candidate) =>
+            candidate.from === incomingDirection && candidate.to === outgoingDirection
     );
-  }
 
-  return lane;
+    if (!lane) {
+        throw new Error(
+            `No connecting lane found for from="${incomingDirection}" to="${outgoingDirection}".`
+        );
+    }
+
+    return lane;
 }
 
 /**
@@ -161,61 +161,62 @@ export function findConnectingLane(rotatedLanes, incomingDirection, outgoingDire
  * @throws {Error} If the tile path is invalid or a suitable lane cannot be found for any tile.
  */
 export function buildLaneSequenceFromTilePath(tilePath, allowIncompleteRoute = false) {
-  if (!Array.isArray(tilePath) || tilePath.length < 2) {
-    throw new Error('tilePath must contain at least 2 tiles.');
-  }
-
-  const laneSequence = [];
-  const iterationLimit = allowIncompleteRoute ? tilePath.length - 1 : tilePath.length;
-
-  for (let index = 0; index < iterationLimit; index++) {
-    const currentPathTile = tilePath[index];
-    const currentMapTile = getMapTile(currentPathTile.x, currentPathTile.y);
-    const rotatedLanes = getRotatedLanesForTile(currentMapTile);
-
-    const isFirst = index === 0;
-    const isLast = index === tilePath.length - 1;
-
-    if (isFirst) {
-      const nextTile = tilePath[index + 1];
-      const nextDirection = getDirectionBetweenTiles(currentPathTile, nextTile);
-
-      if (currentMapTile.type !== 't_split_out') {
-        throw new Error('First tile in route must be the depot tile.');
-      }
-
-      laneSequence.push(findDepotStartLane(rotatedLanes, nextDirection));
-      continue;
+    const minimumRouteLength = 2;
+    if (!Array.isArray(tilePath) || tilePath.length < minimumRouteLength) {
+        throw new Error(`tilePath must contain at least ${minimumRouteLength} tiles.`);
     }
 
-    if (isLast && !allowIncompleteRoute) {
-      const previousTile = tilePath[index - 1];
-      const incomingDirection = OPPOSITE_DIRECTION[
-        getDirectionBetweenTiles(previousTile, currentPathTile)
-      ];
+    const laneSequence = [];
+    const iterationLimit = allowIncompleteRoute ? tilePath.length - 1 : tilePath.length;
 
-      if (currentMapTile.type !== 't_split_in') {
-        throw new Error('Last tile in route must be the depot tile.');
-      }
+    for (let index = 0; index < iterationLimit; index++) {
+        const currentPathTile = tilePath[index];
+        const currentMapTile = getMapTile(currentPathTile.x, currentPathTile.y);
+        const rotatedLanes = getRotatedLanesForTile(currentMapTile);
 
-      laneSequence.push(findDepotEndLane(rotatedLanes, incomingDirection));
-      continue;
+        const isFirst = index === 0;
+        const isLast = index === tilePath.length - 1;
+
+        if (isFirst) {
+            const nextTile = tilePath[index + 1];
+            const nextDirection = getDirectionBetweenTiles(currentPathTile, nextTile);
+
+            if (currentMapTile.type !== 't_split_out') {
+                throw new Error('First tile in route must be the depot tile.');
+            }
+
+            laneSequence.push(findDepotStartLane(rotatedLanes, nextDirection));
+            continue;
+        }
+
+        if (isLast && !allowIncompleteRoute) {
+            const previousTile = tilePath[index - 1];
+            const incomingDirection = OPPOSITE_DIRECTION[
+                getDirectionBetweenTiles(previousTile, currentPathTile)
+            ];
+
+            if (currentMapTile.type !== 't_split_in') {
+                throw new Error('Last tile in route must be the depot tile.');
+            }
+
+            laneSequence.push(findDepotEndLane(rotatedLanes, incomingDirection));
+            continue;
+        }
+
+        const previousTile = tilePath[index - 1];
+        const nextTile = tilePath[index + 1];
+
+        const incomingDirection = OPPOSITE_DIRECTION[
+            getDirectionBetweenTiles(previousTile, currentPathTile)
+        ];
+        const outgoingDirection = getDirectionBetweenTiles(currentPathTile, nextTile);
+
+        laneSequence.push(
+            findConnectingLane(rotatedLanes, incomingDirection, outgoingDirection)
+        );
     }
 
-    const previousTile = tilePath[index - 1];
-    const nextTile = tilePath[index + 1];
-
-    const incomingDirection = OPPOSITE_DIRECTION[
-      getDirectionBetweenTiles(previousTile, currentPathTile)
-    ];
-    const outgoingDirection = getDirectionBetweenTiles(currentPathTile, nextTile);
-
-    laneSequence.push(
-      findConnectingLane(rotatedLanes, incomingDirection, outgoingDirection)
-    );
-  }
-
-  return laneSequence;
+    return laneSequence;
 }
 
 /**
@@ -225,18 +226,19 @@ export function buildLaneSequenceFromTilePath(tilePath, allowIncompleteRoute = f
  * @returns {Array<Object>} An array of waypoint objects, each with x and y properties, representing the route.
  */
 export function buildWaypointsFromLaneSequence(laneSequence) {
-  const waypoints = [];
+    const waypoints = [];
+    const decimalPlaces = 3;
 
-  laneSequence.forEach((lane) => {
-    lane.points.forEach((point) => {
-      waypoints.push({
-        x: Number(point.x.toFixed(3)),
-        y: Number(point.y.toFixed(3)),
-      });
+    laneSequence.forEach((lane) => {
+        lane.points.forEach((point) => {
+            waypoints.push({
+                x: Number(point.x.toFixed(decimalPlaces)),
+                y: Number(point.y.toFixed(decimalPlaces)),
+            });
+        });
     });
-  });
 
-  return waypoints;
+    return waypoints;
 }
 
 /**
@@ -248,6 +250,6 @@ export function buildWaypointsFromLaneSequence(laneSequence) {
  * @returns {Array<Object>} An array of waypoint objects representing the route.
  */
 export function buildWaypointRouteFromTilePath(tilePath, allowIncompleteRoute = false) {
-  const laneSequence = buildLaneSequenceFromTilePath(tilePath, allowIncompleteRoute);
+    const laneSequence = buildLaneSequenceFromTilePath(tilePath, allowIncompleteRoute);
     return buildWaypointsFromLaneSequence(laneSequence);
 }

@@ -1,5 +1,3 @@
-import { HOUSE_INSTANCES } from "./houseInstances";
-
 /**
  * All houses are defined in houseInstances.js.
  * House ID's are linked to their tile type plus x-y coordinates, for example: 'curve-0-0' or 'tsplit-1-0'.
@@ -111,7 +109,7 @@ const SCENARIOS = {
             'semiDetached-3-6': 3,
         }
     },
-}
+};
 
 export const SCENARIO_OPTIONS = Object.keys(SCENARIOS).map((scenarioKey) => ({
     value: scenarioKey,

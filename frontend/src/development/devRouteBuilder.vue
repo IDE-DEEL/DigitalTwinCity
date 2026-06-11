@@ -114,10 +114,10 @@
 import { ref, computed } from 'vue';
 import { DEPOT_ENTRANCE, DEPOT_EXIT, MAP_COLUMNS, MAP_ROWS } from '../constants/constants';
 import {
-  getDirectionBetweenTiles,
-  getMapTile,
-  getRotatedLanesForTile,
-  OPPOSITE_DIRECTION,
+    getDirectionBetweenTiles,
+    getMapTile,
+    getRotatedLanesForTile,
+    OPPOSITE_DIRECTION,
 } from '../logic/service/routeBuilder.js';
 import { getWaypointPreviewFromTilePath } from '../logic/service/routeService.js';
 
@@ -126,63 +126,66 @@ const routeTiles = ref([DEPOT_EXIT]);   // Start route at depot exit tile
 const copyFeedback = ref('');
 
 const currentTile = computed(() => {
-  return routeTiles.value[routeTiles.value.length - 1];
+    return routeTiles.value[routeTiles.value.length - 1];
 });
 
 // For a route to be complete it needs to consist of multiple tiles and end at the depot
 const routeComplete = computed(() => {
     const lastTile = routeTiles.value[routeTiles.value.length - 1];
 
-  return routeTiles.value.length > 1 && 
+    return routeTiles.value.length > 1 && 
          lastTile.x === DEPOT_ENTRANCE.x &&
          lastTile.y === DEPOT_ENTRANCE.y;
 });
 
 const possibleNextTiles = computed(() => {
-  const current = currentTile.value;
-  const candidates = [
-    { x: current.x, y: current.y - 1, dir: 'N' },
-    { x: current.x + 1, y: current.y, dir: 'E' },
-    { x: current.x, y: current.y + 1, dir: 'S' },
-    { x: current.x - 1, y: current.y, dir: 'W' },
-  ];
+    const current = currentTile.value;
+    const candidates = [
+        { x: current.x, y: current.y - 1, dir: 'N' },
+        { x: current.x + 1, y: current.y, dir: 'E' },
+        { x: current.x, y: current.y + 1, dir: 'S' },
+        { x: current.x - 1, y: current.y, dir: 'W' },
+    ];
 
-  const valid = [];
+    const valid = [];
 
-  for (const candidate of candidates) {
+    for (const candidate of candidates) {
     // Check bounds
-    if (candidate.x < 0 || candidate.x >= MAP_COLUMNS ||
+        if (candidate.x < 0 || candidate.x >= MAP_COLUMNS ||
         candidate.y < 0 || candidate.y >= MAP_ROWS) {
-      continue;
+            continue;
+        }
+
+        // Check if tile exists
+        try {
+            getMapTile(candidate.x, candidate.y); // TODO: check if this is necessary, previously had const tile = but went unused
+
+            // Validate lane connection
+            try {
+                validateConnection(current, candidate);
+                valid.push(candidate);
+            } catch (e) {
+                console.warn(e);
+                // Lane connection doesn't exist, skip
+            }
+        } catch (e) {
+            console.warn(e);
+            // Tile doesn't exist, skip
+        }
     }
 
-    // Check if tile exists
-    try {
-      const tile = getMapTile(candidate.x, candidate.y);
-
-      // Validate lane connection
-      try {
-        validateConnection(current, candidate);
-        valid.push(candidate);
-      } catch (e) {
-        // Lane connection doesn't exist, skip
-      }
-    } catch (e) {
-      // Tile doesn't exist, skip
-    }
-  }
-
-  return valid;
+    return valid;
 });
 
 // Calculate route waypoints from tiles to preview the route as it's being built.
 const routeWaypoints = computed(() => {
-  try {
-    return getWaypointPreviewFromTilePath(routeTiles.value);
-  } catch (error) {
-    // If waypoint calculation fails, return empty array silently
-    return [];
-  }
+    try {
+        return getWaypointPreviewFromTilePath(routeTiles.value);
+    } catch (error) {
+        console.warn("Error calculating route waypoints:", error);
+        // If waypoint calculation fails, return empty array
+        return [];
+    }
 });
 
 /**
@@ -193,49 +196,51 @@ const routeWaypoints = computed(() => {
  * @throws {Error} If there is no valid connection possible between the tiles.
  */
 function validateConnection(fromTile, toTile) {
-  const fromMapTile = getMapTile(fromTile.x, fromTile.y);
-  const toMapTile = getMapTile(toTile.x, toTile.y);
+    const minimumRouteLengthForReturnMove = 2;
 
-  const direction = getDirectionBetweenTiles(fromTile, toTile);
-  const incomingDir = OPPOSITE_DIRECTION[direction];
+    const fromMapTile = getMapTile(fromTile.x, fromTile.y);
+    const toMapTile = getMapTile(toTile.x, toTile.y);
 
-  const fromRotatedLanes = getRotatedLanesForTile(fromMapTile);
-  const toRotatedLanes = getRotatedLanesForTile(toMapTile);
+    const direction = getDirectionBetweenTiles(fromTile, toTile);
+    const incomingDir = OPPOSITE_DIRECTION[direction];
 
-  // Check from tile has lane exiting in the direction we want to go
-  const fromLaneExists = fromRotatedLanes.some(lane => lane.to === direction);
-  if (!fromLaneExists) {
-    throw new Error(`No lane leaving from (${fromTile.x}, ${fromTile.y}) towards ${direction}`);
-  }
+    const fromRotatedLanes = getRotatedLanesForTile(fromMapTile);
+    const toRotatedLanes = getRotatedLanesForTile(toMapTile);
 
-  // Check to tile has lane entering from the opposite direction
-  const toLaneExists = toRotatedLanes.some(lane => lane.from === incomingDir);
-  if (!toLaneExists) {
-    throw new Error(`No lane entering (${toTile.x}, ${toTile.y}) from ${incomingDir}`);
-  }
-
-  // For return moves (going back to previous tile), check if a lane exists with same from/to direction
-  if (routeTiles.value.length >= 2) {
-    const prevTile = routeTiles.value[routeTiles.value.length - 2];
-    const isGoingBack = toTile.x === prevTile.x && toTile.y === prevTile.y;
-    
-    if (isGoingBack) {
-      // Get the direction we came FROM to reach the current tile
-      const directionFromPrevToCurrent = getDirectionBetweenTiles(prevTile, fromTile);
-      
-      // For return moves, check if current tile has a lane that goes from incomingDir to incomingDir
-      // (same direction in and out)
-      const returnLaneExists = fromRotatedLanes.some(
-        lane => lane.from === directionFromPrevToCurrent && lane.to === directionFromPrevToCurrent
-      );
-      
-      if (!returnLaneExists) {
-        throw new Error(
-          `Cannot return to (${toTile.x}, ${toTile.y}): no valid connection with same direction "${directionFromPrevToCurrent}" exists`
-        );
-      }
+    // Check from tile has lane exiting in the direction we want to go
+    const fromLaneExists = fromRotatedLanes.some(lane => lane.to === direction);
+    if (!fromLaneExists) {
+        throw new Error(`No lane leaving from (${fromTile.x}, ${fromTile.y}) towards ${direction}`);
     }
-  }
+
+    // Check to tile has lane entering from the opposite direction
+    const toLaneExists = toRotatedLanes.some(lane => lane.from === incomingDir);
+    if (!toLaneExists) {
+        throw new Error(`No lane entering (${toTile.x}, ${toTile.y}) from ${incomingDir}`);
+    }
+
+    // For return moves (going back to previous tile), check if a lane exists with same from/to direction
+    if (routeTiles.value.length >= minimumRouteLengthForReturnMove) {
+        const prevTile = routeTiles.value[routeTiles.value.length - minimumRouteLengthForReturnMove];
+        const isGoingBack = toTile.x === prevTile.x && toTile.y === prevTile.y;
+    
+        if (isGoingBack) {
+            // Get the direction we came FROM to reach the current tile
+            const directionFromPrevToCurrent = getDirectionBetweenTiles(prevTile, fromTile);
+      
+            // For return moves, check if current tile has a lane that goes from incomingDir to incomingDir
+            // (same direction in and out)
+            const returnLaneExists = fromRotatedLanes.some(
+                lane => lane.from === directionFromPrevToCurrent && lane.to === directionFromPrevToCurrent
+            );
+      
+            if (!returnLaneExists) {
+                throw new Error(
+                    `Cannot return to (${toTile.x}, ${toTile.y}): no valid connection with same direction "${directionFromPrevToCurrent}" exists`
+                );
+            }
+        }
+    }
 }
 
 /**
@@ -244,15 +249,15 @@ function validateConnection(fromTile, toTile) {
  * @param {Object} tile - The tile to add, with x, y and direction properties.
  */
 function selectTile(tile) {
-  routeTiles.value.push(tile);
+    routeTiles.value.push(tile);
 }
 
 /**
  * Reset the route back to the starting depot.
  */
 function resetRoute() {
-  routeTiles.value = [DEPOT_EXIT];
-  copyFeedback.value = '';
+    routeTiles.value = [DEPOT_EXIT];
+    copyFeedback.value = '';
 }
 
 /**
@@ -260,42 +265,44 @@ function resetRoute() {
  * Prompts the user for a route name and formats the route tiles into code that can be pasted into the routes.js file.
  */
 function copyRoute() {
-  const inputName = prompt('Enter route name (e.g., Route D):');
-  if (!inputName) return;
+    const timeoutInMillis = 2000;
 
-  const label = inputName.trim();
-  const routeKey = label
-    .toLowerCase()
-    .replace(/\s+/g, '_');
+    const inputName = prompt('Enter route name (e.g., Route D):');
+    if (!inputName) return;
 
-  const indent = '            '; // 12 spaces
+    const label = inputName.trim();
+    const routeKey = label
+        .toLowerCase()
+        .replace(/\s+/g, '_');
 
-  const tilesStr = routeTiles.value
-    .map(tile => {
-      if (tile.x === DEPOT_EXIT.x && tile.y === DEPOT_EXIT.y) {
-        return `${indent}DEPOT_EXIT`;
-      }
+    const indent = '            '; // 12 spaces
 
-      if (tile.x === DEPOT_ENTRANCE.x && tile.y === DEPOT_ENTRANCE.y) {
-        return `${indent}DEPOT_ENTRANCE`;
-      }
+    const tilesStr = routeTiles.value
+        .map(tile => {
+            if (tile.x === DEPOT_EXIT.x && tile.y === DEPOT_EXIT.y) {
+                return `${indent}DEPOT_EXIT`;
+            }
 
-      return `${indent}{ x: ${tile.x}, y: ${tile.y} }`;
-    })
-    .join(',\n');
+            if (tile.x === DEPOT_ENTRANCE.x && tile.y === DEPOT_ENTRANCE.y) {
+                return `${indent}DEPOT_ENTRANCE`;
+            }
 
-  const code = `${routeKey}: {
+            return `${indent}{ x: ${tile.x}, y: ${tile.y} }`;
+        })
+        .join(',\n');
+
+    const code = `${routeKey}: {
         label: '${label}',
         tiles: [
 ${tilesStr}
         ],
     },`;
 
-  navigator.clipboard.writeText(code);
+    navigator.clipboard.writeText(code);
 
-  copyFeedback.value = 'Copied to clipboard!';
-  setTimeout(() => {
-    copyFeedback.value = '';
-  }, 2000);
+    copyFeedback.value = 'Copied to clipboard!';
+    setTimeout(() => {
+        copyFeedback.value = '';
+    }, timeoutInMillis);
 }
 </script>

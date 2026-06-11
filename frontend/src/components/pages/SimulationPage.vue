@@ -1,18 +1,17 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
-import { useMapStore, useDashboardParametersStore, useSimulationStateStore } from '../../stores'
-import { getLabel } from '../../constants/ui_labels.js'
-import { SIMULATION_SPEED_OPTIONS } from '../../constants/constants.js'
-import { useDigitalSimulation } from '../../composables/useDigitalSimulation.js'
-import { MAP_COLUMNS, MAP_ROWS } from '../../constants/constants.js'
-import { useCarColors } from '../../composables/useCarColors.js'
+import { ref, computed, watch } from 'vue';
+import { useMapStore, useDashboardParametersStore, useSimulationStateStore } from '../../stores';
+import { getLabel } from '../../constants/ui_labels.js';
+import { SIMULATION_SPEED_OPTIONS, MAP_COLUMNS, MAP_ROWS } from '../../constants/constants.js';
+import { useDigitalSimulation } from '../../composables/useDigitalSimulation.js';
+import { useCarColors } from '../../composables/useCarColors.js';
 import { buildLane } from '../../logic/service/laneBuilder.js';
 import { normalizeDegree } from '../../logic/utils/rotation.js';
-import { Slider, DropDown, RadioGroup, SimulationTable, WebSocketStatus, RoutePolyline, Car } from '../CustomComponents.js'
-import { ControlPanel, SimulationDisplay, SimulationStatsModal, HouseLabelsOverlay } from '../AreaComponents.js'
-import { devTileCoordinateOverlay, devLaneDebugOverlay, devHouseDetectionZonesOverlay, devRouteBuilder } from '../../development/DevtoolComponents.js'
-import '../../assets/MainContent.css'
-import '../../assets/SimulationPage.css'
+import { Slider, DropDown, RadioGroup, SimulationTable, WebSocketStatus, RoutePolyline, Car } from '../CustomComponents.js';
+import { ControlPanel, SimulationDisplay, SimulationStatsModal, HouseLabelsOverlay } from '../AreaComponents.js';
+import { devTileCoordinateOverlay, devLaneDebugOverlay, devHouseDetectionZonesOverlay, devRouteBuilder } from '../../development/DevtoolComponents.js';
+import '../../assets/MainContent.css';
+import '../../assets/SimulationPage.css';
 
 /*
     =====================
@@ -26,9 +25,9 @@ const isDevelopment = import.meta.env.DEV;
     Stores and composables
     =====================
 */
-const dashboardStore = useDashboardParametersStore()
-const simulationStore = useSimulationStateStore()
-const mapStore = useMapStore()
+const dashboardStore = useDashboardParametersStore();
+const simulationStore = useSimulationStateStore();
+const mapStore = useMapStore();
 
 const {
     isWebSocketConnected,
@@ -53,8 +52,8 @@ const { getColorForCarAndRoute } = useCarColors();
 const reconnectCooldown = ref(false);
 const isStatsModalOpen = ref(false);
 
-const MAX_PACKAGES = 10
-const MIN_PACKAGES = 1
+const MAX_PACKAGES = 10;
+const MIN_PACKAGES = 1;
 
 /*
     =====================
@@ -68,7 +67,7 @@ const lanePositions = computed(() => {
         rotation: normalizeDegree(item.rotation || 0),
         position: { x: item.x, y: item.y },
     }));
-})
+});
 
 const lanes = computed(() => buildLane(lanePositions.value));
 
@@ -90,21 +89,21 @@ const handleWebsocketReconnect = () => {
     setTimeout(() => {
         reconnectCooldown.value = false;
     }, timeInMillis);
-}
+};
 
 const handleSimulationStart = () => {
     console.log('Requested simulation start with parameters: ', dashboardStore.collectParameters());
     validateHousesReachability();
     startSimulation();
-}
+};
 
 const handleSimulationStop = () => {
     stopSimulation();
-}
+};
 
 const handleStatsOpen = () => {
     isStatsModalOpen.value = true;
-}
+};
 
 watch(
     () => autoOpenStatsModal.value,
@@ -291,7 +290,6 @@ const toggleRouteBuilder = () => {
                 <div class="stats-button-container">
                     <button @click="handleStatsOpen" :disabled="!hasSimulated"> {{ getLabel('statisticsButton') }} </button>
                 </div>
-
 
                 <div class="button-area">
                     <button @click="handleSimulationStart" :disabled="isSimulating"> {{ getLabel('startButton') }} </button>
