@@ -155,19 +155,19 @@ const toggleRouteBuilder = () => {
 
         <div v-if="isDevelopment" class="devtool-container">
             <!-- Developer tool buttons (only in development mode) -->
-            <button type="button" @click="toggleLaneDebug">
+            <button type="button" :class="{ 'active': showDevLaneDebug }" id="devtool-button" @click="toggleLaneDebug">
                 {{ showDevLaneDebug ? 'Hide lane overlay' : 'Show lane overlay' }}
             </button>
 
-            <button type="button" @click="toggleTileCoordDebug">
+            <button type="button" :class="{ 'active': showDevTileCoordDebug }" id="devtool-button" @click="toggleTileCoordDebug">
                 {{ showDevTileCoordDebug ? 'Hide tile coords overlay' : 'Show tile coords overlay' }}
             </button>
 
-            <button type="button" @click="toggleRouteBuilder">
+            <button type="button" :class="{ 'active': showDevRouteBuilder }" id="devtool-button" @click="toggleRouteBuilder">
                 {{ showDevRouteBuilder ? 'Hide route builder' : 'Show route builder' }}
             </button>
 
-            <button type="button" @click="toggleHouseDetectionZones">
+            <button type="button" :class="{ 'active': showDevHouseDetectionZones }" id="devtool-button" @click="toggleHouseDetectionZones">
                 {{ showDevHouseDetectionZones ? 'Hide house zones' : 'Show house zones' }}
             </button>
         </div>
