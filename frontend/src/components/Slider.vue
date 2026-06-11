@@ -10,6 +10,7 @@ defineProps({
   name: String,
   min: String,
   max: String,
+  disabled: { type: Boolean, default: false },
 })
 </script>
 
@@ -30,6 +31,7 @@ defineProps({
           max=max
           class="custom-slider" 
           v-model.number="model"
+          :disabled="disabled"
         />
         
         <span class="dot dot-right"></span>

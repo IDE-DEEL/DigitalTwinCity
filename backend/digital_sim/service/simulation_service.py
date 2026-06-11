@@ -6,6 +6,7 @@ from backend.digital_sim.constants import (
     AGENT_DISTANCE_TRAVELLED_KEY, AGENT_TIME_DRIVING_SECONDS_KEY, AGENT_PACKAGES_DELIVERED_KEY,
 )
 from backend.digital_sim.utils.coordinate_util import convert_waypoint_dicts_to_tuples
+import gc
 
 
 class SimulationService:
@@ -23,6 +24,7 @@ class SimulationService:
         # Clean up any existing model before starting a new simulation
         if self.model is not None:
             self.model = None
+            gc.collect() # Force garbage collection to free memory from previous simulation runs
             self.is_running = False
         
         cars = parameters.get(CARS_KEY, [])  # TODO: throw error if missing/empty
@@ -50,6 +52,7 @@ class SimulationService:
             houses_on_routes=houses_on_routes,
         )
         self.is_running = True
+
         return {
             "status": "simulation_started",
             **self.model.get_simulation_state()

@@ -9,14 +9,14 @@ import { buildWaypointRouteFromTilePath } from './routeBuilder.js';
  * @throws {Error} If the route name is unknown.
  */
 export function getWaypointRouteByName(routeName) {
-  const route = ROUTES_TILES[routeName];
+    const route = ROUTES_TILES[routeName];
 
-  if (!route) {
-    throw new Error(`Unknown route "${routeName}".`);
-  }
+    if (!route) {
+        throw new Error(`Unknown route "${routeName}".`);
+    }
 
-  const allowIncompleteRoute = false;
-  return buildWaypointRouteFromTilePath(route.tiles, allowIncompleteRoute);
+    const allowIncompleteRoute = false;
+    return buildWaypointRouteFromTilePath(route.tiles, allowIncompleteRoute);
 }
 
 /**
@@ -27,6 +27,6 @@ export function getWaypointRouteByName(routeName) {
  * @returns {Array<Object>} An array of waypoint objects, each with x and y properties, representing the route preview.
  */
 export function getWaypointPreviewFromTilePath(tilePath) {
-  const allowIncompleteRoute = true;
-  return buildWaypointRouteFromTilePath(tilePath, allowIncompleteRoute);
+    const allowIncompleteRoute = true;
+    return buildWaypointRouteFromTilePath(tilePath, allowIncompleteRoute);
 }

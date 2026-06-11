@@ -356,4 +356,4 @@ export const HOUSE_INSTANCES = [
         labelCoords: { x: 0.76, y: 0.06 },
         roadCenter: { x: 0.75, y: 0.36 },
     },
-]
+];

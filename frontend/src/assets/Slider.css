@@ -47,6 +47,11 @@
   cursor: pointer;
 }
 
+.custom-slider:disabled {
+  background: var(--color-button-disabled);
+  cursor: not-allowed;
+}
+
 /* Voor de 'thumb' (het bolletje) geldt hetzelfde */
 .custom-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -57,4 +62,10 @@
   border: 2px solid white;
   position: relative;
   z-index: 2;
+}
+
+.custom-slider:disabled::-webkit-slider-thumb {
+  background: var(--color-button-disabled);
+  border-color: var(--color-button-disabled);
+  cursor: not-allowed;
 }

@@ -58,7 +58,8 @@ const copiedMessage = ref('');
  * @returns The rounded coordinate value.
  */
 function roundCoord(value) {
-  return Number(value.toFixed(2));
+    const decimalPlaces = 2;
+    return Number(value.toFixed(decimalPlaces));
 }
 
 /**
@@ -70,7 +71,7 @@ function roundCoord(value) {
  * @returns The clamped value.
  */
 function clamp(value, min, max) {
-  return Math.min(Math.max(value, min), max);
+    return Math.min(Math.max(value, min), max);
 }
 
 /**
@@ -81,12 +82,12 @@ function clamp(value, min, max) {
  * @returns An object with type and rotation properties, or null if not found.
  */
 function findTileData(tileX, tileY) {
-  const tile = mapStore.mapData.find(t => t.x === tileX && t.y === tileY);
-  if (!tile) return null;
-  return {
-    type: tile.type ?? null,
-    rotation: tile.rotation ?? 0,
-  };
+    const tile = mapStore.mapData.find(t => t.x === tileX && t.y === tileY);
+    if (!tile) return null;
+    return {
+        type: tile.type ?? null,
+        rotation: tile.rotation ?? 0,
+    };
 }
 
 /**
@@ -97,54 +98,56 @@ function findTileData(tileX, tileY) {
  * @param event  - Mouse event containing the cursor position.
  */
 function handleMouseMove(event) {
-  const overlayElement = overlayRef.value;
-  if (!overlayElement) return;
+    const smallOffset = 0.0001; // To prevent edge cases where mouse is exactly on the border
+    
+    const overlayElement = overlayRef.value;
+    if (!overlayElement) return;
 
-  const rect = overlayElement.getBoundingClientRect();
+    const rect = overlayElement.getBoundingClientRect();
 
-  const mouseX = event.clientX - rect.left;
-  const mouseY = event.clientY - rect.top;
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
 
-//   prevent cursor from going outside of the overlay, which could cause values to be out of bounds or incorrect
-  const clampedX = clamp(mouseX, 0, rect.width - 0.0001);
-  const clampedY = clamp(mouseY, 0, rect.height - 0.0001);
+    //   prevent cursor from going outside of the overlay, which could cause values to be out of bounds or incorrect
+    const clampedX = clamp(mouseX, 0, rect.width - smallOffset);
+    const clampedY = clamp(mouseY, 0, rect.height - smallOffset);
 
-  const tileWidth = rect.width / MAP_COLUMNS;
-  const tileHeight = rect.height / MAP_ROWS;
+    const tileWidth = rect.width / MAP_COLUMNS;
+    const tileHeight = rect.height / MAP_ROWS;
 
-  const tileX = Math.floor(clampedX / tileWidth);
-  const tileY = Math.floor(clampedY / tileHeight);
+    const tileX = Math.floor(clampedX / tileWidth);
+    const tileY = Math.floor(clampedY / tileHeight);
 
-  const localX = (clampedX - tileX * tileWidth) / tileWidth;
-  const localY = (clampedY - tileY * tileHeight) / tileHeight;
+    const localX = (clampedX - tileX * tileWidth) / tileWidth;
+    const localY = (clampedY - tileY * tileHeight) / tileHeight;
 
-  const tileData = findTileData(tileX, tileY);
+    const tileData = findTileData(tileX, tileY);
 
-  // Calculate global map coordinates
-  const globalX = roundCoord(tileX + localX);
-  const globalY = roundCoord(tileY + localY);
+    // Calculate global map coordinates
+    const globalX = roundCoord(tileX + localX);
+    const globalY = roundCoord(tileY + localY);
 
-  hoverInfo.value = {
-    mouseX: clampedX,
-    mouseY: clampedY,
-    tileX,
-    tileY,
-    tileType: tileData?.type ?? null,
-    tileRotation: tileData?.rotation ?? 0,
-    localX: roundCoord(localX),
-    localY: roundCoord(localY),
-    globalX,
-    globalY,
-    tileWidth,
-    tileHeight,
-  };
+    hoverInfo.value = {
+        mouseX: clampedX,
+        mouseY: clampedY,
+        tileX,
+        tileY,
+        tileType: tileData?.type ?? null,
+        tileRotation: tileData?.rotation ?? 0,
+        localX: roundCoord(localX),
+        localY: roundCoord(localY),
+        globalX,
+        globalY,
+        tileWidth,
+        tileHeight,
+    };
 }
 
 /**
  * Clears hover info when mouse leaves the overlay, hiding highlights and tooltip.
  */
 function handleMouseLeave() {
-  hoverInfo.value = null;
+    hoverInfo.value = null;
 }
 
 /**
@@ -153,50 +156,54 @@ function handleMouseLeave() {
  * If copying fails, shows an error message instead.
  */
 async function handleClick() {
-  if (!hoverInfo.value) return;
+    const durationInMillis = 1200;
 
-  const text = `{ x: ${hoverInfo.value.localX}, y: ${hoverInfo.value.localY} },`;
+    if (!hoverInfo.value) return;
 
-  try {
-    await navigator.clipboard.writeText(text);
-    copiedMessage.value = `Copied: ${text}`;
-    setTimeout(() => {
-      copiedMessage.value = '';
-    }, 1200);
-  } catch {
-    copiedMessage.value = 'Copy failed';
-    setTimeout(() => {
-      copiedMessage.value = '';
-    }, 1200);
-  }
+    const text = `{ x: ${hoverInfo.value.localX}, y: ${hoverInfo.value.localY} },`;
+
+    try {
+        await navigator.clipboard.writeText(text);
+        copiedMessage.value = `Copied: ${text}`;
+        setTimeout(() => {
+            copiedMessage.value = '';
+        }, durationInMillis);
+    } catch {
+        copiedMessage.value = 'Copy failed';
+        setTimeout(() => {
+            copiedMessage.value = '';
+        }, durationInMillis);
+    }
 }
 
 const tileHighlightStyle = computed(() => {
-  if (!hoverInfo.value) return {};
+    if (!hoverInfo.value) return {};
 
-  return {
-    left: `${hoverInfo.value.tileX * hoverInfo.value.tileWidth}px`,
-    top: `${hoverInfo.value.tileY * hoverInfo.value.tileHeight}px`,
-    width: `${hoverInfo.value.tileWidth}px`,
-    height: `${hoverInfo.value.tileHeight}px`,
-  };
+    return {
+        left: `${hoverInfo.value.tileX * hoverInfo.value.tileWidth}px`,
+        top: `${hoverInfo.value.tileY * hoverInfo.value.tileHeight}px`,
+        width: `${hoverInfo.value.tileWidth}px`,
+        height: `${hoverInfo.value.tileHeight}px`,
+    };
 });
 
 const markerStyle = computed(() => {
-  if (!hoverInfo.value) return {};
+    const offset = 4;
+    if (!hoverInfo.value) return {};
 
-  return {
-    left: `${hoverInfo.value.mouseX - 4}px`,
-    top: `${hoverInfo.value.mouseY - 4}px`,
-  };
+    return {
+        left: `${hoverInfo.value.mouseX - offset}px`,
+        top: `${hoverInfo.value.mouseY - offset}px`,
+    };
 });
 
 const tooltipStyle = computed(() => {
-  if (!hoverInfo.value) return {};
+    const offset = 12;
+    if (!hoverInfo.value) return {};
 
-  return {
-    left: `${hoverInfo.value.mouseX + 12}px`,
-    top: `${hoverInfo.value.mouseY + 12}px`,
-  };
+    return {
+        left: `${hoverInfo.value.mouseX + offset}px`,
+        top: `${hoverInfo.value.mouseY + offset}px`,
+    };
 });
 </script>

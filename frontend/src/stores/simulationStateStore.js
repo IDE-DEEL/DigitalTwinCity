@@ -57,16 +57,16 @@ export const useSimulationStateStore = defineStore("simulationState", () => {
         return baseHouses.map(house => {
             const liveHouseData = houseState.value.find(
                 h => h.id === house.houseInstanceId // TODO: houseInstanceId needs better name
-        );
+            );
 
-        if (liveHouseData) {
-            return {
-                ...house,
-                expectedPackages: liveHouseData.undelivered_packages
-            };
-        }
+            if (liveHouseData) {
+                return {
+                    ...house,
+                    expectedPackages: liveHouseData.undelivered_packages
+                };
+            }
 
-        return house;
+            return house;
         });
     });
 

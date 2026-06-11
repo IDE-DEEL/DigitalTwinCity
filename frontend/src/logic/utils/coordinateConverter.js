@@ -14,10 +14,10 @@ import { MAP_ROWS } from '../../constants/constants';
  * @returns {Array<Object>} Converted waypoints in mathematical coordinate system
  */
 export function convertWaypointsArrayFromSvgToMath(waypoints) {
-  return waypoints.map(point => ({
-    x: point.x,
-    y: MAP_ROWS - point.y
-  }));
+    return waypoints.map(point => ({
+        x: point.x,
+        y: MAP_ROWS - point.y
+    }));
 }
 
 /**
@@ -28,10 +28,10 @@ export function convertWaypointsArrayFromSvgToMath(waypoints) {
  * @returns {Array<Object>} Converted waypoints in mathematical coordinate system
  */
 export function convertWaypointFromSvgToMath(waypoint) {
-  return {
-    x: waypoint.x,
-    y: MAP_ROWS - waypoint.y
-  };
+    return {
+        x: waypoint.x,
+        y: MAP_ROWS - waypoint.y
+    };
 }
 
 /**
@@ -42,7 +42,7 @@ export function convertWaypointFromSvgToMath(waypoint) {
  * @returns {Array<number>} Position [x, y] in SVG coordinates
  */
 export function convertPositionMathToSvg(position) {
-  return [position[0], MAP_ROWS - position[1]];
+    return [position[0], MAP_ROWS - position[1]];
 }
 
 /**

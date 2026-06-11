@@ -2,10 +2,10 @@
 import '../assets/RadioGroup.css';
 
 const model = defineModel({ type: Number, default: "" });
-const props = defineProps({ 
-  name: String, 
-  list: Array,
-  disabled: { type: Boolean, default: false }
+defineProps({ 
+    name: String, 
+    list: Array,
+    disabled: { type: Boolean, default: false }
 });
 </script>
 

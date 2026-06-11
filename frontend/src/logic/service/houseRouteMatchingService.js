@@ -1,7 +1,7 @@
 import { ROUTES_TILES } from "../domain/routes";
 import { buildLaneSequenceFromTilePath } from "./routeBuilder";
 import { useMapStore } from "../../stores/mapStore";
-import { normalizeDegree, rotateCardinalDirection } from "../utils/rotation";
+import { normalizeDegree } from "../utils/rotation";
 
 /**
  * Determines which routes pass through the tile where a house is located.
@@ -21,7 +21,7 @@ export function findRoutesForHouse(house) {
 
         const hasMatchingLane = laneSequence.some(lane => {
             const sameTile =
-            lane.tileX === house.tileX &&
+                lane.tileX === house.tileX &&
                 lane.tileY === house.tileY;
                 
             if (!sameTile) return false;
@@ -99,9 +99,9 @@ function getRotatedSupportedLanes(house) {
     const mapStore = useMapStore();
 
     const tile = mapStore.mapData.find(t => t.x === house.tileX && t.y === house.tileY);
-    const rotation = normalizeDegree(tile.rotation || 0);
+    normalizeDegree(tile.rotation || 0);
 
-    return house.supportedLanes
+    return house.supportedLanes;
 
     // TODO:
     // find out why this return works but:

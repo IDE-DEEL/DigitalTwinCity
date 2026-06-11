@@ -1,18 +1,17 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
-import { useMapStore, useDashboardParametersStore, useSimulationStateStore } from '../../stores'
-import { getLabel } from '../../constants/ui_labels.js'
-import { SIMULATION_SPEED_OPTIONS } from '../../constants/constants.js'
-import { useDigitalSimulation } from '../../composables/useDigitalSimulation.js'
-import { MAP_COLUMNS, MAP_ROWS } from '../../constants/constants.js'
-import { useCarColors } from '../../composables/useCarColors.js'
+import { ref, computed, watch } from 'vue';
+import { useMapStore, useDashboardParametersStore, useSimulationStateStore } from '../../stores';
+import { getLabel } from '../../constants/ui_labels.js';
+import { SIMULATION_SPEED_OPTIONS, MAP_COLUMNS, MAP_ROWS } from '../../constants/constants.js';
+import { useDigitalSimulation } from '../../composables/useDigitalSimulation.js';
+import { useCarColors } from '../../composables/useCarColors.js';
 import { buildLane } from '../../logic/service/laneBuilder.js';
 import { normalizeDegree } from '../../logic/utils/rotation.js';
-import { Slider, DropDown, RadioGroup, SimulationTable, WebSocketStatus, RoutePolyline, Car } from '../CustomComponents.js'
-import { ControlPanel, SimulationDisplay, SimulationStatsModal, HouseLabelsOverlay } from '../AreaComponents.js'
-import { devTileCoordinateOverlay, devLaneDebugOverlay, devHouseDetectionZonesOverlay, devRouteBuilder } from '../../development/DevtoolComponents.js'
-import '../../assets/MainContent.css'
-import '../../assets/SimulationPage.css'
+import { Slider, DropDown, RadioGroup, SimulationTable, WebSocketStatus, RoutePolyline, Car } from '../CustomComponents.js';
+import { ControlPanel, SimulationDisplay, SimulationStatsModal, HouseLabelsOverlay } from '../AreaComponents.js';
+import { devTileCoordinateOverlay, devLaneDebugOverlay, devHouseDetectionZonesOverlay, devRouteBuilder } from '../../development/DevtoolComponents.js';
+import '../../assets/MainContent.css';
+import '../../assets/SimulationPage.css';
 
 /*
     =====================
@@ -26,9 +25,9 @@ const isDevelopment = import.meta.env.DEV;
     Stores and composables
     =====================
 */
-const dashboardStore = useDashboardParametersStore()
-const simulationStore = useSimulationStateStore()
-const mapStore = useMapStore()
+const dashboardStore = useDashboardParametersStore();
+const simulationStore = useSimulationStateStore();
+const mapStore = useMapStore();
 
 const {
     isWebSocketConnected,
@@ -53,8 +52,8 @@ const { getColorForCarAndRoute } = useCarColors();
 const reconnectCooldown = ref(false);
 const isStatsModalOpen = ref(false);
 
-const MAX_PACKAGES = 10
-const MIN_PACKAGES = 1
+const MAX_PACKAGES = 10;
+const MIN_PACKAGES = 1;
 
 /*
     =====================
@@ -68,7 +67,7 @@ const lanePositions = computed(() => {
         rotation: normalizeDegree(item.rotation || 0),
         position: { x: item.x, y: item.y },
     }));
-})
+});
 
 const lanes = computed(() => buildLane(lanePositions.value));
 
@@ -90,21 +89,21 @@ const handleWebsocketReconnect = () => {
     setTimeout(() => {
         reconnectCooldown.value = false;
     }, timeInMillis);
-}
+};
 
 const handleSimulationStart = () => {
     console.log('Requested simulation start with parameters: ', dashboardStore.collectParameters());
     validateHousesReachability();
     startSimulation();
-}
+};
 
 const handleSimulationStop = () => {
     stopSimulation();
-}
+};
 
 const handleStatsOpen = () => {
     isStatsModalOpen.value = true;
-}
+};
 
 watch(
     () => autoOpenStatsModal.value,
@@ -156,19 +155,19 @@ const toggleRouteBuilder = () => {
 
         <div v-if="isDevelopment" class="devtool-container">
             <!-- Developer tool buttons (only in development mode) -->
-            <button type="button" @click="toggleLaneDebug">
+            <button type="button" :class="{ 'active': showDevLaneDebug }" id="devtool-button" @click="toggleLaneDebug">
                 {{ showDevLaneDebug ? 'Hide lane overlay' : 'Show lane overlay' }}
             </button>
 
-            <button type="button" @click="toggleTileCoordDebug">
+            <button type="button" :class="{ 'active': showDevTileCoordDebug }" id="devtool-button" @click="toggleTileCoordDebug">
                 {{ showDevTileCoordDebug ? 'Hide tile coords overlay' : 'Show tile coords overlay' }}
             </button>
 
-            <button type="button" @click="toggleRouteBuilder">
+            <button type="button" :class="{ 'active': showDevRouteBuilder }" id="devtool-button" @click="toggleRouteBuilder">
                 {{ showDevRouteBuilder ? 'Hide route builder' : 'Show route builder' }}
             </button>
 
-            <button type="button" @click="toggleHouseDetectionZones">
+            <button type="button" :class="{ 'active': showDevHouseDetectionZones }" id="devtool-button" @click="toggleHouseDetectionZones">
                 {{ showDevHouseDetectionZones ? 'Hide house zones' : 'Show house zones' }}
             </button>
         </div>
@@ -243,13 +242,15 @@ const toggleRouteBuilder = () => {
             <template #parameters>
                 <Slider 
                     class="slider-area" 
-                    :name="getLabel('carSpeed')" 
+                    :name="getLabel('carSpeed')"
+                    :disabled="isSimulating"
                     type="speed" 
                     v-model="dashboardStore.carTargetSpeed"
                 ></Slider>
                 <DropDown 
                     class="scenario-area" 
-                    :name="getLabel('scenario')" 
+                    :name="getLabel('scenario')"
+                    :disabled="isSimulating"
                     type="scenario" 
                     :list="dashboardStore.scenarioOptions" 
                     v-model="dashboardStore.scenario"
@@ -264,6 +265,7 @@ const toggleRouteBuilder = () => {
                     :min-packages="MIN_PACKAGES" 
                     :route-options="dashboardStore.routeOptions"
                     :name="getLabel('tableHeader')"
+                    :disabled="isSimulating"
                     :headers="[
                         getLabel('carId'),
                         getLabel('packages'),
@@ -286,13 +288,12 @@ const toggleRouteBuilder = () => {
             <!-- Simulation speed, start and stop controls + stats modal open button -->
             <template #simulation-controls>
                 <div class="stats-button-container">
-                    <button @click="handleStatsOpen"> {{ getLabel('statisticsButton') }} </button>
+                    <button @click="handleStatsOpen" :disabled="!hasSimulated"> {{ getLabel('statisticsButton') }} </button>
                 </div>
 
-
                 <div class="button-area">
-                    <button @click="handleSimulationStart"> {{ getLabel('startButton') }} </button>
-                    <button @click="handleSimulationStop"> {{ getLabel('stopButton') }} </button>
+                    <button @click="handleSimulationStart" :disabled="isSimulating"> {{ getLabel('startButton') }} </button>
+                    <button @click="handleSimulationStop" :disabled="!isSimulating"> {{ getLabel('stopButton') }} </button>
                 </div>
             </template>
         </ControlPanel>

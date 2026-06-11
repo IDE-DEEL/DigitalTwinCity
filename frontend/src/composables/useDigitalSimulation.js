@@ -7,6 +7,7 @@ import { TOAST_MESSAGES } from "../constants/toast_messages";
 
 const GET_STATS_TIMEOUT_IN_MILLIS = 5000;
 const CSV_EXPORT_TIMEOUT_IN_MILLIS = 20000;
+const ONE_SECOND_IN_MILLIS = 1000;
 const isSimulating = ref(false);
 const hasSimulated = ref(false);
 const autoOpenStatsModal = ref(false);
@@ -93,7 +94,7 @@ export function useDigitalSimulation() {
         autoOpenStatsModal.value = true;
     }
 
-        // ---
+    // ---
     // validation
     // ---
     /**
@@ -144,7 +145,7 @@ export function useDigitalSimulation() {
             }
 
             const timeoutId = setTimeout(() => {
-                console.error(`Stats request timeout after ${GET_STATS_TIMEOUT_IN_MILLIS / 1000} seconds`);
+                console.error(`Stats request timeout after ${GET_STATS_TIMEOUT_IN_MILLIS / ONE_SECOND_IN_MILLIS} seconds`);
                 reject(new Error("Request timeout: No response from server"));
             }, GET_STATS_TIMEOUT_IN_MILLIS);
 
@@ -172,7 +173,7 @@ export function useDigitalSimulation() {
             }
 
             const timeoutId = setTimeout(() => {
-                console.error(`CSV export request timeout after ${CSV_EXPORT_TIMEOUT_IN_MILLIS / 1000} seconds`);
+                console.error(`CSV export request timeout after ${CSV_EXPORT_TIMEOUT_IN_MILLIS / ONE_SECOND_IN_MILLIS} seconds`);
                 reject(new Error("Request timeout: No response from server"));
             }, CSV_EXPORT_TIMEOUT_IN_MILLIS);
 
