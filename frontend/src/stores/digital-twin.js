@@ -116,7 +116,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
         {"tag_id": "5A:A5:97:E3:0A:41:89", "tag_pos": {"x": 650, "y": 1150}},
         
         {"tag_id": "5A:E5:C9:E1:0A:41:89", "tag_pos": {"x": 550, "y": 850}},
-        {"tag_id": "5A:35:6B:E0:0A:41:89", "tag_pos": {"x": 550, "y": 950}},
+        {"tag_id": "5A:E5:D5:DB:0A:41:89", "tag_pos": {"x": 550, "y": 950}},
         {"tag_id": "5A:25:6B:E0:0A:41:89", "tag_pos": {"x": 450, "y": 950}},
     
         {"tag_id": "8F", "tag_pos": {"x": 450, "y": 1050}},
