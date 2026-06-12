@@ -96,7 +96,7 @@ const formattedTime = computed(() => {
 
           <div class="score-area">
             <button class="statistics-button" @click="showModal = true">Statistieken</button>
-            <p>Score: {{ store.results.total}}</p>
+            <p>Score: {{ Number(store.results.total).toFixed(1) }}</p>
           </div>
           <StatisticsModal v-if="showModal" @close="showModal = false">
             <template #header>

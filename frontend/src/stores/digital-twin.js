@@ -28,15 +28,17 @@ export const normalizeCarData = (payload) => {
 export const useDigitalTwinStore = defineStore('digitalTwin', {
   state: () => ({
     table_data: [
-        {"status": true, "auto_id": "Auto A", "energie": 100, "pakketje": 2, "route": "Route 1", "visueel": true},
-        {"status": true, "auto_id": "Auto B", "energie": 100, "pakketje": 4, "route": "Route 3", "visueel": false},
-        {"status": true, "auto_id": "Auto C", "energie": 100, "pakketje": 1, "route": "Route 2", "visueel": true},
-        {"status": true, "auto_id": "Auto D", "energie": 100, "pakketje": 2, "route": "Route 1", "visueel": false},
-        {"status": true, "auto_id": "Auto E", "energie": 100, "pakketje": 2, "route": "Route 1", "visueel": false}
+        {"status": false, "auto_id": "auto_A", "energie": 100, "pakketje": 2, "route": "Route 1", "visueel": true},
+        {"status": false, "auto_id": "auto_B", "energie": 100, "pakketje": 4, "route": "Route 3", "visueel": false},
+        {"status": false, "auto_id": "auto_C", "energie": 100, "pakketje": 1, "route": "Route 2", "visueel": true},
+        {"status": false, "auto_id": "auto_D", "energie": 100, "pakketje": 2, "route": "Route 1", "visueel": false},
+        {"status": false, "auto_id": "auto_E", "energie": 100, "pakketje": 2, "route": "Route 1", "visueel": false}
     ],
 
     car_data: [
+        {"auto_id": "auto_A", "tag_id": "1A"},
         {"auto_id": "auto_B", "tag_id": "1A"},
+        {"auto_id": "auto_C", "tag_id": "1A"}
     ],
 
     tag_positions: [
