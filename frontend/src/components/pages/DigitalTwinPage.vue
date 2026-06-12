@@ -21,6 +21,7 @@ const TAG_TIMEOUT_MS = 5000;
 const DEFAULT_CAR_ROTATION = 0;
 
 let animationFrameId = null;
+let simulationInterval = null;
 const carMotionStates = new Map();
 const carRealSyncStates = new Map();
 const carObservedSpeeds = new Map();
@@ -259,7 +260,7 @@ watch(carTargets, (targets) => {
 
     setRealSyncState(target.id, target.tag_id, now);
 
-    if (realSyncState?.stopped) {
+    if (realSyncState?.stopped && !store.active) {
       startPredictionFromTag(target.id, carMeta, currentTag);
       setCarDisplayPosition(
         target.id,
@@ -290,6 +291,48 @@ watch(carTargets, (targets) => {
   });
 }, { immediate: true });
 
+const moveCarsAlongRoutes = () => {
+  if (!store.active) return; 
+  
+  store.car_data = store.car_data.map(car => {
+    const tableCar = store.table_data.find(
+      t => t.auto_id.toLowerCase() === car.auto_id.toLowerCase()
+    );
+
+    if (!tableCar) return car;
+
+    const route = store.routes.find(
+      r => r.route === tableCar.route
+    );
+
+    if (!route || route.tags.length === 0) return car;
+
+    const currentIndex = route.tags.indexOf(car.tag_id);
+
+    const nextIndex =
+      currentIndex === -1
+        ? 0
+        : (currentIndex + 1) % route.tags.length;
+
+    return {
+      ...car,
+      tag_id: route.tags[nextIndex]
+    };
+  });
+};
+
+watch(() => store.active, (active) => {
+  if (active) {
+    simulationInterval = setInterval(() => {
+      if (!store.active) return;
+      moveCarsAlongRoutes();
+    }, 10);
+  } else {
+    clearInterval(simulationInterval);
+    simulationInterval = null;
+  }
+});
+
 const carPositions = computed(() => {
   return Object.values(carPositionsById);
 })
@@ -308,51 +351,47 @@ const getCarHeadingStyle = (car) => {
 }
 
 const animateCars = (now) => {
-  carMotionStates.forEach((motion, carId) => {
-    const realSyncState = carRealSyncStates.get(carId);
+  if (store.active) {
+    carMotionStates.forEach((motion, carId) => {
+      const realSyncState = carRealSyncStates.get(carId);
 
-    if (
-      realSyncState &&
-      !realSyncState.stopped &&
-      now - realSyncState.lastRealUpdateAt >= TAG_TIMEOUT_MS
-    ) {
-      const lastRealTag = findTagPosition(realSyncState.lastRealTagId);
+      if (
+        realSyncState &&
+        !realSyncState.stopped &&
+        now - realSyncState.lastRealUpdateAt >= TAG_TIMEOUT_MS
+      ) {
+        const lastRealTag = findTagPosition(realSyncState.lastRealTagId);
 
-      if (lastRealTag) {
-        setCarDisplayPosition(carId, motion.carMeta, lastRealTag, motion.rotation);
+        if (lastRealTag) {
+          setCarDisplayPosition(carId, motion.carMeta, lastRealTag, motion.rotation);
+        }
+
+        carMotionStates.delete(carId);
+        carObservedSpeeds.delete(carId);
+        realSyncState.stopped = true;
+        return;
       }
 
-      carMotionStates.delete(carId);
-      carObservedSpeeds.delete(carId);
-      realSyncState.stopped = true;
-      return;
-    }
+      const position = getMotionPosition(motion, now);
 
-    const position = getMotionPosition(motion, now);
+      if (!position) return;
 
-    if (!position) {
-      return;
-    }
+      setCarDisplayPosition(carId, motion.carMeta, position, motion.rotation);
 
-    setCarDisplayPosition(carId, motion.carMeta, position, motion.rotation);
-
-    if (position.progress >= 1) {
-      if (motion.mode === 'correction') {
-        const realTag = findTagPosition(motion.targetTagId);
-        if (realTag) {
-          startPredictionFromTag(carId, motion.carMeta, realTag);
-        }
-      } else if (motion.mode === 'predicted') {
-        const nextTag = findTagPosition(motion.targetTagId);
-        if (nextTag) {
-          startPredictionFromTag(carId, motion.carMeta, nextTag);
+      if (position.progress >= 1) {
+        if (motion.mode === 'correction') {
+          const realTag = findTagPosition(motion.targetTagId);
+          if (realTag) startPredictionFromTag(carId, motion.carMeta, realTag);
+        } else if (motion.mode === 'predicted') {
+          const nextTag = findTagPosition(motion.targetTagId);
+          if (nextTag) startPredictionFromTag(carId, motion.carMeta, nextTag);
         }
       }
-    }
-  });
+    });
+  }
 
   animationFrameId = requestAnimationFrame(animateCars);
-}
+};
 
 watch(() => store.speed, () => {
   const now = performance.now();

@@ -1,14 +1,15 @@
 import { TILE_LANES } from "../domain/laneCoords";
 import {normalizeDegree,
-        rotatePointNormalized,
-        rotateCardinalDirection
+    rotatePointNormalized,
+    rotateCardinalDirection
 } from "../utils/rotation";
 
 function getRotation(tileType, rotation){
     const snapped = normalizeDegree(rotation || 0);
+    const rotationStep = 180;
 
     if (tileType === 'straight') {
-        return snapped % 180;
+        return snapped % rotationStep;
     }
     return snapped;
 }
@@ -30,12 +31,12 @@ export function buildLane(mapTiles) {
         for (const laneTemplate of laneDefintions.lanes) {
             const rotatedPoints = laneTemplate.points.map(p => 
                 rotatePointNormalized(p, rotation)
-            )
+            );
 
             const simulationPoints = rotatedPoints.map(p => ({
                 x: tile.position.x + p.x,
                 y: tile.position.y + p.y,
-            }))
+            }));
 
             const fromDirection = rotateCardinalDirection(laneTemplate.from, rotation);
             const toDirection = rotateCardinalDirection(laneTemplate.to, rotation);

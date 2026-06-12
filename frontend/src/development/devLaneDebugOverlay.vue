@@ -42,32 +42,32 @@ import { computed } from "vue";
 import { MAP_COLUMNS, MAP_ROWS } from "../constants/constants";
 
 const props = defineProps({
-  lanes: {
-    type: Array,
-    required: true,
-  },
+    lanes: {
+        type: Array,
+        required: true,
+    },
 });
 
 const laneDebugPoints = computed(() => {
-  const points = [];
+    const points = [];
 
-  for (const lane of props.lanes) {
-    lane.points.forEach((point, index) => {
-      points.push({
-        id: `${lane.id}-${index}`,
-        x: point.x,
-        y: point.y,
-        laneId: lane.id,
-        index,
-        from: lane.from,
-        to: lane.to,
-        tileX: lane.x,
-        tileY: lane.y,
-        tileType: lane.type,
-      });
-    });
-  }
+    for (const lane of props.lanes) {
+        lane.points.forEach((point, index) => {
+            points.push({
+                id: `${lane.id}-${index}`,
+                x: point.x,
+                y: point.y,
+                laneId: lane.id,
+                index,
+                from: lane.from,
+                to: lane.to,
+                tileX: lane.x,
+                tileY: lane.y,
+                tileType: lane.type,
+            });
+        });
+    }
 
-  return points;
+    return points;
 });
 </script>

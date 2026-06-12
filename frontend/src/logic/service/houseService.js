@@ -2,7 +2,6 @@ import { getHousesForScenarioByValue } from "../domain/scenarios";
 import { HOUSE_INSTANCES } from "../domain/houseInstances";
 import { buildHouseCoordinates } from "./houseBuilder";
 import { findRoutesForHouse, findHousesForRoute } from "./houseRouteMatchingService";
-import { useMapStore } from "../../stores/mapStore.js";
 import { ROUTES_TILES } from "../domain/routes";
 
 /**
@@ -67,4 +66,12 @@ export function buildOrderedHouseInstancesOnRoutes(housesWithRoutes) {
     }
 
     return routesWithHouseIds;
+}
+
+export function getAllHouseInstances() {
+    return HOUSE_INSTANCES;
+}
+
+export function getHousesForScenario(scenarioKey) {
+    return getHousesForScenarioByValue(scenarioKey);
 }

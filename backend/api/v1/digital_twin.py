@@ -51,15 +51,20 @@ async def websocket_endpoint(websocket: WebSocket):
                 case "scenario":
                     await manager.broadcast_update(msg_type, payload)
 
-                case "car_table":
-                    await manager.broadcast_update(msg_type, payload)
-
                 case "activation":
                     await manager.broadcast_update(msg_type, payload)
 
                 case "car_data":
                     await manager.broadcast_update("car_data", getTag())
 
+                case "car_packages":
+                    await manager.broadcast_update(msg_type, payload)
+
+                case "car_status":
+                    await manager.broadcast_update(msg_type, payload)
+
+                case "car_energy":
+                    await manager.broadcast_update(msg_type, payload)
 
     except WebSocketDisconnect:
         manager.disconnect(websocket)

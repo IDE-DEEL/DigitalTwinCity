@@ -12,3 +12,8 @@ button {
 button:hover {
     background-color: var(--color-primary-blue-hover);
 }
+
+button:disabled {
+    background-color: var(--color-button-disabled);
+    cursor: not-allowed;
+}

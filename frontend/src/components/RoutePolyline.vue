@@ -1,14 +1,14 @@
 <script setup>
-import { computed } from 'vue'
+import { computed } from 'vue';
 
 const props = defineProps({ 
-  waypoints: Array,
-  stroke: String
-})
+    waypoints: Array,
+    stroke: String
+});
 
 const pointsString = computed(() =>
-  props.waypoints.map(point => `${point.x},${point.y}`).join(' ')
-)
+    props.waypoints.map(point => `${point.x},${point.y}`).join(' ')
+);
 </script>
 
 <template>

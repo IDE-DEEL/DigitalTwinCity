@@ -205,6 +205,10 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
             this.updateEnergy(payload)
             break
 
+          case 'car_route':
+            this.updateRoute(payload)
+            break
+
           case 'results':
             this.results = payload
         }
@@ -226,6 +230,13 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
       const car = this.findCar(payload.car_id)
       if (car) {
         car.pakketje = payload.packages
+      }
+    },
+
+    updateRoute(payload) {
+      const car = this.findCar(payload.car_id)
+      if (car) {
+        car.route = payload.route
       }
     },
 

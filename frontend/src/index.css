@@ -15,6 +15,7 @@
     --color-text-white: white;
     --color-primary-blue-hover: #5aafff;
     --color-button-border: gray;
+    --color-button-disabled: #a0a0a0;
 
     /* Border-radius */
     --rounded-xs: 0.125rem;     /* 2px */

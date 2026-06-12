@@ -1,9 +1,6 @@
-// import { TILE_HOUSES } from "../domain/houseCoords";
-import { useMapStore } from "../../stores/mapStore.js";
-import { rotatePointNormalized, normalizeDegree } from "../utils/rotation.js";
+const detectionZoneRadius = 0.1;
 
 export function buildHouseCoordinates(instance) {
-    const detectionZoneRadius = 0.1;
     const roadCoords = generateRoadCoordsFromCenter(
         instance.roadCenter,
         detectionZoneRadius
@@ -22,7 +19,7 @@ export function buildHouseCoordinates(instance) {
  * @param {number} radius - Half the width of the square (default 0.1)
  * @returns {Array<Object>} Array of four points representing the corners of the square around the center point
  */
-export function generateRoadCoordsFromCenter(centerPoint, radius = 0.1) {
+export function generateRoadCoordsFromCenter(centerPoint, radius = detectionZoneRadius) {
     const { x, y } = centerPoint;
     
     return [

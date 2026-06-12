@@ -1,19 +1,19 @@
 <script setup>
-import { getLabel } from '../constants/ui_labels.js'
-import "../assets/WebSocketStatus.css"
+import { getLabel } from '../constants/ui_labels.js';
+import "../assets/WebSocketStatus.css";
 
 defineProps({
-  isConnected: {
-    type: Boolean,
-    default: false
-  },
-  reconnectCooldown: {
-    type: Boolean,
-    default: false
-  }
-})
+    isConnected: {
+        type: Boolean,
+        default: false
+    },
+    reconnectCooldown: {
+        type: Boolean,
+        default: false
+    }
+});
 
-defineEmits(['reconnect'])
+defineEmits(['reconnect']);
 </script>
 
 <template>

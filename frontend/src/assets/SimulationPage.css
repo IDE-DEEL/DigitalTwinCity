@@ -1,9 +1,20 @@
 .devtool-container {
   position: absolute;
-  top: 18px;
+  top: 2.5%;
   left: 50%;
   transform: translateX(-50%);
   z-index: 40;
   display: flex;
   gap: 10px;
+  align-items: center;
+}
+
+#devtool-button {
+    font-size: var(--text-sm);
+    padding: 5px;
+    background: var(--color-button-disabled);
+}
+
+#devtool-button.active {
+    background: var(--color-primary-blue);
 }

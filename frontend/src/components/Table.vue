@@ -58,7 +58,7 @@ function send_route(car) {
               <select class="route-select" 
                       v-model="car.route" 
                       @change="send_route(car)">
-                <option v-for="r in store.routes" :key="r.route" :value="r.route">{{ r.route }}</option>
+                <option v-for="r in store.routes" :key="r.route" :value="r.route" @change="send_route(car)">{{ r.route }}</option>
               </select>
             </td>
             <td><button class="visualize" @click="visualizing(car)">{{ car.visueel ? 'Verberg' : 'Toon' }}</button></td>
