@@ -112,6 +112,16 @@ async def websocket_simulation_endpoint(websocket: WebSocket):
         await websocket.send_json({
             "error": str(e)
         })
+    finally:
+        if simulation_task and not simulation_task.done():
+            simulation_task.cancel()
+
+            try:
+                await simulation_task
+            except asyncio.CancelledError:
+                pass
+
+        simulation_service.dispose()
 
 
 async def _run_simulation_loop(websocket: WebSocket, simulation_service: SimulationService, simulation_config: dict):

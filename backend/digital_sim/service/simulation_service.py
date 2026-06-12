@@ -23,9 +23,7 @@ class SimulationService:
         """
         # Clean up any existing model before starting a new simulation
         if self.model is not None:
-            self.model = None
-            gc.collect() # Force garbage collection to free memory from previous simulation runs
-            self.is_running = False
+            self.dispose()
         
         cars = parameters.get(CARS_KEY, [])  # TODO: throw error if missing/empty
         car_target_speed = parameters.get(CAR_TARGET_SPEED_KEY, 50)
@@ -184,3 +182,11 @@ class SimulationService:
         except Exception as e:
             print(f"Error exporting data to CSV: {e}")
             return None
+        
+    def dispose(self):
+        """Destroy all simulation data."""
+
+        self.is_running = False
+        self.model = None
+
+        gc.collect()
