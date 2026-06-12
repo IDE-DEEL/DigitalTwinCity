@@ -65,6 +65,8 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 case "car_energy":
                     await manager.broadcast_update(msg_type, payload)
+                case "results":
+                    await manager.broadcast_update(msg_type, payload)
 
     except WebSocketDisconnect:
         manager.disconnect(websocket)
