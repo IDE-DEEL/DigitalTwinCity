@@ -64,9 +64,9 @@ Direction = {
 # The tags in the dict below are the tags where the robot has to change direction.
 # these will probably be made into JSON files
 route = {
-    "route_1": [["5A:95:B3:DE:0A:41:89",Direction["LEFT"]], ["5A:E5:D5:DB:0A:41:89",Direction["STRAIGHT"]], ["5A:A5:C9:E1:0A:41:89",Direction["RIGHT"]],
-                ["5A:55:B3:DE:0A:41:89",Direction["STRAIGHT"]], ["5A:F5:D5:DB:0A:41:89",Direction["ROUNDABOUT"]],  ["5A:65:C3:DA:0A:41:89", Direction["RIGHT_ROUND"]],
-                ["5A:D5:6A:E0:0A:41:89", Direction["STRAIGHT"]]],
+    "route_1": [["5A:A5:97:E3:0A:41:89",Direction["LEFT"]], ["5A:95:B3:DE:0A:41:89",Direction["STRAIGHT"]], ["5A:25:6B:E0:0A:41:89",Direction["RIGHT"]],
+                ["5A:A5:C9:E1:0A:41:89",Direction["STRAIGHT"]], ["5A:B5:6B:DD:0A:41:89",Direction["ROUNDABOUT"]],  ["5A:F5:D5:DB:0A:41:89", Direction["RIGHT_ROUND"]],
+                ["5A:65:C3:DA:0A:41:89", Direction["STRAIGHT"]]],
     "route_2": [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]],
     "route_3": [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]],
     "route_4": [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]],
