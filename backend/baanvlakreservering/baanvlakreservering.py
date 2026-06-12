@@ -1,6 +1,7 @@
 import paho.mqtt.client as mqtt
 import ssl
 import sys
+import json
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "score"))
 from score.scoreCalculator import TripData, calculate_score
@@ -33,6 +34,18 @@ cars = {
 
 car_stopped = []
 
+# reading the tag file and making it a variable.
+try:
+    with open('Tag_adjacency_list.json', 'r') as file:
+        Json_file = json.load(file)
+        file.close()
+
+except FileNotFoundError:
+    print("Error: The file 'data.json' was not found.")
+
+except json.JSONDecodeError:
+    print("Error: Failed to decode JSON from the file.")
+
 # The specific directions to send to the robot.
 Direction = {
     "LEFT": 0,
@@ -48,7 +61,9 @@ Direction = {
 # The tags in the dict below are the tags where the robot has to change direction.
 # these will probably be made into JSON files
 route = {
-    "route_1": [["9A:95:B3:DE:0A:41:89",Direction["LEFT"]], ["5A:55:C3:DA:0A:41:89",Direction["RIGHT"]], ["5A:65:C3:DA:0A:41:89", Direction["RIGHT_ROUND"]]],
+    "route_1": [["5A:95:B3:DE:0A:41:89",Direction["LEFT"]], ["5A:35:6B:E0:0A:41:89",Direction["STRAIGHT"]], ["5A:A5:C9:E1:0A:41:89",Direction["RIGHT"]],
+                ["5A:55:B3:DE:0A:41:89",Direction["STRAIGHT"]], ["5A:F5:D5:DB:0A:41:89",Direction["ROUNDABOUT"]],  ["5A:65:C3:DA:0A:41:89", Direction["RIGHT_ROUND"]],
+                ["5A:D5:6A:E0:0A:41:89", Direction["STRAIGHT"]]],
     "route_2": [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]],
     "route_3": [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]],
     "route_4": [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]],
@@ -155,7 +170,7 @@ def on_message(client, userdata, msg):
 
         # stops the car if there is any other car in the adjacent tags.
         for i in cars:
-            if cars[i] in Tags[rfid]:
+            if cars[i] in Json_file[rfid]:
                 client.publish(f"car/{topic[1]}/cmd/Start", "False")
                 if topic[1] not in car_stopped:
                     car_stopped.append([topic[1], i, cars[i]])
