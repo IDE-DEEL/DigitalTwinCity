@@ -1,6 +1,7 @@
 import paho.mqtt.client as mqtt
 import ssl
 import sys
+import json
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "score"))
 from score.scoreCalculator import TripData, calculate_score
@@ -32,6 +33,18 @@ cars = {
 }
 
 car_stopped = []
+
+# reading the tag file and making it a variable.
+try:
+    with open('Tag_adjacency_list.json', 'r') as file:
+        Json_file = json.load(file)
+        file.close()
+
+except FileNotFoundError:
+    print("Error: The file 'data.json' was not found.")
+
+except json.JSONDecodeError:
+    print("Error: Failed to decode JSON from the file.")
 
 # The specific directions to send to the robot.
 Direction = {
@@ -155,7 +168,7 @@ def on_message(client, userdata, msg):
 
         # stops the car if there is any other car in the adjacent tags.
         for i in cars:
-            if cars[i] in Tags[rfid]:
+            if cars[i] in Json_file[rfid]:
                 client.publish(f"car/{topic[1]}/cmd/Start", "False")
                 if topic[1] not in car_stopped:
                     car_stopped.append([topic[1], i, cars[i]])
