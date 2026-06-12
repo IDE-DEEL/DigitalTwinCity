@@ -19,10 +19,6 @@ const TAG_TIMEOUT_MS = 5000
 
 let animationFrameId = null;
 let simulationInterval = null;
-const carMotionStates = new Map();
-const carRealSyncStates = new Map();
-const carObservedSpeeds = new Map();
-const carPositionsById = reactive({});
 
 /* -------------------------
    STATE (SIM ENGINE)
@@ -183,6 +179,8 @@ function animate(now) {
         const next = nextTag(m.targetTag)
         if (next) {
           startMotion(id, m.car, m.to, next, next.id)
+
+          console.log(pos)
         }
       }
     }
@@ -195,8 +193,6 @@ function animate(now) {
    UI HELPERS
 --------------------------*/
 function getStyle(car) {
-  console.log(car.x * store.factor_x)
-  
   return {
     left: `${car.x * store.factor_x}px`,
     top: `${car.y * store.factor_y}px`,
