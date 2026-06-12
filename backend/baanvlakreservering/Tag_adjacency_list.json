@@ -1,13 +1,26 @@
 {
-    "tag 1": ["adjacent tag", "adjacent tag", "adjacent tag"],
-    "tag 2": ["adjacent tag", "adjacent tag", "adjacent tag"],
-    "tag 3": ["adjacent tag", "adjacent tag", "adjacent tag"],
-    "tag 4": ["adjacent tag", "adjacent tag", "adjacent tag"],
-    "tag 5": ["adjacent tag", "adjacent tag", "adjacent tag"],
-    "tag 6": ["adjacent tag", "adjacent tag", "adjacent tag"],
-    "tag 7": ["adjacent tag", "adjacent tag", "adjacent tag"],
-    "tag 8": ["adjacent tag", "adjacent tag", "adjacent tag"],
-    "tag 9": ["adjacent tag", "adjacent tag", "adjacent tag"],
-    "tag 10": ["adjacent tag", "adjacent tag", "adjacent tag"],
-    "tag 11": ["adjacent tag", "adjacent tag", "adjacent tag"]
+    "5A:A5:97:E3:0A:41:89": ["5A:45:6B:E0:0A:41:89", "5A:35:6B:E0:0A:41:89", "5A:25:6B:E0:0A:41:89"],
+    "5A:95:B3:DE:0A:41:89": ["5A:85:C9:E1:0A:41:89", "5A:25:6B:E0:0A:41:89", ""],
+    "5A:55:C3:DA:0A:41:89": ["5A:B5:B3:DE:0A:41:89"],
+    "5A:35:6B:E0:0A:41:89": ["5A:A5:C9:E1:0A:41:89"],
+    "5A:25:6B:E0:0A:41:89": ["5A:55:B3:DE:0A:41:89"],
+    "5A:C5:97:E3:0A:41:89": ["53:EA:6B:00:63:00:01"],
+    "5A:A5:C9:E1:0A:41:89": ["5A:55:C3:DA:0A:41:89"],
+    "5A:B5:B3:DE:0A:41:89": ["53:E4:70:00:63:00:01"],
+    "53:EA:6B:00:63:00:01": ["5A:75:C3:DA:0A:41:89"],
+    "5A:55:B3:DE:0A:41:89": ["5A:C5:97:E3:0A:41:89"],
+    "53:E4:70:00:63:00:01": ["5A:05:D6:DB:0A:41:89"],
+    "5A:05:D6:DB:0A:41:89": ["5A:F5:D5:DB:0A:41:89"],
+    "5A:B5:6B:DD:0A:41:89": ["5A:55:37:D9:0A:41:89","5A:65:C3:DA:0A:41:89"],
+    "5A:F5:D5:DB:0A:41:89": ["5A:55:37:D9:0A:41:89","5A:55:37:D9:0A:41:89"],
+    "5A:D5:6A:E0:0A:41:89": ["5A:B5:C9:E1:0A:41:89"],
+    "5A:05:6B:E0:0A:41:89": ["5A:75:97:E3:0A:41:89"],
+    "5A:B5:C9:E1:0A:41:89": ["5A:65:B3:DE:0A:41:89"],
+    "5A:75:97:E3:0A:41:89": ["5A:E5:C9:E1:0A:41:89"],
+    "5A:65:B3:DE:0A:41:89": ["5A:35:6B:E0:0A:41:89"],
+    "5A:E5:C9:E1:0A:41:89": ["5A:15:CA:E1:0A:41:89","5A:25:6B:E0:0A:41:89"],
+    "": ["","",""]
+
+
+
 }
