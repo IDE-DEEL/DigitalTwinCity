@@ -205,11 +205,11 @@ def calculate_score(data: TripData, weights: Weights) -> dict:
         total = sum(w * s for w, s in zip(weight_list, score_list)) / total_weight
 
     return {
-        "environment": round(environment, 2),
-        "economic":    round(economic, 2),
-        "social":      round(social, 2),
-        "energy":      round(energy, 2),
-        "safety":      round(safety, 2),
-        "maintenance": round(maintenance, 2),
-        "total":       round(total, 2),
+        "environment": round(environment, 1),
+        "economic":    round(economic, 1),
+        "social":      round(social, 1),
+        "energy":      round(energy, 1),
+        "safety":      round(safety, 1),
+        "maintenance": round(maintenance, 1),
+        "total":       round(total, 1),
     }
