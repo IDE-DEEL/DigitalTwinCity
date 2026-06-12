@@ -9,6 +9,8 @@ Usage from another file:
     from config import TRIP, WEIGHTS
 
     result = calculate_score(TRIP, WEIGHTS)
+    # result is a flat dict:
+    # { "environment": 72.3, "economic": 39.0, ..., "total": 73.93 }
 """
 
 from dataclasses import dataclass
@@ -176,36 +178,38 @@ def calculate_score(data: TripData, weights: Weights) -> dict:
 
     Returns
     -------
-    dict with 'subscores', 'weights', 'total'
+    Flat dict with keys in order:
+        environment, economic, social, energy, safety, maintenance, total
     """
-    subscores = {
-        "environment":  score_environment(data),
-        "economic":     score_economic(data),
-        "social":       score_social(data, weights),
-        "energy":       score_energy(data),
-        "safety":       score_safety(data),
-        "maintenance":  score_maintenance(data),
-    }
+    environment = score_environment(data)
+    economic    = score_economic(data)
+    social      = score_social(data, weights)
+    energy      = score_energy(data)
+    safety      = score_safety(data)
+    maintenance = score_maintenance(data)
 
-    weight_map = {
-        "environment":  weights.environment,
-        "economic":     weights.economic,
-        "social":       weights.social,
-        "energy":       weights.energy,
-        "safety":       weights.safety,
-        "maintenance":  weights.maintenance,
-    }
+    weight_list = [
+        weights.environment,
+        weights.economic,
+        weights.social,
+        weights.energy,
+        weights.safety,
+        weights.maintenance,
+    ]
+    score_list = [environment, economic, social, energy, safety, maintenance]
 
-    total_weight = sum(weight_map.values())
-
+    total_weight = sum(weight_list)
     if total_weight == 0:
         total = 0.0
     else:
-        weighted_sum = sum(weight_map[k] * subscores[k] for k in subscores)
-        total = weighted_sum / total_weight
+        total = sum(w * s for w, s in zip(weight_list, score_list)) / total_weight
 
     return {
-        "subscores": {k: round(v, 2) for k, v in subscores.items()},
-        "weights":   {k: round(v, 2) for k, v in weight_map.items()},
-        "total":     round(total, 2),
+        "environment": round(environment, 1),
+        "economic":    round(economic, 1),
+        "social":      round(social, 1),
+        "energy":      round(energy, 1),
+        "safety":      round(safety, 1),
+        "maintenance": round(maintenance, 1),
+        "total":       round(total, 1),
     }
