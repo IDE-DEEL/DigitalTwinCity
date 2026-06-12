@@ -125,7 +125,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
 
     routes: [
         {"route": "Route 1", "tags": ["1A", "2A", "3A", "4A", "1B", "2B", "13B", "5B", "14B", "9B", "1D", "2D", "3D", "4D", "1F", "2F", "3F", "4F"], "color": "#ff0000"},
-        {"route": "Route 2", "tags": ["5A", "6A", "7A", "10B", "11B", "12B", "5D", "6D", "7D", "8D", "5F", "7F", "11E"], "color": "#07cf00"},
+        {"route": "Route 2", "tags": ["5A", "6A", "7A", "10B", "11B", "12B", "5D", "6D", "7D", "8D", "5F", "7F", "11E", "5E", "8C", "7C", "6C", "5C", "5A"], "color": "#07cf00"},
         {"route": "Route 3", "tags": []}
     ],
 
