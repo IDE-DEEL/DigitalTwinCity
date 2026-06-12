@@ -80,19 +80,19 @@ route = {
 }
 
 # This is a dict of all the tags and their adjacent tags. This will go into a Json file.
-Tags = {
-    "tag 1": ["adjacent tag", "adjacent tag", "adjacent tag"],
-    "tag 2": ["adjacent tag", "adjacent tag", "adjacent tag"],
-    "tag 3": ["adjacent tag", "adjacent tag", "adjacent tag"],
-    "tag 4": ["adjacent tag", "adjacent tag", "adjacent tag"],
-    "tag 5": ["adjacent tag", "adjacent tag", "adjacent tag"],
-    "tag 6": ["adjacent tag", "adjacent tag", "adjacent tag"],
-    "tag 7": ["adjacent tag", "adjacent tag", "adjacent tag"],
-    "tag 8": ["adjacent tag", "adjacent tag", "adjacent tag"],
-    "tag 9": ["adjacent tag", "adjacent tag", "adjacent tag"],
-    "tag 10": ["adjacent tag", "adjacent tag", "adjacent tag"],
-    "tag 11": ["adjacent tag", "adjacent tag", "adjacent tag"]
-}
+# Tags = {
+#     "tag 1": ["adjacent tag", "adjacent tag", "adjacent tag"],
+#     "tag 2": ["adjacent tag", "adjacent tag", "adjacent tag"],
+#     "tag 3": ["adjacent tag", "adjacent tag", "adjacent tag"],
+#     "tag 4": ["adjacent tag", "adjacent tag", "adjacent tag"],
+#     "tag 5": ["adjacent tag", "adjacent tag", "adjacent tag"],
+#     "tag 6": ["adjacent tag", "adjacent tag", "adjacent tag"],
+#     "tag 7": ["adjacent tag", "adjacent tag", "adjacent tag"],
+#     "tag 8": ["adjacent tag", "adjacent tag", "adjacent tag"],
+#     "tag 9": ["adjacent tag", "adjacent tag", "adjacent tag"],
+#     "tag 10": ["adjacent tag", "adjacent tag", "adjacent tag"],
+#     "tag 11": ["adjacent tag", "adjacent tag", "adjacent tag"]
+# }
 
 # Reset route index per car
 index = {
