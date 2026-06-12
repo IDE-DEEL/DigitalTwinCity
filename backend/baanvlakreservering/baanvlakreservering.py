@@ -29,7 +29,10 @@ chosen_route = "route_1"
 # The cars last scanned tag. This is for later use so we can check the adjacency.
 cars = {
     "auto_A": "",
-    "auto_B": ""
+    "auto_B": "",
+    "auto_C": "",
+    "auto_D": "",
+    "auto_E": ""
 }
 
 car_stopped = []
@@ -97,7 +100,10 @@ route = {
 # Reset route index per car
 index = {
     "auto_A": 0,
-    "auto_B": 0
+    "auto_B": 0,
+    "auto_C": 0,
+    "auto_D": 0,
+    "auto_E": 0
 }
 
 # Stores the latest vehicle RFID data
