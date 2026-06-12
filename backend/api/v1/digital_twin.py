@@ -6,6 +6,8 @@ from backend.baanvlakreservering.baanvlakreservering import (
     add_car_data_listener,
     getTag,
 )
+from score.scoreCalculator import TripData, calculate_score
+from score.config import  WEIGHTS, TRIP
 
 router = APIRouter()
 manager = ConnectionManager()
@@ -65,8 +67,9 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 case "car_energy":
                     await manager.broadcast_update(msg_type, payload)
+
                 case "results":
-                    await manager.broadcast_update(msg_type, payload)
+                    await manager.broadcast_update(msg_type, calculate_score(TRIP, WEIGHTS))
 
     except WebSocketDisconnect:
         manager.disconnect(websocket)
