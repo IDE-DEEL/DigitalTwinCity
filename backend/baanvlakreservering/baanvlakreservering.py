@@ -130,7 +130,7 @@ def notify_car_data_listeners():
 
 
 # Global flag controlling whether the vehicle is allowed to move
-start = True
+start = False
 
 # Reset route index
 
