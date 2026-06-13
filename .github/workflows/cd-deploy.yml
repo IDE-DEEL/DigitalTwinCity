@@ -272,7 +272,7 @@ jobs:
             compose_profiles="monitoring"
             frontend_api_url=""
             healthcheck_urls=""
-            releases_to_keep="5"
+            releases_to_keep="3"
             release_dir="${deploy_root}/releases/${RELEASE_ID}"
             remote="${DEPLOY_USER}@${DEPLOY_HOST}"
             ssh_args=(-i ~/.ssh/deploy_key -p "$DEPLOY_PORT" -o IdentitiesOnly=yes -o BatchMode=yes -o PreferredAuthentications=publickey -o StrictHostKeyChecking=yes -o ConnectTimeout=10)
