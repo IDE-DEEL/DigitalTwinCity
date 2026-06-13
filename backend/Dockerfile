@@ -1,4 +1,6 @@
-FROM python:3.14.3-slim
+# syntax=docker/dockerfile:1
+
+FROM python:3.14-slim
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /app/backend
@@ -6,12 +8,9 @@ WORKDIR /app/backend
 ENV UV_LINK_MODE=copy
 ENV PYTHONPATH=/app
 
-RUN apt-get update \
-    && apt-get upgrade -y \
-    && rm -rf /var/lib/apt/lists/*
-
 COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-cache
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev
 
 COPY . .
 
