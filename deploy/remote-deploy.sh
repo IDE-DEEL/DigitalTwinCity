@@ -427,6 +427,7 @@ build_mqtt_password_file() {
   local password
   local created=false
   local count=0
+  local docker_script="set -e; "
 
   if [[ ! -f "$MQTT_USERS_FILE" ]]; then
     log "No MQTT users file found at ${MQTT_USERS_FILE}; keeping existing passwd file."
@@ -434,10 +435,7 @@ build_mqtt_password_file() {
     return 0
   fi
 
-  docker run --rm --user 0:0 \
-    -v "${MOSQUITTO_PASSWORD_DIR}:/password" \
-    eclipse-mosquitto:2.1.2-alpine \
-    rm -f "/password/${tmp_passwd}"
+  docker_script+="rm -f \"/password/${tmp_passwd}\"; "
 
   while IFS= read -r line || [[ -n "$line" ]]; do
     line="${line%$'\r'}"
@@ -455,33 +453,26 @@ build_mqtt_password_file() {
     [[ -n "$password" ]] || fail "Missing MQTT password for '${username}' in ${MQTT_USERS_FILE}."
 
     if [[ "$created" == "false" ]]; then
-      docker run --rm --user 0:0 \
-        -v "${MOSQUITTO_PASSWORD_DIR}:/password" \
-        eclipse-mosquitto:2.1.2-alpine \
-        mosquitto_passwd -c -b "/password/${tmp_passwd}" "$username" "$password" >/dev/null
+      docker_script+="mosquitto_passwd -c -b \"/password/${tmp_passwd}\" \"${username}\" \"${password}\" >/dev/null; "
       created=true
     else
-      docker run --rm --user 0:0 \
-        -v "${MOSQUITTO_PASSWORD_DIR}:/password" \
-        eclipse-mosquitto:2.1.2-alpine \
-        mosquitto_passwd -b "/password/${tmp_passwd}" "$username" "$password" >/dev/null
+      docker_script+="mosquitto_passwd -b \"/password/${tmp_passwd}\" \"${username}\" \"${password}\" >/dev/null; "
     fi
 
     count=$((count + 1))
   done < "$MQTT_USERS_FILE"
 
   if [[ "$created" == "true" ]]; then
-    docker run --rm --user 0:0 \
+    docker_script+="mv \"/password/${tmp_passwd}\" \"/password/passwd\"; "
+    printf '%s' "$docker_script" | docker run -i --rm --user 0:0 \
       -v "${MOSQUITTO_PASSWORD_DIR}:/password" \
-      eclipse-mosquitto:2.1.2-alpine \
-      mv "/password/${tmp_passwd}" "/password/passwd"
+      eclipse-mosquitto:2.1.2-alpine sh
     normalize_mqtt_password_file
     log "Built Mosquitto passwd file from ${MQTT_USERS_FILE} (${count} users)."
   else
-    docker run --rm --user 0:0 \
+    printf '%s' "$docker_script" | docker run -i --rm --user 0:0 \
       -v "${MOSQUITTO_PASSWORD_DIR}:/password" \
-      eclipse-mosquitto:2.1.2-alpine \
-      rm -f "/password/${tmp_passwd}"
+      eclipse-mosquitto:2.1.2-alpine sh
     normalize_mqtt_password_file
     log "MQTT users file ${MQTT_USERS_FILE} contains no users; keeping existing passwd file."
   fi
