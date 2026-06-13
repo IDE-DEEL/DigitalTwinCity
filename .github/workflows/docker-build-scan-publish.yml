@@ -94,14 +94,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max,ignore-error=true
 
-      - name: Cache Trivy vulnerability database
-        uses: actions/cache@v4
-        with:
-          path: .trivycache/
-          key: ${{ runner.os }}-trivy-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-trivy-
-
       - name: Run Trivy scan JSON report
         uses: aquasecurity/trivy-action@v0.36.0
         with:
