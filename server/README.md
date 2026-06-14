@@ -1,6 +1,6 @@
 # Server stack
 
-Deze map bevat alles wat op de deployment-host nodig is om de productie-stack met Docker Compose te draaien. De GitHub Actions CD workflow kopieert de inhoud van deze map naar elke release onder `<DEPLOY_PATH>/releases/<release-id>/`.
+Deze map bevat alles wat op de deployment-host nodig is om de productie-stack met Docker Compose te draaien. De GitHub Actions CI/CD workflow kopieert de inhoud van deze map naar elke release onder `<DEPLOY_PATH>/releases/<release-id>/`.
 
 Voor deployment-details staat de runbook in `../deploy/README.md`. In de OpenICT lab omgeving draait de deploy-job op een self-hosted runner op de VM; als runner en deployment op dezelfde VM zitten, staat `DEPLOY_HOST` in GitHub Actions op `localhost`.
 
@@ -35,11 +35,13 @@ In productie draait Compose vanuit de actieve release:
 
 ```bash
 export DEPLOY_PATH="/opt/digital-twin"
-cd "$DEPLOY_PATH"
+cd "$DEPLOY_PATH/current"
 set -a
-. "$DEPLOY_PATH/state/current-release.env"
+. release.env
 set +a
-cd "$RELEASE_DIR"
+export APP_ENV_FILE="${APP_ENV_FILE:-../../shared/.env}"
+export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-digitaltwin}"
+export MOSQUITTO_PASSWORD_DIR="${MOSQUITTO_PASSWORD_DIR:-$DEPLOY_PATH/shared/mosquitto/password}"
 ```
 
 Gebruik daarna steeds beide compose-bestanden:
@@ -48,7 +50,7 @@ Gebruik daarna steeds beide compose-bestanden:
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" <command>
 ```
 
-`current-release.env` bevat onder andere `BACKEND_IMAGE`, `FRONTEND_IMAGE`, `APP_ENV_FILE`, `COMPOSE_PROFILES`, `COMPOSE_PROJECT_NAME`, `MOSQUITTO_PASSWORD_DIR` en de healthcheck URLs. Alleen `--env-file ../../shared/.env` gebruiken is in productie niet genoeg, omdat de image references en release-specifieke paden door de deployment in release-state worden gezet.
+`release.env` bevat onder andere `BACKEND_IMAGE`, `FRONTEND_IMAGE`, `APP_ENV_FILE`, `COMPOSE_PROFILES` en `ROLLBACK_ON_FAILURE`. Alleen `--env-file ../../shared/.env` gebruiken is in productie niet genoeg, omdat de image references door de deployment in `release.env` worden gezet.
 
 De monitoring-services hebben in `compose.monitoring.yml` het profile `monitoring`. Ze starten alleen wanneer `COMPOSE_PROFILES=monitoring` gezet is, wanneer je `--profile monitoring` gebruikt, of wanneer je de services expliciet noemt.
 
@@ -134,13 +136,13 @@ Gebruik `../deploy/shared.env.example` als template. De belangrijkste groepen va
 | Groep | Variabelen |
 |---|---|
 | Publiek domein en TLS | `DOMAIN`, `LETSENCRYPT_EMAIL`, `DUCKDNS_DOMAIN`, `DUCKDNS_TOKEN` |
-| Images | `BACKEND_IMAGE`, `FRONTEND_IMAGE`, gezet door de CD workflow via release-state |
+| Images | `BACKEND_IMAGE`, `FRONTEND_IMAGE`, gezet door de CI/CD workflow via `release.env` |
 | Frontend | `FRONTEND_API_URL` optioneel, gemapt naar `VITE_API_URL` |
 | Database | `DT_PG_DB`, `DT_PG_ADMIN_*`, `DT_PG_DEVELOPER_*`, `DT_PG_MONITOR_*`, `DATABASE_URL` |
 | Backend auth en cookies | `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `SECRET_KEY`, `CORS_ALLOW_ORIGINS`, `SESSION_COOKIE_*` |
 | Backend MQTT client | `MQTT_HOST`, `MQTT_PORT`, `MQTT_PATH`, `MQTT_USERNAME`, `MQTT_PASSWORD` |
 | Monitoring | `GF_SERVER_ROOT_URL`, `GRAFANA_PASSWORD`, `ALERTMANAGER_SMTP_AUTH_PASSWORD_FILE` optioneel |
-| Deployment-state | `APP_ENV_FILE`, `COMPOSE_PROJECT_NAME`, `COMPOSE_PROFILES`, `MOSQUITTO_PASSWORD_DIR` |
+| Deployment runtime | `APP_ENV_FILE`, `COMPOSE_PROFILES`, en optioneel `COMPOSE_PROJECT_NAME`, `MOSQUITTO_PASSWORD_DIR` |
 
 MQTT plaintext bronusers staan niet in `.env`, maar in:
 
@@ -180,19 +182,21 @@ Zorg dat dit secretbestand in de runtime beschikbaar is en commit het echte wach
 
 ## Handmatig starten
 
-Normaal start de CD workflow de stack. Voor handmatige servercontroles vanaf een release-map:
+Normaal start de CI/CD workflow de stack. Voor handmatige servercontroles vanaf een release-map:
 
 ```bash
 export DEPLOY_PATH="/opt/digital-twin"
-cd "$DEPLOY_PATH"
+cd "$DEPLOY_PATH/current"
 set -a
-. "$DEPLOY_PATH/state/current-release.env"
+. release.env
 set +a
-cd "$RELEASE_DIR"
+export APP_ENV_FILE="${APP_ENV_FILE:-../../shared/.env}"
+export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-digitaltwin}"
+export MOSQUITTO_PASSWORD_DIR="${MOSQUITTO_PASSWORD_DIR:-$DEPLOY_PATH/shared/mosquitto/password}"
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "${COMPOSE_PROJECT_NAME:-digitaltwin}" up -d --remove-orphans
 ```
 
-Als `COMPOSE_PROFILES` niet uit release-state komt, zet monitoring expliciet aan:
+Als `COMPOSE_PROFILES` niet uit `release.env` komt, zet monitoring expliciet aan:
 
 ```bash
 COMPOSE_PROFILES=monitoring docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" up -d --remove-orphans
@@ -279,8 +283,8 @@ Server-state buiten Docker volumes:
 - `<DEPLOY_PATH>/shared/.env`
 - `<DEPLOY_PATH>/shared/mosquitto/mqtt-users.env`
 - `<DEPLOY_PATH>/shared/mosquitto/password/passwd`
-- `<DEPLOY_PATH>/state/current-release.env`
-- `<DEPLOY_PATH>/state/previous-release.env`
+- `<DEPLOY_PATH>/current`
+- `<DEPLOY_PATH>/current/release.env`
 
 Gebruik `docker compose down -v` alleen bewust; dat verwijdert ook database-, monitoring-, logging- en certificaatvolumes.
 
@@ -313,7 +317,7 @@ Een nieuwe server heeft minimaal nodig:
 Voorbeeld:
 
 ```bash
-sudo mkdir -p <DEPLOY_PATH>/releases <DEPLOY_PATH>/shared <DEPLOY_PATH>/state
+sudo mkdir -p <DEPLOY_PATH>/releases <DEPLOY_PATH>/shared
 sudo mkdir -p <DEPLOY_PATH>/shared/mosquitto/password
 sudo chown -R <DEPLOY_USER>:<DEPLOY_USER> <DEPLOY_PATH>
 ```
@@ -324,18 +328,20 @@ Actieve release tonen:
 
 ```bash
 readlink -f <DEPLOY_PATH>/current
-cat <DEPLOY_PATH>/state/current-release.env
+cat <DEPLOY_PATH>/current/release.env
 ```
 
 Images bijwerken en stack opnieuw starten vanuit `current`:
 
 ```bash
 export DEPLOY_PATH="/opt/digital-twin"
-cd "$DEPLOY_PATH"
+cd "$DEPLOY_PATH/current"
 set -a
-. "$DEPLOY_PATH/state/current-release.env"
+. release.env
 set +a
-cd "$RELEASE_DIR"
+export APP_ENV_FILE="${APP_ENV_FILE:-../../shared/.env}"
+export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-digitaltwin}"
+export MOSQUITTO_PASSWORD_DIR="${MOSQUITTO_PASSWORD_DIR:-$DEPLOY_PATH/shared/mosquitto/password}"
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" pull
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" up -d --remove-orphans
 ```

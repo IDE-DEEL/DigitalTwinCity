@@ -96,15 +96,17 @@ GF_SERVER_ROOT_URL=https://<DOMAIN>/grafana/
 
 ## 4. Compose-context
 
-In productie laad je eerst de release-state en voer je beheercommando's daarna uit vanuit de actieve release:
+In productie laad je eerst `release.env` en voer je beheercommando's daarna uit vanuit de actieve release:
 
 ```bash
 export DEPLOY_PATH="/opt/digital-twin"
-cd "$DEPLOY_PATH"
+cd "$DEPLOY_PATH/current"
 set -a
-. "$DEPLOY_PATH/state/current-release.env"
+. release.env
 set +a
-cd "$RELEASE_DIR"
+export APP_ENV_FILE="${APP_ENV_FILE:-../../shared/.env}"
+export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-digitaltwin}"
+export MOSQUITTO_PASSWORD_DIR="${MOSQUITTO_PASSWORD_DIR:-$DEPLOY_PATH/shared/mosquitto/password}"
 ```
 
 Gebruik daarna steeds beide composebestanden en de app env file:

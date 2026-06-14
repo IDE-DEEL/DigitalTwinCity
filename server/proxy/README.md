@@ -86,11 +86,13 @@ Productiecommando's voer je uit vanuit de actieve release:
 
 ```bash
 export DEPLOY_PATH="/opt/digital-twin"
-cd "$DEPLOY_PATH"
+cd "$DEPLOY_PATH/current"
 set -a
-. "$DEPLOY_PATH/state/current-release.env"
+. release.env
 set +a
-cd "$RELEASE_DIR"
+export APP_ENV_FILE="${APP_ENV_FILE:-../../shared/.env}"
+export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-digitaltwin}"
+export MOSQUITTO_PASSWORD_DIR="${MOSQUITTO_PASSWORD_DIR:-$DEPLOY_PATH/shared/mosquitto/password}"
 ```
 
 Config valideren:

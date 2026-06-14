@@ -105,11 +105,13 @@ Pas `acl/clients.acl` aan wanneer de topicstructuur wijzigt. Herstart daarna de 
 
 ```bash
 export DEPLOY_PATH="/opt/digital-twin"
-cd "$DEPLOY_PATH"
+cd "$DEPLOY_PATH/current"
 set -a
-. "$DEPLOY_PATH/state/current-release.env"
+. release.env
 set +a
-cd "$RELEASE_DIR"
+export APP_ENV_FILE="${APP_ENV_FILE:-../../shared/.env}"
+export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-digitaltwin}"
+export MOSQUITTO_PASSWORD_DIR="${MOSQUITTO_PASSWORD_DIR:-$DEPLOY_PATH/shared/mosquitto/password}"
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" restart mqtt
 ```
 
@@ -183,11 +185,13 @@ Herstart na wijzigingen:
 
 ```bash
 export DEPLOY_PATH="/opt/digital-twin"
-cd "$DEPLOY_PATH"
+cd "$DEPLOY_PATH/current"
 set -a
-. "$DEPLOY_PATH/state/current-release.env"
+. release.env
 set +a
-cd "$RELEASE_DIR"
+export APP_ENV_FILE="${APP_ENV_FILE:-../../shared/.env}"
+export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-digitaltwin}"
+export MOSQUITTO_PASSWORD_DIR="${MOSQUITTO_PASSWORD_DIR:-$DEPLOY_PATH/shared/mosquitto/password}"
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" restart mqtt
 ```
 
@@ -242,15 +246,17 @@ Handige LogQL query in Grafana Explore:
 
 ## 8. Beheercommando's
 
-Productiecommando's voer je uit vanuit de actieve release nadat je de release-state hebt geladen:
+Productiecommando's voer je uit vanuit de actieve release nadat je `release.env` hebt geladen:
 
 ```bash
 export DEPLOY_PATH="/opt/digital-twin"
-cd "$DEPLOY_PATH"
+cd "$DEPLOY_PATH/current"
 set -a
-. "$DEPLOY_PATH/state/current-release.env"
+. release.env
 set +a
-cd "$RELEASE_DIR"
+export APP_ENV_FILE="${APP_ENV_FILE:-../../shared/.env}"
+export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-digitaltwin}"
+export MOSQUITTO_PASSWORD_DIR="${MOSQUITTO_PASSWORD_DIR:-$DEPLOY_PATH/shared/mosquitto/password}"
 ```
 
 Start of herstart alleen Mosquitto:
