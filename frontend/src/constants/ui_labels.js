@@ -100,7 +100,7 @@ export const LABELS = {
         },
         simSpeed: {
             '1': "1x",
-            '2': "2x",
+            '2': "5x",
             '3': "Maximaal",
         },
         misc: {
@@ -205,7 +205,7 @@ export const LABELS = {
         },
         simSpeed: {
             '1': "1x",
-            '2': "2x",
+            '2': "5x",
             '3': "Maximum",
         },
         misc: {
