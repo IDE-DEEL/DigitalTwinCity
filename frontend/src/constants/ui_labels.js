@@ -1,56 +1,159 @@
 /**
- * Centralized UI labels for all components
+ * Centralized UI labels for all components, retrieved through the language store.
  */
-
-const defaultLanguage = 'nl'; // Default language is Dutch
-const currentLanguage = document.documentElement.lang || defaultLanguage;
-
-const LABELS = {
+export const LABELS = {
     nl: {
-    // websocket status
-        websocketNotConnected: 'Niet verbonden met server',
-        websocketRefresh: '⟳',
-
-        // ControlPanel parameters
-        carSpeed: "Auto snelheid",
-        scenario: "Scenario's",
-
-        // ControlPanel car table
-        tableHeader: "Auto's",
-        carId: "Auto ID",
-        packages: "Max. pakketten",
-        route: "Route",
-        route_visibility: "Visualisatie",
-
-        // ControlPanel simulation controls
-        simulationSpeed: "Simulatie snelheid",
-        startButton: "Start",
-        stopButton: "Stop",
-
-        // Statistics modal
-        statisticsButton: "Statistieken",
-        emptyState: "Geen simulatiedata beschikbaar",
-        loadingState: "Simulatiedata laden...",
-        statisticsTitle: "Simulatie Statistieken",
-        distance: "Afstand",
-        drivingTime: "Rij tijd",
-        packagesDelivered: "Bezorgde pakketten",
-        statsTotals: "Totalen",
-        totalDistance: "Totale afstand:",
-        totalDrivingTime: "Totale rij tijd:",
-        totalPackages: "Totaal bezorgde pakketten:",
-        totalsSteps: "Stappen:",
-        downloadCsv: "Download CSV",
-        downloadingCsv: "Bezig met downloaden...",
-        statsRetrievalError: "Fout bij het ophalen van statistieken",
-        statsCsvError: "Fout bij het downloaden van CSV",
-
-        // Misc
-        closeButton: "x",
+        header: {
+            title: "Verken de Digital Twin",
+            logout: "Uitloggen",
+            loggingOut: "Uitloggen...",
+            switchTwin: "Digital Twin",
+            switchSimulation: "Simulatie",
+            switchLanguage: "Taal",
+        },
+        websocket: {
+            notConnected: 'Niet verbonden met server',
+            refresh: '⟳',
+        },
+        parameters: {
+            carSpeed: "Auto snelheid",
+            scenario: "Scenario's",
+        },
+        carTable: {
+            header: "Auto's",
+            status: "Status",
+            carId: "Auto ID",
+            energy: "Energie",
+            packages: "Max. pakketten",
+            route: "Route",
+            routeVisibility: "Visualisatie",
+            showRoute: "Toon",
+            hideRoute: "Verberg",
+        },
+        controls: {
+            simulationSpeed: "Simulatie snelheid",
+            startButton: "Start",
+            stopButton: "Stop",
+        },
+        generalStats: {
+            title: "Statistieken",
+            time: "Tijd",
+            Score: "Score",
+        },
+        simStats: {
+            emptyState: "Geen simulatiedata beschikbaar",
+            loadingState: "Simulatiedata laden...",
+            title: "Simulatie Statistieken",
+            distance: "Afstand",
+            drivingTime: "Rij tijd",
+            packagesDelivered: "Bezorgde pakketten",
+            totals: "Totalen",
+            totalDistance: "Totale afstand:",
+            totalDrivingTime: "Totale rij tijd:",
+            totalPackages: "Totaal bezorgde pakketten:",
+            totalsSteps: "Stappen:",
+            downloadCsv: "Download CSV",
+            downloadingCsv: "Bezig met downloaden...",
+            statsRetrievalError: "Fout bij het ophalen van statistieken",
+            statsCsvError: "Fout bij het downloaden van CSV",
+        },
+        impactStats: {
+            title: "Statistieken",
+            surroundings: "Omgeving",
+            economy: "Economie",
+            social: "Sociaal",
+            energy: "Energie",
+            safety: "Veiligheid",
+            maintainability: "Onderhoudbaarheid",
+            total: "Totale score",
+            download: "Download CSV",
+        },
+        rfidTags: {
+            title: "RFID Tags",
+            id: "ID",
+            positions: "Posities",
+            showTags: "Toon",
+            hideTags: "Verberg",
+        },
+        misc: {
+            closeButton: "x",
+        },
+    },
+    en: {
+        header: {
+            title: "Explore the Digital Twin",
+            logout: "Logout",
+            loggingOut: "Logging out...",
+            switchTwin: "Digital Twin",
+            switchSimulation: "Simulation",
+            switchLanguage: "Language",
+        },
+        websocket: {
+            notConnected: 'Not connected to server',
+            refresh: '⟳',
+        },
+        parameters: {
+            carSpeed: "Car speed",
+            scenario: "Scenarios",
+        },
+        carTable: {
+            header: "Cars",
+            status: "Status",
+            carId: "Car ID",
+            energy: "Energy",
+            packages: "Max. packages",
+            route: "Route",
+            routeVisibility: "Visibility",
+            showRoute: "Show",
+            hideRoute: "Hide",
+        },
+        controls: {
+            simulationSpeed: "Simulation Speed",
+            startButton: "Start",
+            stopButton: "Stop",
+        },
+        generalStats: {
+            title: "Statistics",
+            time: "Time",
+            Score: "Score",
+        },
+        simStats: {
+            emptyState: "No simulation data available",
+            loadingState: "Loading simulation data...",
+            title: "Simulation Statistics",
+            distance: "Distance",
+            drivingTime: "Driving time",
+            packagesDelivered: "Packages delivered",
+            totals: "Totals",
+            totalDistance: "Total distance:",
+            totalDrivingTime: "Total driving time:",
+            totalPackages: "Total packages delivered:",
+            totalsSteps: "Steps:",
+            downloadCsv: "Download CSV",
+            downloadingCsv: "Downloading...",
+            statsRetrievalError: "Error occurred while retrieving statistics",
+            statsCsvError: "Error occurred while downloading CSV",
+        },
+        impactStats: {
+            title: "Statistics",
+            surroundings: "Surroundings",
+            economy: "Economy",
+            social: "Social",
+            energy: "Energy",
+            safety: "Safety",
+            maintainability: "Maintainability",
+            total: "Combined score",
+            download: "Download CSV",
+        },
+        rfidTags: {
+            title: "RFID Tags",
+            id: "ID",
+            positions: "Positions",
+            showTags: "Show",
+            hideTags: "Hide",
+        },
+        misc: {
+            closeButton: "x",
+        },
     },
 };
-
-export function getLabel(key) {
-    const langMap = LABELS[currentLanguage] || LABELS[defaultLanguage] || {};
-    return langMap[key] || key;
-}
