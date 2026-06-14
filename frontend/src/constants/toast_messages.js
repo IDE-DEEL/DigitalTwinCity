@@ -4,9 +4,21 @@
  */
 
 export const TOAST_MESSAGES = {
-    // WebSocket Connection Messages
-    WS_CONNECTION_ERROR: "Kan geen verbinding maken met de simulatie backend. Probeer het opnieuw.",
-  
-    // Simulation Messages
-    UNREACHABLE_HOUSES: "Let op: er zijn huizen die niet bereikt worden met de geselecteerde routes.",
+    nl: {
+        error:{
+            WS_CONNECTION_ERROR: "Kan geen verbinding maken met de server. Probeer het opnieuw. Als het probleem aanhoudt, neem dan contact op met de docent.",
+        },
+        info: {
+            UNREACHABLE_HOUSES: "Let op: er zijn huizen die niet bereikt worden met de geselecteerde routes.",
+        },
+      
+    },
+    en: {
+        error:{
+            WS_CONNECTION_ERROR: "Unable to connect to the server. Please try again. If the problem persists, please contact your instructor.",
+        },
+        info: {
+            UNREACHABLE_HOUSES: "Note: There are houses that are not reachable with the selected routes.",
+        },
+    },
 };

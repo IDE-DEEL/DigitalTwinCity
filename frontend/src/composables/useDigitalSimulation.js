@@ -3,7 +3,7 @@ import { useToast } from "vue-toastification";
 import { useWebSocketSimulation } from "./useWebSocketSimulation";
 import { useDashboardParametersStore } from "../stores/dashboardParametersStore";
 import { useSimulationStateStore } from "../stores/simulationStateStore";
-import { TOAST_MESSAGES } from "../constants/toast_messages";
+import { useLanguageStore } from "../stores/languageStore";
 
 const GET_STATS_TIMEOUT_IN_MILLIS = 5000;
 const CSV_EXPORT_TIMEOUT_IN_MILLIS = 20000;
@@ -19,6 +19,7 @@ export function useDigitalSimulation() {
     const { isWebSocketConnected, connectWebSocket, disconnectWebSocket, sendWebSocketMessage, registerResponseHandler } = useWebSocketSimulation();
     const dashboardStore = useDashboardParametersStore();
     const simulationStore = useSimulationStateStore();
+    const languageStore = useLanguageStore();
 
     // ---
     // WebSocket lifecycle management
@@ -126,7 +127,7 @@ export function useDigitalSimulation() {
                 `Found ${unreachableHouses.length} unreachable house(es):`,
                 unreachableHouses.map(h => h.houseInstanceId)
             );
-            toast.info(TOAST_MESSAGES.UNREACHABLE_HOUSES);
+            toast.info(languageStore.getToastMessage("info.UNREACHABLE_HOUSES"));
             return false;
         }
 
