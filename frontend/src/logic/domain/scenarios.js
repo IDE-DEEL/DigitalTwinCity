@@ -5,8 +5,8 @@
  * Use the coordinate overlay devtool to quickly find the tiles (X,Y) as well as tile types to add houses to the scenario.
  */
 const SCENARIOS = {
-    rustig: {
-        label: 'Rustig',
+    calm: {
+        label: 'calm',
         houses: {
             // row 1
             'flat-4-0': 3,
@@ -32,8 +32,8 @@ const SCENARIOS = {
             'semiDetached-2-6': 1,
         }
     },
-    gemiddeld: {
-        label: 'Gemiddeld',
+    average: {
+        label: 'average',
         houses: {
             // row 1
             'detached-0-0': 1,
@@ -66,8 +66,8 @@ const SCENARIOS = {
             'semiDetached-3-6': 1,
         }
     },
-    druk: {
-        label: 'Druk',
+    busy: {
+        label: 'busy',
         houses: {
             // row 1
             'detached-0-0': 4,

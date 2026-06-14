@@ -47,7 +47,7 @@ export const useDashboardParametersStore = defineStore("dashboardParameters", ()
         },
     ]);
     const carTargetSpeed = ref(defaultCarSpeed);
-    const scenario = ref('rustig');
+    const scenario = ref(SCENARIO_OPTIONS[0]?.value ?? '');
     const simulationSpeed = ref(1);
 
     const mapStore = useMapStore();

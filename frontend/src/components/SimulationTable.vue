@@ -93,7 +93,7 @@ const handleMaxPackagesInput = (carId, event) => {
                 :disabled="props.disabled"
                 class="route-select"
               >
-                <option v-for="routeOption in props.routeOptions" :key="routeOption.key" :value="routeOption.value">{{ routeOption.label }}</option>
+                <option v-for="routeOption in props.routeOptions" :key="routeOption.key" :value="routeOption.value">{{ langStore.getLabel(`simRoutes.${routeOption.label}`) }}</option>
               </select>
             </td>
             <td>
