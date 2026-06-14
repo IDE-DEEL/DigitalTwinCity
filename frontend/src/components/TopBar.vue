@@ -5,6 +5,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { apiUrl } from '../config/api';
 import { useLanguageStore } from '../stores/index.js';
+import { LangToggle } from './CustomComponents.js';
 
 const router = useRouter();
 const isLoggingOut = ref(false);
@@ -26,10 +27,6 @@ const handleLogout = async () => {
   }
 };
 
-const toggleLanguage = () => {
-    langStore.switchLanguage();
-};
-
 </script>
 
 <template>
@@ -38,10 +35,7 @@ const toggleLanguage = () => {
       <img src="../../public/assets/hu-logo.png" alt="HU Logo" width="60" height="60">
       <h1>{{ langStore.getLabel('header.title') }}</h1>
     </div>
-    <button @click="toggleLanguage" class="language-switcher">
-      {{ langStore.getLabel('header.switchLanguage') }}
-      ({{  langStore.currentLanguage.toUpperCase() }})
-    </button>
+    <LangToggle></LangToggle>
     <div class="button-container">
       <button 
         @click="handleLogout" 

@@ -8,3 +8,4 @@ export { default as Table } from "./Table.vue";
 export { default as WebSocketStatus } from "./WebSocketStatus.vue";
 export { default as RoutePolyline } from "./RoutePolyline.vue";
 export { default as Car } from "./Car.vue";
+export { default as LangToggle } from "./LangToggle.vue";
