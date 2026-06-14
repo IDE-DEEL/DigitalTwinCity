@@ -7,6 +7,7 @@ import DropDown from './DropDown.vue'
 import Table from './Table.vue'
 import StatisticsModal from './StatisticsModal.vue'
 import { useDigitalTwinStore } from '../stores/digital-twin.js'
+import { useLanguageStore } from '../stores/index.js';
 import '../assets/Button.css'
 import '../assets/ControlPanel.css'
 
@@ -14,6 +15,7 @@ const timer = ref(null)
 const elapsedTime = ref(0) // Time in milliseconds
 const store = useDigitalTwinStore()
 const showModal = ref(false)
+const langStore = useLanguageStore();
 
 function start(event) {
   if (!store.active) {
@@ -55,7 +57,7 @@ const formattedTime = computed(() => {
       <!-- Slot voor de bovenste parameters -->
       <slot name="parameters">
         <Slider class="slider-area" 
-                name="Auto snelheid" 
+                :name="langStore.getLabel('parameters.carSpeed')"
                 type="speed" 
                 v-model="store.speed" 
                 min=0 
@@ -64,7 +66,7 @@ const formattedTime = computed(() => {
         </Slider>
         
         <DropDown class="scenario-area" 
-                  name="Scenario's" 
+                  :name="langStore.getLabel('parameters.scenario')"
                   type="scenario" 
                   :list="store.scenarios" 
                   v-model="store.chosen_scenario"
@@ -87,20 +89,20 @@ const formattedTime = computed(() => {
           <div class="timer-area">
             <!-- Deze nieuwe div houdt de twee knoppen netjes naast elkaar -->
             <div class="timer-button-row">
-              <button class="timer-button" @click="start">Start</button>
-              <button class="timer-button" @click="stop">Stop</button>
+              <button class="timer-button" @click="start">{{ langStore.getLabel('controls.startButton') }}</button>
+              <button class="timer-button" @click="stop">{{ langStore.getLabel('controls.stopButton') }}</button>
             </div>
             <!-- De tijd komt hier nu automatisch strak onder te staan -->
-            <p>Tijd: {{ formattedTime }}</p>
+            <p>{{ langStore.getLabel('generalStats.time') }}: {{ formattedTime }}</p>
           </div>
 
           <div class="score-area">
-            <button class="statistics-button" @click="showModal = true">Statistieken</button>
-            <p>Score: {{ Number(store.results.total).toFixed(1) }}</p>
+            <button class="statistics-button" @click="showModal = true"> {{ langStore.getLabel('generalStats.title') }} </button>
+            <p>{{ langStore.getLabel('generalStats.Score') }}: {{ Number(store.results.total).toFixed(1) }}</p>
           </div>
           <StatisticsModal v-if="showModal" @close="showModal = false">
             <template #header>
-              <h2>Statistieken</h2>
+              <h2> {{ langStore.getLabel('generalStats.title') }} </h2>
             </template>
           </StatisticsModal>
         </slot>

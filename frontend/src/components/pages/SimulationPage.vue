@@ -1,7 +1,6 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
-import { useMapStore, useDashboardParametersStore, useSimulationStateStore } from '../../stores';
-import { getLabel } from '../../constants/ui_labels.js';
+import { useMapStore, useDashboardParametersStore, useSimulationStateStore, useLanguageStore } from '../../stores';
 import { SIMULATION_SPEED_OPTIONS, MAP_COLUMNS, MAP_ROWS } from '../../constants/constants.js';
 import { useDigitalSimulation } from '../../composables/useDigitalSimulation.js';
 import { useCarColors } from '../../composables/useCarColors.js';
@@ -28,6 +27,7 @@ const isDevelopment = import.meta.env.DEV;
 const dashboardStore = useDashboardParametersStore();
 const simulationStore = useSimulationStateStore();
 const mapStore = useMapStore();
+const langStore = useLanguageStore();
 
 const {
     isWebSocketConnected,
@@ -242,14 +242,14 @@ const toggleRouteBuilder = () => {
             <template #parameters>
                 <Slider 
                     class="slider-area" 
-                    :name="getLabel('carSpeed')"
+                    :name="langStore.getLabel('parameters.carSpeed')"
                     :disabled="isSimulating"
                     type="speed" 
                     v-model="dashboardStore.carTargetSpeed"
                 ></Slider>
                 <DropDown 
                     class="scenario-area" 
-                    :name="getLabel('scenario')"
+                    :name="langStore.getLabel('parameters.scenario')"
                     :disabled="isSimulating"
                     type="scenario" 
                     :list="dashboardStore.scenarioOptions" 
@@ -264,13 +264,13 @@ const toggleRouteBuilder = () => {
                     :max-packages="MAX_PACKAGES" 
                     :min-packages="MIN_PACKAGES" 
                     :route-options="dashboardStore.routeOptions"
-                    :name="getLabel('tableHeader')"
+                    :name="langStore.getLabel('carTable.header')"
                     :disabled="isSimulating"
                     :headers="[
-                        getLabel('carId'),
-                        getLabel('packages'),
-                        getLabel('route'),
-                        getLabel('route_visibility')
+                        langStore.getLabel('carTable.carId'),
+                        langStore.getLabel('carTable.packages'),
+                        langStore.getLabel('carTable.route'),
+                        langStore.getLabel('carTable.routeVisibility')
                     ]"
                     @toggle-route-visibility="dashboardStore.toggleCarRouteVisibility"
                 ></SimulationTable>
@@ -279,7 +279,7 @@ const toggleRouteBuilder = () => {
             <template #simulation-statistics>
                 <RadioGroup 
                     class="radio-group-area" 
-                    :name="getLabel('simulationSpeed')" 
+                    :name="langStore.getLabel('controls.simulationSpeed')" 
                     :list="SIMULATION_SPEED_OPTIONS" 
                     v-model="dashboardStore.simulationSpeed"
                 ></RadioGroup>
@@ -288,12 +288,12 @@ const toggleRouteBuilder = () => {
             <!-- Simulation speed, start and stop controls + stats modal open button -->
             <template #simulation-controls>
                 <div class="stats-button-container">
-                    <button @click="handleStatsOpen" :disabled="!hasSimulated"> {{ getLabel('statisticsButton') }} </button>
+                    <button @click="handleStatsOpen" :disabled="!hasSimulated"> {{ langStore.getLabel('generalStats.title') }} </button>
                 </div>
 
                 <div class="button-area">
-                    <button @click="handleSimulationStart" :disabled="isSimulating"> {{ getLabel('startButton') }} </button>
-                    <button @click="handleSimulationStop" :disabled="!isSimulating"> {{ getLabel('stopButton') }} </button>
+                    <button @click="handleSimulationStart" :disabled="isSimulating"> {{ langStore.getLabel('controls.startButton') }} </button>
+                    <button @click="handleSimulationStop" :disabled="!isSimulating"> {{ langStore.getLabel('controls.stopButton') }} </button>
                 </div>
             </template>
         </ControlPanel>

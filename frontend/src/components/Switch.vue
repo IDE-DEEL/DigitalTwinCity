@@ -1,6 +1,9 @@
 <script setup>
 import { ref } from 'vue'
 import '../assets/Switch.css'
+import { useLanguageStore } from '../stores/index.js';
+
+const langStore = useLanguageStore();
 
 const isOn = ref(true)
 </script>
@@ -12,7 +15,7 @@ const isOn = ref(true)
       :class="{ 'is-active': isOn }" 
       @click="isOn = true"
     >
-      Digital Twin
+      {{ langStore.getLabel('header.switchTwin') }}
     </router-link>
     
     <router-link to="/simulation" 
@@ -20,7 +23,7 @@ const isOn = ref(true)
       :class="{ 'is-active': !isOn }" 
       @click="isOn = false"
     >
-      Simulatie
+      {{ langStore.getLabel('header.switchSimulation') }}
     </router-link>
   </div>
 </template>

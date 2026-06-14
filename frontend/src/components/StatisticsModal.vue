@@ -1,8 +1,10 @@
 <script setup>
 import '../assets/StatisticsModal.css'
 import { useDigitalTwinStore } from '../stores/digital-twin.js'
+import { useLanguageStore } from '../stores/index.js';
 
 const store = useDigitalTwinStore()
+const langStore = useLanguageStore();
 
 const handleDownloadCSV = () => {
     // 1. Bouw de CSV tekst op vanuit de store
@@ -38,28 +40,28 @@ const handleDownloadCSV = () => {
         </slot>
 
         <button class="download-csv-button" @click="handleDownloadCSV">
-          <p>Download CSV</p>
+          <p>{{ langStore.getLabel('impactStats.download') }}</p>
         </button>
 
         <button class="modal-default-button" @click="$emit('close')">
-          <p>X</p>
+          <p>{{ langStore.getLabel('misc.closeButton') }}</p>
         </button>
       </div>
 
       <slot name="body">
         <div class="modal-body">
-          <p>Omgeving: <span>{{ Number(store.results.environment).toFixed(1) }}</span></p>
-          <p>Economie: <span>{{ Number(store.results.economic).toFixed(1) }}</span></p>
-          <p>Sociaal: <span>{{ Number(store.results.social).toFixed(1) }}</span></p>
-          <p>Energie: <span>{{ Number(store.results.energy).toFixed(1) }}</span></p>
-          <p>Veiligheid: <span>{{ Number(store.results.safety).toFixed(1) }}</span></p>
-          <p>Onderhoudbaarheid: <span>{{ Number(store.results.maintenance).toFixed(1) }}</span></p>
+          <p>{{ langStore.getLabel('impactStats.surroundings') }}: <span>{{ Number(store.results.environment).toFixed(1) }}</span></p>
+          <p>{{ langStore.getLabel('impactStats.economy') }}: <span>{{ Number(store.results.economic).toFixed(1) }}</span></p>
+          <p>{{ langStore.getLabel('impactStats.social') }}: <span>{{ Number(store.results.social).toFixed(1) }}</span></p>
+          <p>{{ langStore.getLabel('impactStats.energy') }}: <span>{{ Number(store.results.energy).toFixed(1) }}</span></p>
+          <p>{{ langStore.getLabel('impactStats.safety') }}: <span>{{ Number(store.results.safety).toFixed(1) }}</span></p>
+          <p>{{ langStore.getLabel('impactStats.maintainability') }}: <span>{{ Number(store.results.maintenance).toFixed(1) }}</span></p>
         </div>
       </slot>
 
       <slot name="footer">
         <div class="modal-footer">
-          <p>Totale score: <span>{{ Number(store.results.total).toFixed(1) }}</span></p>
+          <p>{{ langStore.getLabel('impactStats.total') }}: <span>{{ Number(store.results.total).toFixed(1) }}</span></p>
         </div>
       </slot>
     </div>

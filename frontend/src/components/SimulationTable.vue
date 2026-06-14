@@ -1,6 +1,9 @@
 <script setup>
 import { useCarColors } from '../composables/useCarColors.js';
 import "../assets/Table.css";
+import { useLanguageStore } from '../stores/index.js';
+
+const langStore = useLanguageStore();
 
 const emit = defineEmits(['toggle-route-visibility']);
 
@@ -98,7 +101,7 @@ const handleMaxPackagesInput = (carId, event) => {
                     class="route-visibility-button"
                     @click="emit('toggle-route-visibility', car.id)"
                 >
-                    {{ car.routeVisibility ? 'Verberg' : 'Toon' }}
+                    {{ car.routeVisibility ? langStore.getLabel('carTable.showRoute') : langStore.getLabel('carTable.hideRoute') }}
                 </button></td>
           </tr>
         </tbody>

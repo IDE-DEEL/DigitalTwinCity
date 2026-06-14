@@ -111,7 +111,9 @@
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useCarColors } from '../composables/useCarColors';
-import { getLabel } from '../constants/ui_labels.js';
+import { useLanguageStore } from '../stores/index.js';
+
+const langStore = useLanguageStore();
 
 const props = defineProps({
     isOpen: {
@@ -172,7 +174,7 @@ const loadStats = async () => {
         console.log("Stats loaded successfully:", data);
         stats.value = data;
     } catch (err) {
-        const errorMsg = err.message || getLabel('statsRetrievalError');
+        const errorMsg = err.message || langStore.getLabel('statsRetrievalError');
         error.value = errorMsg;
         console.error('Error loading stats:', err);
     } finally {
@@ -232,7 +234,7 @@ const handleDownloadCSV = async () => {
         link.click();
         document.body.removeChild(link);
     } catch (err) {
-        error.value = err.message || getLabel('statsCsvError');
+        error.value = err.message || langStore.getLabel('statsCsvError');
         console.error('Error downloading CSV:', err);
     } finally {
         isDownloading.value = false;
