@@ -116,9 +116,10 @@ const getStateOfCharge = (carId) => {
             <td>
                 <button 
                     class="route-visibility-button"
+                    :disabled="car.routeName === 'inactive' && car.routeVisibility === false"
                     @click="emit('toggle-route-visibility', car.id)"
                 >
-                    {{ car.routeVisibility ? langStore.getLabel('carTable.showRoute') : langStore.getLabel('carTable.hideRoute') }}
+                    {{ car.routeVisibility ? langStore.getLabel('carTable.hideRoute') : langStore.getLabel('carTable.showRoute') }}
                 </button></td>
           </tr>
         </tbody>

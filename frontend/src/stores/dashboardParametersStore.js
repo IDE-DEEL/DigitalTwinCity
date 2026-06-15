@@ -153,10 +153,12 @@ export const useDashboardParametersStore = defineStore("dashboardParameters", ()
     });
 
     const allCarsAndRoutesWithConvertedCoordinates = computed(() => {
-        return allCarsWithRoutes.value.map((car) => ({
-            ...car,
-            routeWaypoints: convertWaypointsArrayFromSvgToMath(car.routeWaypoints),
-        }));
+        return allCarsWithRoutes.value
+            .filter((car) => car.routeWaypoints) // Filter cars without route waypoints (e.g., 'inactive' route)
+            .map((car) => ({
+                ...car,
+                routeWaypoints: convertWaypointsArrayFromSvgToMath(car.routeWaypoints),
+            }));
     });
 
     const housesLinkedToRoutes = computed(() => {

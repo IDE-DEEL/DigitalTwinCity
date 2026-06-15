@@ -10,6 +10,10 @@ import { DEPOT_ENTRANCE, DEPOT_EXIT } from "../../constants/constants";
  * - for a connection to be valid it must be a direct neighbor (N,E,S,W) of the previous tile and have a lane connecting them
  */
 export const ROUTES_TILES = {
+    inactive: {
+        label: 'inactive',
+        tiles: []
+    },
     short_1: {
         label: 'short_1',
         tiles: [

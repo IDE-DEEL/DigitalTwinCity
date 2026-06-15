@@ -11,10 +11,16 @@ import { convertWaypointFromLocalToGlobal } from "../utils/coordinateConverter.j
  * @returns {Array<Object>} An array of car objects, each enriched with a routeWaypoints property containing the built route.
  */
 export function addWaypointsToCarRoute(cars) {
-    return cars.map((car) => ({
-        ...car,
-        routeWaypoints: injectDepotLanesForCar(getWaypointRouteByName(car.routeName), car.id),
-    }));
+    return cars.map((car) => {
+        if (car.routeName === 'inactive') {
+            return car; // Return the car unchanged if the route is inactive (e.g., 'inactive' route)
+        }
+
+        return {
+            ...car,
+            routeWaypoints: injectDepotLanesForCar(getWaypointRouteByName(car.routeName), car.id),
+        };
+    });
 }
 
 /**
