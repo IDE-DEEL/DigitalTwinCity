@@ -1,41 +1,40 @@
 <script setup>
-import { defineProps, computed } from 'vue';
+import { defineProps } from 'vue';
+import { usePageStore } from '../stores/index';
 import '../assets/Display.css';
 
+const pageStore = usePageStore();
+
 const props = defineProps({
-  car: {
-    type: Object,
-    required: true,
-    // { x, y, rotation, id }
-  },
-  bodyColor: {
-    type: String,
-    default: '#4b5563',
-  },
-  cargoCount: {
-    type: Number,
-    default: 0,
-  },
-  title: {
-    type: String,
-    default: '',
-  },
-  factorX: {
-    type: Number,
-    default: 1,
-  },
-  factorY: {
-    type: Number,
-    default: 1,
-  },
-  isDigitalTwin: {
-    type: Boolean,
-    default: true,
-  },
+    car: {
+        type: Object,
+        required: true,
+        // { x, y, rotation, id }
+    },
+    bodyColor: {
+        type: String,
+        default: '#4b5563',
+    },
+    cargoCount: {
+        type: Number,
+        default: 0,
+    },
+    title: {
+        type: String,
+        default: '',
+    },
+    factorX: {
+        type: Number,
+        default: 1,
+    },
+    factorY: {
+        type: Number,
+        default: 1,
+    },
 });
 
 const getCarSpriteStyle = () => {
-    if (props.isDigitalTwin) {
+    if (pageStore.isDigitalTwin) {
         return {
             left: `${props.car.x * props.factorX}px`,
             top: `${props.car.y * props.factorY}px`,
@@ -52,13 +51,13 @@ const getCarSpriteStyle = () => {
 };
 
 const getCarHeadingStyle = () => {
-    return props.isDigitalTwin ? 
-    {
-        transform: `rotate(${props.car.rotation}deg)`,
-        transition: 'transform 260ms ease-out',
-    } : {
-        transform: `rotate(${props.car.heading_deg}deg)`,
-    };
+    return pageStore.isDigitalTwin ? 
+        {
+            transform: `rotate(${props.car.rotation}deg)`,
+            transition: 'transform 260ms ease-out',
+        } : {
+            transform: `rotate(${props.car.heading_deg}deg)`,
+        };
 };
 </script>
 

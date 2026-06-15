@@ -201,7 +201,6 @@ const toggleRouteBuilder = () => {
                     :title="`Car ${car.id} - ${car.packages_in_cargo.length} packages`"
                     :factorX="MAP_COLUMNS"
                     :factorY="MAP_ROWS"
-                    :isDigitalTwin="false"
                 />
             </template>
 
