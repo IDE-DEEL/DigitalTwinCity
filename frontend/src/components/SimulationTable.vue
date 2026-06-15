@@ -1,6 +1,9 @@
 <script setup>
 import { useCarColors } from '../composables/useCarColors.js';
 import "../assets/Table.css";
+import { useLanguageStore } from '../stores/index.js';
+
+const langStore = useLanguageStore();
 
 const emit = defineEmits(['toggle-route-visibility']);
 
@@ -90,7 +93,7 @@ const handleMaxPackagesInput = (carId, event) => {
                 :disabled="props.disabled"
                 class="route-select"
               >
-                <option v-for="routeOption in props.routeOptions" :key="routeOption.key" :value="routeOption.value">{{ routeOption.label }}</option>
+                <option v-for="routeOption in props.routeOptions" :key="routeOption.key" :value="routeOption.value">{{ langStore.getLabel(`simRoutes.${routeOption.label}`) }}</option>
               </select>
             </td>
             <td>
@@ -98,7 +101,7 @@ const handleMaxPackagesInput = (carId, event) => {
                     class="route-visibility-button"
                     @click="emit('toggle-route-visibility', car.id)"
                 >
-                    {{ car.routeVisibility ? 'Verberg' : 'Toon' }}
+                    {{ car.routeVisibility ? langStore.getLabel('carTable.showRoute') : langStore.getLabel('carTable.hideRoute') }}
                 </button></td>
           </tr>
         </tbody>

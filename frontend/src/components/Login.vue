@@ -1,21 +1,22 @@
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gray-100">
+    <LangToggle id="login-lang"></LangToggle>
     <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
       <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">
-        DEEL Digital Twin
+        {{ langStore.getLabel('login.title') }}
       </h2>
       
       <form @submit.prevent="handleLogin" class="space-y-4">
         <div>
           <label for="code" class="block text-sm font-medium text-gray-700">
-            Toegangscode
+            {{ langStore.getLabel('login.codeLabel') }}
           </label>
           <input 
             v-model="accessCode" 
             @input="formatAccessCode"
             type="text" 
             id="code" 
-            placeholder="Bijv. A1B2C-3D4E5"
+            :placeholder="langStore.getLabel('login.codePlaceholder')"
             maxlength="11"
             pattern="[A-Z0-9]{5}-?[A-Z0-9]{5}"
             autocomplete="one-time-code"
@@ -34,7 +35,7 @@
           :disabled="isLoading"
           class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
         >
-          {{ isLoading ? 'Laden...' : 'Inloggen' }}
+          {{ isLoading ? langStore.getLabel('login.loggingIn') : langStore.getLabel('login.loginButton') }}
         </button>
       </form>
 
@@ -46,12 +47,15 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { apiUrl } from '../config/api';
+import { useLanguageStore } from '../stores/index.js';
+import { LangToggle } from './CustomComponents.js';
 
 const emit = defineEmits(['authenticated']);
 const router = useRouter();
 const accessCode = ref('');
 const errorMessage = ref('');
 const isLoading = ref(false);
+const langStore = useLanguageStore();
 
 const normalizeAccessCodeForDisplay = (value) => {
   const typedTrailingDash = value.endsWith('-');
@@ -84,7 +88,7 @@ const handleLogin = async () => {
     });
 
     if (!response.ok) {
-      let errorMsg = "De ingevoerde toegangscode is ongeldig of verlopen.";
+      let errorMsg = langStore.getLabel('login.error');
       try {
         const errorData = await response.json();
         errorMsg = errorData.detail || errorMsg;
@@ -106,3 +110,11 @@ const handleLogin = async () => {
   }
 };
 </script>
+
+<style scoped>
+#login-lang {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+}
+</style>

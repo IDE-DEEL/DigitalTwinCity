@@ -2,8 +2,10 @@
 import "../assets/Table.css"
 import { watch } from 'vue'
 import { useDigitalTwinStore } from '../stores/digital-twin.js'
+import { useLanguageStore } from '../stores/index.js';
 
 const store = useDigitalTwinStore()
+const langStore = useLanguageStore();
 
 function visualizing(car) {
   car.visueel = !car.visueel
@@ -30,12 +32,12 @@ function send_route(car) {
       <table class="table-container">
         <thead>
           <tr class="title-row">
-            <th>Status</th>
-            <th>ID</th>
-            <th>Energie</th>
-            <th>Pakketjes</th>
-            <th>Route</th>
-            <th>Visueel</th>
+            <th>{{ langStore.getLabel('carTable.status') }}</th>
+            <th>{{ langStore.getLabel('carTable.carId') }}</th>
+            <th>{{ langStore.getLabel('carTable.energy') }}</th>
+            <th>{{ langStore.getLabel('carTable.packages') }}</th>
+            <th>{{ langStore.getLabel('carTable.route') }}</th>
+            <th>{{ langStore.getLabel('carTable.routeVisibility') }}</th>
           </tr>
         </thead>
         <tbody v-for="(car, index) in store.table_data" :key="index">
@@ -61,7 +63,7 @@ function send_route(car) {
                 <option v-for="r in store.routes" :key="r.route" :value="r.route" @change="send_route(car)">{{ r.route }}</option>
               </select>
             </td>
-            <td><button class="visualize" @click="visualizing(car)">{{ car.visueel ? 'Verberg' : 'Toon' }}</button></td>
+            <td><button class="visualize" @click="visualizing(car)">{{ car.visueel ? langStore.getLabel('carTable.hideRoute') : langStore.getLabel('carTable.showRoute') }}</button></td>
           </tr>
         </tbody>
       </table>

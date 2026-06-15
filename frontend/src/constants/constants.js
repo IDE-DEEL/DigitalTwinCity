@@ -12,9 +12,9 @@ export const MIN_CARS = 1;
 
 // simulation speeds
 export const SIMULATION_SPEED_OPTIONS = [
-    { value: 1, label: '1x' },
-    { value: 2, label: '2x' },
-    { value: 3, label: 'Super snel' },
+    { value: 1, label: '1' },
+    { value: 2, label: '2' },
+    { value: 3, label: '3' },
 ];
 
 // custom colors for cars and routes

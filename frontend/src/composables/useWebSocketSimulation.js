@@ -1,6 +1,6 @@
 import { ref } from "vue";
 import { useToast } from "vue-toastification";
-import { TOAST_MESSAGES } from "../constants/toast_messages";
+import { useLanguageStore } from "../stores/languageStore";
 import { wsUrl } from "../config/api";
 
 const isWebSocketConnected = ref(false);
@@ -15,6 +15,8 @@ const URI = "/api/v1/digital-sim/ws/simulation";
 const WS_URL = wsUrl(URI);
 
 function connectWebSocket(onSimulationUpdate, onSimulationEnded) {
+    const languageStore = useLanguageStore();
+
     // Store the callbacks
     onSimulationUpdateCallback = onSimulationUpdate;
     onSimulationEndedCallback = onSimulationEnded;
@@ -87,7 +89,7 @@ function connectWebSocket(onSimulationUpdate, onSimulationEnded) {
             isWebSocketConnected.value = false;
             isConnecting = false;
             websocket = null;
-            toast.error(TOAST_MESSAGES.WS_CONNECTION_ERROR);
+            toast.error(languageStore.getToastMessage("error.WS_CONNECTION_ERROR"));
         };
         
         websocket.onclose = () => {

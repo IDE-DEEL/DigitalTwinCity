@@ -1,6 +1,8 @@
 <script setup>
-import { getLabel } from '../constants/ui_labels.js';
+import { useLanguageStore } from '../stores/index.js';
 import "../assets/WebSocketStatus.css";
+
+const langStore = useLanguageStore();
 
 defineProps({
     isConnected: {
@@ -20,7 +22,7 @@ defineEmits(['reconnect']);
   <div v-if="!isConnected" class="websocket-status-container">
     <div class="websocket-status-indicator"></div>
     <span class="websocket-status-text">
-        {{ getLabel('websocketNotConnected') }}
+        {{ langStore.getLabel('websocket.notConnected') }}
     </span>
     <button 
       class="websocket-status-button"
@@ -28,7 +30,7 @@ defineEmits(['reconnect']);
       :disabled="reconnectCooldown"
       :class="{ 'websocket-status-button--disabled': reconnectCooldown }"
     >
-        {{ getLabel('websocketRefresh') }}
+        {{ langStore.getLabel('websocket.refresh') }}
     </button>
   </div>
 </template>

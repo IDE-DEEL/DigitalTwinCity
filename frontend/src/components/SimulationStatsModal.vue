@@ -3,12 +3,12 @@
         <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl max-h-[80vh] overflow-auto">
             <!-- Header -->
             <div class="sticky top-0 bg-white border-b border-gray-300 p-6 flex items-center justify-between">
-                <h2 class="text-xl font-bold text-dark">{{ getLabel('statisticsTitle') }}</h2>
+                <h2 class="text-xl font-bold text-dark">{{ langStore.getLabel('simStats.title') }}</h2>
                 <button
                     @click="emit('close')"
                     class="text-gray-500 hover:text-gray-700 text-2xl font-bold leading-none"
                 >
-                    {{ getLabel('closeButton') }}
+                    {{ langStore.getLabel('misc.closeButton') }}
                 </button>
             </div>
 
@@ -16,7 +16,7 @@
             <div class="p-6 space-y-6">
                 <!-- Loading state -->
                 <div v-if="isLoading" class="text-center py-8">
-                    <p class="text-gray-600">{{ getLabel('loadingState') }}</p>
+                    <p class="text-gray-600">{{ langStore.getLabel('simStats.loadingState') }}</p>
                 </div>
 
                 <!-- Error state -->
@@ -28,15 +28,15 @@
                 <div v-else-if="stats">
                     <!-- Per-agent table -->
                     <div>
-                        <h3 class="text-lg font-semibold mb-3 text-dark">{{ getLabel('tableHeader') }}</h3>
+                        <h3 class="text-lg font-semibold mb-3 text-dark">{{ langStore.getLabel('carTable.header') }}</h3>
                         <div class="overflow-x-auto">
                             <table class="w-full border-collapse text-sm">
                                 <thead>
                                     <tr class="bg-gray-100 border-b border-gray-300">
-                                        <th class="px-4 py-2 text-left font-semibold text-gray-700">{{ getLabel('carId') }}</th>
-                                        <th class="px-4 py-2 text-right font-semibold text-gray-700">{{ getLabel('distance') }}</th>
-                                        <th class="px-4 py-2 text-right font-semibold text-gray-700">{{ getLabel('drivingTime') }}</th>
-                                        <th class="px-4 py-2 text-right font-semibold text-gray-700">{{ getLabel('packagesDelivered') }}</th>
+                                        <th class="px-4 py-2 text-left font-semibold text-gray-700">{{ langStore.getLabel('carTable.carId') }}</th>
+                                        <th class="px-4 py-2 text-right font-semibold text-gray-700">{{ langStore.getLabel('simStats.distance') }}</th>
+                                        <th class="px-4 py-2 text-right font-semibold text-gray-700">{{ langStore.getLabel('simStats.drivingTime') }}</th>
+                                        <th class="px-4 py-2 text-right font-semibold text-gray-700">{{ langStore.getLabel('simStats.packagesDelivered') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -61,22 +61,22 @@
 
                     <!-- Totals section -->
                     <div class="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-md p-4">
-                        <h3 class="text-lg font-semibold mb-3 text-dark">{{ getLabel('statsTotals') }}</h3>
+                        <h3 class="text-lg font-semibold mb-3 text-dark">{{ langStore.getLabel('simStats.totals') }}</h3>
                         <div class="space-y-2">
                             <div class="flex justify-between items-center">
-                                <span class="text-gray-700">{{ getLabel('totalDistance') }}:</span>
+                                <span class="text-gray-700">{{ langStore.getLabel('simStats.totalDistance') }}:</span>
                                 <span class="font-mono font-bold text-gray-900">{{ stats.totals.total_distance.toFixed(2) }}</span>
                             </div>
                             <div class="flex justify-between items-center">
-                                <span class="text-gray-700">{{ getLabel('totalDrivingTime') }}:</span>
+                                <span class="text-gray-700">{{ langStore.getLabel('simStats.totalDrivingTime') }}:</span>
                                 <span class="font-mono font-bold text-gray-900">{{ formatDrivingTime(stats.totals.total_time_driving) }}</span>
                             </div>
                             <div class="flex justify-between items-center">
-                                <span class="text-gray-700">{{ getLabel('totalPackages') }}:</span>
+                                <span class="text-gray-700">{{ langStore.getLabel('simStats.totalPackages') }}:</span>
                                 <span class="font-mono font-bold text-gray-900">{{ stats.totals.total_packages_delivered }}</span>
                             </div>
                             <div class="flex justify-between items-center text-sm text-gray-600 mt-2 pt-2 border-t border-blue-200">
-                                <span>{{ getLabel('totalsSteps') }}:</span>
+                                <span>{{ langStore.getLabel('simStats.totalsSteps') }}:</span>
                                 <span class="font-mono">{{ stats.step_count }}</span>
                             </div>
                         </div>
@@ -94,14 +94,14 @@
                                     : 'bg-green-500 hover:bg-green-600 text-white'
                             ]"
                         >
-                            {{ isDownloading ? getLabel('downloadingCsv') : getLabel('downloadCsv') }}
+                            {{ isDownloading ? langStore.getLabel('simStats.downloadingCsv') : langStore.getLabel('simStats.downloadCsv') }}
                         </button>
                     </div>
                 </div>
 
                 <!-- Empty state -->
                 <div v-else class="text-center py-8 text-gray-600">
-                    {{ getLabel('emptyState') }}
+                    {{ langStore.getLabel('simStats.emptyState') }}
                 </div>
             </div>
         </div>
@@ -111,7 +111,9 @@
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useCarColors } from '../composables/useCarColors';
-import { getLabel } from '../constants/ui_labels.js';
+import { useLanguageStore } from '../stores/index.js';
+
+const langStore = useLanguageStore();
 
 const props = defineProps({
     isOpen: {
@@ -172,7 +174,7 @@ const loadStats = async () => {
         console.log("Stats loaded successfully:", data);
         stats.value = data;
     } catch (err) {
-        const errorMsg = err.message || getLabel('statsRetrievalError');
+        const errorMsg = err.message || langStore.getLabel('statsRetrievalError');
         error.value = errorMsg;
         console.error('Error loading stats:', err);
     } finally {
@@ -232,7 +234,7 @@ const handleDownloadCSV = async () => {
         link.click();
         document.body.removeChild(link);
     } catch (err) {
-        error.value = err.message || getLabel('statsCsvError');
+        error.value = err.message || langStore.getLabel('statsCsvError');
         console.error('Error downloading CSV:', err);
     } finally {
         isDownloading.value = false;

@@ -1,5 +1,8 @@
 <script setup>
 import { computed } from 'vue'
+import { useLanguageStore } from '../stores/index.js';
+
+const langStore = useLanguageStore();
 
 const model = defineModel({
   type: String,
@@ -29,7 +32,7 @@ const isObjectList = computed(() =>
         >
         <!-- For object list with {value, label} -->
         <option v-if="isObjectList" v-for="item in list" :key="item.value" :value="item.value">
-          {{ item.label }}
+          {{ langStore.getLabel(`simScenarios.${item.label}`) }}
         </option>
         <!-- For simple string list -->
         <option v-else v-for="value in list">{{ value }}</option>
