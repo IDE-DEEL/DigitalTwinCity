@@ -7,7 +7,7 @@ from backend.digital_sim.domain.house import House
 from backend.digital_sim.constants import (
     CAR_ROUTE_NAME_KEY, CAR_ROUTE_WAYPOINTS_KEY, CAR_MAX_PACKAGES_KEY, 
     HOUSE_PACKAGE_COUNT_KEY, HOUSE_ID_KEY, HOUSE_ROAD_COORDS_KEY, 
-    DELTA_TIME_PER_STEP_IN_SECONDS,
+    DELTA_TIME_PER_STEP_IN_SECONDS, CAR_MAIN_ID_KEY,
     AGENT_STATUS_KEY, AGENT_DISTANCE_TRAVELLED_KEY, AGENT_PACKAGES_DELIVERED_KEY,
     AGENT_PACKAGES_IN_CARGO_COUNT_KEY, AGENT_DEPOT_LOAD_COUNT_KEY,
     AGENT_TIME_DRIVING_SECONDS_KEY, AGENT_TIME_DELIVERING_SECONDS_KEY,
@@ -97,7 +97,8 @@ class CarModel(mesa.Model):
 
         for agent in self.agents:
             agents_status.append({
-                "id": agent.unique_id,
+                "mesa_id": agent.unique_id,
+                "id": agent.id,
                 "position": agent.position,
                 "heading_radial": agent.heading,
                 "heading_deg": agent.heading_deg,
@@ -158,6 +159,7 @@ class CarModel(mesa.Model):
         routes_by_name = {}
 
         for car in cars:
+            id = car.get(CAR_MAIN_ID_KEY)
             route_name = car.get(CAR_ROUTE_NAME_KEY)
             max_packages = car.get(CAR_MAX_PACKAGES_KEY, 1)
             waypoints = car.get(CAR_ROUTE_WAYPOINTS_KEY)
@@ -167,7 +169,7 @@ class CarModel(mesa.Model):
                 routes_by_name[route_name] = []
             routes_by_name[route_name].append(route)
 
-            CarAgent(model=self, car_target_speed=car_target_speed, route=route, max_packages=max_packages)
+            CarAgent(model=self, id=id, car_target_speed=car_target_speed, route=route, max_packages=max_packages)
 
         return routes_by_name
     

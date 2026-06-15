@@ -7,7 +7,7 @@ class Waypoint(BaseModel):
 
 class Car(BaseModel):
     """Validatie voor een individuele auto"""
-    id: str = Field(..., pattern="^[1-5]$", description="ID of the car (1-5)")
+    id: int = Field(..., ge=1, le=5, description="ID of the car (1-5)")
     maxPackages: int = Field(..., ge=1, le=20, description="Maximum number of packages the car can carry (1-20)")
     routeName: str = Field(..., min_length=1, description="Name of the route")
     routeWaypoints: list[Waypoint] = Field(..., min_items=1, description="List of waypoints for the route, must contain at least one waypoint")

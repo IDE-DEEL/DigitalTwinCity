@@ -16,31 +16,31 @@ export const useDashboardParametersStore = defineStore("dashboardParameters", ()
     // ---
     const cars = ref([
         {
-            id: '1',
+            id: 1,
             maxPackages: 1,
             routeName: ROUTE_OPTIONS[1]?.value ?? '',
             routeVisibility: false,
         },
         {
-            id: '2',
+            id: 2,
             maxPackages: 1,
             routeName: ROUTE_OPTIONS[0]?.value ?? '',
             routeVisibility: false,
         },
         {
-            id: '3',
+            id: 3,
             maxPackages: 1,
             routeName: ROUTE_OPTIONS[0]?.value ?? '',
             routeVisibility: false,
         },
         {
-            id: '4',
+            id: 4,
             maxPackages: 1,
             routeName: ROUTE_OPTIONS[0]?.value ?? '',
             routeVisibility: false,
         },
         {
-            id: '5',
+            id: 5,
             maxPackages: 1,
             routeName: ROUTE_OPTIONS[0]?.value ?? '',
             routeVisibility: false,

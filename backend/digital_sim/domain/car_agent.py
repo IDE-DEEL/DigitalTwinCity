@@ -14,9 +14,10 @@ class CarStatus(Enum):
     DELIVERING = "delivering"
 
 class CarAgent(mesa.Agent):
-    def __init__(self, model, car_target_speed: int = 50, route: Route = None, max_packages: int = 1):
+    def __init__(self, model, id: int, car_target_speed: int = 50, route: Route = None, max_packages: int = 1):
         super().__init__(model)
 
+        self.id = id
         self.target_speed = car_target_speed
         self.route = route
         self.max_packages = max_packages
