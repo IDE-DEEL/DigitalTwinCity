@@ -107,6 +107,7 @@ class CarModel(mesa.Model):
                 "finished": agent.is_finished,
                 "maxPackages": agent.max_packages,
                 "status": agent.status.name,
+                "state_of_charge": round(agent.state_of_charge, 2),
                 "packages_in_cargo": [
                     {
                         "id": package.id,

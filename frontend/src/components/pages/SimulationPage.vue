@@ -71,6 +71,24 @@ const lanePositions = computed(() => {
 
 const lanes = computed(() => buildLane(lanePositions.value));
 
+/*
+    =====================
+    Combining car data from the dashboard store and
+    =====================
+*/
+const carsWithLiveData = computed(() => {
+    return dashboardStore.cars.map(car => {
+        const liveCar = simulationStore.agentState.find(
+            agent => agent.id === car.id
+        );
+
+        return {
+            ...car,
+            state_of_charge: liveCar?.state_of_charge ?? "-"
+        };
+    });
+});
+
 /*  
     =====================
     Button handlers
@@ -265,9 +283,11 @@ const toggleRouteBuilder = () => {
                     :min-packages="MIN_PACKAGES" 
                     :route-options="dashboardStore.routeOptions"
                     :name="langStore.getLabel('carTable.header')"
+                    :live-agents="simulationStore.agentState"
                     :disabled="isSimulating"
                     :headers="[
                         langStore.getLabel('carTable.carId'),
+                        langStore.getLabel('carTable.energy'),
                         langStore.getLabel('carTable.packages'),
                         langStore.getLabel('carTable.route'),
                         langStore.getLabel('carTable.routeVisibility')

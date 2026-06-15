@@ -34,6 +34,10 @@ const props = defineProps({
         type: Array,
         default: () => []
     },
+    liveAgents: {
+        type: Array,
+        default: () => []
+    },
     disabled: {
         type: Boolean,
         default: false
@@ -50,6 +54,14 @@ const handleMaxPackagesInput = (carId, event) => {
     // Clamp value between min_packages and max_packages
     value = Math.max(props.minPackages, Math.min(props.maxPackages, value));
     event.target.value = value;
+};
+
+const getStateOfCharge = (carId) => {
+    const liveAgent = props.liveAgents.find(
+        agent => String(agent.id) === String(carId)
+    );
+
+    return liveAgent?.state_of_charge ?? "-";
 };
 </script>
 
@@ -73,6 +85,11 @@ const handleMaxPackagesInput = (carId, event) => {
                         :style="{ backgroundColor: getColorForCarAndRoute(car.id) }"
                     ></div>
                     <div>{{ car.id }}</div>
+                </div>
+            </td>
+            <td>
+                <div class="car-energy">
+                    <div>{{ getStateOfCharge(car.id) }} %</div>
                 </div>
             </td>
             <td>

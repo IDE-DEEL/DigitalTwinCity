@@ -22,6 +22,7 @@ class CarAgent(mesa.Agent):
         self.max_packages = max_packages
         self.controller = MovementController(waypoints=route.waypoints, target_speed=self.target_speed)
         self.packages_in_cargo = []
+        self.state_of_charge = 100.0
         
         # Delivery state
         self._reset_delivery_state()
