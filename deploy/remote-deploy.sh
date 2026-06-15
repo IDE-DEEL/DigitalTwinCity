@@ -38,10 +38,10 @@ prepare_mosquitto() {
       local password="${line#*=}"
 
       if [[ "$created" == "false" ]]; then
-        docker_script+="mosquitto_passwd -c -b \"/password/${tmp_passwd}\" \"${username}\" \"${password}\" >/dev/null; "
+        docker_script+="mosquitto_passwd -c -b '/password/${tmp_passwd}' '${username}' '${password}' >/dev/null; "
         created=true
       else
-        docker_script+="mosquitto_passwd -b \"/password/${tmp_passwd}\" \"${username}\" \"${password}\" >/dev/null; "
+        docker_script+="mosquitto_passwd -b '/password/${tmp_passwd}' '${username}' '${password}' >/dev/null; "
       fi
     done < "$MQTT_USERS_FILE"
 
