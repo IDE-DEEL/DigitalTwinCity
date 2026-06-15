@@ -18,7 +18,7 @@ export const useDashboardParametersStore = defineStore("dashboardParameters", ()
         {
             id: '1',
             maxPackages: 1,
-            routeName: ROUTE_OPTIONS[0]?.value ?? '',
+            routeName: ROUTE_OPTIONS[1]?.value ?? '',
             routeVisibility: false,
         },
         {

@@ -57,9 +57,10 @@ const MIN_PACKAGES = 1;
 
 /*
     =====================
-    Lane data preparation for overlays
+    Computed properties
     =====================
 */
+// Lane data preparation for overlays
 const lanePositions = computed(() => {
     return mapStore.mapData.map(item => ({
         id: `${item.x}-${item.y}`,
@@ -70,6 +71,11 @@ const lanePositions = computed(() => {
 });
 
 const lanes = computed(() => buildLane(lanePositions.value));
+
+// Check if all cars have the inactive route
+const allCarsHaveInactiveRoute = computed(() => {
+    return dashboardStore.cars.every(car => car.routeName === 'inactive');
+});
 
 /*
     =====================
@@ -299,7 +305,7 @@ const toggleRouteBuilder = () => {
                 </div>
 
                 <div class="button-area">
-                    <button @click="handleSimulationStart" :disabled="isSimulating"> {{ langStore.getLabel('controls.startButton') }} </button>
+                    <button @click="handleSimulationStart" :disabled="isSimulating || allCarsHaveInactiveRoute"> {{ langStore.getLabel('controls.startButton') }} </button>
                     <button @click="handleSimulationStop" :disabled="!isSimulating"> {{ langStore.getLabel('controls.stopButton') }} </button>
                 </div>
             </template>
