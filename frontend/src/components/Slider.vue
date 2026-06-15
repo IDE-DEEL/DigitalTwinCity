@@ -27,8 +27,8 @@ defineProps({
         
         <input 
           type="range" 
-          min=min 
-          max=max
+          :min="min" 
+          :max="max"
           class="custom-slider" 
           v-model.number="model"
           :disabled="disabled"

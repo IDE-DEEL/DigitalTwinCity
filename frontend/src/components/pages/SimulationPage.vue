@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { useMapStore, useDashboardParametersStore, useSimulationStateStore, useLanguageStore } from '../../stores';
-import { SIMULATION_SPEED_OPTIONS, MAP_COLUMNS, MAP_ROWS } from '../../constants/constants.js';
+import { SIMULATION_SPEED_OPTIONS, MAP_COLUMNS, MAP_ROWS, MIN_SPEED, MAX_SPEED } from '../../constants/constants.js';
 import { useDigitalSimulation } from '../../composables/useDigitalSimulation.js';
 import { useCarColors } from '../../composables/useCarColors.js';
 import { buildLane } from '../../logic/service/laneBuilder.js';
@@ -255,6 +255,8 @@ const toggleRouteBuilder = () => {
                     class="slider-area" 
                     :name="langStore.getLabel('parameters.carSpeed')"
                     :disabled="isSimulating"
+                    :min="MIN_SPEED"
+                    :max="MAX_SPEED"
                     type="speed" 
                     v-model="dashboardStore.carTargetSpeed"
                 ></Slider>
