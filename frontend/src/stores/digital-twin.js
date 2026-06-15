@@ -28,11 +28,11 @@ export const normalizeCarData = (payload) => {
 export const useDigitalTwinStore = defineStore('digitalTwin', {
   state: () => ({
     table_data: [
-        {"status": true, "auto_id": "auto_A", "energie": 100, "pakketje": 2, "route": "Route 1", "visueel": true},
-        {"status": true, "auto_id": "auto_B", "energie": 100, "pakketje": 4, "route": "Route 1", "visueel": false},
-        {"status": false, "auto_id": "auto_C", "energie": 100, "pakketje": 1, "route": "Route 1", "visueel": true},
-        {"status": false, "auto_id": "auto_D", "energie": 100, "pakketje": 2, "route": "Route 1", "visueel": false},
-        {"status": false, "auto_id": "auto_E", "energie": 100, "pakketje": 2, "route": "Route 1", "visueel": false}
+        {"status": true, "color": "#0000FF", "auto_id": "auto_A", "energie": 100, "pakketje": 2, "route": "Route 1", "visueel": true},
+        {"status": true, "color": "#FF0000", "auto_id": "auto_B", "energie": 100, "pakketje": 4, "route": "Route 1", "visueel": false},
+        {"status": false, "color": "#008000", "auto_id": "auto_C", "energie": 100, "pakketje": 1, "route": "Route 1", "visueel": true},
+        {"status": false, "color": "#FFFF00", "auto_id": "auto_D", "energie": 100, "pakketje": 2, "route": "Route 1", "visueel": false},
+        {"status": false, "color": "#800080", "auto_id": "auto_E", "energie": 100, "pakketje": 2, "route": "Route 1", "visueel": false}
     ],
 
     car_data: [
@@ -131,7 +131,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
             "5A:A5:97:E3:0A:41:89", 
             "5A:95:B3:DE:0A:41:89", 
             "5A:45:6B:E0:0A:41:89", 
-            "5A:35:6B:E0:0A:41:89", 
+            "5A:E5:D5:DB:0A:41:89", 
             "5A:25:6B:E0:0A:41:89",
 
             "5A:A5:C9:E1:0A:41:89",
@@ -157,7 +157,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
             "5A:65:B3:DE:0A:41:89",
 
             "5A:E5:C9:E1:0A:41:89",
-            "5A:35:6B:E0:0A:41:89",
+            "5A:E5:D5:DB:0A:41:89",
             "5A:15:CA:E1:0A:41:89",
             "5A:95:97:E3:0A:41:89"
           ], 

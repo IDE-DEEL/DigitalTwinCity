@@ -29,6 +29,7 @@ const carState = reactive({
 
 const motions = new Map()
 const lastAngles = new Map()
+const carMeta = reactive({})
 
 /* -------------------------
    INIT
@@ -45,24 +46,61 @@ onBeforeUnmount(() => {
 /* -------------------------
    TAGS
 --------------------------*/
-const orderedTags = computed(() =>
-  store.tag_positions.map((t, i) => ({
-    id: normalizeTagId(t.tag_id),
-    index: i,
-    x: t.tag_pos.x,
-    y: t.tag_pos.y,
-  }))
-)
+function get_route_tags(route_name) {
+  let tags = []
+  
+  // Collect all tags from the route
+  for (let i = 0; i < store.routes.length; i++) {
+    if (route_name === store.routes[i].route) {
+      tags = store.routes[i].tags
+      break;
+    }
+  }
 
-function findTag(id) {
-  const nid = normalizeTagId(id)
-  return orderedTags.value.find(t => t.id === nid)
+  return tags
 }
 
-function nextTag(id) {
-  const t = findTag(id)
-  if (!t || orderedTags.value.length < 2) return null
-  return orderedTags.value[(t.index + 1) % orderedTags.value.length]
+function getCarRoute(carId) {
+  return store.table_data.find(
+    c => c.auto_id === carId
+  )?.route
+}
+
+function getOrderedTags(route_name) {
+  const tags = get_route_tags(route_name)
+
+  const factorX = store.factor_x || 1
+  const factorY = store.factor_y || 1
+
+  return tags.map((tagId, index) => {
+    const pos = store.tag_positions.find(
+      p => p.tag_id === tagId
+    )
+
+    return {
+      id: normalizeTagId(tagId),
+      index,
+      x: pos ? pos.tag_pos.x * factorX : 0,
+      y: pos ? pos.tag_pos.y * factorY : 0
+    }
+  })
+}
+
+function findTag(route_name, tagId) {
+  return getOrderedTags(route_name).find(
+    t => t.id === normalizeTagId(tagId)
+  )
+}
+
+function nextTag(route_name, tagId) {
+  const tags = getOrderedTags(route_name)
+  const current = tags.find(
+    t => t.id === normalizeTagId(tagId)
+  )
+
+  if (!current) return null
+
+  return tags[(current.index + 1) % tags.length]
 }
 
 /* -------------------------
@@ -112,7 +150,7 @@ function getAngle(id, from, to) {
 /* -------------------------
    MOTION ENGINE
 --------------------------*/
-function startMotion(id, car, from, to, targetTag) {
+function startMotion(id, car, from, to) {
   const dist = Math.hypot(to.x - from.x, to.y - from.y)
   const speed = baseSpeed() * SCREEN_SPEED_MULTIPLIER
 
@@ -120,10 +158,12 @@ function startMotion(id, car, from, to, targetTag) {
     car,
     from,
     to,
-    targetTag,
     start: performance.now(),
-    duration: Math.max(MIN_CAR_MOVE_MS, (dist / speed) * 1000),
-    angle: getAngle(id, from, to),
+    duration: Math.max(
+      MIN_CAR_MOVE_MS,
+      (dist / speed) * 1000
+    ),
+    angle: getAngle(id, from, to)
   })
 }
 
@@ -144,24 +184,32 @@ function setPosition(id, car, pos, angle = DEFAULT_ROTATION) {
    WATCH (ONLY SYNC + START)
 --------------------------*/
 watch(() => store.car_data, (cars) => {
-  cars.forEach((car, i) => {
-    const tag = findTag(car.tag_id)
-    if (!tag) return
+    cars.forEach(car => {
+      const id = car.auto_id
+      const routeName = getCarRoute(id)
+      if (!routeName) return
+      
+      const currentTag = findTag(routeName, car.tag_id)
+      if (!currentTag) return
 
-    const id = car.auto_id
-
-    if (!carState.positions[id]) {
-      setPosition(id, car, tag)
-    }
-
-    if (!motions.has(id)) {
-      const n = nextTag(tag.id)
-      if (n) {
-        startMotion(id, car, tag, n, n.id)
+      if (!carState.positions[id]) {
+        setPosition(id, car, currentTag)
       }
-    }
-  })
-}, { immediate: true })
+
+      const prevTag = carState.positions[id]?.tag_id
+      if (prevTag === currentTag.id) {
+        return
+      }
+
+      setPosition(id, car, currentTag)
+      carState.positions[id].tag_id = currentTag.id
+      const next = nextTag(routeName, currentTag.id)
+      if (!next) return
+
+      startMotion(id, car, currentTag, next)
+    })
+  }, { immediate: true, deep: true}
+)
 
 /* -------------------------
    ANIMATION LOOP
@@ -170,22 +218,25 @@ let animationId = null
 
 function animate(now) {
   if (store.active) {
-    
     for (const [id, m] of motions) {
-      const pos = getPosition(m, now)
-      setPosition(id, m.car, pos, m.angle)
+      const p = Math.min((now - m.start) / m.duration, 1)
+      const x = m.from.x + (m.to.x - m.from.x) * p
+      const y = m.from.y + (m.to.y - m.from.y) * p
 
-      if (pos.progress >= 1) {
-        const next = nextTag(m.targetTag)
+      setPosition(id, m.car, { x, y }, m.angle)
+
+      if (p >= 1) {
+        motions.delete(id)
+        const routeName = getCarRoute(id)
+        const next = nextTag(routeName, m.to.tag_id || carState.positions[id]?.tag_id)
+
         if (next) {
-          startMotion(id, m.car, m.to, next, next.id)
-
-          console.log(pos)
+          startMotion(id, m.car, m.to, next)
         }
       }
     }
   }
-
+  
   animationId = requestAnimationFrame(animate)
 }
 
@@ -207,16 +258,8 @@ function getRotation(car) {
 
 /* Code to generate route lines */
 const generatePath = ((route_name) => {
-  let tags = []
+  let tags = get_route_tags(route_name)
   let positions = []
-  
-  // Collect all tags from the route
-  for (let i = 0; i < store.routes.length; i++) {
-    if (route_name === store.routes[i].route) {
-      tags = store.routes[i].tags
-      break;
-    }
-  }
 
    // Collect and scale all tag positions
   for (let i = 0; i < tags.length; i++) {
@@ -280,15 +323,6 @@ const generatePath = ((route_name) => {
   return path;
 })
 
-const getRouteColor = ((carRouteName) => {
-  const foundRoute = store.routes.find(r => r.route === carRouteName);
-  if (foundRoute && foundRoute.color) {
-    return foundRoute.color;
-  }
-  
-  return "#ccc";
-})
-
 const selectTag = ((tag) => {
   store.chosen_tag = tag
 })
@@ -329,11 +363,11 @@ const selectTag = ((tag) => {
         <!-- Routes -->
         <svg class="absolute inset-0 pointer-events-none"
         width=${MAP_DIMENSION} height=${MAP_DIMENSION}
-        v-for="car in store.table_data.filter(c => c.visueel === true)">
+        v-for="car in store.table_data.filter(c => (c.visueel && c.status))">
             <path
                 :d="generatePath(car.route)"
                 fill="none"
-                :stroke="getRouteColor(car.route)"
+                :stroke="car.color"
                 stroke-width="4" />
         </svg>
       </template>
@@ -347,10 +381,8 @@ const selectTag = ((tag) => {
         >
           <div class="car-heading" :style="getRotation(car)">
             <div class="car-body"> 
-              <div class="car-window">
-              </div> 
-              <div class="car-hood">
-              </div> 
+              <div class="car-window"></div> 
+              <div class="car-hood"></div> 
               <div class="car-headlights"> 
                 <span></span> 
                 <span></span> 

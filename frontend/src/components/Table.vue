@@ -43,7 +43,12 @@ function send_route(car) {
             <td>
               <div class="circle" :class="{ 'is-active': car.status }"></div>
             </td>
-            <td>{{ car.auto_id }}</td>
+            <td>
+              <div class="car-id-container">
+                <div :style="{backgroundColor: car.color}" class="car-id-color"></div>
+                <div>{{ car.auto_id }}</div>
+              </div>
+            </td>
             <td>{{ car.energie }} %</td>
             <td>
               <input class="package-input" 
