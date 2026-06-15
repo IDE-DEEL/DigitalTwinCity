@@ -1,0 +1,190 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - "server/**"
+      - "deploy/**"
+      - ".github/workflows/**"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - "server/**"
+      - "deploy/**"
+      - ".github/workflows/**"
+  workflow_dispatch:
+    inputs:
+      backend_image:
+        description: use an immutable sha-* tag ; if not provided, latest commit wil be used
+        required: false
+        default: ""
+      frontend_image:
+        description: use an immutable sha-* tag ; if not provided, latest commit wil be used
+        required: false
+        default: ""
+      rollback_on_failure:
+        description: Roll back to the previous release when healthchecks fail
+        required: true
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+
+permissions:
+  actions: read
+  contents: read
+  packages: write
+
+concurrency:
+  group: ci-cd-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-backend:
+    name: Build Backend
+    uses: ./.github/workflows/docker-build-scan-publish.yml
+    with:
+      component: Backend
+      context: ./backend
+      dockerfile: ./backend/Dockerfile
+      image_name: backend
+    secrets: inherit
+
+  build-frontend:
+    name: Build Frontend
+    uses: ./.github/workflows/docker-build-scan-publish.yml
+    with:
+      component: Frontend
+      context: ./frontend
+      dockerfile: ./frontend/Dockerfile
+      image_name: frontend
+    secrets: inherit
+
+  deploy:
+    name: Deploy application
+    needs: [build-backend, build-frontend]
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    runs-on: self-hosted
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Determine images and context
+        id: context
+        shell: bash
+        env:
+          BACKEND_IMAGE_INPUT: ${{ github.event.inputs.backend_image || '' }}
+          FRONTEND_IMAGE_INPUT: ${{ github.event.inputs.frontend_image || '' }}
+          SOURCE_SHA: ${{ github.sha }}
+          GITHUB_REPO: ${{ github.repository }}
+        run: |
+          repo="${GITHUB_REPO,,}"
+          
+          if [[ -n "$BACKEND_IMAGE_INPUT" ]]; then
+            if [[ "$BACKEND_IMAGE_INPUT" == */* ]]; then
+              backend_image="$BACKEND_IMAGE_INPUT"
+            else
+              backend_image="ghcr.io/${repo}/backend:${BACKEND_IMAGE_INPUT}"
+            fi
+          else
+            backend_image="ghcr.io/${repo}/backend:sha-${SOURCE_SHA::7}"
+          fi
+          
+          if [[ -n "$FRONTEND_IMAGE_INPUT" ]]; then
+            if [[ "$FRONTEND_IMAGE_INPUT" == */* ]]; then
+              frontend_image="$FRONTEND_IMAGE_INPUT"
+            else
+              frontend_image="ghcr.io/${repo}/frontend:${FRONTEND_IMAGE_INPUT}"
+            fi
+          else
+            frontend_image="ghcr.io/${repo}/frontend:sha-${SOURCE_SHA::7}"
+          fi
+          
+          echo "backend_image=${backend_image}" >> "$GITHUB_OUTPUT"
+          echo "frontend_image=${frontend_image}" >> "$GITHUB_OUTPUT"
+          echo "release_id=sha-${SOURCE_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare release package
+        run: |
+          mkdir -p package
+          cp -r server/* package/
+          cp deploy/remote-deploy.sh package/
+
+      - name: Setup SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || '22' }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          if [[ "$DEPLOY_SSH_KEY" == *'\n'* ]]; then
+            printf '%b' "$DEPLOY_SSH_KEY" | tr -d '\r' > ~/.ssh/deploy_key
+          else
+            printf '%s\n' "$DEPLOY_SSH_KEY" | tr -d '\r' > ~/.ssh/deploy_key
+          fi
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H -p "$DEPLOY_PORT" "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Execute remote deploy
+        env:
+          APP_ENV_FILE: "../../shared/.env"
+          BACKEND_IMAGE: ${{ steps.context.outputs.backend_image }}
+          COMPOSE_PROFILES: "monitoring"
+          FRONTEND_IMAGE: ${{ steps.context.outputs.frontend_image }}
+          GHCR_TOKEN: ${{ github.token }}
+          GHCR_USERNAME: ${{ github.actor }}
+          RELEASES_TO_KEEP: "3"
+          ROLLBACK_ON_FAILURE: ${{ github.event.inputs.rollback_on_failure || 'true' }}
+          RELEASE_DIR: "${{ secrets.DEPLOY_PATH }}/releases/${{ steps.context.outputs.release_id }}"
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || '22' }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          SSH_CMD="ssh -i ~/.ssh/deploy_key -p $DEPLOY_PORT -o StrictHostKeyChecking=accept-new -o BatchMode=yes -o ConnectTimeout=10"
+          SCP_CMD="scp -i ~/.ssh/deploy_key -P $DEPLOY_PORT -o StrictHostKeyChecking=accept-new -o BatchMode=yes -o ConnectTimeout=10"
+          
+          $SSH_CMD $DEPLOY_USER@$DEPLOY_HOST "mkdir -p '${RELEASE_DIR}' '${{ secrets.DEPLOY_PATH }}/shared'"
+          $SCP_CMD -r package/* $DEPLOY_USER@$DEPLOY_HOST:"${RELEASE_DIR}/"
+          
+          cat <<EOF > release.env
+          APP_ENV_FILE=${APP_ENV_FILE}
+          BACKEND_IMAGE=${BACKEND_IMAGE}
+          COMPOSE_PROFILES=${COMPOSE_PROFILES}
+          FRONTEND_IMAGE=${FRONTEND_IMAGE}
+          RELEASES_TO_KEEP=${RELEASES_TO_KEEP}
+          ROLLBACK_ON_FAILURE=${ROLLBACK_ON_FAILURE}
+          EOF
+          
+          $SCP_CMD release.env $DEPLOY_USER@$DEPLOY_HOST:"${RELEASE_DIR}/release.env"
+          
+          $SSH_CMD $DEPLOY_USER@$DEPLOY_HOST << EOF
+            chmod +x "${RELEASE_DIR}/remote-deploy.sh"
+            cd "${RELEASE_DIR}"
+            set -a
+            source release.env
+            set +a
+            export GHCR_USERNAME="${GHCR_USERNAME}"
+            export GHCR_TOKEN="${GHCR_TOKEN}"
+            bash remote-deploy.sh
+          EOF
+
+      - name: Write deployment summary
+        run: |
+          {
+            echo "## Deployment"
+            echo ""
+            echo "- Source commit: ${{ github.sha }}"
+            echo "- Release: ${{ steps.context.outputs.release_id }}"
+            echo "- Backend image: ${{ steps.context.outputs.backend_image }}"
+            echo "- Frontend image: ${{ steps.context.outputs.frontend_image }}"
+          } >> "$GITHUB_STEP_SUMMARY"

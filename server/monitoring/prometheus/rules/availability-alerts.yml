@@ -1,0 +1,79 @@
+groups:
+  - name: digitaltwin-availability
+    rules:
+      - alert: BackendNietBereikbaar
+        expr: probe_success{job="blackbox_http", instance="http://backend:8000/api/v1/health"} == 0 or up{job="blackbox_http", instance="http://backend:8000/api/v1/health"} == 0
+        for: 2m
+        labels:
+          severity: warning
+          component: backend
+        annotations:
+          summary: "Backend reageert niet"
+          description: "De backend healthcheck op http://backend:8000/api/v1/health geeft langer dan 2 minuten geen succesvolle response of de probe kan niet worden uitgevoerd."
+          trigger: "probe_success == 0 or up == 0"
+
+      - alert: FrontendInternNietBereikbaar
+        expr: probe_success{job="blackbox_http", instance="http://frontend/health"} == 0 or up{job="blackbox_http", instance="http://frontend/health"} == 0
+        for: 2m
+        labels:
+          severity: warning
+          component: frontend
+        annotations:
+          summary: "Frontend reageert niet"
+          description: "De frontend healthcheck op http://frontend/health geeft langer dan 2 minuten geen succesvolle response of de probe kan niet worden uitgevoerd."
+          trigger: "probe_success == 0 or up == 0"
+
+      - alert: FrontendExternNietBereikbaar
+        expr: probe_success{job="blackbox_http", instance=~"https://.*"} == 0 or up{job="blackbox_http", instance=~"https://.*"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: frontend
+        annotations:
+          summary: "Frontend is extern niet bereikbaar"
+          description: "De publieke HTTPS-route naar de frontend geeft langer dan 2 minuten geen succesvolle response of de probe kan niet worden uitgevoerd."
+          trigger: "probe_success == 0 or up == 0"
+
+      - alert: DatabaseNietBereikbaar
+        expr: pg_up{job="postgres-exporter"} == 0 or up{job="postgres-exporter"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: database
+        annotations:
+          summary: "Database reageert niet"
+          description: "PostgreSQL is niet bereikbaar voor postgres-exporter of de exporter zelf wordt niet gescraped."
+          trigger: "pg_up == 0 or up == 0"
+
+      - alert: MQTTNietBereikbaar
+        expr: probe_success{job="blackbox_tcp", instance="mqtt:1883"} == 0 or up{job="blackbox_tcp", instance="mqtt:1883"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: mqtt
+        annotations:
+          summary: "MQTT broker reageert niet"
+          description: "De TCP-check naar mqtt:1883 faalt langer dan 2 minuten of de probe kan niet worden uitgevoerd."
+          trigger: "probe_success == 0 or up == 0"
+
+      - alert: AlertmanagerNietBereikbaar
+        expr: up{job="alertmanager"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: monitoring
+        annotations:
+          summary: "Alertmanager reageert niet"
+          description: "Prometheus kan Alertmanager langer dan 2 minuten niet scrapen. Firing alerts kunnen daardoor niet worden doorgestuurd naar latere notificatiekanalen."
+          trigger: "up == 0"
+
+      - alert: PrometheusNietBereikbaar
+        expr: up{job="prometheus"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: monitoring
+        annotations:
+          summary: "Prometheus self-scrape faalt"
+          description: "Prometheus kan de eigen metrics endpoint langer dan 2 minuten niet scrapen. Controleer Prometheus zelf en de interne scrape-configuratie."
+          trigger: "up == 0"

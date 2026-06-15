@@ -1,14 +1,6 @@
 # Deploymenthandleiding en serveroverdracht
 
-Deze README is bedoeld als overdracht voor het deployment- en servergedeelte van
-dit project. Het doel is dat een volgend team begrijpt:
-
-- wat de deploymentomgeving is;
-- welke onderdelen erbij horen;
-- wat je moet instellen voordat deployment werkt;
-- wat er gebeurt tijdens een automatische deployment;
-- hoe je controleert of een deployment geslaagd is;
-- wat je moet doen als een deployment faalt.
+Deze README is bedoeld als overdracht voor het deployment- en servergedeelte van dit project. Het doel is dat een volgend team begrijpt wat er op GitHub Actions en op de server gebeurt, welke secrets/configuratie nodig zijn, en hoe je een deployment controleert of herstelt.
 
 ## Projectgegevens
 
@@ -21,9 +13,7 @@ dit project. Het doel is dat een volgend team begrijpt:
 | Automatische deploy branch | `main` |
 | Extra publish branch | `dev` |
 
-GitHub gebruikt de repositorynaam met hoofdletters, maar GHCR image names worden
-door de workflows naar lowercase omgezet. Daarom is de GHCR namespace volledig
-kleingeschreven.
+GitHub gebruikt de repositorynaam met hoofdletters, maar GHCR image names worden door de workflows naar lowercase omgezet. Daarom is de GHCR namespace volledig kleingeschreven.
 
 ## Begrippen
 
@@ -34,87 +24,72 @@ kleingeschreven.
 | GHCR | GitHub Container Registry. Hier staan de Docker images voor backend en frontend. |
 | Immutable image | Een image reference die niet zomaar naar andere code kan wijzen, bijvoorbeeld `sha-abc1234` of `sha256:...`. |
 | Self-hosted runner | Een GitHub Actions runner die op onze eigen VM/server draait. |
-| `DEPLOY_PATH` | Rootmap op de server waar releases, shared config en state staan. |
-| Release | Een map onder `<DEPLOY_PATH>/releases/` met de composebestanden en scripts voor een specifieke commit. |
+| `DEPLOY_PATH` | Rootmap op de server waar releases en shared config staan. |
+| Release | Een map onder `<DEPLOY_PATH>/releases/` met composebestanden, scripts en `release.env` voor een specifieke commit. |
 | `current` | Symlink naar de release die nu actief is. |
 | `shared` | Servermap met secrets en configuratie die niet in Git staan. |
-| `state` | Servermap met bestanden die bijhouden welke release actief en vorige release is. |
 | Healthcheck | HTTP-controle waarmee de pipeline bepaalt of frontend en backend correct draaien. |
-| Rollback | Teruggaan naar de vorige werkende release als de nieuwe release faalt. |
+| Rollback | De bestaande `current` release opnieuw starten als de nieuwe release faalt voordat die gepromoveerd is. |
 
 ## Wat is er gebouwd?
 
 Het deploymentgedeelte bestaat uit drie lagen.
 
-Laag 1 is CI. De backend- en frontendworkflows bouwen Docker images, scannen ze
-met Trivy en publiceren ze naar GHCR. Hierdoor wordt niet direct vanaf losse
-broncode op de server gebouwd. De server trekt alleen kant-en-klare images.
+Laag 1 is CI. `CI/CD Pipeline` roept de herbruikbare Docker workflow aan voor backend en frontend. De images worden gebouwd, met Trivy gescand en buiten pull requests naar GHCR gepubliceerd.
 
-Laag 2 is CD. De workflow `CD Deploy` bepaalt welke backend- en frontendimage
-bij dezelfde commit horen, maakt via SSH verbinding met de server en kopieert de
-deploymentbestanden naar een nieuwe release-map.
+Laag 2 is CD. De deploy-job in `ci-cd.yml` draait op een self-hosted runner, bepaalt de image references, kopieert de serverbestanden via SSH naar een release-map en start het remote deploy script.
 
-Laag 3 is de server. Op de server draait `remote-deploy.sh`. Dat script start
-Docker Compose, voert healthchecks uit, promoveert een release pas na succes en
-probeert rollback als iets misgaat.
+Laag 3 is de server. Op de server draait `remote-deploy.sh`. Dat script start Docker Compose, voert healthchecks uit, promoveert een release pas na succes en probeert de bestaande `current` release opnieuw te starten als iets misgaat.
 
 ## Belangrijkste bestanden
 
 | Bestand of map | Wat is het? | Waarom is het belangrijk? |
 | --- | --- | --- |
-| `.github/workflows/backend-build-scan-publish.yml` | Backend CI workflow. | Zorgt dat backend images gebouwd, gescand en gepubliceerd worden. |
-| `.github/workflows/frontend-build-scan-publish.yml` | Frontend CI workflow. | Zorgt dat frontend images gebouwd, gescand en gepubliceerd worden. |
+| `.github/workflows/ci-cd.yml` | Gecombineerde CI/CD workflow. | Bouwt/scant backend en frontend, publiceert images en deployt op `main` of handmatig. |
 | `.github/workflows/docker-build-scan-publish.yml` | Herbruikbare Docker workflow. | Voorkomt dubbele CI-logica voor backend en frontend. |
-| `.github/workflows/cd-deploy.yml` | CD workflow. | Regelt de automatische deployment naar de server. |
 | `deploy/remote-deploy.sh` | Remote deploy script. | Voert de echte deployment op de server uit. |
 | `deploy/shared.env.example` | Productie-env template. | Startpunt voor `<DEPLOY_PATH>/shared/.env`. |
 | `server/compose.yml` | Basis Docker Compose stack. | Draait Caddy, frontend, backend, MQTT, PostgreSQL en DuckDNS. |
-| `server/compose.monitoring.yml` | Monitoring Compose stack. | Draait Grafana, Prometheus, Loki, Alloy en exporters. |
+| `server/compose.monitoring.yml` | Monitoring Compose stack. | Draait Grafana, Prometheus, Alertmanager, Loki, Alloy en exporters via profile `monitoring`. |
 | `server/proxy/Caddyfile` | Caddy reverse proxy config. | Publiceert de applicatie via HTTPS. |
 | `server/mosquitto/` | MQTT configuratie. | Regelt MQTT listeners, ACL en WebSocket toegang. |
 | `server/postgresql/` | PostgreSQL configuratie. | Regelt databaseconfiguratie, TLS en rollen. |
-| `server/monitoring/` | Monitoringconfiguratie. | Bevat dashboards, metrics en loggingconfiguratie. |
+| `server/monitoring/` | Monitoringconfiguratie. | Bevat dashboards, metrics, loggingconfiguratie en Alertmanager e-mailnotificaties. |
 
 ## Hoe werkt een normale deployment?
 
 Dit is wat er gebeurt als code naar `main` gaat.
 
-1. Een pull request naar `main` bouwt en scant de gewijzigde app-image, maar publiceert of deployt niet.
+1. Een pull request naar `main` bouwt en scant backend en frontend, maar publiceert of deployt niet.
 2. De pull request wordt gemerged, of een commit wordt direct gepusht naar `main`.
-3. GitHub Actions start de backend- en frontend-build workflows.
-4. Elke workflow bouwt een Docker image.
-5. Trivy scant de image op vulnerabilities, secrets en misconfiguraties.
-6. Als Trivy `CRITICAL` findings vindt, faalt de build. Er wordt dan geen image
-   gepubliceerd en er hoort geen deployment plaats te vinden.
-7. Als de scan goed genoeg is, pusht de workflow de image naar GHCR.
-8. De image krijgt een tag met de commit, bijvoorbeeld `sha-abc1234`.
-9. `CD Deploy` start na de succesvolle push-build op `main`.
-10. `CD Deploy` controleert of de backend- en frontendimage voor dezelfde commit
-   allebei bestaan.
+3. GitHub Actions start `CI/CD Pipeline`.
+4. De pipeline start `build-backend` en `build-frontend`.
+5. Elke build job roept `docker-build-scan-publish.yml` aan.
+6. Trivy scant de image op vulnerabilities, secrets en misconfiguraties.
+7. Als Trivy `CRITICAL` findings vindt, faalt de build. Er wordt dan geen image gepubliceerd en geen deployment uitgevoerd.
+8. Als de scan goed genoeg is, pusht de workflow de images naar GHCR.
+9. De images krijgen tags met de commit, bijvoorbeeld `sha-abc1234`.
+10. De deploy-job start na succesvolle backend- en frontend-builds, maar alleen op push naar `main`.
 11. De deploy-job draait op de self-hosted runner.
 12. De runner maakt via SSH verbinding met de deployment-host.
 13. De runner maakt een release-map aan onder `<DEPLOY_PATH>/releases/`.
-14. De runner kopieert `server/`, `remote-deploy.sh` en deze README naar die
-    release-map.
-15. De runner uploadt runtimewaarden zoals `BACKEND_IMAGE`, `FRONTEND_IMAGE`,
-    `GHCR_TOKEN` en `ROLLBACK_ON_FAILURE`.
-16. Op de server start `remote-deploy.sh`.
-17. Het script controleert of Docker, Docker Compose, `curl` en
-    `<DEPLOY_PATH>/shared/.env` bestaan.
-18. Het script maakt of normaliseert de Mosquitto password file.
-19. Het script bewaart de huidige release als vorige release.
-20. Docker Compose trekt de nieuwe images en start de stack.
-21. Het script voert de frontend- en backend-healthchecks uit.
-22. Als beide healthchecks slagen, wordt de nieuwe release `current`.
-23. Als iets faalt, probeert het script rollback naar de vorige release.
+14. De runner kopieert `server/` en `remote-deploy.sh` naar die release-map.
+15. De runner uploadt `release.env` met runtimewaarden zoals `BACKEND_IMAGE`, `FRONTEND_IMAGE`, `COMPOSE_PROFILES`, `RELEASES_TO_KEEP` en `ROLLBACK_ON_FAILURE`.
+16. De runner exporteert tijdelijk `GHCR_USERNAME` en `GHCR_TOKEN` in de remote SSH sessie, zodat `remote-deploy.sh` private GHCR images kan pullen zonder die token in `release.env` te bewaren.
+17. Op de server sourcet de SSH-command `release.env` en start `remote-deploy.sh`.
+18. Het script maakt of normaliseert de Mosquitto password file uit `<DEPLOY_PATH>/shared/mosquitto/mqtt-users.env`.
+19. Docker Compose trekt de nieuwe images en start de stack.
+20. Het script voert de frontend- en backend-healthchecks uit.
+21. Als beide healthchecks slagen, wordt de nieuwe release via symlink `current` actief.
+22. Oude release-mappen worden opgeruimd volgens `RELEASES_TO_KEEP`.
+23. Tijdens cleanup draait `docker image prune -af --filter "until=24h"`.
+24. Als iets faalt, probeert het script de bestaande `current` release opnieuw te starten wanneer `ROLLBACK_ON_FAILURE=true`.
 
-Het belangrijkste punt: de nieuwe release wordt pas actief gemarkeerd nadat de
-healthchecks slagen.
+Het belangrijkste punt: de nieuwe release wordt pas actief gemarkeerd nadat de healthchecks slagen.
 
 ## Imagebeleid
 
-De deployment gebruikt geen `latest`. `latest` is onduidelijk, omdat de tag later
-naar andere code kan wijzen. Daarom gebruikt deze setup immutable references.
+De workflow maakt standaard geen `latest` tag. `latest` is onduidelijk, omdat de tag later naar andere code kan wijzen. Gebruik voor deployments daarom immutable references.
 
 Voor deze repository zien de standaard image references er zo uit:
 
@@ -123,13 +98,17 @@ ghcr.io/diedewiegerinck/inno-institute-for-design-engineering/backend:sha-abc123
 ghcr.io/diedewiegerinck/inno-institute-for-design-engineering/frontend:sha-abc1234
 ```
 
-Handmatige deployments mogen ook een `sha256` digest gebruiken. De CD workflow
-en `remote-deploy.sh` weigeren mutable tags zoals `latest`.
+Handmatige deployments kunnen ook een digest gebruiken, bijvoorbeeld:
+
+```text
+ghcr.io/diedewiegerinck/inno-institute-for-design-engineering/backend@sha256:<digest>
+```
+
+Let op: de huidige workflow valideert handmatige image-inputs niet inhoudelijk. Vul dus geen mutable tags zoals `latest`, `dev` of `main` in.
 
 ## Serverstructuur
 
-`DEPLOY_PATH` is de rootmap van de deployment op de server. Een logische waarde
-is bijvoorbeeld:
+`DEPLOY_PATH` is de rootmap van de deployment op de server. Een logische waarde is bijvoorbeeld:
 
 ```text
 /opt/digital-twin
@@ -142,7 +121,6 @@ De deployment maakt en gebruikt deze structuur:
   current -> releases/sha-abc1234
   releases/
     sha-abc1234/
-      DEPLOYMENT.md
       compose.yml
       compose.monitoring.yml
       remote-deploy.sh
@@ -154,26 +132,49 @@ De deployment maakt en gebruikt deze structuur:
       mqtt-users.env
       password/
         passwd
-  state/
-    current-release.env
-    previous-release.env
+    alertmanager/
+      smtp_auth_password
 ```
 
 Wat hoort waar:
 
-- `releases/` bevat bestanden die bij een specifieke release horen. Deze mappen
-  mogen door de deployment worden aangemaakt en later worden opgeruimd.
-- `shared/` bevat configuratie en secrets die over releases heen hetzelfde
-  blijven. Deze map mag niet door een nieuwe release overschreven worden.
-- `state/` bevat deployment-state. Hier staat welke release actief is en welke
-  release gebruikt kan worden voor rollback.
-- `current` is een symlink naar de actieve release. Beheerders gebruiken deze
-  map voor status- en logcommando's.
+- `releases/` bevat bestanden die bij een specifieke release horen. Deze mappen mogen door de deployment worden aangemaakt en later worden opgeruimd.
+- `shared/` bevat configuratie en secrets die over releases heen hetzelfde blijven. Deze map mag niet door een nieuwe release overschreven worden.
+- `current` is een symlink naar de actieve release. Beheerders gebruiken deze map voor status- en logcommando's.
+
+## Release-env en defaults
+
+Elke release krijgt een `release.env`. De workflow uploadt dit bestand voordat `remote-deploy.sh` start.
+
+Belangrijke waarden:
+
+| Variabele | Betekenis | Default of bron |
+| --- | --- | --- |
+| `APP_ENV_FILE` | Env file die Compose gebruikt. | `../../shared/.env` |
+| `BACKEND_IMAGE` | Immutable backend image voor deze release. | vanuit workflow |
+| `FRONTEND_IMAGE` | Immutable frontend image voor deze release. | vanuit workflow |
+| `COMPOSE_PROFILES` | Actieve Compose profiles. | `monitoring` |
+| `RELEASES_TO_KEEP` | Aantal release-mappen dat bewaard blijft. | `3` |
+| `ROLLBACK_ON_FAILURE` | Of de bestaande `current` release opnieuw gestart wordt bij falen. | `true` |
+
+`GHCR_USERNAME` en `GHCR_TOKEN` worden niet in `release.env` geschreven. De workflow exporteert ze alleen in de remote SSH sessie tijdens de deployment.
+
+`remote-deploy.sh` heeft daarnaast defaults voor:
+
+| Variabele | Default |
+| --- | --- |
+| `COMPOSE_PROJECT_NAME` | `digitaltwin` |
+| `MOSQUITTO_PASSWORD_DIR` | `<DEPLOY_PATH>/shared/mosquitto/password` |
+| `MQTT_USERS_FILE` | `<DEPLOY_PATH>/shared/mosquitto/mqtt-users.env` |
+| `HEALTHCHECK_URLS` | `https://<DOMAIN>/health,https://<DOMAIN>/api/v1/health` |
+| `HEALTHCHECK_ATTEMPTS` | `12` |
+| `HEALTHCHECK_INTERVAL_SECONDS` | `10` |
+| `HEALTHCHECK_TIMEOUT_SECONDS` | `5` |
+| `HEALTHCHECK_EXPECTED_STATUS` | `200` |
 
 ## Serverstack
 
-De productieomgeving draait met Docker Compose. De composebestanden komen uit de
-map `server/` en worden bij elke release naar de server gekopieerd.
+De productieomgeving draait met Docker Compose. De composebestanden komen uit de map `server/` en worden bij elke release naar de server gekopieerd.
 
 | Service | Wat doet deze service? |
 | --- | --- |
@@ -186,6 +187,7 @@ map `server/` en worden bij elke release naar de server gekopieerd.
 | `duckdns` | Houdt het DuckDNS-record actueel. |
 | `grafana` | Toont dashboards via `/grafana/`. |
 | `prometheus` | Verzamelt en bewaart metrics. |
+| `alertmanager` | Ontvangt Prometheus-alerts en verstuurt e-mailnotificaties via Gmail SMTP. |
 | `loki` | Bewaart logs. |
 | `alloy` | Verzamelt container-, host- en journallogs. |
 | `node-exporter` | Verzamelt hostmetrics. |
@@ -193,6 +195,8 @@ map `server/` en worden bij elke release naar de server gekopieerd.
 | `mosquitto-exporter` | Exporteert MQTT metrics. |
 | `postgres-exporter` | Exporteert PostgreSQL metrics. |
 | `blackbox-exporter` | Controleert bereikbaarheid van HTTP/TCP endpoints. |
+
+De monitoringservices staan in `compose.monitoring.yml` onder het Compose profile `monitoring`. De workflow zet standaard `COMPOSE_PROFILES=monitoring`.
 
 Publieke routes:
 
@@ -203,13 +207,9 @@ Publieke routes:
 | `wss://<DOMAIN>/mqtt` | MQTT via WebSocket |
 | `https://<DOMAIN>/grafana*` | Grafana |
 
-PostgreSQL is niet publiek beschikbaar en staat ook niet open op de host.
-Alleen services binnen Docker verbinden met PostgreSQL via `postgres:5432`.
+PostgreSQL en MQTT zijn niet direct op de host gepubliceerd. Browserclients verbinden met MQTT via Caddy op `wss://<DOMAIN>/mqtt`; interne containers gebruiken `mqtt:1883`.
 
 ## Eerste inrichting van een server
-
-Deze stappen zijn nodig als het volgende team een nieuwe mainserver moet
-inrichten.
 
 ### 1. Installeer serverbenodigdheden
 
@@ -219,7 +219,8 @@ De server heeft minimaal nodig:
 - Docker Compose v2;
 - `curl`;
 - SSH-toegang;
-- een Linux user voor deployment.
+- een Linux user voor deployment;
+- toegang tot Docker en hostlogpaden zoals `/var/run/docker.sock`, `/var/log` en `/var/log/journal` wanneer monitoring/logging actief is.
 
 Controleer Docker:
 
@@ -244,17 +245,10 @@ Log daarna opnieuw in als `github`, zodat de Docker group actief is.
 Voorbeeld met `/opt/digital-twin`:
 
 ```bash
-sudo mkdir -p /opt/digital-twin/releases /opt/digital-twin/shared /opt/digital-twin/state
+sudo mkdir -p /opt/digital-twin/releases /opt/digital-twin/shared
+sudo mkdir -p /opt/digital-twin/shared/mosquitto/password
+sudo mkdir -p /opt/digital-twin/shared/alertmanager
 sudo chown -R github:github /opt/digital-twin
-```
-
-Als meerdere beheerders moeten kunnen meekijken of aanpassen, zet dan de group
-rechten goed:
-
-```bash
-sudo chgrp -R github /opt/digital-twin
-sudo chmod -R g+rwX /opt/digital-twin
-sudo find /opt/digital-twin -type d -exec chmod g+s {} +
 ```
 
 ### 4. Maak een SSH key voor GitHub Actions
@@ -271,15 +265,7 @@ Zet de public key op de server:
 ssh-copy-id -i ./deploy_key.pub github@<server-host>
 ```
 
-Als `ssh-copy-id` niet beschikbaar is, voeg de inhoud van `deploy_key.pub`
-handmatig toe aan:
-
-```text
-/home/github/.ssh/authorized_keys
-```
-
-De private key uit `deploy_key` komt straks in GitHub secret `DEPLOY_SSH_KEY`.
-Commit deze key nooit.
+De private key uit `deploy_key` komt in GitHub secret `DEPLOY_SSH_KEY`. Commit deze key nooit.
 
 Controleer SSH:
 
@@ -295,12 +281,11 @@ Open in GitHub:
 Settings > Actions > Runners > New self-hosted runner
 ```
 
-Volg de stappen die GitHub toont. Belangrijk voor deze setup:
+Belangrijk voor deze setup:
 
 - de runner moet de deployment-host via SSH kunnen bereiken;
-- als runner en applicatie op dezelfde VM draaien, gebruik je
-  `DEPLOY_HOST=localhost`;
-- de runner moet `ssh`, `ssh-keygen`, `ssh-keyscan` en `scp` hebben;
+- als runner en applicatie op dezelfde VM draaien, gebruik je `DEPLOY_HOST=localhost`;
+- de runner moet `ssh`, `ssh-keyscan` en `scp` hebben;
 - zet de runner als service aan, zodat hij na een reboot weer online komt.
 
 ### 6. Maak GitHub Actions secrets aan
@@ -318,11 +303,10 @@ Maak deze secrets aan:
 | `DEPLOY_HOST` | Ja | Hostname of IP van de server. Gebruik `localhost` als runner en applicatie op dezelfde VM staan. |
 | `DEPLOY_USER` | Ja | SSH user op de server, bijvoorbeeld `github`. |
 | `DEPLOY_SSH_KEY` | Ja | Volledige private deploy key, inclusief begin- en eindregels. |
-| `DEPLOY_PATH` | Ja | Rootmap voor releases, shared config en state, bijvoorbeeld `/opt/digital-twin`. Laat het pad niet eindigen met `/`. |
+| `DEPLOY_PATH` | Ja | Rootmap voor releases en shared config, bijvoorbeeld `/opt/digital-twin`. Laat het pad niet eindigen met `/`. |
 | `DEPLOY_PORT` | Nee | SSH poort. Standaard `22`. |
 
-GHCR gebruikt `github.actor` en `github.token`. Daarvoor is normaal geen extra
-secret nodig.
+GHCR gebruikt `github.actor` en `github.token`. Daarvoor is normaal geen extra secret nodig.
 
 ### 7. Maak productieconfiguratie aan
 
@@ -332,8 +316,7 @@ Maak dit bestand op de server:
 <DEPLOY_PATH>/shared/.env
 ```
 
-Gebruik `deploy/shared.env.example` als template. Vul placeholders met echte
-productiewaarden.
+Gebruik `deploy/shared.env.example` als template. Vul placeholders met echte productiewaarden.
 
 Belangrijkste groepen:
 
@@ -343,9 +326,16 @@ Belangrijkste groepen:
 | PostgreSQL | `DT_PG_DB`, `DT_PG_ADMIN_*`, `DT_PG_DEVELOPER_*`, `DT_PG_MONITOR_*`, `DATABASE_URL` |
 | Backend auth | `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `SECRET_KEY` |
 | Browser/API | `CORS_ALLOW_ORIGINS`, `SESSION_COOKIE_*` |
+| Backend MQTT client | `MQTT_HOST`, `MQTT_PORT`, `MQTT_PATH`, `MQTT_USERNAME`, `MQTT_PASSWORD` |
 | Monitoring | `GF_SERVER_ROOT_URL`, `GRAFANA_PASSWORD` |
 
 Dit bestand hoort niet in Git. Het staat alleen op de server.
+
+Alertmanager gebruikt daarnaast een apart secretbestand voor Gmail SMTP:
+
+```text
+<DEPLOY_PATH>/shared/alertmanager/smtp_auth_password
+```
 
 ### 8. Maak MQTT users aan
 
@@ -361,8 +351,17 @@ Formaat:
 username=sterk-wachtwoord
 ```
 
-Tijdens deployment zet `remote-deploy.sh` dit automatisch om naar de gehashte
-Mosquitto password file:
+Voor deze stack moet minimaal de backend-user uit `.env` ook in dit bestand staan. Bijvoorbeeld:
+
+```dotenv
+backend_user=change_me_backend_password
+auto_A=change_me_auto_A_password
+auto_B=change_me_auto_B_password
+auto_C=change_me_auto_C_password
+auto_D=change_me_auto_D_password
+```
+
+Tijdens deployment zet `remote-deploy.sh` dit automatisch om naar:
 
 ```text
 <DEPLOY_PATH>/shared/mosquitto/password/passwd
@@ -377,11 +376,9 @@ De normale route is een pull request naar `main`, gevolgd door een merge naar `m
 Wat je als beheerder doet:
 
 1. Open GitHub Actions.
-2. Controleer dat de backend- en frontend-builds slagen.
-3. Controleer daarna `CD Deploy`.
-4. Bekijk in de job summary welke commit, backend image en frontend image zijn
-   uitgerold.
-5. Controleer de healthchecks.
+2. Controleer dat `CI/CD Pipeline` slaagt.
+3. Bekijk in de job summary welke commit, backend image en frontend image zijn uitgerold.
+4. Controleer de healthchecks.
 
 Healthchecks:
 
@@ -392,13 +389,12 @@ curl -fsS https://<DOMAIN>/api/v1/health
 
 ### Handmatig deployen
 
-Gebruik handmatige deployment alleen als je bewust opnieuw wilt deployen of een
-specifieke immutable image wilt testen.
+Gebruik handmatige deployment alleen als je bewust opnieuw wilt deployen of een specifieke immutable image wilt testen.
 
 Open in GitHub:
 
 ```text
-Actions > CD Deploy > Run workflow
+Actions > CI/CD Pipeline > Run workflow
 ```
 
 Aanbevolen inputs:
@@ -409,10 +405,12 @@ Aanbevolen inputs:
 | `frontend_image` | Leeg laten voor de standaard `sha-<commit>` image. |
 | `rollback_on_failure` | `true` |
 
-Als je een image invult, gebruik dan een immutable tag zoals:
+Als je een image invult, gebruik dan een losse immutable tag of een volledige immutable reference. Een losse tag zoals `sha-abc1234` wordt door de workflow aangevuld naar de juiste backend- of frontend-image.
 
 ```text
 sha-abc1234
+ghcr.io/diedewiegerinck/inno-institute-for-design-engineering/backend:sha-abc1234
+ghcr.io/diedewiegerinck/inno-institute-for-design-engineering/backend@sha256:<digest>
 ```
 
 Gebruik geen `latest`.
@@ -428,46 +426,22 @@ https://<DOMAIN>/api/v1/health
 
 De verwachte HTTP-status is `200`.
 
-Standaard probeert `remote-deploy.sh` elke URL 12 keer. Tussen pogingen zit 10
-seconden en per poging is de timeout 5 seconden. Dit geeft containers tijd om op
-te starten voordat de deployment definitief faalt.
+Standaard probeert `remote-deploy.sh` elke URL 12 keer. Tussen pogingen zit 10 seconden en per poging is de timeout 5 seconden.
 
-Als beide URLs status `200` geven, wordt de release geslaagd verklaard. Als een
-van de URLs blijft falen, wordt de release niet gepromoveerd naar `current`.
+Als beide URLs status `200` geven, wordt de release geslaagd verklaard. Als een van de URLs blijft falen, wordt de release niet gepromoveerd naar `current`.
 
 ## Rollback en fail-procedure
 
-Voor elke nieuwe deployment bewaart het script eerst de huidige release in:
+De huidige rollbacklogica gebruikt de bestaande `current` symlink. Omdat `current` pas na succesvolle healthchecks naar de nieuwe release wijst, blijft de vorige werkende release actief wanneer een nieuwe release faalt voor promotie.
 
-```text
-<DEPLOY_PATH>/state/previous-release.env
-```
-
-Daarna schrijft het script de state van de nieuwe release naar:
-
-```text
-<DEPLOY_PATH>/releases/<release-id>/release.env
-```
-
-Als `docker compose pull` of `docker compose up` faalt:
+Als `docker compose pull`, `docker compose up` of een healthcheck faalt:
 
 1. De pipeline toont `docker compose ps`.
-2. De pipeline toont de laatste logs van belangrijke services.
-3. Als `ROLLBACK_ON_FAILURE=true`, start het script de vorige release opnieuw.
-4. De rollback moet ook door de healthchecks komen.
-5. De pipeline faalt alsnog, zodat de fout zichtbaar blijft.
+2. De pipeline toont de laatste compose logs.
+3. Als `ROLLBACK_ON_FAILURE=true`, start het script de bestaande `current` release opnieuw.
+4. De pipeline faalt alsnog, zodat de fout zichtbaar blijft.
 
-Als de healthcheck van de nieuwe release faalt:
-
-1. De nieuwe release wordt niet gekoppeld aan `current`.
-2. De pipeline toont containerstatus en logs.
-3. Het script probeert rollback naar de vorige release.
-4. Als rollback slaagt, wijst `current` weer naar de vorige release.
-5. Als rollback niet mogelijk is, blijft de pipeline failed en moet het team de
-   logs onderzoeken.
-
-Bij de eerste deployment bestaat er nog geen vorige release. Rollback is dan
-niet mogelijk. In dat geval is een duidelijke pipeline-fail de juiste uitkomst.
+Bij de eerste deployment bestaat er nog geen `current` release. Rollback is dan niet mogelijk. In dat geval is een duidelijke pipeline-fail de juiste uitkomst.
 
 ## Traceerbaarheid
 
@@ -479,15 +453,15 @@ Deployment is traceerbaar via meerdere bronnen:
 | GHCR packages | De gepubliceerde backend- en frontendimages met `sha-*` tags. |
 | Trivy artifacts | Scanrapporten van de images. |
 | `<DEPLOY_PATH>/releases/<release-id>/` | De exacte releasebestanden die op de server zijn gezet. |
-| `<DEPLOY_PATH>/state/current-release.env` | De release die nu actief is. |
-| `<DEPLOY_PATH>/state/previous-release.env` | De release waar rollback op terugvalt. |
+| `<DEPLOY_PATH>/current` | De release die nu actief is. |
+| `<DEPLOY_PATH>/current/release.env` | Image references en runtimewaarden van de actieve release. |
 | Docker logs | Runtime logs van services. |
 
 Actieve release bekijken:
 
 ```bash
 readlink -f <DEPLOY_PATH>/current
-cat <DEPLOY_PATH>/state/current-release.env
+cat <DEPLOY_PATH>/current/release.env
 ```
 
 ## Servercontroles
@@ -495,10 +469,14 @@ cat <DEPLOY_PATH>/state/current-release.env
 Gebruik productiecommando's vanuit de actieve release:
 
 ```bash
-cd <DEPLOY_PATH>/current
+export DEPLOY_PATH="/opt/digital-twin"
+cd "$DEPLOY_PATH/current"
 set -a
-source ../../state/current-release.env
+. release.env
 set +a
+export APP_ENV_FILE="${APP_ENV_FILE:-../../shared/.env}"
+export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-digitaltwin}"
+export MOSQUITTO_PASSWORD_DIR="${MOSQUITTO_PASSWORD_DIR:-$DEPLOY_PATH/shared/mosquitto/password}"
 ```
 
 Containerstatus:
@@ -513,6 +491,12 @@ Logs:
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" logs --tail=100 postgres-tls-setup postgres backend frontend caddy mqtt
 ```
 
+Monitoringlogs:
+
+```bash
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" logs --tail=100 grafana prometheus alertmanager loki alloy node-exporter cadvisor mosquitto-exporter postgres-exporter blackbox-exporter
+```
+
 Stack opnieuw starten:
 
 ```bash
@@ -521,17 +505,29 @@ docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.y
 
 ## Handmatige rollback
 
-Gebruik handmatige rollback alleen als automatische rollback niet gelukt is en
-je bewust naar de vorige release wilt.
+Gebruik handmatige rollback alleen als automatische rollback niet gelukt is en je bewust naar een oudere release wilt.
+
+Beschikbare releases bekijken:
 
 ```bash
-previous_env="<DEPLOY_PATH>/state/previous-release.env"
-previous_release="$(. "$previous_env"; printf '%s' "$RELEASE_DIR")"
-project_name="$(. "$previous_env"; printf '%s' "$COMPOSE_PROJECT_NAME")"
+export DEPLOY_PATH="/opt/digital-twin"
+ls -dt "$DEPLOY_PATH"/releases/*
+```
+
+Een gekozen release opnieuw starten:
+
+```bash
+export DEPLOY_PATH="/opt/digital-twin"
+previous_release="$DEPLOY_PATH/releases/sha-abc1234"
 cd "$previous_release"
-docker compose --env-file ../../shared/.env -f compose.yml -f compose.monitoring.yml --project-name "$project_name" up -d --remove-orphans
-ln -sfn "$previous_release" <DEPLOY_PATH>/current
-cp "$previous_env" <DEPLOY_PATH>/state/current-release.env
+set -a
+. release.env
+set +a
+export APP_ENV_FILE="${APP_ENV_FILE:-../../shared/.env}"
+export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-digitaltwin}"
+export MOSQUITTO_PASSWORD_DIR="${MOSQUITTO_PASSWORD_DIR:-$DEPLOY_PATH/shared/mosquitto/password}"
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" up -d --remove-orphans
+ln -sfn "$previous_release" "$DEPLOY_PATH/current"
 ```
 
 Controleer daarna:
@@ -546,8 +542,8 @@ curl -fsS https://<DOMAIN>/api/v1/health
 | Probleem | Waarschijnlijke oorzaak | Eerste controle |
 | --- | --- | --- |
 | Build faalt op Trivy | Image bevat `CRITICAL` vulnerability of scanfinding. | GitHub job summary en artifact `*-trivy-reports-*`. |
-| Image wordt niet gepusht | Run draait niet op `main` of `dev`, of het is een pull request. | Event en branch van de workflowrun. |
-| CD wordt overgeslagen | Een verwachte build voor dezelfde commit is nog niet klaar, of er zijn geen wijzigingen in `backend/`, `frontend/`, `server/` of `deploy/`. | Job `Prepare deployment context`, output `should_deploy`. |
+| Image wordt niet gepusht | Run is een pull request, of draait niet op `main`, `dev` of handmatig via `workflow_dispatch`. | Event en branch van de workflowrun. |
+| Deployment wordt overgeslagen | Run is geen push naar `main` en geen handmatige run. | `CI/CD Pipeline`, jobconditie van `deploy`. |
 | Secrets ontbreken | GitHub Actions secrets zijn niet of verkeerd ingesteld. | `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`, `DEPLOY_PATH`. |
 | SSH host key ophalen faalt | Hostname, poort of netwerk klopt niet. | `DEPLOY_HOST` mag geen `user@host` of `ssh://...` bevatten. |
 | SSH authenticatie faalt | Public key staat niet bij de deploy user. | `~/.ssh/authorized_keys` van `DEPLOY_USER`. |
@@ -561,47 +557,39 @@ curl -fsS https://<DOMAIN>/api/v1/health
 Het volgende team kan veilig verder werken als ze deze afspraken behouden:
 
 - Gebruik immutable image tags of digests voor deployment.
-- Laat `shared/` en `state/` op de server bestaan tussen releases.
+- Laat `shared/` op de server bestaan tussen releases.
 - Commit geen productie-secrets.
 - Houd `DEPLOY_HOST=localhost` als runner en applicatie op dezelfde VM draaien.
 - Controleer na wijzigingen in `server/` altijd de healthchecks.
-- Pas rollbacklogica alleen aan als duidelijk is wat er moet gebeuren bij een
-  half mislukte deployment.
-- Voeg backupdeployment pas opnieuw toe als er weer een echte backupserver en
-  een duidelijk failoverplan zijn.
+- Pas rollbacklogica alleen aan als duidelijk is wat er moet gebeuren bij een half mislukte deployment.
+- Voeg backupdeployment pas opnieuw toe als er weer een echte backupserver en een duidelijk failoverplan zijn.
 
 Voor mogelijke toekomstige verbeteringen:
 
+- image-inputvalidatie in `ci-cd.yml`;
 - aparte GitHub environment voor productie-secrets;
 - expliciete alerts bij gefaalde deployment;
 - handmatige approval voor productie-deployments;
 - herintroductie van backupdeployment als de infrastructuur daarvoor terugkomt;
-- extra healthchecks die niet alleen HTTP-status maar ook response body
-  controleren.
+- extra healthchecks die niet alleen HTTP-status maar ook response body controleren.
 
 ## Overdracht checklist
 
 Gebruik deze checklist voordat het project wordt overgedragen:
 
 - GitHub Actions workflows staan in `.github/workflows/`.
-- `CD Deploy` draait op een online self-hosted runner.
+- `CI/CD Pipeline` draait op een online self-hosted runner voor deployment.
 - De runner kan via SSH naar de deployment-host.
 - `DEPLOY_HOST=localhost` als runner en applicatie op dezelfde VM draaien.
-- GitHub secrets zijn ingesteld: `DEPLOY_HOST`, `DEPLOY_USER`,
-  `DEPLOY_SSH_KEY`, `DEPLOY_PATH` en eventueel `DEPLOY_PORT`.
-- De public key van `DEPLOY_SSH_KEY` staat in `authorized_keys` van de deploy
-  user.
+- GitHub secrets zijn ingesteld: `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`, `DEPLOY_PATH` en eventueel `DEPLOY_PORT`.
+- De public key van `DEPLOY_SSH_KEY` staat in `authorized_keys` van de deploy user.
 - Docker Engine en Docker Compose v2 werken op de server.
 - `<DEPLOY_PATH>/shared/.env` bestaat en bevat productie-secrets.
-- `<DEPLOY_PATH>/shared/mosquitto/mqtt-users.env` bestaat als MQTT-login nodig
-  is.
-- De healthchecks werken:
-  `https://<DOMAIN>/health` en `https://<DOMAIN>/api/v1/health`.
+- `<DEPLOY_PATH>/shared/mosquitto/mqtt-users.env` bestaat als MQTT-login nodig is.
+- De healthchecks werken: `https://<DOMAIN>/health` en `https://<DOMAIN>/api/v1/health`.
 - Het team weet dat backupdeployment buiten scope is.
-- Het team weet dat rollback naar de vorige release op de mainomgeving de
-  afgesproken fail-procedure is.
-- Het team weet dat de GHCR namespace lowercase is:
-  `ghcr.io/diedewiegerinck/inno-institute-for-design-engineering`.
+- Het team weet dat rollback naar de bestaande `current` release de afgesproken fail-procedure is.
+- Het team weet dat de GHCR namespace lowercase is: `ghcr.io/diedewiegerinck/inno-institute-for-design-engineering`.
 - Na iedere deployment wordt de GitHub job summary gecontroleerd.
 
 ## Meer detaildocumentatie

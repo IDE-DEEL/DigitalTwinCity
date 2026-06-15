@@ -17,3 +17,91 @@ topic readwrite car/auto_C/#
 # --- Auto D Devices ---
 user auto_D
 topic readwrite car/auto_D/#
+
+# --- Auto E Devices ---
+user auto_E
+topic readwrite car/auto_E/#
+
+# --- Auto F Devices ---
+user auto_F
+topic readwrite car/auto_F/#
+
+# --- Auto G Devices ---
+user auto_G
+topic readwrite car/auto_G/#
+
+# --- Auto H Devices ---
+user auto_H
+topic readwrite car/auto_H/#
+
+# --- Auto I Devices ---
+user auto_I
+topic readwrite car/auto_I/#
+
+# --- Auto J Devices ---
+user auto_J
+topic readwrite car/auto_J/#
+
+# --- Auto K Devices ---
+user auto_K
+topic readwrite car/auto_K/#
+
+# --- Auto L Devices ---
+user auto_L
+topic readwrite car/auto_L/#
+
+# --- Auto M Devices ---
+user auto_M
+topic readwrite car/auto_M/#
+
+# --- Auto N Devices ---
+user auto_N
+topic readwrite car/auto_N/#
+
+# --- Auto O Devices ---
+user auto_O
+topic readwrite car/auto_O/#
+
+# --- Auto P Devices ---
+user auto_P
+topic readwrite car/auto_P/#
+
+# --- Auto Q Devices ---
+user auto_Q
+topic readwrite car/auto_Q/#
+
+# --- Auto R Devices ---
+user auto_R
+topic readwrite car/auto_R/#
+
+# --- Auto S Devices ---
+user auto_S
+topic readwrite car/auto_S/#
+
+# --- Auto T Devices ---
+user auto_T
+topic readwrite car/auto_T/#
+
+# --- Auto U Devices ---
+user auto_U
+topic readwrite car/auto_U/#
+
+# --- Auto V Devices ---
+user auto_V
+topic readwrite car/auto_V/#
+
+# --- Auto W Devices ---
+user auto_W
+topic readwrite car/auto_W/#
+
+# --- Auto X Devices ---
+user auto_X
+topic readwrite car/auto_X/#
+
+# --- Auto Y Devices ---
+user auto_Y
+topic readwrite car/auto_Y/#
+
+# --- Auto Z Devices ---
+user auto_Z
+topic readwrite car/auto_Z/#

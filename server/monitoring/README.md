@@ -6,6 +6,7 @@ De stack bestaat uit:
 
 - **Grafana**: dashboards, Explore, Prometheus datasource en Loki datasource
 - **Prometheus**: opslag en scraping van metrics
+- **Alertmanager**: ontvangt Prometheus-alerts en verstuurt e-mailnotificaties via Gmail SMTP
 - **Loki**: opslag en querying van logs
 - **Alloy**: verzamelt Docker-, host- en journallogs en stuurt ze naar Loki
 - **Node Exporter**: host/VM metrics zoals CPU, RAM, disk en netwerk
@@ -14,12 +15,16 @@ De stack bestaat uit:
 - **PostgreSQL Exporter**: database metrics zoals connecties en querygedrag
 - **Blackbox Exporter**: HTTP- en TCP-bereikbaarheidschecks
 - **Caddy metrics**: reverse-proxy metrics via Caddy's metrics-only endpoint op poort `2020`
+- **Prometheus alert rules**: basisalerts voor uitval van backend, frontend, database en MQTT
 
 ## 1. Structuur van deze map
 
 ```text
 monitoring/
 ├─ README.md
+├─ alertmanager/
+│  ├─ alertmanager.yml
+│  └─ smtp_auth_password.example
 ├─ alloy/
 │  └─ config.alloy
 ├─ grafana/
@@ -37,6 +42,8 @@ monitoring/
 ├─ loki/
 │  └─ loki-config.yaml
 └─ prometheus/
+   ├─ rules/
+   │  └─ availability-alerts.yml
    └─ prometheus.yml
 ```
 
@@ -48,7 +55,10 @@ monitoring/
 4. Alloy pusht logs naar Loki via `http://loki:3100/loki/api/v1/push`.
 5. Grafana gebruikt automatisch de geprovisioneerde datasources `Prometheus` en `Loki`.
 6. Grafana laadt automatisch dashboards uit `monitoring/grafana/dashboards/`.
-7. Verkeer naar Grafana loopt extern via Caddy op het subpad `/grafana`.
+7. Prometheus laadt alert rules uit `monitoring/prometheus/rules/`.
+8. Prometheus stuurt firing alerts naar Alertmanager via `http://alertmanager:9093`.
+9. Alertmanager groepeert alerts en stuurt firing en resolved meldingen naar de ingestelde e-mailontvanger.
+10. Verkeer naar Grafana loopt extern via Caddy op het subpad `/grafana`.
 
 ## 3. Voorwaarden
 
@@ -62,6 +72,22 @@ monitoring/
   - `DT_PG_MONITOR_USER`
   - `DT_PG_MONITOR_PASS`
 
+Voor Alertmanager e-mailnotificaties moet het Gmail SMTP-wachtwoord standaard op de server staan als:
+
+```text
+<DEPLOY_PATH>/shared/alertmanager/smtp_auth_password
+```
+
+`compose.monitoring.yml` mount dit bestand via `${ALERTMANAGER_SMTP_AUTH_PASSWORD_FILE:-../../shared/alertmanager/smtp_auth_password}`. Zet `ALERTMANAGER_SMTP_AUTH_PASSWORD_FILE` wanneer het secretbestand op een andere plek staat of wanneer je lokaal vanuit `server/` test.
+
+In de container moet dit secretbestand beschikbaar zijn op:
+
+```text
+/etc/alertmanager/secrets/smtp_auth_password
+```
+
+De echte secretwaarde hoort niet in README's of andere documentatie.
+
 Voor Grafana achter `/grafana` is `GF_SERVER_ROOT_URL` in `compose.monitoring.yml` gekoppeld aan de omgeving. Zet deze variabele op:
 
 ```dotenv
@@ -70,13 +96,17 @@ GF_SERVER_ROOT_URL=https://<DOMAIN>/grafana/
 
 ## 4. Compose-context
 
-In productie voer je beheercommando's uit vanuit de actieve release en source je eerst de release-state:
+In productie laad je eerst `release.env` en voer je beheercommando's daarna uit vanuit de actieve release:
 
 ```bash
-cd <DEPLOY_PATH>/current
+export DEPLOY_PATH="/opt/digital-twin"
+cd "$DEPLOY_PATH/current"
 set -a
-source ../../state/current-release.env
+. release.env
 set +a
+export APP_ENV_FILE="${APP_ENV_FILE:-../../shared/.env}"
+export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-digitaltwin}"
+export MOSQUITTO_PASSWORD_DIR="${MOSQUITTO_PASSWORD_DIR:-$DEPLOY_PATH/shared/mosquitto/password}"
 ```
 
 Gebruik daarna steeds beide composebestanden en de app env file:
@@ -99,6 +129,12 @@ Alleen observability plus de belangrijkste afhankelijkheden starten:
 
 ```bash
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" up -d grafana loki alloy prometheus node-exporter cadvisor mosquitto-exporter postgres-exporter blackbox-exporter caddy mqtt postgres backend
+```
+
+Met Alertmanager erbij:
+
+```bash
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" up -d grafana loki alloy prometheus alertmanager node-exporter cadvisor mosquitto-exporter postgres-exporter blackbox-exporter caddy mqtt postgres backend
 ```
 
 ## 6. Toegang
@@ -124,7 +160,7 @@ Dashboards worden geladen uit `monitoring/grafana/dashboards/` in de map `Overzi
 
 Belangrijke dashboards:
 
-- `INNO - Single Dashboard`: algemeen overzicht
+- `INNO - Single Dashboard`: algemeen overzicht met `Aantal actieve alerts`, `Alertdetails` en Alertmanager-statuspanelen
 - `INNO - Logs Overview`: centrale logs
 - `Node Exporter dashboard`: host/VM metrics
 - `cAdvisor dashboard`: container metrics
@@ -139,26 +175,57 @@ Volgens `monitoring/prometheus/prometheus.yml` worden de volgende jobs gescraped
 | Job | Target | Doel |
 |---|---|---|
 | `prometheus` | `localhost:9090` | Prometheus eigen metrics |
+| `alertmanager` | `alertmanager:9093` | Alertmanager metrics en status |
 | `node-exporter` | `node-exporter:9100` | Host/VM metrics |
 | `cadvisor` | `cadvisor:8080` | Docker container metrics |
 | `mosquitto-exporter` | `mosquitto-exporter:9234` | MQTT broker metrics |
 | `caddy` | `caddy:2020` | Caddy request-, latency- en servermetrics |
 | `postgres-exporter` | `postgres-exporter:9187` | PostgreSQL metrics |
-| `backend` | `backend:8000/metrics` | Backend applicatie-metrics |
 | `blackbox_http` | via `blackbox-exporter:9115` | HTTP 2xx checks |
 | `blackbox_tcp` | via `blackbox-exporter:9115` | TCP connect checks |
 
 Blackbox checks in de huidige configuratie:
 
 - HTTP: `https://digitaltwin.duckdns.org/`
-- HTTP: `http://backend:8000/docs`
+- HTTP: `http://frontend/health`
+- HTTP: `http://backend:8000/api/v1/health`
 - TCP: `mqtt:1883`
 
 De externe HTTP target staat hardcoded in `monitoring/prometheus/prometheus.yml`. Pas die target aan wanneer `DOMAIN` wijzigt.
 
-## 9. Logs
+## 9. Alerts
 
-Alloy verzamelt logs en schrijft ze naar Loki. Loki bewaart logs volgens `monitoring/loki/loki-config.yaml`; de huidige retention is `30d`.
+De basisalerts staan in `monitoring/prometheus/rules/availability-alerts.yml`. Prometheus laadt deze map via `rule_files` in `monitoring/prometheus/prometheus.yml`.
+
+Alertmanager is werkend ingericht voor e-mailnotificaties via Gmail SMTP. De configuratie in `monitoring/alertmanager/alertmanager.yml` gebruikt receiver `email-user`, leest het SMTP-wachtwoord uit `/etc/alertmanager/secrets/smtp_auth_password` en stuurt meldingen naar `paco.chrispijn@student.hu.nl`. `send_resolved: true` staat aan, dus herstelmeldingen worden ook verzonden.
+
+In `compose.monitoring.yml` heeft Alertmanager naast de interne metrics- en monitoringnetwerken ook het niet-interne netwerk `smtp_external`. Dat netwerk is nodig voor outbound SMTP-verkeer naar Gmail.
+
+De huidige route groepeert alerts op `alertname` en `component`:
+
+| Instelling | Waarde |
+|---|---|
+| `group_wait` | `30s` |
+| `group_interval` | `5m` |
+| `repeat_interval` | `4h` |
+| SMTP server | `smtp.gmail.com:587` met TLS |
+| Afzender | `digitaltwin678@gmail.com` |
+
+| Alertnaam | Component | Trigger | Betekenis |
+|---|---|---|---|
+| `BackendNietBereikbaar` | Backend | `probe_success{job="blackbox_http", instance="http://backend:8000/api/v1/health"} == 0 or up{job="blackbox_http", instance="http://backend:8000/api/v1/health"} == 0` gedurende 2 minuten | De backend health endpoint reageert niet succesvol of de probe kan niet worden uitgevoerd. |
+| `FrontendInternNietBereikbaar` | Frontend | `probe_success{job="blackbox_http", instance="http://frontend/health"} == 0 or up{job="blackbox_http", instance="http://frontend/health"} == 0` gedurende 2 minuten | De frontend-container health endpoint reageert niet succesvol of de probe kan niet worden uitgevoerd. |
+| `FrontendExternNietBereikbaar` | Frontend | `probe_success{job="blackbox_http", instance=~"https://.*"} == 0 or up{job="blackbox_http", instance=~"https://.*"} == 0` gedurende 2 minuten | De publieke HTTPS-route naar de frontend reageert niet succesvol of de probe kan niet worden uitgevoerd. |
+| `DatabaseNietBereikbaar` | Database | `pg_up{job="postgres-exporter"} == 0 or up{job="postgres-exporter"} == 0` gedurende 2 minuten | PostgreSQL is niet bereikbaar voor de exporter, of de exporter zelf is niet bereikbaar. |
+| `MQTTNietBereikbaar` | MQTT | `probe_success{job="blackbox_tcp", instance="mqtt:1883"} == 0 or up{job="blackbox_tcp", instance="mqtt:1883"} == 0` gedurende 2 minuten | De MQTT broker accepteert geen TCP-connectie op poort `1883` of de probe kan niet worden uitgevoerd. |
+| `AlertmanagerNietBereikbaar` | Monitoring | `up{job="alertmanager"} == 0` gedurende 2 minuten | Prometheus kan Alertmanager niet scrapen, waardoor firing alerts niet kunnen worden doorgestuurd naar e-mailnotificaties. |
+| `PrometheusNietBereikbaar` | Monitoring | `up{job="prometheus"} == 0` gedurende 2 minuten | Prometheus kan de eigen metrics endpoint niet scrapen. |
+
+De alertnamen zijn componentgericht en zonder omgevingsspecifieke waarden gekozen, zodat ze herbruikbaar blijven in lokale, test- en productieomgevingen.
+
+## 10. Logs
+
+Alloy verzamelt logs en schrijft ze naar Loki. Loki bewaart logs volgens `monitoring/loki/loki-config.yaml`; de huidige retention is `14d`.
 
 Centraal verzamelde logbronnen:
 
@@ -180,7 +247,7 @@ Handige LogQL queries in Grafana Explore:
 {source="docker", compose_service=~"prometheus|grafana|loki|alloy"} |~ "(?i)(error|warn|fail|timeout)"
 ```
 
-## 10. Validatie
+## 11. Validatie
 
 Controleer containerstatus:
 
@@ -194,6 +261,24 @@ Controleer Prometheus targets:
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://localhost:9090/api/v1/targets | head
 ```
 
+Controleer of de alert rules geladen zijn:
+
+```bash
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://localhost:9090/api/v1/rules | head
+```
+
+Controleer de actuele alertstatus:
+
+```bash
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://localhost:9090/api/v1/alerts | head
+```
+
+Controleer of Prometheus Alertmanager kent:
+
+```bash
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://localhost:9090/api/v1/alertmanagers | head
+```
+
 Controleer een paar metric endpoints vanuit Prometheus:
 
 ```bash
@@ -202,6 +287,7 @@ docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.y
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://mosquitto-exporter:9234/metrics | head
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://postgres-exporter:9187/metrics | head
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://blackbox-exporter:9115/metrics | head
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://alertmanager:9093/-/ready
 ```
 
 Controleer Loki:
@@ -215,11 +301,84 @@ Bekijk logs van de observability services:
 ```bash
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" logs --tail=100 grafana
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" logs --tail=100 prometheus
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" logs --tail=100 alertmanager
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" logs --tail=100 loki
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" logs --tail=100 alloy
 ```
 
-## 11. Dashboards beheren
+## 12. Alerts lokaal testen
+
+Start eerst de volledige stack inclusief monitoring. Simuleer daarna per component uitval door de betreffende container tijdelijk te stoppen. Wacht minimaal 2 minuten, omdat de alert rules een `for: 2m` wachttijd gebruiken.
+
+Backend-uitval:
+
+```bash
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" stop backend
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://localhost:9090/api/v1/alerts | head
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" start backend
+```
+
+Interne frontend-uitval:
+
+```bash
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" stop frontend
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://localhost:9090/api/v1/alerts | head
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" start frontend
+```
+
+Database-uitval:
+
+```bash
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" stop postgres
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://localhost:9090/api/v1/alerts | head
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" start postgres
+```
+
+MQTT-uitval:
+
+```bash
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" stop mqtt
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://localhost:9090/api/v1/alerts | head
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" start mqtt
+```
+
+In Grafana kun je dezelfde status controleren via Explore met datasource `Prometheus` en query:
+
+```promql
+ALERTS{alertstate="firing"}
+```
+
+Het dashboard `INNO - Single Dashboard` heeft onder `Bereikbaarheid (blackbox-exporter)` ook het statpanel `Aantal actieve alerts` en de tabel `Alertdetails`. De teller gebruikt:
+
+```promql
+count(ALERTS{alertstate=~"pending|firing"}) or vector(0)
+```
+
+De detailtabel gebruikt:
+
+```promql
+ALERTS{alertstate=~"pending|firing"}
+```
+
+Onder de rij `Alertmanager` staan daarnaast:
+
+| Panel | Query | Doel |
+|---|---|---|
+| `Alertmanager status` | `up{job="alertmanager"}` | Toont of Alertmanager door Prometheus gescraped kan worden. |
+| `Alertmanager actieve alerts` | `sum(alertmanager_alerts{state="active"}) or vector(0)` | Toont hoeveel alerts Alertmanager actief kent. |
+| `Alertmanager actieve silences` | `sum(alertmanager_silences{state="active"}) or vector(0)` | Toont hoeveel silences actief zijn. |
+
+Externe frontend-uitval test je via de publieke HTTPS-route. Stop lokaal bijvoorbeeld `caddy` als de hardcoded blackbox target naar deze machine wijst:
+
+```bash
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" stop caddy
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://localhost:9090/api/v1/alerts | head
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" start caddy
+```
+
+Let op: deze externe test werkt alleen betrouwbaar wanneer de HTTPS-target in `monitoring/prometheus/prometheus.yml` naar de omgeving wijst die je lokaal test.
+
+## 13. Dashboards beheren
 
 Nieuw dashboard toevoegen:
 
@@ -235,7 +394,7 @@ Bestaand dashboard aanpassen:
 
 Let op: dashboards die via provisioning worden beheerd, moeten uiteindelijk weer als JSON in de repo landen. Anders verdwijnen UI-wijzigingen bij een verse omgeving.
 
-## 12. Veelvoorkomende problemen
+## 14. Veelvoorkomende problemen
 
 ### Grafana opent niet via `/grafana`
 
@@ -268,7 +427,6 @@ docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.y
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://cadvisor:8080/metrics | head
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://mosquitto-exporter:9234/metrics | head
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://postgres-exporter:9187/metrics | head
-docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://backend:8000/metrics | head
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://caddy:2020/metrics | head
 ```
 
@@ -287,15 +445,6 @@ De exporter gebruikt:
 postgresql://${DT_PG_MONITOR_USER}:${DT_PG_MONITOR_PASS}@postgres:5432/${DT_PG_DB}?sslmode=require
 ```
 
-### Geen backend metrics
-
-Controleer of de backend draait en `/metrics` aanbiedt:
-
-```bash
-docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" ps backend
-docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" logs --tail=100 backend
-docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://backend:8000/metrics | head
-```
 
 ### Geen MQTT metrics
 
@@ -331,18 +480,50 @@ Let op host mounts in `compose.monitoring.yml`: Alloy leest `/var/run/docker.soc
 Controleer de probe handmatig:
 
 ```bash
-docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- "http://blackbox-exporter:9115/probe?target=http://backend:8000/docs&module=http_2xx" | head
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- "http://blackbox-exporter:9115/probe?target=http://frontend/health&module=http_2xx" | head
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- "http://blackbox-exporter:9115/probe?target=http://backend:8000/api/v1/health&module=http_2xx" | head
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- "http://blackbox-exporter:9115/probe?target=mqtt:1883&module=tcp_connect" | head
 ```
 
 Als de externe URL faalt, controleer DNS, firewall, Caddy en certificaten.
 
-## 13. Data persistentie
+### Alerts worden niet geladen
+
+Controleer of Prometheus de rule file kan lezen:
+
+```bash
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://localhost:9090/api/v1/rules | head
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" logs --tail=100 prometheus
+```
+
+Controleer daarna of `monitoring/prometheus/rules/availability-alerts.yml` via `compose.monitoring.yml` read-only is gemount naar `/etc/prometheus/rules`.
+
+### Alertmanager ontvangt geen alerts of verstuurt geen e-mail
+
+Controleer of `alertmanager` draait en of Prometheus de target kent:
+
+```bash
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" ps prometheus alertmanager
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec prometheus wget -qO- http://localhost:9090/api/v1/alertmanagers | head
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" logs --tail=100 alertmanager
+```
+
+Controleer daarna:
+
+- `monitoring/alertmanager/alertmanager.yml` is via `compose.monitoring.yml` read-only gemount naar `/etc/alertmanager/alertmanager.yml`.
+- `${ALERTMANAGER_SMTP_AUTH_PASSWORD_FILE:-../../shared/alertmanager/smtp_auth_password}` wijst naar een bestaand bestand op de host.
+- `/etc/alertmanager/secrets/smtp_auth_password` bestaat in de container en bevat het Gmail SMTP/app-wachtwoord.
+- Alertmanager zit op het netwerk `smtp_external`, zodat outbound SMTP naar `smtp.gmail.com:587` mogelijk is.
+- De receiver heet `email-user` en het doeladres klopt.
+- Gmail accepteert authenticatie voor `digitaltwin678@gmail.com`.
+
+## 15. Data persistentie
 
 Monitoring- en loggingdata blijft behouden in Docker volumes:
 
 - `prometheus_data`: Prometheus time-series data
 - `grafana_data`: Grafana metadata, users, settings en plugin state
+- `alertmanager_data`: Alertmanager runtime-state, zoals eventuele silences
 - `loki_data`: Loki chunks, index en retention data
 - `alloy_data`: Alloy runtime-state voor logverzameling
 
@@ -352,7 +533,7 @@ Volumes verwijderen verwijdert ook monitoringhistorie en logs:
 docker compose down -v
 ```
 
-## 14. Security aandachtspunten
+## 16. Security aandachtspunten
 
 - Gebruik een sterk `GRAFANA_PASSWORD` in `.env`.
 - Publiceer Prometheus, Loki en exporters niet direct naar internet.
@@ -361,14 +542,14 @@ docker compose down -v
 - Logs kunnen persoonsgegevens, tokens of foutdetails bevatten. Schrijf geen secrets naar applicatielogs.
 - Houd container images up-to-date met `docker compose pull`.
 
-## 15. Handige beheercommando's
+## 17. Handige beheercommando's
 
 ```bash
 # Herstart alleen observability services
-docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" restart grafana loki alloy prometheus node-exporter cadvisor mosquitto-exporter postgres-exporter blackbox-exporter
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" restart grafana loki alloy prometheus alertmanager node-exporter cadvisor mosquitto-exporter postgres-exporter blackbox-exporter
 
 # Observability logs live volgen
-docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" logs -f grafana loki alloy prometheus node-exporter cadvisor mosquitto-exporter postgres-exporter blackbox-exporter
+docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" logs -f grafana loki alloy prometheus alertmanager node-exporter cadvisor mosquitto-exporter postgres-exporter blackbox-exporter
 
 # Nieuwste images ophalen en stack opnieuw starten
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" pull

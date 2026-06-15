@@ -85,10 +85,14 @@ Alloy verzamelt deze Docker logs en stuurt ze naar Loki. Handige query in Grafan
 Productiecommando's voer je uit vanuit de actieve release:
 
 ```bash
-cd <DEPLOY_PATH>/current
+export DEPLOY_PATH="/opt/digital-twin"
+cd "$DEPLOY_PATH/current"
 set -a
-source ../../state/current-release.env
+. release.env
 set +a
+export APP_ENV_FILE="${APP_ENV_FILE:-../../shared/.env}"
+export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-digitaltwin}"
+export MOSQUITTO_PASSWORD_DIR="${MOSQUITTO_PASSWORD_DIR:-$DEPLOY_PATH/shared/mosquitto/password}"
 ```
 
 Config valideren:

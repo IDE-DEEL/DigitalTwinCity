@@ -30,8 +30,11 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     networks:
-      - proxy
-      - monitoring
+      - proxy_frontend
+      - proxy_api
+      - proxy_mqtt
+      - proxy_grafana
+      - metrics_caddy
     restart: unless-stopped
 
   # Frontend: production image for the web application.
@@ -39,7 +42,7 @@ services:
     image: ${FRONTEND_IMAGE}
     restart: unless-stopped
     environment:
-      - VITE_API_URL=${FRONTEND_API_URL:-}
+      - VITE_API_URL=${FRONTEND_API_URL}
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/health"]
       interval: 10s
@@ -47,7 +50,7 @@ services:
       retries: 5
       start_period: 20s
     networks:
-      - proxy
+      - proxy_frontend
 
   # Backend: production image for the API and application logic.
   backend:
@@ -74,9 +77,11 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - proxy
-      - backend
-      - monitoring
+      - proxy_api
+      - db
+      - mqtt_internal
+      - metrics_backend
+      - blackbox_backend
     healthcheck:
       test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=5).read()\""]
       interval: 10s
@@ -98,8 +103,8 @@ services:
       - ${MOSQUITTO_PASSWORD_DIR:-./mosquitto/password}:/mosquitto/config/password:ro
       - mosquitto_data:/mosquitto/data
     networks:
-      - proxy
-      - backend
+      - proxy_mqtt
+      - mqtt_internal
     restart: unless-stopped
 
   # PostgreSQL TLS setup: A temporary service that generates certificates for PostgreSQL TLS encryption.
@@ -148,18 +153,33 @@ services:
       retries: 5
       start_period: 30s
     networks:
-      - backend
+      - db
     restart: unless-stopped
 
 networks:
-  # Publieke reverse-proxylaag: only services that Caddy needs to reach directly.
-  proxy:
+  # Publieke reverse-proxypaden: each upstream only shares a network with Caddy.
+  proxy_frontend:
+  proxy_api:
+  proxy_mqtt:
+  proxy_grafana:
 
-  # Applicatielaag: backend, database and internal MQTT communication.
-  backend:
+  # Applicatielaag: only services that need direct application traffic.
+  db:
+    internal: true
+  mqtt_internal:
+    internal: true
+
+  # Kleine metrics/check-netwerken, zodat app-containers niet op de brede monitoringlaag staan.
+  metrics_caddy:
+    internal: true
+  metrics_backend:
+    internal: true
+  blackbox_backend:
+    internal: true
 
   # Observabilitylaag: Prometheus/Grafana/Loki/exporters and metrics targets.
   monitoring:
+    internal: true
 
 volumes:
   # Caddy
