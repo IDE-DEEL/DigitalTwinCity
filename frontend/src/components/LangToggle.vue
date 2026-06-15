@@ -37,7 +37,7 @@ const toggleLanguage = () => {
   transform: translateY(-50%);
   pointer-events: none;
   font-weight: bold;
-  font-size: 12px;
+  font-size: var(--text-xs);
   text-transform: uppercase;
   text-shadow: 0 1px 0 rgba(0, 0, 0, .06);
   width: 50%;
