@@ -56,44 +56,6 @@ export const useDashboardParametersStore = defineStore("dashboardParameters", ()
     // ---
     // Car management actions
     // ---
-    function addCar() {
-        if (cars.value.length < MAX_CARS) {
-            const newCar = {
-                id: `${cars.value.length + 1}`,
-                maxPackages: 1,
-                routeName: ROUTE_OPTIONS[0]?.value ?? '',
-                routeVisibility: false,
-            };
-            cars.value.push(newCar);
-        }
-    }
-
-    function removeCar() {
-        if (cars.value.length > MIN_CARS) {
-            cars.value.pop();
-        }
-    }
-
-    function updateCarMaxPackageCount(carId, maxPackages) {
-        const car = cars.value.find((c) => c.id === carId);
-
-        if (!car) {
-            return;
-        }
-
-        car.maxPackages = maxPackages;
-    }
-
-    function updateCarRoute(carId, routeName) {
-        const car = cars.value.find((c) => c.id === carId);
-
-        if (!car) {
-            return;
-        }
-
-        car.routeName = routeName;
-    }
-
     function toggleCarRouteVisibility(carId) {
         const car = cars.value.find((c) => c.id === carId);
 
@@ -245,10 +207,6 @@ export const useDashboardParametersStore = defineStore("dashboardParameters", ()
         simulationSpeedOptions: SIMULATION_SPEED_OPTIONS,
 
         // Car management actions
-        addCar,
-        removeCar,
-        updateCarMaxPackageCount,
-        updateCarRoute,
         toggleCarRouteVisibility,
 
         // Parameter setters
