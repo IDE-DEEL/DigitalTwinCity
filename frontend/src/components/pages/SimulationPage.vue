@@ -73,21 +73,18 @@ const lanes = computed(() => buildLane(lanePositions.value));
 
 /*
     =====================
-    Combining car data from the dashboard store and
+    Watchers
     =====================
 */
-const carsWithLiveData = computed(() => {
-    return dashboardStore.cars.map(car => {
-        const liveCar = simulationStore.agentState.find(
-            agent => agent.id === car.id
-        );
-
-        return {
-            ...car,
-            state_of_charge: liveCar?.state_of_charge ?? "-"
-        };
-    });
-});
+watch(
+    () => autoOpenStatsModal.value,
+    (newValue) => {
+        if (newValue) {
+            isStatsModalOpen.value = true;
+            autoOpenStatsModal.value = false;
+        }
+    }
+);
 
 /*  
     =====================
@@ -122,16 +119,6 @@ const handleSimulationStop = () => {
 const handleStatsOpen = () => {
     isStatsModalOpen.value = true;
 };
-
-watch(
-    () => autoOpenStatsModal.value,
-    (newValue) => {
-        if (newValue) {
-            isStatsModalOpen.value = true;
-            autoOpenStatsModal.value = false;
-        }
-    }
-);
 
 /*  
     =====================
