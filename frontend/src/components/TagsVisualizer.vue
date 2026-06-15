@@ -1,8 +1,10 @@
 <script setup>
 import '../assets/TagsVisualizer.css';
 import { useDigitalTwinStore } from '../stores/digital-twin.js'
+import { useLanguageStore } from '../stores/index.js';
 
 const store = useDigitalTwinStore();
+const langStore = useLanguageStore();
 
 function show_tags() {
     store.show_tags = !store.show_tags
@@ -11,18 +13,18 @@ function show_tags() {
 
 <template>
     <div class="tags">
-        <h2 class="title">RFID-Tags:</h2>
-        <button class="visualize_tag" @click="show_tags()">{{ store.show_tags ? 'Verberg' : 'Toon' }}</button>
+        <h2 class="title">{{ langStore.getLabel('rfidTags.title') }}:</h2>
+        <button class="visualize_tag" @click="show_tags()">{{ store.show_tags ? langStore.getLabel('rfidTags.hideTags') : langStore.getLabel('rfidTags.showTags') }}</button>
     </div>
     <div class="tags-container">
         <table class="vertical-table">
             <tbody>
                 <tr>
-                    <th>ID</th>
+                    <th>{{ langStore.getLabel('rfidTags.id') }}</th>
                     <td>{{ store.chosen_tag.tag_id }}</td>
                 </tr>
                 <tr>
-                    <th>Posities</th>
+                    <th>{{ langStore.getLabel('rfidTags.positions') }}</th>
                     <td>X: {{ store.chosen_tag.tag_pos.x }}, Y: {{ store.chosen_tag.tag_pos.y }}</td>
                 </tr>
             </tbody>

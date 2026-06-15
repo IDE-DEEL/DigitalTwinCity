@@ -3,19 +3,21 @@ name: digitaltwin
 services:
   # Grafana: The visualization tool for dashboards based on data from Prometheus and Loki.
   grafana:
-    image: grafana/grafana:13.1.0-25893932881
+    image: grafana/grafana:13.0.2-slim
     profiles: ["monitoring"]
     restart: unless-stopped
     environment:
       - GF_SERVER_ROOT_URL=${GF_SERVER_ROOT_URL}
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_UNIFIED_ALERTING_ENABLED=true
+      - GF_UNIFIED_ALERTING_EXECUTE_ALERTS=true
     volumes:
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
       - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
       - grafana_data:/var/lib/grafana
     networks:
-      - proxy
+      - proxy_grafana
       - monitoring
 
   # Loki: The database for logs.
@@ -53,12 +55,37 @@ services:
     restart: unless-stopped
     volumes:
       - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/rules:/etc/prometheus/rules:ro
       - prometheus_data:/prometheus
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"
+      - '--storage.tsdb.retention.time=14d'
+      - "--storage.tsdb.retention.size=300MB"
     networks:
+      - metrics_caddy
+      - metrics_backend
       - monitoring
+
+  # Alertmanager: Receives Prometheus alerts and keeps notification routing.
+  alertmanager:
+    image: prom/alertmanager:v0.32.1
+    profiles: ["monitoring"]
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - ${ALERTMANAGER_SMTP_AUTH_PASSWORD_FILE:-../../shared/alertmanager/smtp_auth_password}:/etc/alertmanager/secrets/smtp_auth_password:ro
+      - alertmanager_data:/alertmanager
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+      - "--storage.path=/alertmanager"
+    expose:
+      - "9093"
+    networks:
+      - metrics_caddy
+      - metrics_backend
+      - monitoring
+      - smtp_external
 
   # Node exporter: Server/VM statistics.
   node-exporter:
@@ -108,7 +135,7 @@ services:
     depends_on:
       - mqtt
     networks:
-      - backend
+      - mqtt_internal
       - monitoring
     restart: unless-stopped
 
@@ -122,7 +149,7 @@ services:
     depends_on:
       - postgres
     networks:
-      - backend
+      - db
       - monitoring
 
   # Blackbox exporter: External accessibility.
@@ -133,18 +160,35 @@ services:
     expose:
       - "9115"
     networks:
-      - backend
+      - proxy_frontend
+      - blackbox_backend
+      - blackbox_external
+      - mqtt_internal
       - monitoring
 
 networks:
-  proxy:
-  backend:
+  blackbox_external:
+  proxy_frontend:
+  proxy_grafana:
+  db:
+    internal: true
+  mqtt_internal:
+    internal: true
+  metrics_caddy:
+    internal: true
+  metrics_backend:
+    internal: true
+  blackbox_backend:
+    internal: true
   monitoring:
+    internal: true
+  smtp_external:
 
 volumes:
   # Monitoring
   prometheus_data:
   grafana_data:
+  alertmanager_data:
 
   # Logging
   loki_data:

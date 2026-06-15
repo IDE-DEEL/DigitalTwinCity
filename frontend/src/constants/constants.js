@@ -10,11 +10,15 @@ export const DEPOT_EXIT = { x: 6, y: 4 };
 export const MAX_CARS = 5;
 export const MIN_CARS = 1;
 
+// car speed
+export const MIN_SPEED = "1";
+export const MAX_SPEED = "100";
+
 // simulation speeds
 export const SIMULATION_SPEED_OPTIONS = [
-    { value: 1, label: '1x' },
-    { value: 2, label: '2x' },
-    { value: 3, label: 'Super snel' },
+    { value: 1, label: '1' },
+    { value: 2, label: '2' },
+    { value: 3, label: '3' },
 ];
 
 // custom colors for cars and routes

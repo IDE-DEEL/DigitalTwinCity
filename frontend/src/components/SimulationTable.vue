@@ -1,6 +1,9 @@
 <script setup>
 import { useCarColors } from '../composables/useCarColors.js';
 import "../assets/Table.css";
+import { useLanguageStore } from '../stores/index.js';
+
+const langStore = useLanguageStore();
 
 const emit = defineEmits(['toggle-route-visibility']);
 
@@ -31,14 +34,21 @@ const props = defineProps({
         type: Array,
         default: () => []
     },
+    liveAgents: {
+        type: Array,
+        default: () => []
+    },
     disabled: {
         type: Boolean,
         default: false
     }
 });
 
-const handleMaxPackagesInput = (carId, event) => {
-    let value = Number(event.target.value);
+const handleMaxPackagesInput = (carId) => {
+    const car = props.modelValue.find(c => c.id === carId);
+    if (!car) return;
+    
+    let value = Number(car.maxPackages);
     
     if (isNaN(value)) {
         value = props.minPackages;
@@ -46,7 +56,15 @@ const handleMaxPackagesInput = (carId, event) => {
 
     // Clamp value between min_packages and max_packages
     value = Math.max(props.minPackages, Math.min(props.maxPackages, value));
-    event.target.value = value;
+    car.maxPackages = value;
+};
+
+const getStateOfCharge = (carId) => {
+    const liveAgent = props.liveAgents.find(
+        agent => String(agent.id) === String(carId)
+    );
+
+    return liveAgent?.state_of_charge ?? "-";
 };
 </script>
 
@@ -73,6 +91,11 @@ const handleMaxPackagesInput = (carId, event) => {
                 </div>
             </td>
             <td>
+                <div class="car-energy">
+                    <div>{{ getStateOfCharge(car.id) }} %</div>
+                </div>
+            </td>
+            <td>
                 <input 
                     class="package-input" 
                     type="number" 
@@ -80,8 +103,8 @@ const handleMaxPackagesInput = (carId, event) => {
                     :max="props.maxPackages" 
                     :disabled="props.disabled"
                     v-model="car.maxPackages"
-                    @blur="handleMaxPackagesInput(car.id, $event)"
-                    @keydown.enter="handleMaxPackagesInput(car.id, $event)"
+                    @blur="handleMaxPackagesInput(car.id)"
+                    @keydown.enter="handleMaxPackagesInput(car.id)"
                 >
             </td>
             <td>
@@ -90,15 +113,16 @@ const handleMaxPackagesInput = (carId, event) => {
                 :disabled="props.disabled"
                 class="route-select"
               >
-                <option v-for="routeOption in props.routeOptions" :key="routeOption.key" :value="routeOption.value">{{ routeOption.label }}</option>
+                <option v-for="routeOption in props.routeOptions" :key="routeOption.key" :value="routeOption.value">{{ langStore.getLabel(`simRoutes.${routeOption.label}`) }}</option>
               </select>
             </td>
             <td>
                 <button 
                     class="route-visibility-button"
+                    :disabled="car.routeName === 'inactive' && car.routeVisibility === false"
                     @click="emit('toggle-route-visibility', car.id)"
                 >
-                    {{ car.routeVisibility ? 'Verberg' : 'Toon' }}
+                    {{ car.routeVisibility ? langStore.getLabel('carTable.hideRoute') : langStore.getLabel('carTable.showRoute') }}
                 </button></td>
           </tr>
         </tbody>

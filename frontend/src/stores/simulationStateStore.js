@@ -9,6 +9,7 @@ export const useSimulationStateStore = defineStore("simulationState", () => {
     // ---
     const agentState = ref([]);
     const houseState = ref([]);
+    const currentStep = ref(0);
 
     // ---
     // Watchers to reset simulation state when relevant dashboard parameters change after a previous simulation run
@@ -35,6 +36,7 @@ export const useSimulationStateStore = defineStore("simulationState", () => {
         
         agentState.value = convertedAgents;
         houseState.value = result.houses || [];
+        currentStep.value = result.step || 0;
     }
 
     function resetSimulationState() {

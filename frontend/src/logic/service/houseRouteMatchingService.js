@@ -17,6 +17,10 @@ export function findRoutesForHouse(house) {
     const rotatedSupportedLanes = getRotatedSupportedLanes(house);
 
     for (const [routeName, route] of Object.entries(ROUTES_TILES)) {
+        if (routeName === "inactive") {
+            continue; // Skip inactiv routes (e.g., 'inactive' route)
+        }
+
         const laneSequence = buildLaneSequenceFromTilePath(route.tiles);
 
         const hasMatchingLane = laneSequence.some(lane => {
@@ -50,8 +54,8 @@ export function findRoutesForHouse(house) {
  */
 export function findHousesForRoute(routeName, allHouses) {
     const route = ROUTES_TILES[routeName];
-    if (!route) {
-        return [];
+    if (!route || routeName === "inactive") {
+        return []; // No houses for unknown or inactive routes (e.g., 'inactive' route)
     }
 
     const laneSequence = buildLaneSequenceFromTilePath(route.tiles);

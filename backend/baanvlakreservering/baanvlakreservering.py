@@ -39,12 +39,12 @@ car_stopped = []
 
 # reading the tag file and making it a variable.
 try:
-    with open('Tag_adjacency_list.json', 'r') as file:
-        Json_file = json.load(file)
-        file.close()
+    file_path = Path(__file__).parent / "Tag_adjacency_list.json"
+    with open(file_path, "r", encoding="utf-8") as f:
+        Json_file = json.load(f)
 
 except FileNotFoundError:
-    print("Error: The file 'data.json' was not found.")
+    print("Error: The file 'Tag_adjacency_list.json' was not found.")
 
 except json.JSONDecodeError:
     print("Error: Failed to decode JSON from the file.")

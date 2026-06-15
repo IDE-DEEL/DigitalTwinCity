@@ -1,7 +1,7 @@
 .devtool-container {
   position: absolute;
   top: 2.5%;
-  left: 50%;
+  left: 21%;
   transform: translateX(-50%);
   z-index: 40;
   display: flex;
@@ -12,9 +12,14 @@
 #devtool-button {
     font-size: var(--text-sm);
     padding: 5px;
-    background: var(--color-button-disabled);
+    background: var(--color-primary-blue);
+    border: black 2px solid;
+}
+
+#devtool-button:hover {
+    background: var(--color-primary-blue-hover);
 }
 
 #devtool-button.active {
-    background: var(--color-primary-blue);
+    background: var(--color-button-active);
 }

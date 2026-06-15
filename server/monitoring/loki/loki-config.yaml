@@ -34,7 +34,7 @@ schema_config:
         period: 24h
 
 limits_config:
-  retention_period: 30d
+  retention_period: 14d
   ingestion_rate_mb: 10
   ingestion_burst_size_mb: 20
   max_concurrent_tail_requests: 20

@@ -10,8 +10,12 @@ import { DEPOT_ENTRANCE, DEPOT_EXIT } from "../../constants/constants";
  * - for a connection to be valid it must be a direct neighbor (N,E,S,W) of the previous tile and have a lane connecting them
  */
 export const ROUTES_TILES = {
-    kort_1: {
-        label: 'Kort 1',
+    inactive: {
+        label: 'inactive',
+        tiles: []
+    },
+    short_1: {
+        label: 'short_1',
         tiles: [
             DEPOT_EXIT,
             { x: 6, y: 3 },
@@ -30,8 +34,8 @@ export const ROUTES_TILES = {
             DEPOT_ENTRANCE
         ],
     },
-    kort_2: {
-        label: 'Kort 2',
+    short_2: {
+        label: 'short_2',
         tiles: [
             DEPOT_EXIT,
             { x: 6, y: 3 },
@@ -48,8 +52,8 @@ export const ROUTES_TILES = {
             DEPOT_ENTRANCE
         ],
     },
-    kort_3: {
-        label: 'Kort 3',
+    short_3: {
+        label: 'short_3',
         tiles: [
             DEPOT_EXIT,
             { x: 6, y: 3 },
@@ -66,8 +70,8 @@ export const ROUTES_TILES = {
             DEPOT_ENTRANCE
         ],
     },
-    kort_4: {
-        label: 'Kort 4',
+    short_4: {
+        label: 'short_4',
         tiles: [
             DEPOT_EXIT,
             { x: 5, y: 4 },
@@ -84,8 +88,8 @@ export const ROUTES_TILES = {
             DEPOT_ENTRANCE
         ],
     },
-    kort_5: {
-        label: 'Kort 5',
+    short_5: {
+        label: 'short_5',
         tiles: [
             DEPOT_EXIT,
             { x: 5, y: 4 },
@@ -100,8 +104,8 @@ export const ROUTES_TILES = {
             DEPOT_ENTRANCE
         ],
     },
-    kort_6: {
-        label: 'Kort 6',
+    short_6: {
+        label: 'short_6',
         tiles: [
             DEPOT_EXIT,
             { x: 5, y: 4 },
@@ -119,7 +123,7 @@ export const ROUTES_TILES = {
         ],
     },
     medium_1: {
-        label: 'Medium 1',
+        label: 'medium_1',
         tiles: [
             DEPOT_EXIT,
             { x: 5, y: 4 },
@@ -145,7 +149,7 @@ export const ROUTES_TILES = {
         ],
     },
     medium_2: {
-        label: 'Medium 2',
+        label: 'medium_2',
         tiles: [
             DEPOT_EXIT,
             { x: 5, y: 4 },
@@ -168,8 +172,8 @@ export const ROUTES_TILES = {
             DEPOT_ENTRANCE
         ],
     },
-    lang_1: {
-        label: 'Lang 1',
+    long_1: {
+        label: 'long_1',
         tiles: [
             DEPOT_EXIT,
             { x: 5, y: 4 },

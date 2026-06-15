@@ -159,13 +159,17 @@ Gevolg:
 
 ## 7. Starten en status controleren
 
-Productiecommando's voer je uit vanuit `<DEPLOY_PATH>/current` nadat je de release-state hebt geladen:
+Productiecommando's voer je uit vanuit de actieve release nadat je `release.env` hebt geladen:
 
 ```bash
-cd <DEPLOY_PATH>/current
+export DEPLOY_PATH="/opt/digital-twin"
+cd "$DEPLOY_PATH/current"
 set -a
-source ../../state/current-release.env
+. release.env
 set +a
+export APP_ENV_FILE="${APP_ENV_FILE:-../../shared/.env}"
+export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-digitaltwin}"
+export MOSQUITTO_PASSWORD_DIR="${MOSQUITTO_PASSWORD_DIR:-$DEPLOY_PATH/shared/mosquitto/password}"
 ```
 
 Start PostgreSQL plus TLS setup:
@@ -279,10 +283,14 @@ Let op: scripts in `docker-entrypoint-initdb.d` draaien alleen automatisch bij e
 Voor een bestaande deployment:
 
 ```bash
-cd <DEPLOY_PATH>/current
+export DEPLOY_PATH="/opt/digital-twin"
+cd "$DEPLOY_PATH/current"
 set -a
-source ../../state/current-release.env
+. release.env
 set +a
+export APP_ENV_FILE="${APP_ENV_FILE:-../../shared/.env}"
+export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-digitaltwin}"
+export MOSQUITTO_PASSWORD_DIR="${MOSQUITTO_PASSWORD_DIR:-$DEPLOY_PATH/shared/mosquitto/password}"
 docker compose --env-file "$APP_ENV_FILE" -f compose.yml -f compose.monitoring.yml --project-name "$COMPOSE_PROJECT_NAME" exec postgres bash /docker-entrypoint-initdb.d/01-create-groups.sh
 ```
 
