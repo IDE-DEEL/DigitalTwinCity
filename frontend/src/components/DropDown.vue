@@ -1,25 +1,35 @@
 <script setup>
-import { computed } from 'vue'
-import { useLanguageStore } from '../stores/index.js';
+import { computed } from 'vue';
+import { useLanguageStore, usePageStore } from '../stores/index.js';
 
 const langStore = useLanguageStore();
+const pageStore = usePageStore();
 
 const model = defineModel({
-  type: String,
-  default: "",
-})
+    type: String,
+    default: "",
+});
 
-const props = defineProps({
+const props =defineProps({
     name: String,
     type: String,
     list: Array,
     disabled: { type: Boolean, default: false },
-})
+});
 
-// Determine if list contains objects with {value, label} or just strings
-const isObjectList = computed(() => 
-  props.list && props.list.length > 0 && typeof props.list[0] === 'object'
-)
+const options = computed(() => {
+    if (pageStore.isSimulation) {
+        return props.list.map(item => ({
+            value: item.value,
+            label: langStore.getLabel(`simScenarios.${item.label}`)
+        }));
+    }
+
+    return props.list.map(value => ({
+        value,
+        label: value
+    }));
+});
 </script>
 
 <template>
@@ -30,12 +40,13 @@ const isObjectList = computed(() =>
         :disabled="disabled"
         :class="{'opacity-50 cursor-not-allowed': disabled }"
         >
-        <!-- For object list with {value, label} -->
-        <option v-if="isObjectList" v-for="item in list" :key="item.value" :value="item.value">
-          {{ langStore.getLabel(`simScenarios.${item.label}`) }}
+        <option
+            v-for="option in options"
+            :key="option.value"
+            :value="option.value"
+            >
+            {{ option.label }}
         </option>
-        <!-- For simple string list -->
-        <option v-else v-for="value in list">{{ value }}</option>
       </select>
   </div> 
 </template>

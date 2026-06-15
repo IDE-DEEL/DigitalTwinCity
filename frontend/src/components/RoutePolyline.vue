@@ -6,9 +6,12 @@ const props = defineProps({
     stroke: String
 });
 
-const pointsString = computed(() =>
-    props.waypoints.map(point => `${point.x},${point.y}`).join(' ')
-);
+const pointsString = computed(() => {
+    if (!props.waypoints || !Array.isArray(props.waypoints)) {
+        return ''; // Return an empty string if waypoints don't exist (e.g., 'inactive' route)
+    }
+    return props.waypoints.map(point => `${point.x},${point.y}`).join(' ');
+});
 </script>
 
 <template>

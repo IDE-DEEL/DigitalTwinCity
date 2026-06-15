@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { useMapStore, useDashboardParametersStore, useSimulationStateStore, useLanguageStore } from '../../stores';
-import { SIMULATION_SPEED_OPTIONS, MAP_COLUMNS, MAP_ROWS } from '../../constants/constants.js';
+import { SIMULATION_SPEED_OPTIONS, MAP_COLUMNS, MAP_ROWS, MIN_SPEED, MAX_SPEED } from '../../constants/constants.js';
 import { useDigitalSimulation } from '../../composables/useDigitalSimulation.js';
 import { useCarColors } from '../../composables/useCarColors.js';
 import { buildLane } from '../../logic/service/laneBuilder.js';
@@ -57,9 +57,10 @@ const MIN_PACKAGES = 1;
 
 /*
     =====================
-    Lane data preparation for overlays
+    Computed properties
     =====================
 */
+// Lane data preparation for overlays
 const lanePositions = computed(() => {
     return mapStore.mapData.map(item => ({
         id: `${item.x}-${item.y}`,
@@ -70,6 +71,26 @@ const lanePositions = computed(() => {
 });
 
 const lanes = computed(() => buildLane(lanePositions.value));
+
+// Check if all cars have the inactive route
+const allCarsHaveInactiveRoute = computed(() => {
+    return dashboardStore.cars.every(car => car.routeName === 'inactive');
+});
+
+/*
+    =====================
+    Watchers
+    =====================
+*/
+watch(
+    () => autoOpenStatsModal.value,
+    (newValue) => {
+        if (newValue) {
+            isStatsModalOpen.value = true;
+            autoOpenStatsModal.value = false;
+        }
+    }
+);
 
 /*  
     =====================
@@ -104,16 +125,6 @@ const handleSimulationStop = () => {
 const handleStatsOpen = () => {
     isStatsModalOpen.value = true;
 };
-
-watch(
-    () => autoOpenStatsModal.value,
-    (newValue) => {
-        if (newValue) {
-            isStatsModalOpen.value = true;
-            autoOpenStatsModal.value = false;
-        }
-    }
-);
 
 /*  
     =====================
@@ -190,7 +201,6 @@ const toggleRouteBuilder = () => {
                     :title="`Car ${car.id} - ${car.packages_in_cargo.length} packages`"
                     :factorX="MAP_COLUMNS"
                     :factorY="MAP_ROWS"
-                    :isDigitalTwin="false"
                 />
             </template>
 
@@ -244,6 +254,8 @@ const toggleRouteBuilder = () => {
                     class="slider-area" 
                     :name="langStore.getLabel('parameters.carSpeed')"
                     :disabled="isSimulating"
+                    :min="MIN_SPEED"
+                    :max="MAX_SPEED"
                     type="speed" 
                     v-model="dashboardStore.carTargetSpeed"
                 ></Slider>
@@ -265,9 +277,11 @@ const toggleRouteBuilder = () => {
                     :min-packages="MIN_PACKAGES" 
                     :route-options="dashboardStore.routeOptions"
                     :name="langStore.getLabel('carTable.header')"
+                    :live-agents="simulationStore.agentState"
                     :disabled="isSimulating"
                     :headers="[
                         langStore.getLabel('carTable.carId'),
+                        langStore.getLabel('carTable.energy'),
                         langStore.getLabel('carTable.packages'),
                         langStore.getLabel('carTable.route'),
                         langStore.getLabel('carTable.routeVisibility')
@@ -292,7 +306,7 @@ const toggleRouteBuilder = () => {
                 </div>
 
                 <div class="button-area">
-                    <button @click="handleSimulationStart" :disabled="isSimulating"> {{ langStore.getLabel('controls.startButton') }} </button>
+                    <button @click="handleSimulationStart" :disabled="isSimulating || allCarsHaveInactiveRoute"> {{ langStore.getLabel('controls.startButton') }} </button>
                     <button @click="handleSimulationStop" :disabled="!isSimulating"> {{ langStore.getLabel('controls.stopButton') }} </button>
                 </div>
             </template>

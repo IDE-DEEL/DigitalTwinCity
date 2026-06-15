@@ -16,31 +16,31 @@ export const useDashboardParametersStore = defineStore("dashboardParameters", ()
     // ---
     const cars = ref([
         {
-            id: '1',
+            id: 1,
+            maxPackages: 1,
+            routeName: ROUTE_OPTIONS[1]?.value ?? '',
+            routeVisibility: false,
+        },
+        {
+            id: 2,
             maxPackages: 1,
             routeName: ROUTE_OPTIONS[0]?.value ?? '',
             routeVisibility: false,
         },
         {
-            id: '2',
+            id: 3,
             maxPackages: 1,
             routeName: ROUTE_OPTIONS[0]?.value ?? '',
             routeVisibility: false,
         },
         {
-            id: '3',
+            id: 4,
             maxPackages: 1,
             routeName: ROUTE_OPTIONS[0]?.value ?? '',
             routeVisibility: false,
         },
         {
-            id: '4',
-            maxPackages: 1,
-            routeName: ROUTE_OPTIONS[0]?.value ?? '',
-            routeVisibility: false,
-        },
-        {
-            id: '5',
+            id: 5,
             maxPackages: 1,
             routeName: ROUTE_OPTIONS[0]?.value ?? '',
             routeVisibility: false,
@@ -56,44 +56,6 @@ export const useDashboardParametersStore = defineStore("dashboardParameters", ()
     // ---
     // Car management actions
     // ---
-    function addCar() {
-        if (cars.value.length < MAX_CARS) {
-            const newCar = {
-                id: `${cars.value.length + 1}`,
-                maxPackages: 1,
-                routeName: ROUTE_OPTIONS[0]?.value ?? '',
-                routeVisibility: false,
-            };
-            cars.value.push(newCar);
-        }
-    }
-
-    function removeCar() {
-        if (cars.value.length > MIN_CARS) {
-            cars.value.pop();
-        }
-    }
-
-    function updateCarMaxPackageCount(carId, maxPackages) {
-        const car = cars.value.find((c) => c.id === carId);
-
-        if (!car) {
-            return;
-        }
-
-        car.maxPackages = maxPackages;
-    }
-
-    function updateCarRoute(carId, routeName) {
-        const car = cars.value.find((c) => c.id === carId);
-
-        if (!car) {
-            return;
-        }
-
-        car.routeName = routeName;
-    }
-
     function toggleCarRouteVisibility(carId) {
         const car = cars.value.find((c) => c.id === carId);
 
@@ -153,10 +115,12 @@ export const useDashboardParametersStore = defineStore("dashboardParameters", ()
     });
 
     const allCarsAndRoutesWithConvertedCoordinates = computed(() => {
-        return allCarsWithRoutes.value.map((car) => ({
-            ...car,
-            routeWaypoints: convertWaypointsArrayFromSvgToMath(car.routeWaypoints),
-        }));
+        return allCarsWithRoutes.value
+            .filter((car) => car.routeWaypoints) // Filter cars without route waypoints (e.g., 'inactive' route)
+            .map((car) => ({
+                ...car,
+                routeWaypoints: convertWaypointsArrayFromSvgToMath(car.routeWaypoints),
+            }));
     });
 
     const housesLinkedToRoutes = computed(() => {
@@ -243,10 +207,6 @@ export const useDashboardParametersStore = defineStore("dashboardParameters", ()
         simulationSpeedOptions: SIMULATION_SPEED_OPTIONS,
 
         // Car management actions
-        addCar,
-        removeCar,
-        updateCarMaxPackageCount,
-        updateCarRoute,
         toggleCarRouteVisibility,
 
         // Parameter setters

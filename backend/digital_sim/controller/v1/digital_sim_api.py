@@ -1,9 +1,11 @@
 import asyncio
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from pydantic import ValidationError
 
 from backend.digital_sim.service.simulation_service import SimulationService
 from backend.digital_sim.constants import UPDATES_PER_SECOND
 from backend.digital_sim.utils.sim_speed_util import get_steps_multiplier
+from backend.digital_sim.controller.v1.simulation_validator import SimulationStartPayload
 
 
 router = APIRouter(prefix="/digital-sim")
@@ -29,23 +31,34 @@ async def websocket_simulation_endpoint(websocket: WebSocket):
 
             match command:
                 case "start":
-                    parameters = data.get("parameters", {})
-                    result = simulation_service.start_simulation(parameters)
-                
-                    # Send confirmation that simulation has started
-                    await websocket.send_json({
-                        "command": "simulation_started",
-                        "result": result
-                    })
+                    try:
+                        # Validate incoming parameters using Pydantic models
+                        parameters = SimulationStartPayload(**data.get("parameters", {}))
+                        params_dict = parameters.model_dump()
+                        result = simulation_service.start_simulation(params_dict)
                     
-                    # Get simulation speed and convert to steps multiplier
-                    simulation_speed = parameters.get("simulationSpeed", 1)
-                    simulation_config["steps_multiplier"] = get_steps_multiplier(simulation_speed)
-                    
-                    # Create simulation loop to advance simulation steps
-                    simulation_task = asyncio.create_task(
-                        _run_simulation_loop(websocket, simulation_service, simulation_config)
-                    )
+                        # Send confirmation that simulation has started
+                        await websocket.send_json({
+                            "command": "simulation_started",
+                            "result": result
+                        })
+                        
+                        # Get simulation speed and convert to steps multiplier
+                        simulation_speed = parameters.simulationSpeed
+                        simulation_config["steps_multiplier"] = get_steps_multiplier(simulation_speed)
+                        
+                        # Create simulation loop to advance simulation steps
+                        simulation_task = asyncio.create_task(
+                            _run_simulation_loop(websocket, simulation_service, simulation_config)
+                        )
+                        
+                    except ValidationError as e:
+                        print(f"[digital_sim_api] Validation error: {e}")
+                        await websocket.send_json({
+                            "command": "error",
+                            "type": "validation_error",
+                            "errors": e.errors()
+                        })
                 
                 case "stop":
                     result = simulation_service.stop_simulation()
@@ -59,6 +72,7 @@ async def websocket_simulation_endpoint(websocket: WebSocket):
                     })
                 
                 case "set_speed":
+                    # TODO: validate simulationSpeed when this command is received (currently only validated on start)
                     simulation_speed = data.get("simulationSpeed", 1)
                     simulation_config["steps_multiplier"] = get_steps_multiplier(simulation_speed)
 
@@ -109,13 +123,17 @@ async def websocket_simulation_endpoint(websocket: WebSocket):
         print(f"[digital_sim_api] Error: {e}")
         if simulation_task and not simulation_task.done():
             simulation_task.cancel()
+            try:
+                await simulation_task
+            except asyncio.CancelledError:
+                pass
+
         await websocket.send_json({
             "error": str(e)
         })
     finally:
         if simulation_task and not simulation_task.done():
             simulation_task.cancel()
-
             try:
                 await simulation_task
             except asyncio.CancelledError:

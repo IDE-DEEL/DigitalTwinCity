@@ -2,13 +2,13 @@
 # Simulation start payload keys
 # General simulation properties
 CAR_TARGET_SPEED_KEY = "carTargetSpeed"
-SEED_KEY = "seed"
 SIMULATION_SPEED_KEY = "simulationSpeed"
 HOUSES_ON_ROUTES_KEY = "housesOnRoutes"
 
 # Car properties
 CARS_KEY = "cars"
-CAR_ID_KEY = "id"
+CAR_MESA_ID_KEY = "mesaId"
+CAR_MAIN_ID_KEY = "id"
 CAR_MAX_PACKAGES_KEY = "maxPackages"
 CAR_ROUTE_NAME_KEY = "routeName"
 CAR_ROUTE_WAYPOINTS_KEY = "routeWaypoints"

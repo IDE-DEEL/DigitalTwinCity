@@ -34,14 +34,21 @@ const props = defineProps({
         type: Array,
         default: () => []
     },
+    liveAgents: {
+        type: Array,
+        default: () => []
+    },
     disabled: {
         type: Boolean,
         default: false
     }
 });
 
-const handleMaxPackagesInput = (carId, event) => {
-    let value = Number(event.target.value);
+const handleMaxPackagesInput = (carId) => {
+    const car = props.modelValue.find(c => c.id === carId);
+    if (!car) return;
+    
+    let value = Number(car.maxPackages);
     
     if (isNaN(value)) {
         value = props.minPackages;
@@ -49,7 +56,15 @@ const handleMaxPackagesInput = (carId, event) => {
 
     // Clamp value between min_packages and max_packages
     value = Math.max(props.minPackages, Math.min(props.maxPackages, value));
-    event.target.value = value;
+    car.maxPackages = value;
+};
+
+const getStateOfCharge = (carId) => {
+    const liveAgent = props.liveAgents.find(
+        agent => String(agent.id) === String(carId)
+    );
+
+    return liveAgent?.state_of_charge ?? "-";
 };
 </script>
 
@@ -76,6 +91,11 @@ const handleMaxPackagesInput = (carId, event) => {
                 </div>
             </td>
             <td>
+                <div class="car-energy">
+                    <div>{{ getStateOfCharge(car.id) }} %</div>
+                </div>
+            </td>
+            <td>
                 <input 
                     class="package-input" 
                     type="number" 
@@ -83,8 +103,8 @@ const handleMaxPackagesInput = (carId, event) => {
                     :max="props.maxPackages" 
                     :disabled="props.disabled"
                     v-model="car.maxPackages"
-                    @blur="handleMaxPackagesInput(car.id, $event)"
-                    @keydown.enter="handleMaxPackagesInput(car.id, $event)"
+                    @blur="handleMaxPackagesInput(car.id)"
+                    @keydown.enter="handleMaxPackagesInput(car.id)"
                 >
             </td>
             <td>
@@ -99,9 +119,10 @@ const handleMaxPackagesInput = (carId, event) => {
             <td>
                 <button 
                     class="route-visibility-button"
+                    :disabled="car.routeName === 'inactive' && car.routeVisibility === false"
                     @click="emit('toggle-route-visibility', car.id)"
                 >
-                    {{ car.routeVisibility ? langStore.getLabel('carTable.showRoute') : langStore.getLabel('carTable.hideRoute') }}
+                    {{ car.routeVisibility ? langStore.getLabel('carTable.hideRoute') : langStore.getLabel('carTable.showRoute') }}
                 </button></td>
           </tr>
         </tbody>

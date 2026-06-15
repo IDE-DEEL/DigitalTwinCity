@@ -89,6 +89,7 @@ export const LABELS = {
             busy: "Druk",
         },
         simRoutes: {
+            inactive: "Inactief",
             short_1: "Kort 1",
             short_2: "Kort 2",
             short_3: "Kort 3",
@@ -242,6 +243,7 @@ export const LABELS = {
             busy: "Busy",
         },
         simRoutes: {
+            inactive: "Inactive",
             short_1: "Short 1",
             short_2: "Short 2",
             short_3: "Short 3",

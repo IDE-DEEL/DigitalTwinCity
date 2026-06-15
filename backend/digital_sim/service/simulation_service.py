@@ -2,7 +2,7 @@ from backend.digital_sim.domain.car_model import CarModel
 from backend.digital_sim.constants import (
     CAR_ROUTE_WAYPOINTS_KEY, CARS_KEY, CAR_TARGET_SPEED_KEY, SCENARIO_KEY, 
     SCENARIO_NAME_KEY, SCENARIO_HOUSES_LIST_KEY, HOUSE_ROAD_COORDS_KEY, 
-    HOUSES_ON_ROUTES_KEY, NUMERIC_AGENT_REPORTER_KEYS,
+    HOUSES_ON_ROUTES_KEY, NUMERIC_AGENT_REPORTER_KEYS, CAR_MAIN_ID_KEY,
     AGENT_DISTANCE_TRAVELLED_KEY, AGENT_TIME_DRIVING_SECONDS_KEY, AGENT_PACKAGES_DELIVERED_KEY,
 )
 from backend.digital_sim.utils.coordinate_util import convert_waypoint_dicts_to_tuples
@@ -98,7 +98,7 @@ class SimulationService:
                 "step_count": int,
                 "agents": [
                     {
-                        "id": agent_id,
+                        "id": agent.id,
                         "distance_travelled": float,
                         "packages_delivered": int,
                         "time_driving_seconds": float,
@@ -132,7 +132,7 @@ class SimulationService:
         
         for agent in self.model.agents:
             agent_stat = {
-                "id": agent.unique_id,
+                CAR_MAIN_ID_KEY: getattr(agent, CAR_MAIN_ID_KEY),
                 AGENT_DISTANCE_TRAVELLED_KEY: round(getattr(agent, AGENT_DISTANCE_TRAVELLED_KEY), 2),
                 AGENT_TIME_DRIVING_SECONDS_KEY: round(getattr(agent, AGENT_TIME_DRIVING_SECONDS_KEY), 2),
                 AGENT_PACKAGES_DELIVERED_KEY: getattr(agent, AGENT_PACKAGES_DELIVERED_KEY),
