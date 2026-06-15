@@ -44,8 +44,11 @@ const props = defineProps({
     }
 });
 
-const handleMaxPackagesInput = (carId, event) => {
-    let value = Number(event.target.value);
+const handleMaxPackagesInput = (carId) => {
+    const car = props.modelValue.find(c => c.id === carId);
+    if (!car) return;
+    
+    let value = Number(car.maxPackages);
     
     if (isNaN(value)) {
         value = props.minPackages;
@@ -53,7 +56,7 @@ const handleMaxPackagesInput = (carId, event) => {
 
     // Clamp value between min_packages and max_packages
     value = Math.max(props.minPackages, Math.min(props.maxPackages, value));
-    event.target.value = value;
+    car.maxPackages = value;
 };
 
 const getStateOfCharge = (carId) => {
@@ -100,8 +103,8 @@ const getStateOfCharge = (carId) => {
                     :max="props.maxPackages" 
                     :disabled="props.disabled"
                     v-model="car.maxPackages"
-                    @blur="handleMaxPackagesInput(car.id, $event)"
-                    @keydown.enter="handleMaxPackagesInput(car.id, $event)"
+                    @blur="handleMaxPackagesInput(car.id)"
+                    @keydown.enter="handleMaxPackagesInput(car.id)"
                 >
             </td>
             <td>
