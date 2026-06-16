@@ -323,6 +323,25 @@ const generatePath = ((route_name) => {
   return path;
 })
 
+const getCarColor = (carId) => {
+  const carData = store.table_data.find(c => c.auto_id === carId);
+  return carData?.color || '#808080';
+};
+
+const darkenColor = (hex, percent = 20) => {
+  const num = parseInt(hex.replace('#', ''), 16);
+
+  let r = (num >> 16) & 255;
+  let g = (num >> 8) & 255;
+  let b = num & 255;
+
+  r = Math.max(0, Math.floor(r * (100 - percent) / 100));
+  g = Math.max(0, Math.floor(g * (100 - percent) / 100));
+  b = Math.max(0, Math.floor(b * (100 - percent) / 100));
+
+  return `rgb(${r}, ${g}, ${b})`;
+};
+
 const selectTag = ((tag) => {
   store.chosen_tag = tag
 })
@@ -379,13 +398,16 @@ const selectTag = ((tag) => {
           class="car-sprite"
           :style="getStyle(car)"
         >
-          <div class="car-heading" :style="getRotation(car)">
-            <div class="car-body"> 
-              <div class="car-window"></div> 
-              <div class="car-hood"></div> 
-              <div class="car-headlights"> 
-                <span></span> 
-                <span></span> 
+          <div
+            class="car-heading"
+            :style=getRotation(car)
+          >
+            <div class="car-body" :style="{ backgroundColor: getCarColor(car.id) }">
+              <div class="car-window"></div>
+              <div class="car-hood" :style="{ backgroundColor: darkenColor(getCarColor(car.id), 30) }"></div>
+              <div class="car-headlights">
+                <span></span>
+                <span></span>
               </div>
             </div>
           </div>

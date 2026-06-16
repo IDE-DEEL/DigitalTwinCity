@@ -30,7 +30,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
     table_data: [
         {"status": true, "color": "#0000FF", "auto_id": "auto_A", "energie": 100, "pakketje": 2, "route": "Route 1", "visueel": true},
         {"status": true, "color": "#FF0000", "auto_id": "auto_B", "energie": 100, "pakketje": 4, "route": "Route 1", "visueel": false},
-        {"status": false, "color": "#008000", "auto_id": "auto_C", "energie": 100, "pakketje": 1, "route": "Route 1", "visueel": true},
+        {"status": false, "color": "#008000", "auto_id": "auto_C", "energie": 100, "pakketje": 1, "route": "Route 1", "visueel": false},
         {"status": false, "color": "#FFFF00", "auto_id": "auto_D", "energie": 100, "pakketje": 2, "route": "Route 1", "visueel": false},
         {"status": false, "color": "#800080", "auto_id": "auto_E", "energie": 100, "pakketje": 2, "route": "Route 1", "visueel": false}
     ],
@@ -160,8 +160,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
             "5A:E5:D5:DB:0A:41:89",
             "5A:15:CA:E1:0A:41:89",
             "5A:95:97:E3:0A:41:89"
-          ], 
-          "color": "#ff0000"}
+          ]}
     ],
 
     scenarios: [
@@ -221,7 +220,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
             break
 
           case 'activation':
-            this.active = payload === 'start'
+            this.active = payload
             break
 
           case 'car_data':

@@ -20,6 +20,7 @@ const langStore = useLanguageStore();
 function start(event) {
   if (!store.active) {
     store.active = true
+    store.sendData('activation', true)
 
     if (store.active) {
       elapsedTime.value = 0
@@ -33,8 +34,11 @@ function start(event) {
 }
 
 function stop(event) {
-  store.active = false
-  clearInterval(timer.value)
+  if (store.active) {
+    store.active = false
+    store.sendData('activation', false)
+    clearInterval(timer.value)
+  }
 }
 
 // Formatting time (MM:SS:MS)

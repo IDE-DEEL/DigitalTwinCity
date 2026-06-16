@@ -21,8 +21,16 @@ h1 {
 
 .button-container {
     display: grid;
-    grid-template-columns: 150px 150px; 
+    grid-template-columns: 230px 150px; 
     column-gap: 160px; 
+    align-items: center;
+    height: 100%;
+}
+
+.general-container {
+    display: grid;
+    grid-template-columns: 150px 110px; 
+    column-gap: 32px; 
     align-items: center;
     height: 100%;
 }

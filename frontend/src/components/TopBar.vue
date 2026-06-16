@@ -35,15 +35,17 @@ const handleLogout = async () => {
       <img src="../../public/assets/hu-logo.png" alt="HU Logo" width="60" height="60">
       <h1>{{ langStore.getLabel('header.title') }}</h1>
     </div>
-    <LangToggle></LangToggle>
     <div class="button-container">
-      <button 
+      <div class="general-container">
+        <button 
         @click="handleLogout" 
         :disabled="isLoggingOut"
         class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md shadow-sm disabled:opacity-50"
-      >
+        >
           {{ isLoggingOut ? langStore.getLabel('header.loggingOut') : langStore.getLabel('header.logout') }}
         </button>
+        <LangToggle></LangToggle>
+      </div>
       <Switch/>
 
     </div>
