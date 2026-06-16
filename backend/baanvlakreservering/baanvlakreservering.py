@@ -144,7 +144,11 @@ start = True
 def on_connect(client, userdata, flags, reason_code, properties):
     if reason_code == 0:
         print("Connected to MQTT")
-        client.subscribe(SUB_TOPIC)
+        client.subscribe("car/auto_A/data/LastRFID")
+        client.subscribe("car/auto_B/data/LastRFID")
+        client.subscribe("car/auto_C/data/LastRFID")
+        client.subscribe("car/auto_D/data/LastRFID")
+        client.subscribe("car/auto_E/data/LastRFID")
     else:
         print("Connection failed:", reason_code)
 
@@ -155,7 +159,7 @@ def on_message(client, userdata, msg):
     print(f"RFID received: {rfid}")
 
     # Extract vehicle identifier from MQTT topic
-    topic = msg.topic.decode().strip().split("/")
+    topic = msg.topic.strip().split("/")
 
     global index
     global car_data
@@ -178,7 +182,7 @@ def on_message(client, userdata, msg):
         for i in cars:
             if cars[i] in Json_file[rfid]:
                 client.publish(f"car/{topic[1]}/cmd/Start", "False")
-                if topic[1] not in car_stopped:
+                if not any(entry[0] == topic[1] for entry in car_stopped):
                     car_stopped.append([topic[1], i, cars[i]])
 
         # checks if the car that made the other stop, has moved from their tag and starts the stopped car in that case.
@@ -204,7 +208,7 @@ def on_message(client, userdata, msg):
             # Loop back to start when route completes.
             if len(route[chosen_route]) == index[topic[1]]:
                 index[topic[1]] = 0
-                calculate_score(TRIP, WEIGHTS)
+                # calculate_score(TRIP, WEIGHTS)
 
     elif not start:
         # Emergency stop / manual stop mode
