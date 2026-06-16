@@ -51,6 +51,7 @@ concurrency:
 jobs:
   build-backend:
     name: Build Backend
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.backend_image == ''
     uses: ./.github/workflows/docker-build-scan-publish.yml
     with:
       component: Backend
@@ -61,6 +62,7 @@ jobs:
 
   build-frontend:
     name: Build Frontend
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.frontend_image == ''
     uses: ./.github/workflows/docker-build-scan-publish.yml
     with:
       component: Frontend
@@ -72,7 +74,9 @@ jobs:
   deploy:
     name: Deploy application
     needs: [build-backend, build-frontend]
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    if: |
+      always() && !failure() && !cancelled() &&
+      (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main'))
     runs-on: self-hosted
     steps:
       - name: Checkout source
