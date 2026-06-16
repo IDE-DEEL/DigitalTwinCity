@@ -31,16 +31,15 @@ const langStore = useLanguageStore();
 
 const {
     isWebSocketConnected,
-    isSimulating,
-    hasSimulated,
-    autoOpenStatsModal,
     startSimulation,
     stopSimulation,
     reconnectWebSocket,
     validateHousesReachability,
     getStats,
     exportDataAsCSV,
-} = useDigitalSimulation();
+} = useDigitalSimulation(() => {
+    isStatsModalOpen.value = true;
+});
 
 const { getColorForCarAndRoute } = useCarColors();
 
@@ -83,11 +82,12 @@ const allCarsHaveInactiveRoute = computed(() => {
     =====================
 */
 watch(
-    () => autoOpenStatsModal.value,
+    () => simulationStore.autoOpenStatsModal,
     (newValue) => {
-        if (newValue) {
+        if (newValue.value) {
+            console.log("Auto-opening stats modal after simulation completion.");
             isStatsModalOpen.value = true;
-            autoOpenStatsModal.value = false;
+            simulationStore.resetAutoOpenStatsModal();
         }
     }
 );
@@ -253,7 +253,7 @@ const toggleRouteBuilder = () => {
                 <Slider 
                     class="slider-area" 
                     :name="langStore.getLabel('parameters.carSpeed')"
-                    :disabled="isSimulating"
+                    :disabled="simulationStore.isSimulating"
                     :min="MIN_SPEED"
                     :max="MAX_SPEED"
                     type="speed" 
@@ -262,7 +262,7 @@ const toggleRouteBuilder = () => {
                 <DropDown 
                     class="scenario-area" 
                     :name="langStore.getLabel('parameters.scenario')"
-                    :disabled="isSimulating"
+                    :disabled="simulationStore.isSimulating"
                     type="scenario" 
                     :list="dashboardStore.scenarioOptions" 
                     v-model="dashboardStore.scenario"
@@ -278,7 +278,7 @@ const toggleRouteBuilder = () => {
                     :route-options="dashboardStore.routeOptions"
                     :name="langStore.getLabel('carTable.header')"
                     :live-agents="simulationStore.agentState"
-                    :disabled="isSimulating"
+                    :disabled="simulationStore.isSimulating"
                     :headers="[
                         langStore.getLabel('carTable.carId'),
                         langStore.getLabel('carTable.energy'),
@@ -302,12 +302,12 @@ const toggleRouteBuilder = () => {
             <!-- Simulation speed, start and stop controls + stats modal open button -->
             <template #simulation-controls>
                 <div class="stats-button-container">
-                    <button @click="handleStatsOpen" :disabled="!hasSimulated"> {{ langStore.getLabel('generalStats.title') }} </button>
+                    <button @click="handleStatsOpen" :disabled="!simulationStore.hasSimulated"> {{ langStore.getLabel('generalStats.title') }} </button>
                 </div>
 
                 <div class="button-area">
-                    <button @click="handleSimulationStart" :disabled="isSimulating || allCarsHaveInactiveRoute"> {{ langStore.getLabel('controls.startButton') }} </button>
-                    <button @click="handleSimulationStop" :disabled="!isSimulating"> {{ langStore.getLabel('controls.stopButton') }} </button>
+                    <button @click="handleSimulationStart" :disabled="simulationStore.isSimulating || allCarsHaveInactiveRoute"> {{ langStore.getLabel('controls.startButton') }} </button>
+                    <button @click="handleSimulationStop" :disabled="!simulationStore.isSimulating"> {{ langStore.getLabel('controls.stopButton') }} </button>
                 </div>
             </template>
         </ControlPanel>

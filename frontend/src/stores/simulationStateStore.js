@@ -10,6 +10,8 @@ export const useSimulationStateStore = defineStore("simulationState", () => {
     const agentState = ref([]);
     const houseState = ref([]);
     const currentStep = ref(0);
+    const isSimulating = ref(false);
+    const hasSimulated = ref(false);
 
     // ---
     // Watchers to reset simulation state when relevant dashboard parameters change after a previous simulation run
@@ -42,6 +44,16 @@ export const useSimulationStateStore = defineStore("simulationState", () => {
     function resetSimulationState() {
         agentState.value = [];
         houseState.value = [];
+        isSimulating.value = false;
+    }
+
+    function handleSimulationStarted() {
+        isSimulating.value = true;
+        hasSimulated.value = true;
+    }
+
+    function handleSimulationEnded() {
+        isSimulating.value = false;
     }
 
     // ---
@@ -79,6 +91,9 @@ export const useSimulationStateStore = defineStore("simulationState", () => {
         // State
         agentState,
         houseState,
+        currentStep,
+        isSimulating,
+        hasSimulated,
 
         // Getters
         housesWithLivePackageData,
@@ -86,5 +101,7 @@ export const useSimulationStateStore = defineStore("simulationState", () => {
         // Actions
         updateSimulationState,
         resetSimulationState,
+        handleSimulationStarted,
+        handleSimulationEnded,
     };
 });

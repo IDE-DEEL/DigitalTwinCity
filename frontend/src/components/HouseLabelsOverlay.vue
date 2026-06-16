@@ -34,7 +34,7 @@
 
 <script setup>
 import { ref, watch } from 'vue';
-import { useDigitalSimulation } from '../composables/useDigitalSimulation';
+import { useSimulationStateStore } from '../stores/index';
 
 const props = defineProps({
     houses: {
@@ -49,12 +49,12 @@ const durationInMillis = 800;
 
 const animatedHouses = ref(new Set());
 const previousExpectedPackageCounts = ref({});
-const { isSimulating } = useDigitalSimulation();
+const simulationStore = useSimulationStateStore();
 
 watch(
     () => props.houses,
     (newHouses) => {
-        if (!isSimulating.value) return;
+        if (!simulationStore.isSimulating) return;
 
         newHouses.forEach(house => {
             const currentCount = house.expectedPackages;
