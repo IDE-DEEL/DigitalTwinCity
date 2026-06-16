@@ -76,6 +76,12 @@ function connectWebSocket(onSimulationUpdate, onSimulationEnded) {
                             onSimulationEndedCallback();
                         }
                         break;
+                    case "error":
+                        if (result && result.type === "validation_error") {
+                            console.error("Validation error from simulation backend:", result);
+                            toast.error(languageStore.getToastMessage("error.SIMULATION_VALIDATION_ERROR"));
+                        }
+                        break;
                     default:
                         console.warn("Unknown command received:", data.command);
                 }
@@ -120,6 +126,7 @@ function sendWebSocketMessage(message) {
         websocket.send(JSON.stringify(message));
     } else {
         console.warn("WebSocket not connected. Cannot send message. Websocket state:", websocket?.readyState);
+        isWebSocketConnected.value = false;
     }
 }
 
