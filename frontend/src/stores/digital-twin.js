@@ -129,13 +129,11 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
           "tags": 
           [
             "5A:A5:97:E3:0A:41:89", 
-            "5A:95:B3:DE:0A:41:89", 
-            "5A:45:6B:E0:0A:41:89", 
+            "5A:95:B3:DE:0A:41:89",  
             "5A:E5:D5:DB:0A:41:89", 
             "5A:25:6B:E0:0A:41:89",
 
             "5A:A5:C9:E1:0A:41:89",
-            "5A:55:B3:DE:0A:41:89",
             "5A:55:C3:DA:0A:41:89",
             
             "5A:C5:97:E3:0A:41:89",
