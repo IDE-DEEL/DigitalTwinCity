@@ -26,7 +26,7 @@ class Scenario(BaseModel):
 
 class SimulationStartPayload(BaseModel):
     carTargetSpeed: int = Field(..., ge=1, le=100, description="Target speed for the cars (1-100)")
-    simulationSpeed: int = Field(..., ge=1, le=3, description="Simulation speed (1=slow, 2=medium, 3=fast)")
+    simulationSpeed: int = Field(..., ge=1, le=4, description="Simulation speed (1=1x, 2=5x, 3=10x, 4=maximum)")
     cars: list[Car] = Field(..., min_items=1, max_items=5, description="List of cars, must contain 1-5 cars")
     scenario: Scenario = Field(..., description="Scenario configuration")
     housesOnRoutes: dict[str, list[str]] = Field(..., description="Dictionary mapping route names to lists of houses on those routes")
