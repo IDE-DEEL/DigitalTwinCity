@@ -58,3 +58,7 @@ class SimulationStartPayload(BaseModel):
             if missing_routes:
                 raise ValueError(f'Routes in cars must be present in housesOnRoutes: {missing_routes}')
         return v
+    
+class SetSpeedPayload(BaseModel):
+    """Validatie voor set_speed command"""
+    simulationSpeed: int = Field(..., ge=1, le=4, description="Simulation speed (1=1x, 2=5x, 3=10x, 4=maximum)")

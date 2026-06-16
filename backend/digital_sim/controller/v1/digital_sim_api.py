@@ -5,7 +5,7 @@ from pydantic import ValidationError
 from backend.digital_sim.service.simulation_service import SimulationService
 from backend.digital_sim.constants import UPDATES_PER_SECOND
 from backend.digital_sim.utils.sim_speed_util import get_steps_multiplier
-from backend.digital_sim.controller.v1.simulation_validator import SimulationStartPayload
+from backend.digital_sim.controller.v1.simulation_validator import SimulationStartPayload, SetSpeedPayload
 
 
 router = APIRouter(prefix="/digital-sim")
@@ -53,11 +53,12 @@ async def websocket_simulation_endpoint(websocket: WebSocket):
                         )
                         
                     except ValidationError as e:
-                        print(f"[digital_sim_api] Validation error: {e}")
+                        print(f"[digital_sim_api] Validation error in start: {e}")
                         await websocket.send_json({
                             "command": "error",
-                            "type": "validation_error",
-                            "errors": e.errors()
+                            "result": {
+                                "type": "validation_error",
+                            },
                         })
                 
                 case "stop":
@@ -72,15 +73,26 @@ async def websocket_simulation_endpoint(websocket: WebSocket):
                     })
                 
                 case "set_speed":
-                    # TODO: validate simulationSpeed when this command is received (currently only validated on start)
-                    simulation_speed = data.get("simulationSpeed", 1)
-                    simulation_config["steps_multiplier"] = get_steps_multiplier(simulation_speed)
+                    try:
+                        # Validate incoming parameters using Pydantic model
+                        speed_payload = SetSpeedPayload(**data.get("parameters", {}))
+                        simulation_speed = speed_payload.simulationSpeed
+                        simulation_config["steps_multiplier"] = get_steps_multiplier(simulation_speed)
 
-                    await websocket.send_json({
-                        "command": "speed_updated",
-                        "simulationSpeed": simulation_speed,
-                        "stepsMultiplier": simulation_config["steps_multiplier"]
-                    })
+                        await websocket.send_json({
+                            "command": "speed_updated",
+                            "simulationSpeed": simulation_speed,
+                            "stepsMultiplier": simulation_config["steps_multiplier"]
+                        })
+
+                    except ValidationError as e:
+                        print(f"[digital_sim_api] Validation error in set_speed: {e}")
+                        await websocket.send_json({
+                            "command": "error",
+                            "result": {
+                                "type": "validation_error",
+                            },
+                        })
                 
                 case "get_stats":
                     stats = simulation_service.get_current_stats()
