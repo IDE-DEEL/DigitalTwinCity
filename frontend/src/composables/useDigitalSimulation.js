@@ -1,4 +1,4 @@
-import { ref, onMounted, onBeforeUnmount, watch } from "vue";
+import { onMounted, onBeforeUnmount, watch } from "vue";
 import { useToast } from "vue-toastification";
 import { useWebSocketSimulation } from "./useWebSocketSimulation";
 import { useDashboardParametersStore } from "../stores/dashboardParametersStore";
@@ -8,14 +8,11 @@ import { useLanguageStore } from "../stores/languageStore";
 const GET_STATS_TIMEOUT_IN_MILLIS = 5000;
 const CSV_EXPORT_TIMEOUT_IN_MILLIS = 20000;
 const ONE_SECOND_IN_MILLIS = 1000;
-const isSimulating = ref(false);
-const hasSimulated = ref(false);
-const autoOpenStatsModal = ref(false);
 
 // ---
 // orchestrator composable
 // ---
-export function useDigitalSimulation() {
+export function useDigitalSimulation(onSimulationEndedCallback) {
     const { isWebSocketConnected, connectWebSocket, disconnectWebSocket, sendWebSocketMessage, registerResponseHandler } = useWebSocketSimulation();
     const dashboardStore = useDashboardParametersStore();
     const simulationStore = useSimulationStateStore();
@@ -31,10 +28,10 @@ export function useDigitalSimulation() {
         watch(
             () => dashboardStore.simulationSpeed,
             (newSpeed) => {
-                if (isSimulating.value && isWebSocketConnected.value) {
+                if (simulationStore.isSimulating && isWebSocketConnected.value) {
                     sendWebSocketMessage({
                         command: "set_speed",
-                        simulationSpeed: newSpeed,
+                        parameters: { simulationSpeed: newSpeed },
                     });
                 }
             }
@@ -68,8 +65,7 @@ export function useDigitalSimulation() {
             parameters: parameters
         });
 
-        isSimulating.value = true;
-        hasSimulated.value = true;
+        simulationStore.handleSimulationStarted();
     }
 
     function stopSimulation() {
@@ -82,7 +78,7 @@ export function useDigitalSimulation() {
             command: "stop"
         });
 
-        isSimulating.value = false;
+        simulationStore.handleSimulationEnded();
     }
 
     function reconnectWebSocket() {
@@ -91,8 +87,10 @@ export function useDigitalSimulation() {
     }
 
     function handleSimulationEnded() {
-        isSimulating.value = false;
-        autoOpenStatsModal.value = true;
+        simulationStore.handleSimulationEnded();
+        if (onSimulationEndedCallback) {
+            onSimulationEndedCallback();
+        }
     }
 
     // ---
@@ -198,9 +196,6 @@ export function useDigitalSimulation() {
     // ---
     return {
         isWebSocketConnected,
-        isSimulating,
-        hasSimulated,
-        autoOpenStatsModal,
 
         startSimulation,
         stopSimulation,

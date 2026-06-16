@@ -15,15 +15,29 @@ const EDGE_OFFSET_LOWER = 0.1;
 const EDGE_OFFSET_UPPER = 0.9;
 
 const ROUNDABOUT_POINTS = {
-    N: { x: 0.5, y: 0.2 },
-    NW: { x: 0.29, y: 0.29 },
-    W: { x: 0.2, y: 0.5 },
-    SW: { x: 0.29, y: 0.71 },
-    S: { x: 0.5, y: 0.8 },
-    SE: { x: 0.71, y: 0.71 },
-    E: { x: 0.8, y: 0.5 },
-    NE: { x: 0.71, y: 0.29 },
+    N: { x: 0.5, y: 0.17 },
+    NNE: { x: 0.62, y: 0.19 },
+    NE: { x: 0.74, y: 0.27 },
+    ENE: { x: 0.81, y: 0.36 },
+    E: { x: 0.83, y: 0.5 },
+    ESE: { x: 0.81, y: 0.62 },
+    SE: { x: 0.74, y: 0.73 },
+    SSE: { x: 0.64, y: 0.81 },
+    S: { x: 0.5, y: 0.83 },
+    SSW: { x: 0.38, y: 0.81 },
+    SW: { x: 0.27, y: 0.74 },
+    WSW: { x: 0.19, y: 0.64 },
+    W: { x: 0.17, y: 0.5 },
+    WNW: { x: 0.19, y: 0.38 },
+    NW: { x: 0.26, y: 0.27 },
+    NNW: { x: 0.36, y: 0.19 },
 };
+
+const CAR_1 = 1;
+const CAR_2 = 2;
+const CAR_3 = 3;
+const CAR_4 = 4;
+const CAR_5 = 5;
 
 /*
     SVG goes:
@@ -293,194 +307,258 @@ export const TILE_LANES = {
     },
     roundabout: {
         lanes: [
+            // {
+            //     from: 'N',
+            //     to: 'W',
+            //     points: [
+            //         { x: SOUTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_LOWER },
+            //         ROUNDABOUT_POINTS.NNW,
+            //         ROUNDABOUT_POINTS.NW,
+            //         { x: EDGE_OFFSET_LOWER, y: WESTBOUND_Y_LANE_CENTER },
+            //     ]
+            // },
+            // {
+            //     from: 'N',
+            //     to: 'S',
+            //     points: [
+            //         { x: SOUTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_LOWER },
+            //         ROUNDABOUT_POINTS.NNW,
+            //         ROUNDABOUT_POINTS.NW,
+            //         ROUNDABOUT_POINTS.WNW,
+            //         ROUNDABOUT_POINTS.W,
+            //         ROUNDABOUT_POINTS.WSW,
+            //         ROUNDABOUT_POINTS.SW,
+            //         { x: SOUTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_UPPER },
+            //     ]
+            // },
+            // {
+            //     from: 'N',
+            //     to: 'E',
+            //     points: [
+            //         { x: SOUTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_LOWER },
+            //         ROUNDABOUT_POINTS.NNW,
+            //         ROUNDABOUT_POINTS.NW,
+            //         ROUNDABOUT_POINTS.WNW,
+            //         ROUNDABOUT_POINTS.W,
+            //         ROUNDABOUT_POINTS.WSW,
+            //         ROUNDABOUT_POINTS.SW,
+            //         ROUNDABOUT_POINTS.SSW,
+            //         ROUNDABOUT_POINTS.S,
+            //         ROUNDABOUT_POINTS.SSE,
+            //         ROUNDABOUT_POINTS.SE,
+            //         { x: EDGE_OFFSET_UPPER, y: EASTBOUND_Y_LANE_CENTER },
+            //     ]
+            // },
+            // {
+            //     from: 'N',
+            //     to: 'N',
+            //     points: [
+            //         { x: SOUTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_LOWER },
+            //         ROUNDABOUT_POINTS.NNW,
+            //         ROUNDABOUT_POINTS.NW,
+            //         ROUNDABOUT_POINTS.WNW,
+            //         ROUNDABOUT_POINTS.W,
+            //         ROUNDABOUT_POINTS.WSW,
+            //         ROUNDABOUT_POINTS.SW,
+            //         ROUNDABOUT_POINTS.SSW,
+            //         ROUNDABOUT_POINTS.S,
+            //         ROUNDABOUT_POINTS.SSE,
+            //         ROUNDABOUT_POINTS.SE,
+            //         ROUNDABOUT_POINTS.ESE,
+            //         ROUNDABOUT_POINTS.E,
+            //         ROUNDABOUT_POINTS.ENE,
+            //         ROUNDABOUT_POINTS.NE,
+            //         { x: NORTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_LOWER },
+            //     ]
+            // },
+            // {
+            //     from: 'W',
+            //     to: 'S',
+            //     points: [
+            //         { x: EDGE_OFFSET_LOWER, y: EASTBOUND_Y_LANE_CENTER },
+            //         ROUNDABOUT_POINTS.WSW,
+            //         ROUNDABOUT_POINTS.SW,
+            //         { x: SOUTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_UPPER },
+            //     ]
+            // },
+            // {
+            //     from: 'W',
+            //     to: 'E',
+            //     points: [
+            //         { x: EDGE_OFFSET_LOWER, y: EASTBOUND_Y_LANE_CENTER },
+            //         ROUNDABOUT_POINTS.WSW,
+            //         ROUNDABOUT_POINTS.SW,
+            //         ROUNDABOUT_POINTS.SSW,
+            //         ROUNDABOUT_POINTS.S,
+            //         ROUNDABOUT_POINTS.SSE,
+            //         ROUNDABOUT_POINTS.SE,
+            //         { x: EDGE_OFFSET_UPPER, y: EASTBOUND_Y_LANE_CENTER },
+            //     ]
+            // },
+            // {
+            //     from: 'W',
+            //     to: 'N',
+            //     points: [
+            //         { x: EDGE_OFFSET_LOWER, y: EASTBOUND_Y_LANE_CENTER },
+            //         ROUNDABOUT_POINTS.WSW,
+            //         ROUNDABOUT_POINTS.SW,
+            //         ROUNDABOUT_POINTS.SSW,
+            //         ROUNDABOUT_POINTS.S,
+            //         ROUNDABOUT_POINTS.SSE,
+            //         ROUNDABOUT_POINTS.SE,
+            //         ROUNDABOUT_POINTS.ESE,
+            //         ROUNDABOUT_POINTS.E,
+            //         ROUNDABOUT_POINTS.ENE,
+            //         ROUNDABOUT_POINTS.NE,
+            //         { x: NORTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_LOWER },
+            //     ]
+            // },
+            // {
+            //     from: 'W',
+            //     to: 'W',
+            //     points: [
+            //         { x: EDGE_OFFSET_LOWER, y: EASTBOUND_Y_LANE_CENTER },
+            //         ROUNDABOUT_POINTS.WSW,
+            //         ROUNDABOUT_POINTS.SW,
+            //         ROUNDABOUT_POINTS.SSW,
+            //         ROUNDABOUT_POINTS.S,
+            //         ROUNDABOUT_POINTS.SSE,
+            //         ROUNDABOUT_POINTS.SE,
+            //         ROUNDABOUT_POINTS.ESE,
+            //         ROUNDABOUT_POINTS.E,
+            //         ROUNDABOUT_POINTS.ENE,
+            //         ROUNDABOUT_POINTS.NE,
+            //         ROUNDABOUT_POINTS.NNE,
+            //         ROUNDABOUT_POINTS.N,
+            //         ROUNDABOUT_POINTS.NNW,
+            //         ROUNDABOUT_POINTS.NW,
+            //         { x: EDGE_OFFSET_LOWER, y: WESTBOUND_Y_LANE_CENTER },
+            //     ]
+            // },
+            // {
+            //     from: 'S',
+            //     to: 'E',
+            //     points: [
+            //         { x: NORTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_UPPER },
+            //         ROUNDABOUT_POINTS.SSE,
+            //         ROUNDABOUT_POINTS.SE,
+            //         { x: EDGE_OFFSET_UPPER, y: EASTBOUND_Y_LANE_CENTER },
+            //     ]
+            // },
+            // {
+            //     from: 'S',
+            //     to: 'N',
+            //     points: [
+            //         { x: NORTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_UPPER },
+            //         ROUNDABOUT_POINTS.SSE,
+            //         ROUNDABOUT_POINTS.SE,
+            //         ROUNDABOUT_POINTS.ESE,
+            //         ROUNDABOUT_POINTS.E,
+            //         ROUNDABOUT_POINTS.ENE,
+            //         ROUNDABOUT_POINTS.NE,
+            //         { x: NORTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_LOWER },
+            //     ]
+            // },
+            // {
+            //     from: 'S',
+            //     to: 'W',
+            //     points: [
+            //         { x: NORTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_UPPER },
+            //         ROUNDABOUT_POINTS.SSE,
+            //         ROUNDABOUT_POINTS.SE,
+            //         ROUNDABOUT_POINTS.ESE,
+            //         ROUNDABOUT_POINTS.E,
+            //         ROUNDABOUT_POINTS.ENE,
+            //         ROUNDABOUT_POINTS.NE,
+            //         ROUNDABOUT_POINTS.NNE,
+            //         ROUNDABOUT_POINTS.N,
+            //         ROUNDABOUT_POINTS.NNW,
+            //         ROUNDABOUT_POINTS.NW,
+            //         { x: EDGE_OFFSET_LOWER, y: WESTBOUND_Y_LANE_CENTER },
+            //     ]
+            // },
+            // {
+            //     from: 'S',
+            //     to: 'S',
+            //     points: [
+            //         { x: NORTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_UPPER },
+            //         ROUNDABOUT_POINTS.SSE,
+            //         ROUNDABOUT_POINTS.SE,
+            //         ROUNDABOUT_POINTS.ESE,
+            //         ROUNDABOUT_POINTS.E,
+            //         ROUNDABOUT_POINTS.ENE,
+            //         ROUNDABOUT_POINTS.NE,
+            //         ROUNDABOUT_POINTS.NNE,
+            //         ROUNDABOUT_POINTS.N,
+            //         ROUNDABOUT_POINTS.NNW,
+            //         ROUNDABOUT_POINTS.NW,
+            //         ROUNDABOUT_POINTS.WNW,
+            //         ROUNDABOUT_POINTS.W,
+            //         ROUNDABOUT_POINTS.WSW,
+            //         ROUNDABOUT_POINTS.SW,
+            //         { x: SOUTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_UPPER },
+            //     ]
+            // },
             {
-                from: 'N',
-                to: 'W',
-                points: [
-                    { x: SOUTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_LOWER },
-                    ROUNDABOUT_POINTS.NW,
-                    { x: EDGE_OFFSET_LOWER, y: WESTBOUND_Y_LANE_CENTER },
-                ]
-            },
-            {
-                from: 'N',
-                to: 'S',
-                points: [
-                    { x: SOUTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_LOWER },
-                    ROUNDABOUT_POINTS.NW,
-                    ROUNDABOUT_POINTS.W,
-                    ROUNDABOUT_POINTS.SW,
-                    { x: SOUTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_UPPER },
-                ]
-            },
-            {
-                from: 'N',
-                to: 'E',
-                points: [
-                    { x: SOUTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_LOWER },
-                    ROUNDABOUT_POINTS.NW,
-                    ROUNDABOUT_POINTS.W,
-                    ROUNDABOUT_POINTS.SW,
-                    ROUNDABOUT_POINTS.S,
-                    ROUNDABOUT_POINTS.SE,
-                    { x: EDGE_OFFSET_UPPER, y: EASTBOUND_Y_LANE_CENTER },
-                ]
-            },
-            {
-                from: 'N',
+                from: 'E',
                 to: 'N',
                 points: [
-                    { x: SOUTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_LOWER },
-                    ROUNDABOUT_POINTS.NW,
-                    ROUNDABOUT_POINTS.W,
-                    ROUNDABOUT_POINTS.SW,
-                    ROUNDABOUT_POINTS.S,
-                    ROUNDABOUT_POINTS.SE,
-                    ROUNDABOUT_POINTS.E,
+                    { x: EDGE_OFFSET_UPPER, y: WESTBOUND_Y_LANE_CENTER },
+                    ROUNDABOUT_POINTS.ENE,
                     ROUNDABOUT_POINTS.NE,
                     { x: NORTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_LOWER },
                 ]
             },
             {
-                from: 'W',
-                to: 'S',
-                points: [
-                    { x: EDGE_OFFSET_LOWER, y: EASTBOUND_Y_LANE_CENTER },
-                    ROUNDABOUT_POINTS.SW,
-                    { x: SOUTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_UPPER },
-                ]
-            },
-            {
-                from: 'W',
-                to: 'E',
-                points: [
-                    { x: EDGE_OFFSET_LOWER, y: EASTBOUND_Y_LANE_CENTER },
-                    ROUNDABOUT_POINTS.SW,
-                    ROUNDABOUT_POINTS.S,
-                    ROUNDABOUT_POINTS.SE,
-                    { x: EDGE_OFFSET_UPPER, y: EASTBOUND_Y_LANE_CENTER },
-                ]
-            },
-            {
-                from: 'W',
-                to: 'N',
-                points: [
-                    { x: EDGE_OFFSET_LOWER, y: EASTBOUND_Y_LANE_CENTER },
-                    ROUNDABOUT_POINTS.SW,
-                    ROUNDABOUT_POINTS.S,
-                    ROUNDABOUT_POINTS.SE,
-                    ROUNDABOUT_POINTS.E,
-                    ROUNDABOUT_POINTS.NE,
-                    { x: NORTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_LOWER },
-                ]
-            },
-            {
-                from: 'W',
+                from: 'E',
                 to: 'W',
                 points: [
-                    { x: EDGE_OFFSET_LOWER, y: EASTBOUND_Y_LANE_CENTER },
-                    ROUNDABOUT_POINTS.SW,
-                    ROUNDABOUT_POINTS.S,
-                    ROUNDABOUT_POINTS.SE,
-                    ROUNDABOUT_POINTS.E,
+                    { x: EDGE_OFFSET_UPPER, y: WESTBOUND_Y_LANE_CENTER },
+                    ROUNDABOUT_POINTS.ENE,
                     ROUNDABOUT_POINTS.NE,
+                    ROUNDABOUT_POINTS.NNE,
                     ROUNDABOUT_POINTS.N,
+                    ROUNDABOUT_POINTS.NNW,
                     ROUNDABOUT_POINTS.NW,
                     { x: EDGE_OFFSET_LOWER, y: WESTBOUND_Y_LANE_CENTER },
                 ]
             },
             {
-                from: 'S',
-                to: 'E',
-                points: [
-                    { x: NORTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_UPPER },
-                    ROUNDABOUT_POINTS.SE,
-                    { x: EDGE_OFFSET_UPPER, y: EASTBOUND_Y_LANE_CENTER },
-                ]
-            },
-            {
-                from: 'S',
-                to: 'N',
-                points: [
-                    { x: NORTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_UPPER },
-                    ROUNDABOUT_POINTS.SE,
-                    ROUNDABOUT_POINTS.E,
-                    ROUNDABOUT_POINTS.NE,
-                    { x: NORTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_LOWER },
-                ]
-            },
-            {
-                from: 'S',
-                to: 'W',
-                points: [
-                    { x: NORTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_UPPER },
-                    ROUNDABOUT_POINTS.SE,
-                    ROUNDABOUT_POINTS.E,
-                    ROUNDABOUT_POINTS.NE,
-                    ROUNDABOUT_POINTS.N,
-                    ROUNDABOUT_POINTS.NW,
-                    { x: EDGE_OFFSET_LOWER, y: WESTBOUND_Y_LANE_CENTER },
-                ]
-            },
-            {
-                from: 'S',
+                from: 'E',
                 to: 'S',
                 points: [
-                    { x: NORTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_UPPER },
-                    ROUNDABOUT_POINTS.SE,
-                    ROUNDABOUT_POINTS.E,
+                    { x: EDGE_OFFSET_UPPER, y: WESTBOUND_Y_LANE_CENTER },
+                    ROUNDABOUT_POINTS.ENE,
                     ROUNDABOUT_POINTS.NE,
+                    ROUNDABOUT_POINTS.NNE,
                     ROUNDABOUT_POINTS.N,
+                    ROUNDABOUT_POINTS.NNW,
                     ROUNDABOUT_POINTS.NW,
+                    ROUNDABOUT_POINTS.WNW,
                     ROUNDABOUT_POINTS.W,
+                    ROUNDABOUT_POINTS.WSW,
                     ROUNDABOUT_POINTS.SW,
                     { x: SOUTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_UPPER },
                 ]
             },
             {
                 from: 'E',
-                to: 'N',
-                points: [
-                    { x: EDGE_OFFSET_UPPER, y: WESTBOUND_Y_LANE_CENTER },
-                    ROUNDABOUT_POINTS.NE,
-                    { x: NORTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_LOWER },
-                ]
-            },
-            {
-                from: 'E',
-                to: 'W',
-                points: [
-                    { x: EDGE_OFFSET_UPPER, y: WESTBOUND_Y_LANE_CENTER },
-                    ROUNDABOUT_POINTS.NE,
-                    ROUNDABOUT_POINTS.N,
-                    ROUNDABOUT_POINTS.NW,
-                    { x: EDGE_OFFSET_LOWER, y: WESTBOUND_Y_LANE_CENTER },
-                ]
-            },
-            {
-                from: 'E',
-                to: 'S',
-                points: [
-                    { x: EDGE_OFFSET_UPPER, y: WESTBOUND_Y_LANE_CENTER },
-                    ROUNDABOUT_POINTS.NE,
-                    ROUNDABOUT_POINTS.N,
-                    ROUNDABOUT_POINTS.NW,
-                    ROUNDABOUT_POINTS.W,
-                    ROUNDABOUT_POINTS.SW,
-                    { x: SOUTHBOUND_X_LANE_CENTER, y: EDGE_OFFSET_UPPER },
-                ]
-            },
-            {
-                from: 'E',
                 to: 'E',
                 points: [
                     { x: EDGE_OFFSET_UPPER, y: WESTBOUND_Y_LANE_CENTER },
+                    ROUNDABOUT_POINTS.ENE,
                     ROUNDABOUT_POINTS.NE,
+                    ROUNDABOUT_POINTS.NNE,
                     ROUNDABOUT_POINTS.N,
+                    ROUNDABOUT_POINTS.NNW,
                     ROUNDABOUT_POINTS.NW,
+                    ROUNDABOUT_POINTS.WNW,
                     ROUNDABOUT_POINTS.W,
+                    ROUNDABOUT_POINTS.WSW,
                     ROUNDABOUT_POINTS.SW,
+                    ROUNDABOUT_POINTS.SSW,
                     ROUNDABOUT_POINTS.S,
+                    ROUNDABOUT_POINTS.SSE,
                     ROUNDABOUT_POINTS.SE,
                     { x: EDGE_OFFSET_UPPER, y: EASTBOUND_Y_LANE_CENTER },
                 ]
@@ -594,7 +672,7 @@ export const TILE_LANES = {
             {
                 from: 'W',
                 to: 'E',
-                carId: [1, 2],
+                carId: [CAR_1, CAR_2],
                 route: "end",
                 points: [
                     { x: EDGE_OFFSET_LOWER, y: 0.53 },
@@ -607,7 +685,7 @@ export const TILE_LANES = {
             {
                 from: 'W',
                 to: 'E',
-                carId: [3],
+                carId: [CAR_3],
                 route: "end",
                 points: [
                     { x: EDGE_OFFSET_LOWER, y: 0.53 },
@@ -621,7 +699,7 @@ export const TILE_LANES = {
             {
                 from: 'W',
                 to: 'E',
-                carId: [4],
+                carId: [CAR_4],
                 route: "end",
                 points: [
                     { x: EDGE_OFFSET_LOWER, y: 0.53 },
@@ -635,7 +713,7 @@ export const TILE_LANES = {
             {
                 from: 'W',
                 to: 'E',
-                carId: [5],
+                carId: [CAR_5],
                 route: "end",
                 points: [
                     { x: EDGE_OFFSET_LOWER, y: 0.53 },
@@ -645,7 +723,7 @@ export const TILE_LANES = {
             {
                 from: 'W',
                 to: 'E',
-                carId: [4],
+                carId: [CAR_4],
                 route: "start",
                 points: [
                     { x: EDGE_OFFSET_UPPER, y: 0.23 },
@@ -654,7 +732,7 @@ export const TILE_LANES = {
             {
                 from: 'W',
                 to: 'E',
-                carId: [5],
+                carId: [CAR_5],
                 route: "start",
                 points: [
                     { x: EDGE_OFFSET_UPPER, y: 0.53 },
@@ -667,7 +745,7 @@ export const TILE_LANES = {
             {
                 from: 'S',
                 to: 'E',
-                carId: [1],
+                carId: [CAR_1],
                 route: "end",
                 points: [
                     { x: 0.3, y: EDGE_OFFSET_UPPER },
@@ -682,7 +760,7 @@ export const TILE_LANES = {
             {
                 from: 'S',
                 to: 'E',
-                carId: [2],
+                carId: [CAR_2],
                 route: "end",
                 points: [
                     { x: 0.3, y: EDGE_OFFSET_UPPER },
@@ -696,7 +774,7 @@ export const TILE_LANES = {
             {
                 from: 'S',
                 to: 'E',
-                carId: [3],
+                carId: [CAR_3],
                 route: "end",
                 points: [
                     { x: 0.42, y: 0.98 },
@@ -708,7 +786,7 @@ export const TILE_LANES = {
             {
                 from: 'W',
                 to: 'E',
-                carId: [1],
+                carId: [CAR_1],
                 route: "start",
                 points: [
                     { x: EDGE_OFFSET_UPPER, y: 0.31 },
@@ -717,7 +795,7 @@ export const TILE_LANES = {
             {
                 from: 'W',
                 to: 'E',
-                carId: [2],
+                carId: [CAR_2],
                 route: "start",
                 points: [
                     { x: EDGE_OFFSET_UPPER, y: 0.61 },
@@ -726,7 +804,7 @@ export const TILE_LANES = {
             {
                 from: 'W',
                 to: 'E',
-                carId: [3],
+                carId: [CAR_3],
                 route: "start",
                 points: [
                     { x: EDGE_OFFSET_UPPER, y: 0.91 },
@@ -739,7 +817,7 @@ export const TILE_LANES = {
             {
                 from: 'W',
                 to: 'N',
-                carId: [4],
+                carId: [CAR_4],
                 points: [
                     { x: EDGE_OFFSET_LOWER, y: 0.23 },
                     { x: 0.25, y: 0.23 },
@@ -751,7 +829,7 @@ export const TILE_LANES = {
             {
                 from: 'W',
                 to: 'N',
-                carId: [5],
+                carId: [CAR_5],
                 points: [
                     { x: EDGE_OFFSET_LOWER, y: 0.53 },
                     { x: 0.24, y: 0.53 },
@@ -769,7 +847,7 @@ export const TILE_LANES = {
             {
                 from: 'W',
                 to: 'N',
-                carId: [1],
+                carId: [CAR_1],
                 points: [
                     { x: EDGE_OFFSET_LOWER, y: 0.31 },
                     { x: 0.27, y: 0.29 },
@@ -781,7 +859,7 @@ export const TILE_LANES = {
             {
                 from: 'W',
                 to: 'N',
-                carId: [2],
+                carId: [CAR_2],
                 points: [
                     { x: EDGE_OFFSET_LOWER, y: 0.61 },
                     { x: 0.28, y: 0.61 },
@@ -794,7 +872,7 @@ export const TILE_LANES = {
             {
                 from: 'W',
                 to: 'N',
-                carId: [3],
+                carId: [CAR_3],
                 points: [
                     { x: EDGE_OFFSET_LOWER, y: 0.91 },
                     { x: 0.28, y: 0.91 },
@@ -807,7 +885,7 @@ export const TILE_LANES = {
             {
                 from: 'S',
                 to: 'N',
-                carId: [4, 5],
+                carId: [CAR_4, CAR_5],
                 points: [
                     { x: 0.53, y: EDGE_OFFSET_UPPER },
                     { x: 0.53, y: EDGE_OFFSET_LOWER },

@@ -54,7 +54,7 @@ input.check-toggle-round-flat:checked ~ .on {
 
 .switch > span.on {
   left: 0;
-  padding-left: 2px;
+  padding-left: 4px;
   color: var(--color-primary-blue);
 }
 

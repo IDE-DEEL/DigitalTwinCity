@@ -110,7 +110,8 @@ export const LABELS = {
         simSpeed: {
             '1': "1x",
             '2': "5x",
-            '3': "Maximaal",
+            '3': "10x",
+            '4': "Maximaal",
         },
         adminHeader: {
             title: "Admin paneel",
@@ -264,7 +265,8 @@ export const LABELS = {
         simSpeed: {
             '1': "1x",
             '2': "5x",
-            '3': "Maximum",
+            '3': "10x",
+            "4": "Maximum",
         },
         adminHeader: {
             title: "Admin panel",
