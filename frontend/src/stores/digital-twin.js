@@ -15,6 +15,8 @@ export const normalizeCarData = (payload) => {
     return []
   }
 
+  console.log(payload)
+  
   return payload
     .map((car) => ({
       ...car,

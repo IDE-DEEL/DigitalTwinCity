@@ -154,6 +154,8 @@ function startMotion(id, car, from, to) {
   const dist = Math.hypot(to.x - from.x, to.y - from.y)
   const speed = baseSpeed() * SCREEN_SPEED_MULTIPLIER
 
+  console.log(car)
+
   motions.set(id, {
     car,
     from,
