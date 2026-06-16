@@ -117,18 +117,16 @@ export function useRouteBuilder() {
             const isGoingBack = toTile.x === prevTile.x && toTile.y === prevTile.y;
         
             if (isGoingBack) {
-                // Get the direction we came FROM to reach the current tile
-                const directionFromPrevToCurrent = getDirectionBetweenTiles(prevTile, fromTile);
-        
+                // Get the direction we are entering the current time from
+                const directionWeEnterFrom = OPPOSITE_DIRECTION[getDirectionBetweenTiles(prevTile, fromTile)];                
                 // For return moves, check if current tile has a lane that goes from incomingDir to incomingDir
-                // (same direction in and out)
                 const returnLaneExists = fromRotatedLanes.some(
-                    lane => lane.from === directionFromPrevToCurrent && lane.to === directionFromPrevToCurrent
+                    lane => lane.from === directionWeEnterFrom && lane.to === directionWeEnterFrom
                 );
         
                 if (!returnLaneExists) {
                     throw new Error(
-                        `Cannot return to (${toTile.x}, ${toTile.y}): no valid connection with same direction "${directionFromPrevToCurrent}" exists`
+                        `Cannot return to (${toTile.x}, ${toTile.y}): no valid connection with same direction "${directionWeEnterFrom}" exists`
                     );
                 }
             }
