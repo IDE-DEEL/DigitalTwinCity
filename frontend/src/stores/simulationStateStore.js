@@ -22,7 +22,12 @@ export const useSimulationStateStore = defineStore("simulationState", () => {
         resetSimulationState();
     });
 
-    watch(() => dashboardStore.cars, () => {
+    watch(() => dashboardStore.cars.map(car => ({
+        id: car.id,
+        routeName: car.routeName,
+        maxPackages: car.maxPackages,
+    })),
+    () => {
         resetSimulationState();
     }, { deep: true });
 
