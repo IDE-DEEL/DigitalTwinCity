@@ -6,7 +6,7 @@ import { addWaypointsToCarRoute } from "../logic/service/carService";
 import { convertWaypointsArrayFromSvgToMath, convertWaypointFromSvgToMath } from "../logic/utils/coordinateConverter";
 import { getHousesWithRoutesByScenarioKey, buildOrderedHouseInstancesOnRoutes } from "../logic/service/houseService";
 import { useMapStore } from "./mapStore";
-import { MAX_CARS, MIN_CARS, SIMULATION_SPEED_OPTIONS } from "../constants/constants";
+import { SIMULATION_SPEED_OPTIONS } from "../constants/constants";
 
 const defaultCarSpeed = 50;
 
