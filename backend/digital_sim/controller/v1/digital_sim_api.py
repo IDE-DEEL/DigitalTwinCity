@@ -96,8 +96,9 @@ async def websocket_simulation_endpoint(websocket: WebSocket):
                 
                 case "get_stats":
                     stats = simulation_service.get_current_stats()
+                    impact = simulation_service.calculate_trip_scores()
                     
-                    if stats is None:
+                    if stats is None or impact is None:
                         await websocket.send_json({
                             "command": "get_stats",
                             "status": "error",
@@ -107,7 +108,8 @@ async def websocket_simulation_endpoint(websocket: WebSocket):
                         await websocket.send_json({
                             "command": "get_stats",
                             "status": "success",
-                            "data": stats
+                            "data": stats,
+                            "impact": impact
                         })
                 
                 case "export_data":

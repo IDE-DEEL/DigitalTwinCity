@@ -6,8 +6,18 @@ from backend.digital_sim.constants import (
     AGENT_DISTANCE_TRAVELLED_KEY, AGENT_TIME_DRIVING_SECONDS_KEY, AGENT_PACKAGES_DELIVERED_KEY,
 )
 from backend.digital_sim.utils.coordinate_util import convert_waypoint_dicts_to_tuples
+from backend.score.scoreCalculator import TripData, calculate_score
+from backend.score.config import WEIGHTS
 import gc
 
+EXTRA_CONFIG = {
+    "wear_factor": 0.1,                 # arbitrary wear factor for EVs
+    "co2_emission_g_per_km": 0.0,       # EV = 0 emissions
+    "cost_per_km": 0.30,                # 30 cents per km
+    "revenue_per_package": 8.0,         # €8 per package delivered
+    "total_budget": 500.0,              # total budget for normalization
+    "is_rush_hour": False,
+}
 
 class SimulationService:
     def __init__(self):
@@ -182,6 +192,41 @@ class SimulationService:
         except Exception as e:
             print(f"Error exporting data to CSV: {e}")
             return None
+
+    def calculate_trip_scores(self) -> list[dict] | None:
+        """Calculate and return scores for each agent based on current simulation data."""
+        if not self.model or not self.model.agents:
+            return None
+
+        results = []
+
+        for agent in self.model.agents:
+            total_cost = EXTRA_CONFIG["cost_per_km"] * agent.distance_travelled
+            total_revenue = EXTRA_CONFIG["revenue_per_package"] * agent.packages_delivered
+            budget_used_pct = (total_cost / EXTRA_CONFIG["total_budget"]) * 100
+
+            trip = TripData(
+                co2_emission_g_per_km   = EXTRA_CONFIG["co2_emission_g_per_km"],
+                wear_factor             = EXTRA_CONFIG["wear_factor"],
+                distance_km             = agent.distance_travelled,
+                cost_per_km             = EXTRA_CONFIG["cost_per_km"],
+                revenue_per_package     = total_revenue,                # total revenue based on packages delivered
+                budget_used_pct         = min(budget_used_pct, 100),
+                is_rush_hour            = EXTRA_CONFIG["is_rush_hour"],
+                soc_start_pct           = agent.state_of_charge,         # NOT IMPLEMENTED: SoC decay
+                soc_end_pct             = agent.state_of_charge,
+                is_wrong_way            = False,
+                idle_time_sec           = agent.time_delivering_seconds,
+                speed_value             = agent.target_speed * 100,
+            )
+
+            score = calculate_score(trip, WEIGHTS)
+            results.append({
+                "id": agent.id,
+                **score
+            })
+
+        return results
         
     def dispose(self):
         """Destroy all simulation data."""
