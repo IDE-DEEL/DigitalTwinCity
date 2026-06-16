@@ -16,7 +16,7 @@
     {"x": 6, "y": 1, "type": "t_split", "variant": "t_split", "rotation": 270, "tileNumber": 14},
 
     {"x": 0, "y": 2, "type": "t_split", "variant": "t_split1", "rotation": 90, "tileNumber": 15},
-    {"x": 1, "y": 2, "type": "roundabout", "variant": "roundabout", "rotation": 270, "tileNumber": 16},
+    {"x": 1, "y": 2, "type": "roundabout", "variant": "roundabout", "rotation": 0, "tileNumber": 16},
     {"x": 2, "y": 2, "type": "straight", "variant": "straight6", "rotation": 0, "tileNumber": 17},
     {"x": 3, "y": 2, "type": "t_split", "variant": "t_split2", "rotation": 270, "tileNumber": 18},
     {"x": 4, "y": 2, "type": "curve", "variant": "curve1", "rotation": 180, "tileNumber": 19},
