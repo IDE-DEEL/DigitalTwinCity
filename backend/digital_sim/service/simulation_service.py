@@ -213,7 +213,7 @@ class SimulationService:
                 revenue_per_package     = total_revenue,                # total revenue based on packages delivered
                 budget_used_pct         = min(budget_used_pct, 100),
                 is_rush_hour            = EXTRA_CONFIG["is_rush_hour"],
-                soc_start_pct           = agent.state_of_charge,         # NOT IMPLEMENTED: SoC decay
+                soc_start_pct           = agent.initial_state_of_charge,
                 soc_end_pct             = agent.state_of_charge,
                 is_wrong_way            = False,
                 idle_time_sec           = agent.time_delivering_seconds,

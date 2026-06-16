@@ -9,7 +9,7 @@ from backend.digital_sim.constants import (
     HOUSE_PACKAGE_COUNT_KEY, HOUSE_ID_KEY, HOUSE_ROAD_COORDS_KEY, 
     DELTA_TIME_PER_STEP_IN_SECONDS, CAR_MAIN_ID_KEY,
     AGENT_STATUS_KEY, AGENT_DISTANCE_TRAVELLED_KEY, AGENT_PACKAGES_DELIVERED_KEY,
-    AGENT_PACKAGES_IN_CARGO_COUNT_KEY, AGENT_DEPOT_LOAD_COUNT_KEY,
+    AGENT_PACKAGES_IN_CARGO_COUNT_KEY, AGENT_DEPOT_LOAD_COUNT_KEY, AGENT_STATE_OF_CHARGE_KEY,
     AGENT_TIME_DRIVING_SECONDS_KEY, AGENT_TIME_DELIVERING_SECONDS_KEY,
     AGENT_TIME_PARKED_SECONDS_KEY, AGENT_TIME_LOADING_PACKAGES_SECONDS_KEY,
     MODEL_TOTAL_PACKAGES_IN_SCENARIO_KEY, MODEL_TOTAL_PACKAGES_UNDELIVERED_KEY,
@@ -42,6 +42,7 @@ class CarModel(mesa.Model):
             agent_reporters={
                 AGENT_STATUS_KEY: lambda agent: agent.status.name, # enum name of the agent's status
                 AGENT_DISTANCE_TRAVELLED_KEY: "distance_travelled",
+                AGENT_STATE_OF_CHARGE_KEY: lambda agent: round(agent.state_of_charge, 2),
                 AGENT_PACKAGES_DELIVERED_KEY: "packages_delivered",
                 AGENT_PACKAGES_IN_CARGO_COUNT_KEY: "packages_in_cargo_count",
                 AGENT_DEPOT_LOAD_COUNT_KEY: "depot_load_count",
@@ -108,6 +109,7 @@ class CarModel(mesa.Model):
                 "finished": agent.is_finished,
                 "maxPackages": agent.max_packages,
                 "status": agent.status.name,
+                "initial_state_of_charge": agent.initial_state_of_charge,
                 "state_of_charge": round(agent.state_of_charge, 2),
                 "packages_in_cargo": [
                     {
