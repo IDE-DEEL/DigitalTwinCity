@@ -2,15 +2,15 @@ name: digitaltwin
 
 services:
   # DuckDNS: Keep your dynamic IP address up to date with a subdomain of duckdns.org.
-  duckdns:
-    image: lscr.io/linuxserver/duckdns:543b6a4c-ls80
-    network_mode: bridge
-    environment:
-      - TZ=Europe/Amsterdam
-      - SUBDOMAINS=${DUCKDNS_DOMAIN}
-      - TOKEN=${DUCKDNS_TOKEN}
-      - UPDATE_IP=ipv4
-    restart: unless-stopped 
+  # duckdns:
+  #   image: lscr.io/linuxserver/duckdns:543b6a4c-ls80
+  #   network_mode: bridge
+  #   environment:
+  #     - TZ=Europe/Amsterdam
+  #     - SUBDOMAINS=${DUCKDNS_DOMAIN}
+  #     - TOKEN=${DUCKDNS_TOKEN}
+  #     - UPDATE_IP=ipv4
+  #   restart: unless-stopped 
 
   # Reverse proxy & TLS: Caddy ensures secure HTTPS connections and routes traffic to the correct services based on the domain.
   caddy:
