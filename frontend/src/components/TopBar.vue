@@ -44,10 +44,9 @@ const handleLogout = async () => {
         >
           {{ isLoggingOut ? langStore.getLabel('header.loggingOut') : langStore.getLabel('header.logout') }}
         </button>
-        <LangToggle></LangToggle>
+        <Switch/>
       </div>
-      <Switch/>
-
+      <div class="lang-container"><LangToggle/></div>
     </div>
   </header>
 </template>

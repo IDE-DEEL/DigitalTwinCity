@@ -66,68 +66,95 @@ for (const car of store.table_data) {
       y: pos?.y ?? 0,
       routeIndex: 0,
       initialized: false,
-      rotation: 0
-    };
+      rotation: 0,
+      speed: store.speed / 50,
+      allowed: false
+    }
   }
 }
 
+function updateCarTag(autoId, tagId) {
+  const car = store.car_data.find(c => c.auto_id === autoId)
+  if (!car) return
+
+  const state = carState.positions[autoId]
+  if (!state) return
+
+  // update huidige positie (belangrijk)
+  car.tag_id = tagId
+
+  const pos = tagMap.value[tagId]
+  if (!pos) return
+
+  state.x = pos.x
+  state.y = pos.y
+
+  state.allowed = true
+}
+
 function moveCars() {
-  const speed = store.speed / 50 // pixels per frame (pas aan)
-  
+  const speed = store.speed / 50
+
   for (const car of store.table_data) {
     if (!car.status) continue
 
     const state = carState.positions[car.auto_id]
     const tags = getRouteTags(car.route)
-
     if (!tags.length) continue
 
-    const currentTag = tags[state.routeIndex]
-    const nextTag = tags[state.routeIndex + 1]
-
-    const from = tagMap.value[currentTag]
-    const to = tagMap.value[nextTag]
-
-    if (!from) continue
-
-    // init positie
+    // Initialiseren
     if (!state.initialized) {
       const carInfo = store.car_data.find(c => c.auto_id === car.auto_id)
 
       if (!carInfo) continue
-
+      
       const startPos = tagMap.value[carInfo.tag_id]
-
+      
       if (!startPos) continue
-
+      
       state.x = startPos.x
       state.y = startPos.y
-      state.routeIndex = 0
+
+      const startIndex = tags.findIndex(tag => tag === carInfo.tag_id)
+      state.routeIndex = startIndex >= 0 ? startIndex : 0
       state.initialized = true
+
+      state.initialized = true
+      state.allowed = true // eerste stap mag altijd
     }
 
-    if (!to) {
-      // route klaar → reset of stop
-      state.routeIndex = 0
-      continue
-    }
+    const currentIndex = state.routeIndex
+    const nextIndex = (currentIndex + 1) % tags.length
+
+    const currentTag = tags[currentIndex]
+
+    if (!state.allowed) continue
+    
+    const nextTag = tags[nextIndex]
+    const from = tagMap.value[currentTag]
+    const to = tagMap.value[nextTag]
+
+    if (!from || !to) continue
 
     const dx = to.x - state.x
     const dy = to.y - state.y
     const dist = Math.sqrt(dx * dx + dy * dy)
 
     if (dist < speed) {
-      // volgende node
       state.x = to.x
       state.y = to.y
-      state.routeIndex++
-    } else {
-      // bewegen richting target
-      state.x += (dx / dist) * speed
-      state.y += (dy / dist) * speed
+
+      state.routeIndex = nextIndex
+      state.allowed = false
+
+      continue
     }
 
-    state.rotation = Math.atan2(dy, dx) * (180 / Math.PI) + 90
+    state.x += (dx / dist) * speed
+    state.y += (dy / dist) * speed
+
+    state.rotation =
+      Math.atan2(dy, dx) * (180 / Math.PI) + 90
   }
 }
 
@@ -235,7 +262,7 @@ const generatePath = ((route_name) => {
     }
   }
 
-  return path;
+  return path + "Z";
 })
 
 const getCarColor = (carId) => {

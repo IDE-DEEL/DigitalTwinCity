@@ -14,8 +14,6 @@ export const normalizeCarData = (payload) => {
   if (!Array.isArray(payload)) {
     return []
   }
-
-  console.log(payload)
   
   return payload
     .map((car) => ({
@@ -32,14 +30,15 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
     table_data: [
         {"status": true, "color": "#0000FF", "auto_id": "auto_A", "energie": 100, "pakketje": 2, "route": "Route 1", "visueel": true},
         {"status": true, "color": "#FF0000", "auto_id": "auto_B", "energie": 100, "pakketje": 4, "route": "Route 1", "visueel": false},
-        {"status": false, "color": "#008000", "auto_id": "auto_C", "energie": 100, "pakketje": 1, "route": "Route 1", "visueel": false},
+        {"status": true, "color": "#008000", "auto_id": "auto_C", "energie": 100, "pakketje": 1, "route": "Route 1", "visueel": false},
         {"status": false, "color": "#FFFF00", "auto_id": "auto_D", "energie": 100, "pakketje": 2, "route": "Route 1", "visueel": false},
         {"status": false, "color": "#800080", "auto_id": "auto_E", "energie": 100, "pakketje": 2, "route": "Route 1", "visueel": false}
     ],
 
     car_data: [
         {"auto_id": "auto_A", "tag_id": "5A:A5:97:E3:0A:41:89"},
-        {"auto_id": "auto_B", "tag_id": "5A:95:B3:DE:0A:41:89"}
+        {"auto_id": "auto_B", "tag_id": "5A:95:B3:DE:0A:41:89"},
+        {"auto_id": "auto_C", "tag_id": "53:EA:6B:00:63:00:01"}
     ],
 
     tag_positions: [
@@ -224,6 +223,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
             break
 
           case 'car_data':
+            console.log("car_data: " + payload)
             this.car_data = payload
             break
 
