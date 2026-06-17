@@ -8,7 +8,7 @@ export async function fetchMapData() {
 
     try{
         const [mapRes, compRes, rfidRes] = await Promise.all([
-            fetch('/data/test-map3.json'), 
+            fetch('/data/test-map4.json'), 
             fetch('/data/map-components.json'),
             fetch('/data/rfid.json')
         ]);

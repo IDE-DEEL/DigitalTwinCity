@@ -48,7 +48,7 @@ function send_route(car) {
             <td>
               <div class="car-id-container">
                 <div :style="{backgroundColor: car.color}" class="car-id-color"></div>
-                <div>{{ car.auto_id }}</div>
+                <div>{{ index += 1 }}</div>
               </div>
             </td>
             <td>{{ car.energie }} %</td>
