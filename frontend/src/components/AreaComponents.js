@@ -3,5 +3,7 @@ export { default as ControlPanel } from "./ControlPanel.vue";
 export { default as HouseLabelsOverlay } from "./HouseLabelsOverlay.vue";
 export { default as Login } from "./Login.vue";
 export { default as SimulationDisplay } from "./SimulationDisplay.vue";
-export { default as SimulationStatsModal } from "./SimulationStatsModal.vue";
+export { default as StatsModal } from "./StatsModal.vue";
 export { default as TopBar } from "./TopBar.vue";
+export { default as VisualizePanel } from "./VisualizePanel.vue";
+export { default as SimulationRunStats } from "./SimulationRunStats.vue";
