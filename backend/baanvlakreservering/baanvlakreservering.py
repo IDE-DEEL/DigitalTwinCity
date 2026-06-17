@@ -123,6 +123,7 @@ def notify_car_data_listeners():
             print(f"Failed to notify car data listener: {exc}")
 
 
+
 # Global flag controlling whether the vehicle is allowed to move
 start = True
 
@@ -174,7 +175,9 @@ def on_message(client, userdata, msg):
 
         # stops the car if there is any other car in the adjacent tags.
         for i in cars:
-            if cars[i] in Json_file[rfid]:
+            adjacent_tags = Json_file.get(rfid, [])
+
+            if cars[i] in adjacent_tags:
                 client.publish(f"car/{topic[1]}/cmd/Start", "False")
                 if not any(entry[0] == topic[1] for entry in car_stopped):
                     car_stopped.append([topic[1], i, cars[i]])
