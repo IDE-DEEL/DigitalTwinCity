@@ -75,6 +75,8 @@ export const LABELS = {
             maintainability: "Onderhoudbaarheid",
             total: "Totale score",
             download: "Download CSV",
+            category: "Categorie",
+            score: "Score",
         },
         rfidTags: {
             title: "RFID Tags",
@@ -230,6 +232,8 @@ export const LABELS = {
             maintainability: "Maintainability",
             total: "Combined score",
             download: "Download CSV",
+            category: "Category",
+            score: "Score",
         },
         rfidTags: {
             title: "RFID Tags",
