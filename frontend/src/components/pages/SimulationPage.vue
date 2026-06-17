@@ -7,7 +7,7 @@ import { useCarColors } from '../../composables/useCarColors.js';
 import { buildLane } from '../../logic/service/laneBuilder.js';
 import { normalizeDegree } from '../../logic/utils/rotation.js';
 import { Slider, DropDown, RadioGroup, SimulationTable, WebSocketStatus, RoutePolyline, Car } from '../CustomComponents.js';
-import { ControlPanel, SimulationDisplay, StatsModal, HouseLabelsOverlay, VisualizePanel, SimulationRunStats } from '../AreaComponents.js';
+import { ControlPanel, SimulationDisplay, StatsModal, HouseLabelsOverlay, VisualizePanel, SimulationRunStats, TripScore } from '../AreaComponents.js';
 import { devTileCoordinateOverlay, devLaneDebugOverlay, devHouseDetectionZonesOverlay, devRouteBuilder } from '../../development/DevtoolComponents.js';
 import '../../assets/MainContent.css';
 import '../../assets/SimulationPage.css';
@@ -17,8 +17,7 @@ import '../../assets/SimulationPage.css';
     Development mode flag
     =====================
 */
-//const isDevelopment = import.meta.env.DEV;
-const isDevelopment = true
+const isDevelopment = import.meta.env.DEV;
 
 /*
     =====================
@@ -36,7 +35,6 @@ const {
     stopSimulation,
     reconnectWebSocket,
     validateHousesReachability,
-    getStats,
     exportDataAsCSV,
 } = useDigitalSimulation(() => {
     isStatsModalOpen.value = true;
@@ -322,14 +320,15 @@ const toggleRouteBuilder = () => {
         <!-- Stats Modal -->
         <StatsModal
             :isOpen="isStatsModalOpen"
+            :title="langStore.getLabel('simStats.title')"
             @close="isStatsModalOpen = false"
         >
             <template #concerns-statistics>
-                <p>TODO: Implement concerns statistics</p>
+                <TripScore :scores="simulationStore.tripScores"/>
             </template>
             <template #run-statistics>
                 <SimulationRunStats
-                    :getStats="getStats"
+                    :simulationStats="simulationStore.simulationStats"
                     :exportDataAsCSV="exportDataAsCSV"
                 />
             </template>

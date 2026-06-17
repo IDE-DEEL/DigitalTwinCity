@@ -7,4 +7,4 @@ export { default as StatsModal } from "./StatsModal.vue";
 export { default as TopBar } from "./TopBar.vue";
 export { default as VisualizePanel } from "./VisualizePanel.vue";
 export { default as SimulationRunStats } from "./SimulationRunStats.vue";
-export { default as ConcernStats } from "./ConcernStats.vue";
+export { default as TripScore } from "./TripScore.vue";

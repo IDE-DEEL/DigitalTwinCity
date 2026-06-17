@@ -40,7 +40,7 @@ const handleDownloadCSV = () => {
         </slot>
 
         <button class="download-csv-button" @click="handleDownloadCSV">
-          <p>{{ langStore.getLabel('impactStats.download') }}</p>
+          <p>{{ langStore.getLabel('tripStats.download') }}</p>
         </button>
 
         <button class="modal-default-button" @click="$emit('close')">
@@ -50,12 +50,12 @@ const handleDownloadCSV = () => {
 
       <slot name="body">
         <div class="modal-body">
-          <p>{{ langStore.getLabel('impactStats.surroundings') }}: <span>{{ Number(store.results.environment).toFixed(1) }}</span></p>
-          <p>{{ langStore.getLabel('impactStats.economy') }}: <span>{{ Number(store.results.economic).toFixed(1) }}</span></p>
-          <p>{{ langStore.getLabel('impactStats.social') }}: <span>{{ Number(store.results.social).toFixed(1) }}</span></p>
-          <p>{{ langStore.getLabel('impactStats.energy') }}: <span>{{ Number(store.results.energy).toFixed(1) }}</span></p>
-          <p>{{ langStore.getLabel('impactStats.safety') }}: <span>{{ Number(store.results.safety).toFixed(1) }}</span></p>
-          <p>{{ langStore.getLabel('impactStats.maintainability') }}: <span>{{ Number(store.results.maintenance).toFixed(1) }}</span></p>
+          <p>{{ langStore.getLabel('tripStats.surroundings') }}: <span>{{ Number(store.results.environment).toFixed(1) }}</span></p>
+          <p>{{ langStore.getLabel('tripStats.economy') }}: <span>{{ Number(store.results.economic).toFixed(1) }}</span></p>
+          <p>{{ langStore.getLabel('tripStats.social') }}: <span>{{ Number(store.results.social).toFixed(1) }}</span></p>
+          <p>{{ langStore.getLabel('tripStats.energy') }}: <span>{{ Number(store.results.energy).toFixed(1) }}</span></p>
+          <p>{{ langStore.getLabel('tripStats.safety') }}: <span>{{ Number(store.results.safety).toFixed(1) }}</span></p>
+          <p>{{ langStore.getLabel('tripStats.maintainability') }}: <span>{{ Number(store.results.maintenance).toFixed(1) }}</span></p>
         </div>
       </slot>
 
@@ -63,7 +63,7 @@ const handleDownloadCSV = () => {
 
       <slot name="footer">
         <div class="modal-footer">
-          <p>{{ langStore.getLabel('impactStats.total') }}: <span>{{ Number(store.results.total).toFixed(1) }}</span></p>
+          <p>{{ langStore.getLabel('tripStats.total') }}: <span>{{ Number(store.results.total).toFixed(1) }}</span></p>
         </div>
       </slot>
     </div>

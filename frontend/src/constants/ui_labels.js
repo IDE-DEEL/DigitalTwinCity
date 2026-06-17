@@ -48,10 +48,13 @@ export const LABELS = {
             time: "Tijd",
             Score: "Score",
         },
+        statsModal: {
+            title: "Simulatie Statistieken",
+        },
         simStats: {
+            title: "Auto gegevens",
             emptyState: "Geen simulatiedata beschikbaar",
             loadingState: "Simulatiedata laden...",
-            title: "Simulatie Statistieken",
             distance: "Afstand",
             drivingTime: "Rijtijd",
             packagesDelivered: "Bezorgde pakketten",
@@ -65,8 +68,8 @@ export const LABELS = {
             statsRetrievalError: "Fout bij het ophalen van statistieken",
             statsCsvError: "Fout bij het downloaden van CSV",
         },
-        impactStats: {
-            title: "Statistieken",
+        tripStats: {
+            title: "Belangen",
             surroundings: "Omgeving",
             economy: "Economie",
             social: "Sociaal",
@@ -205,10 +208,13 @@ export const LABELS = {
             time: "Time",
             Score: "Score",
         },
+        statsModal: {
+            title: "Simulation Statistics",
+        },
         simStats: {
+            title: "Car data",
             emptyState: "No simulation data available",
             loadingState: "Loading simulation data...",
-            title: "Simulation Statistics",
             distance: "Distance",
             drivingTime: "Driving time",
             packagesDelivered: "Packages delivered",
@@ -222,8 +228,8 @@ export const LABELS = {
             statsRetrievalError: "Error occurred while retrieving statistics",
             statsCsvError: "Error occurred while downloading CSV",
         },
-        impactStats: {
-            title: "Statistics",
+        tripStats: {
+            title: "Concerns",
             surroundings: "Surroundings",
             economy: "Economy",
             social: "Social",
