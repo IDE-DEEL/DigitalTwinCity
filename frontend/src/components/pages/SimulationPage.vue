@@ -17,7 +17,8 @@ import '../../assets/SimulationPage.css';
     Development mode flag
     =====================
 */
-const isDevelopment = import.meta.env.DEV;
+//const isDevelopment = import.meta.env.DEV;
+const isDevelopment = true
 
 /*
     =====================

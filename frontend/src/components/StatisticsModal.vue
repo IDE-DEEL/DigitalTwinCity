@@ -59,6 +59,8 @@ const handleDownloadCSV = () => {
         </div>
       </slot>
 
+      <slot name="run-statistics"></slot>
+
       <slot name="footer">
         <div class="modal-footer">
           <p>{{ langStore.getLabel('impactStats.total') }}: <span>{{ Number(store.results.total).toFixed(1) }}</span></p>
