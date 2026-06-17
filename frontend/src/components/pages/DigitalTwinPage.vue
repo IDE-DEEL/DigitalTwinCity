@@ -14,6 +14,10 @@ const carState = reactive({
   positions: {}
 })
 
+onMounted(() => {
+  store.connect();
+})
+
 /* -------------------------
    ROUTES & TAGS
 --------------------------*/
