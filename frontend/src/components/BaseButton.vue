@@ -1,6 +1,7 @@
 <template>
     <button
         :disabled="disabled"
+        :type="type"
         @click="$emit('click', $event)"
         :class="['base-button', `base-button--${variant}`]"
     >
@@ -14,6 +15,10 @@ defineProps({
         type: Boolean,
         default: false,
     },
+    type: {
+        type: String,
+        default: 'button',
+    },
     variant: {
         type: String,
         default: 'primary',
@@ -26,6 +31,7 @@ defineProps({
             'tags',
             'dev-small',
             'websocket',
+            'login',
         ].includes(value),
     },
 });
@@ -112,5 +118,21 @@ defineEmits(['click']);
     height: 2rem;
     display: flex;
     justify-content: center;
+}
+
+.base-button--login {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    border-radius: var(--rounded-md);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.base-button--login:focus {
+    outline: none;
+    box-shadow:
+        0 0 0 2px #fff,
+        0 0 0 4px #3b82f6;
 }
 </style>
