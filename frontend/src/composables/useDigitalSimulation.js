@@ -153,6 +153,7 @@ export function useDigitalSimulation(onSimulationEndedCallback) {
 
                 if (response.status === "success") {
                     console.log("TripData impact stats: ", response.impact);
+                    simulationStore.concernStats = response.impact;
                     resolve(response.data);
                 } else {
                     console.warn("Stats request error:", response.message);
