@@ -6,241 +6,181 @@ import SimulationDisplay from '../SimulationDisplay.vue'
 import VisualizePanel from '../VisualizePanel.vue'
 import { onMounted, ref, reactive, computed, watch, onBeforeUnmount } from 'vue'
 import { useDigitalTwinStore, normalizeTagId } from '../../stores/digital-twin.js'
+import TagsVisualizer from '../TagsVisualizer.vue'
 
 const store = useDigitalTwinStore()
 
-const MIN_CAR_MOVE_MS = 300
-const MIN_ROUTE_SPEED = 10
-const MAX_ROUTE_SPEED = 100
-const PIXELS_PER_SECOND_PER_SPEED = 2.3
-const SCREEN_SPEED_MULTIPLIER = 0.4
-const DEFAULT_ROTATION = 0
-const TAG_TIMEOUT_MS = 5000
-
-let animationFrameId = null;
-let simulationInterval = null;
-
-/* -------------------------
-   STATE (SIM ENGINE)
---------------------------*/
 const carState = reactive({
-  positions: {},      // UI positions
-})
-
-const motions = new Map()
-const lastAngles = new Map()
-const carMeta = reactive({})
-
-/* -------------------------
-   INIT
---------------------------*/
-onMounted(() => {
-  store.connect()
-  requestAnimationFrame(animate)
-})
-
-onBeforeUnmount(() => {
-  cancelAnimationFrame(animationId)
+  positions: {}
 })
 
 /* -------------------------
-   TAGS
+   ROUTES & TAGS
 --------------------------*/
 function get_route_tags(route_name) {
   let tags = []
-  
-  // Collect all tags from the route
+
   for (let i = 0; i < store.routes.length; i++) {
     if (route_name === store.routes[i].route) {
       tags = store.routes[i].tags
-      break;
+      break
     }
   }
 
   return tags
 }
 
-function getCarRoute(carId) {
-  return store.table_data.find(
-    c => c.auto_id === carId
-  )?.route
-}
-
-function getOrderedTags(route_name) {
-  const tags = get_route_tags(route_name)
-
-  const factorX = store.factor_x || 1
-  const factorY = store.factor_y || 1
-
-  return tags.map((tagId, index) => {
-    const pos = store.tag_positions.find(
-      p => p.tag_id === tagId
-    )
-
-    return {
-      id: normalizeTagId(tagId),
-      index,
-      x: pos ? pos.tag_pos.x * factorX : 0,
-      y: pos ? pos.tag_pos.y * factorY : 0
+const tagMap = computed(() => {
+  const map = {}
+  for (const t of store.tag_positions) {
+    map[t.tag_id] = {
+      x: t.tag_pos.x,
+      y: t.tag_pos.y
     }
-  })
+  }
+  return map
+})
+
+function getRouteTags(routeName) {
+  const route = store.routes.find(r => r.route === routeName)
+  return route ? route.tags : []
 }
 
-function findTag(route_name, tagId) {
-  return getOrderedTags(route_name).find(
-    t => t.id === normalizeTagId(tagId)
-  )
-}
+const tagPosMap = Object.fromEntries(
+  store.tag_positions.map(t => [t.tag_id, t.tag_pos])
+);
 
-function nextTag(route_name, tagId) {
-  const tags = getOrderedTags(route_name)
-  const current = tags.find(
-    t => t.id === normalizeTagId(tagId)
-  )
+const carTagMap = Object.fromEntries(
+  store.car_data.map(c => [c.auto_id, c.tag_id])
+);
 
-  if (!current) return null
+for (const car of store.table_data) {
+  if (!carState.positions[car.auto_id] && car.status) {
 
-  return tags[(current.index + 1) % tags.length]
-}
+    const tagId = carTagMap[car.auto_id];
+    const pos = tagPosMap[tagId];
 
-/* -------------------------
-   SPEED
---------------------------*/
-function baseSpeed() {
-  const s = Math.min(Math.max(Number(store.speed) || 50, MIN_ROUTE_SPEED), MAX_ROUTE_SPEED)
-  return s * PIXELS_PER_SECOND_PER_SPEED
-}
-
-/* -------------------------
-   POSITION INTERPOLATION
---------------------------*/
-function lerp(a, b, t) {
-  return a + (b - a) * t
-}
-
-function getPosition(m, now) {
-  const p = Math.min((now - m.start) / m.duration, 1)
-  return {
-    x: lerp(m.from.x, m.to.x, p),
-    y: lerp(m.from.y, m.to.y, p),
-    progress: p
+    carState.positions[car.auto_id] = {
+      id: car.auto_id,
+      x: pos?.x ?? 0,
+      y: pos?.y ?? 0,
+      routeIndex: 0,
+      initialized: false,
+      rotation: 0,
+      speed: store.speed / 50,
+      allowed: false
+    }
   }
 }
 
-/* -------------------------
-   HEADING
---------------------------*/
-function getAngle(id, from, to) {
-  const dx = to.x - from.x
-  const dy = to.y - from.y
+function updateCarTag(autoId, tagId) {
+  const car = store.car_data.find(c => c.auto_id === autoId)
+  if (!car) return
 
-  let angle = Math.atan2(dy, dx) * 180 / Math.PI + 90
-  const prev = lastAngles.get(id)
+  const state = carState.positions[autoId]
+  if (!state) return
 
-  if (prev !== undefined) {
-    let diff = angle - prev
-    while (diff > 180) angle -= 360
-    while (diff < -180) angle += 360
-  }
+  // update huidige positie (belangrijk)
+  car.tag_id = tagId
 
-  lastAngles.set(id, angle)
-  return angle
+  const pos = tagMap.value[tagId]
+  if (!pos) return
+
+  state.x = pos.x
+  state.y = pos.y
+
+  state.allowed = true
 }
 
-/* -------------------------
-   MOTION ENGINE
---------------------------*/
-function startMotion(id, car, from, to) {
-  const dist = Math.hypot(to.x - from.x, to.y - from.y)
-  const speed = baseSpeed() * SCREEN_SPEED_MULTIPLIER
+function moveCars() {
+  const speed = store.speed / 50
 
-  console.log(car)
+  for (const car of store.table_data) {
+    if (!car.status) continue
 
-  motions.set(id, {
-    car,
-    from,
-    to,
-    start: performance.now(),
-    duration: Math.max(
-      MIN_CAR_MOVE_MS,
-      (dist / speed) * 1000
-    ),
-    angle: getAngle(id, from, to)
-  })
-}
+    const state = carState.positions[car.auto_id]
+    const tags = getRouteTags(car.route)
+    if (!tags.length) continue
 
-/* -------------------------
-   RENDER POSITION
---------------------------*/
-function setPosition(id, car, pos, angle = DEFAULT_ROTATION) {
-  carState.positions[id] = {
-    id,
-    auto_id: car.auto_id,
-    x: pos.x,
-    y: pos.y,
-    rotation: angle
-  }
-}
+    // Initialiseren
+    if (!state.initialized) {
+      const carInfo = store.car_data.find(c => c.auto_id === car.auto_id)
 
-/* -------------------------
-   WATCH (ONLY SYNC + START)
---------------------------*/
-watch(() => store.car_data, (cars) => {
-    cars.forEach(car => {
-      const id = car.auto_id
-      const routeName = getCarRoute(id)
-      if (!routeName) return
+      if (!carInfo) continue
       
-      const currentTag = findTag(routeName, car.tag_id)
-      if (!currentTag) return
+      const startPos = tagMap.value[carInfo.tag_id]
+      
+      if (!startPos) continue
+      
+      state.x = startPos.x
+      state.y = startPos.y
 
-      if (!carState.positions[id]) {
-        setPosition(id, car, currentTag)
-      }
+      const startIndex = tags.findIndex(tag => tag === carInfo.tag_id)
+      state.routeIndex = startIndex >= 0 ? startIndex : 0
+      state.initialized = true
 
-      const prevTag = carState.positions[id]?.tag_id
-      if (prevTag === currentTag.id) {
-        return
-      }
+      state.initialized = true
+      state.allowed = true // eerste stap mag altijd
+    }
 
-      setPosition(id, car, currentTag)
-      carState.positions[id].tag_id = currentTag.id
-      const next = nextTag(routeName, currentTag.id)
-      if (!next) return
+    const currentIndex = state.routeIndex
+    const nextIndex = (currentIndex + 1) % tags.length
 
-      startMotion(id, car, currentTag, next)
-    })
-  }, { immediate: true, deep: true}
+    const currentTag = tags[currentIndex]
+
+    if (!state.allowed) continue
+    
+    const nextTag = tags[nextIndex]
+    const from = tagMap.value[currentTag]
+    const to = tagMap.value[nextTag]
+
+    if (!from || !to) continue
+
+    const dx = to.x - state.x
+    const dy = to.y - state.y
+    const dist = Math.sqrt(dx * dx + dy * dy)
+
+    if (dist < speed) {
+      state.x = to.x
+      state.y = to.y
+
+      state.routeIndex = nextIndex
+      state.allowed = false
+
+      continue
+    }
+
+    state.x += (dx / dist) * speed
+    state.y += (dy / dist) * speed
+
+    state.rotation =
+      Math.atan2(dy, dx) * (180 / Math.PI) + 90
+  }
+}
+
+let rafId = null
+
+function loop() {
+  if (store.active) {
+    moveCars()
+  }
+
+  rafId = requestAnimationFrame(loop)
+}
+
+watch(
+  () => store.active,
+  (active) => {
+    if (active && !rafId) {
+      rafId = requestAnimationFrame(loop)
+    }
+  },
+  { immediate: true }
 )
 
-/* -------------------------
-   ANIMATION LOOP
---------------------------*/
-let animationId = null
-
-function animate(now) {
-  if (store.active) {
-    for (const [id, m] of motions) {
-      const p = Math.min((now - m.start) / m.duration, 1)
-      const x = m.from.x + (m.to.x - m.from.x) * p
-      const y = m.from.y + (m.to.y - m.from.y) * p
-
-      setPosition(id, m.car, { x, y }, m.angle)
-
-      if (p >= 1) {
-        motions.delete(id)
-        const routeName = getCarRoute(id)
-        const next = nextTag(routeName, m.to.tag_id || carState.positions[id]?.tag_id)
-
-        if (next) {
-          startMotion(id, m.car, m.to, next)
-        }
-      }
-    }
-  }
-  
-  animationId = requestAnimationFrame(animate)
-}
+onBeforeUnmount(() => {
+  cancelAnimationFrame(rafId)
+})
 
 /* -------------------------
    UI HELPERS
@@ -322,7 +262,7 @@ const generatePath = ((route_name) => {
     }
   }
 
-  return path;
+  return path + "Z";
 })
 
 const getCarColor = (carId) => {
@@ -354,7 +294,11 @@ const selectTag = ((tag) => {
     <div class="main-content">
 
     <!-- Visualize Panel -->
-    <VisualizePanel class="visualize-panel" />
+    <VisualizePanel>
+        <template #tags>
+            <TagsVisualizer></TagsVisualizer>
+        </template> 
+    </VisualizePanel>
 
     <!-- Simulation area + Bottom bar -->
     <SimulationDisplay class="display-field">
