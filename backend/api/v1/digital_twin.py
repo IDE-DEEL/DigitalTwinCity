@@ -6,8 +6,8 @@ from backend.baanvlakreservering.baanvlakreservering import (
     add_car_data_listener,
     getTag,
 )
-from score.scoreCalculator import TripData, calculate_score
-from score.config import  WEIGHTS, TRIP
+from backend.score.scoreCalculator import TripData, calculate_score
+from backend.score.config import  WEIGHTS, TRIP
 
 router = APIRouter()
 manager = ConnectionManager()

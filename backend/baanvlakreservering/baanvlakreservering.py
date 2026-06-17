@@ -4,8 +4,8 @@ import sys
 import json
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "score"))
-from score.scoreCalculator import TripData, calculate_score
-from score.config import  WEIGHTS, TRIP
+from backend.score.scoreCalculator import TripData, calculate_score
+from backend.score.config import  WEIGHTS, TRIP
 from typing import Callable
 
 from backend.core.config import settings
