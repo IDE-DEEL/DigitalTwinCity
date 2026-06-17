@@ -193,8 +193,12 @@ def on_message(client, userdata, msg):
         # the current route waypoint
         if rfid == route[chosen_route][index[topic[1]]][0]:
 
+            # Stop vehicle before changing direction
+            client.publish(f"car/{topic[1]}/cmd/Start", "False")
             # Send next direction command
             client.publish(f"car/{topic[1]}/cmd/Direction", route[chosen_route][index[topic[1]]][1])
+            # Resume movement
+            client.publish(f"car/{topic[1]}/cmd/Start", "True")
             # Advance to next route step
             index[topic[1]] += 1
 
