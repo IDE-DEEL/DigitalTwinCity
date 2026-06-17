@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import { useCarColors } from '../composables/useCarColors';
 import { useLanguageStore } from '../stores/index.js';
 import { getCurrentTimestamp } from '../logic/utils/timestamp.js';
@@ -19,33 +19,8 @@ const props = defineProps({
 
 const { getColorForCarAndRoute } = useCarColors();
 
-const stats = ref(null);
-const isLoading = ref(false);
 const isDownloading = ref(false);
 const error = ref(null);
-
-const loadStats = async () => {
-    console.log("Loading stats...");
-    isLoading.value = true;
-    error.value = null;
-    stats.value = null;
-
-    try {
-        const data = await props.simulationStats;
-        console.log("Stats loaded successfully:", data);
-        stats.value = data;
-    } catch (err) {
-        const errorMsg = err.message || langStore.getLabel('statsRetrievalError');
-        error.value = errorMsg;
-        console.error('Error loading stats:', err);
-    } finally {
-        isLoading.value = false;
-    }
-};
-
-onMounted(() => {
-    loadStats();
-});
 
 function formatDrivingTime(seconds) {
     if (seconds === null || seconds === undefined) return '0s';
@@ -101,19 +76,13 @@ const handleDownloadCSV = async () => {
 
 <template>
     <div class="stats-wrapper">
-
-        <!-- Loading state -->
-        <div v-if="isLoading" class="loading-state">
-            <p class="text-gray-600">{{ langStore.getLabel('simStats.loadingState') }}</p>
-        </div>
-        
         <!-- Error state -->
-        <div v-else-if="error" class="error-state">
+        <div v-if="error" class="error-state">
             <p class="text-red-700">{{ error }}</p>
         </div>
         
         <!-- Stats content -->
-        <div v-else-if="stats" class="stats-content">
+        <div v-else class="stats-content">
             <!-- Per-agent table -->
             <div>
                 <h3 class="table-header">{{ langStore.getLabel('simStats.title') }}</h3>
@@ -181,25 +150,10 @@ const handleDownloadCSV = async () => {
                 </button>
             </div>
         </div>
-    
-        <!-- Empty state -->
-        <div v-else class="empty-state">
-            {{ langStore.getLabel('simStats.emptyState') }}
-        </div>
     </div>
 </template>
 
 <style scoped>
-/* Loading state */
-.loading-state {
-    text-align: center;
-    padding: 2rem 0;
-}
-
-.loading-text {
-    color: #4b5563;
-}
-
 /* Error state */
 .error-state {
     background-color: #fef2f2;
@@ -212,17 +166,16 @@ const handleDownloadCSV = async () => {
     color: #b91c1c;
 }
 
+/* Table styling */
 .stats-wrapper {
     padding: 24px 48px;
 }
 
-/* Stats content */
 .stats-content {
     display: flex;
     flex-direction: column;
 }
 
-/* Table styling */
 .table-header {
     font-size: var(--text-lg);
     font-weight: var(--font-semibold);
@@ -243,6 +196,7 @@ const handleDownloadCSV = async () => {
 .table-header-row {
     background-color: #f3f4f6;
     border-bottom: 1px solid #d1d5db;
+    font-size: var(--text-base);
 }
 
 .table-header-cell {
@@ -262,14 +216,15 @@ const handleDownloadCSV = async () => {
 .table-body-row {
     border-bottom: 1px solid #e5e7eb;
     transition: background-color 0.2s;
+    background: white;
 }
 
 .table-body-row:hover {
-    background-color: #f9fafb;
+    background-color: var(--color-table-gray2);
 }
 
 .table-cell {
-    padding: 0.5rem 1rem;
+    padding: 0.25rem 1rem;
     color: #374151;
 }
 
@@ -306,7 +261,6 @@ const handleDownloadCSV = async () => {
 .totals-content {
     display: flex;
     flex-direction: column;
-    /* gap: 0.5rem; */
 }
 
 .totals-row {
@@ -327,11 +281,6 @@ const handleDownloadCSV = async () => {
     color: #4b5563;
 }
 
-.totals-label-sm {
-    color: #4b5563;
-    font-size: 0.875rem;
-}
-
 .totals-value {
     font-weight: var(--font-semibold);
     color: #111827;
@@ -344,12 +293,5 @@ const handleDownloadCSV = async () => {
 
 .download-button {
     width: 100%;
-}
-
-/* Empty state */
-.empty-state {
-    text-align: center;
-    padding: 2rem 0;
-    color: #4b5563;
 }
 </style>
