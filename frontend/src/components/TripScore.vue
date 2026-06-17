@@ -1,6 +1,7 @@
 <script setup>
 import { useLanguageStore } from '../stores/index.js';
 import { getCurrentTimestamp } from '../logic/utils/timestamp.js';
+import { BaseButton } from './CustomComponents.js';
 
 const langStore = useLanguageStore();
 
@@ -100,9 +101,9 @@ const handleDownloadCSV = () => {
             </div>
             <div>
                 
-                <button class="download-csv-button" @click="handleDownloadCSV">
+                <BaseButton variant="stats-modal" @click="handleDownloadCSV">
                     {{ langStore.getLabel('tripStats.download') }}
-                </button>
+                </BaseButton>
             </div>
         </div>
     </div>
@@ -169,9 +170,5 @@ const handleDownloadCSV = () => {
     font-weight: var(--font-semibold);
     display: flex;
     justify-content: space-between;
-}
-
-.download-csv-button {
-  width: 100%;
 }
 </style>

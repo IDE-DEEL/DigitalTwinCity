@@ -3,19 +3,19 @@
         <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl max-h-[90vh] overflow-auto">
             <!-- Header -->
             <div class="sticky top-0 bg-white border-b border-gray-300 p-6 pt-3 pb-3 flex items-center justify-between">
-                <h2 class="text-xl font-bold text-dark">{{ langStore.getLabel('statsModal.title') }}</h2>
-                <button
+                <h2 class="text-xl font-bold text-dark">{{ langStore.getLabel('statsModal.simTitle') }}</h2>
+                <BaseButton
                     @click="emit('close')"
-                    class="text-gray-500 hover:text-gray-700 text-2xl font-bold leading-none"
+                    variant="x"
                 >
                     {{ langStore.getLabel('misc.closeButton') }}
-                </button>
+                </BaseButton>
             </div>
 
             <!-- Concerns Statistics -->
             <slot name="concerns-statistics"></slot>
 
-            <hr class="section-divider"/> 
+            <hr v-if="$slots['concerns-statistics'] && $slots['run-statistics']" class="section-divider" /> 
 
             <!-- Run Statistics -->
             <slot name="run-statistics"></slot>
@@ -26,6 +26,7 @@
 <script setup>
 import { onMounted, onBeforeUnmount } from 'vue';
 import { useLanguageStore } from '../stores/index.js';
+import { BaseButton } from './CustomComponents.js';
 
 const langStore = useLanguageStore();
 

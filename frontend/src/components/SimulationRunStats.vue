@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { useCarColors } from '../composables/useCarColors';
 import { useLanguageStore } from '../stores/index.js';
 import { getCurrentTimestamp } from '../logic/utils/timestamp.js';
+import { BaseButton } from './CustomComponents.js';
 
 const langStore = useLanguageStore();
 
@@ -97,7 +98,7 @@ const handleDownloadCSV = async () => {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="agent in stats.agents" :key="agent.id" class="table-body-row">
+                            <tr v-for="agent in simulationStats.agents" :key="agent.id" class="table-body-row">
                                 <td class="table-cell table-cell-left">
                                     <div class="agent-id-cell">
                                         <div
@@ -122,32 +123,32 @@ const handleDownloadCSV = async () => {
                 <div class="totals-content">
                     <div class="totals-row">
                         <span class="totals-label">{{ langStore.getLabel('simStats.totalDistance') }}:</span>
-                        <span class="totals-value">{{ stats.totals.total_distance.toFixed(2) }} km</span>
+                        <span class="totals-value">{{ simulationStats.totals.total_distance.toFixed(2) }} km</span>
                     </div>
                     <div class="totals-row">
                         <span class="totals-label">{{ langStore.getLabel('simStats.totalDrivingTime') }}:</span>
-                        <span class="totals-value">{{ formatDrivingTime(stats.totals.total_time_driving) }}</span>
+                        <span class="totals-value">{{ formatDrivingTime(simulationStats.totals.total_time_driving) }}</span>
                     </div>
                     <div class="totals-row">
                         <span class="totals-label">{{ langStore.getLabel('simStats.totalPackages') }}:</span>
-                        <span class="totals-value">{{ stats.totals.total_packages_delivered }}</span>
+                        <span class="totals-value">{{ simulationStats.totals.total_packages_delivered }}</span>
                     </div>
                     <div class="totals-row totals-row-last">
                         <span>{{ langStore.getLabel('simStats.totalsSteps') }}:</span>
-                        <span class="font-mono">{{ stats.step_count }}</span>
+                        <span class="font-mono">{{ simulationStats.step_count }}</span>
                     </div>
                 </div>
             </div>
             
             <!-- Download button -->
             <div class="button-container">
-                <button
+                <BaseButton
                     @click="handleDownloadCSV"
                     :disabled="isDownloading"
-                    :class="['download-button', isDownloading ? 'download-button-disabled' : 'download-button-enabled']"
+                    variant="stats-modal"
                     >
                     {{ isDownloading ? langStore.getLabel('simStats.downloadingCsv') : langStore.getLabel('simStats.downloadCsv') }}
-                </button>
+                </BaseButton>
             </div>
         </div>
     </div>
@@ -289,9 +290,5 @@ const handleDownloadCSV = async () => {
 /* Button styling */
 .button-container {
     display: flex;
-}
-
-.download-button {
-    width: 100%;
 }
 </style>

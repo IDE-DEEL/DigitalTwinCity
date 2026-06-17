@@ -1,5 +1,4 @@
 <script setup>
-import '../assets/RadioGroup.css';
 import { useLanguageStore } from '../stores/index.js';
 
 const langStore = useLanguageStore();

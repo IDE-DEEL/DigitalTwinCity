@@ -6,7 +6,7 @@ import { useDigitalSimulation } from '../../composables/useDigitalSimulation.js'
 import { useCarColors } from '../../composables/useCarColors.js';
 import { buildLane } from '../../logic/service/laneBuilder.js';
 import { normalizeDegree } from '../../logic/utils/rotation.js';
-import { Slider, DropDown, RadioGroup, SimulationTable, WebSocketStatus, RoutePolyline, Car } from '../CustomComponents.js';
+import { Slider, DropDown, RadioGroup, SimulationTable, WebSocketStatus, RoutePolyline, Car, BaseButton } from '../CustomComponents.js';
 import { ControlPanel, SimulationDisplay, StatsModal, HouseLabelsOverlay, VisualizePanel, SimulationRunStats, TripScore } from '../AreaComponents.js';
 import { devTileCoordinateOverlay, devLaneDebugOverlay, devHouseDetectionZonesOverlay, devRouteBuilder } from '../../development/DevtoolComponents.js';
 import '../../assets/MainContent.css';
@@ -165,21 +165,21 @@ const toggleRouteBuilder = () => {
 
         <div v-if="isDevelopment" class="devtool-container">
             <!-- Developer tool buttons (only in development mode) -->
-            <button type="button" :class="{ 'active': showDevLaneDebug }" id="devtool-button" @click="toggleLaneDebug">
+            <BaseButton :class="{ 'active': showDevLaneDebug }" id="devtool-button" @click="toggleLaneDebug">
                 {{ showDevLaneDebug ? 'Hide lane overlay' : 'Show lane overlay' }}
-            </button>
+            </BaseButton>
 
-            <button type="button" :class="{ 'active': showDevTileCoordDebug }" id="devtool-button" @click="toggleTileCoordDebug">
+            <BaseButton :class="{ 'active': showDevTileCoordDebug }" id="devtool-button" @click="toggleTileCoordDebug">
                 {{ showDevTileCoordDebug ? 'Hide tile coords overlay' : 'Show tile coords overlay' }}
-            </button>
+            </BaseButton>
 
-            <button type="button" :class="{ 'active': showDevRouteBuilder }" id="devtool-button" @click="toggleRouteBuilder">
+            <BaseButton :class="{ 'active': showDevRouteBuilder }" id="devtool-button" @click="toggleRouteBuilder">
                 {{ showDevRouteBuilder ? 'Hide route builder' : 'Show route builder' }}
-            </button>
+            </BaseButton>
 
-            <button type="button" :class="{ 'active': showDevHouseDetectionZones }" id="devtool-button" @click="toggleHouseDetectionZones">
+            <BaseButton :class="{ 'active': showDevHouseDetectionZones }" id="devtool-button" @click="toggleHouseDetectionZones">
                 {{ showDevHouseDetectionZones ? 'Hide house zones' : 'Show house zones' }}
-            </button>
+            </BaseButton>
         </div>
 
             <!-- Visualize Panel -->
@@ -307,12 +307,12 @@ const toggleRouteBuilder = () => {
             <!-- Simulation speed, start and stop controls + stats modal open button -->
             <template #simulation-controls>
                 <div class="stats-button-container">
-                    <button @click="handleStatsOpen" :disabled="!simulationStore.hasSimulated"> {{ langStore.getLabel('generalStats.title') }} </button>
+                    <BaseButton @click="handleStatsOpen" :disabled="!simulationStore.hasSimulated"> {{ langStore.getLabel('generalStats.title') }} </BaseButton>
                 </div>
 
                 <div class="button-area">
-                    <button @click="handleSimulationStart" :disabled="simulationStore.isSimulating || allCarsHaveInactiveRoute"> {{ langStore.getLabel('controls.startButton') }} </button>
-                    <button @click="handleSimulationStop" :disabled="!simulationStore.isSimulating"> {{ langStore.getLabel('controls.stopButton') }} </button>
+                    <BaseButton @click="handleSimulationStart" :disabled="simulationStore.isSimulating || allCarsHaveInactiveRoute"> {{ langStore.getLabel('controls.startButton') }} </BaseButton>
+                    <BaseButton @click="handleSimulationStop" :disabled="!simulationStore.isSimulating"> {{ langStore.getLabel('controls.stopButton') }} </BaseButton>
                 </div>
             </template>
         </ControlPanel>

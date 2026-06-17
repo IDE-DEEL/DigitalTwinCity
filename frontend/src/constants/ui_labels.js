@@ -49,7 +49,9 @@ export const LABELS = {
             Score: "Score",
         },
         statsModal: {
-            title: "Simulatie Statistieken",
+            simTitle: "Simulatie Statistieken",
+            twinTitle: "Digital Twin Statistieken",
+
         },
         simStats: {
             title: "Auto gegevens",
@@ -159,7 +161,7 @@ export const LABELS = {
             codeDelete: "Verwijderen",
         },
         misc: {
-            closeButton: "x",
+            closeButton: "X",
         },
     },
     en: {
@@ -209,7 +211,8 @@ export const LABELS = {
             Score: "Score",
         },
         statsModal: {
-            title: "Simulation Statistics",
+            simTitle: "Simulation Statistics",
+            twinTitle: "Digital Twin Statistics",
         },
         simStats: {
             title: "Car data",
@@ -319,7 +322,7 @@ export const LABELS = {
             codeDelete: "Delete",
         },
         misc: {
-            closeButton: "x",
+            closeButton: "X",
         },
     },
 };

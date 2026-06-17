@@ -93,19 +93,19 @@
 
       <!-- Action buttons -->
       <div class="flex gap-1">
-        <button
+        <BaseButton
           @click="resetRoute"
-          class="flex-1 px-2 py-1 text-xs rounded border border-gray-400 bg-white hover:bg-gray-100"
+          variant="dev-small"
         >
           Reset
-        </button>
-        <button
+        </BaseButton>
+        <BaseButton
           v-if="routeComplete && routeTiles.length > 2"
           @click="handleDevCopyRoute"
-          class="flex-1 px-2 py-1 text-xs rounded border border-green-400 bg-green-50 hover:bg-green-100 font-semibold"
+            variant="dev-small"
         >
           Copy
-        </button>
+        </BaseButton>
       </div>
 
       <!-- Copy feedback -->
@@ -122,6 +122,7 @@
 <script setup>
 import { DEPOT_ENTRANCE, DEPOT_EXIT, MAP_COLUMNS, MAP_ROWS } from '../constants/constants';
 import { useRouteBuilder } from '../composables/useRouteBuilder';
+import { BaseButton } from '../components/CustomComponents.js';
 
 const isActive = defineModel('isActive', { type: Boolean, default: false });
 
