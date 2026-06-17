@@ -132,11 +132,17 @@ start = True
 def on_connect(client, userdata, flags, reason_code, properties):
     if reason_code == 0:
         print("Connected to MQTT")
-        client.subscribe("car/auto_A/data/LastRFID")
-        client.subscribe("car/auto_B/data/LastRFID")
-        client.subscribe("car/auto_C/data/LastRFID")
-        client.subscribe("car/auto_D/data/LastRFID")
-        client.subscribe("car/auto_E/data/LastRFID")
+        topics = [
+            "car/auto_A/data/LastRFID",
+            "car/auto_B/data/LastRFID",
+            "car/auto_C/data/LastRFID",
+            "car/auto_D/data/LastRFID",
+            "car/auto_E/data/LastRFID",
+        ]
+
+        for topic in topics:
+            result, mid = client.subscribe(topic)
+            print(f"Subscribed to {topic}: result={result}, mid={mid}")
     else:
         print("Connection failed:", reason_code)
 
