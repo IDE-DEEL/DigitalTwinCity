@@ -6,6 +6,7 @@ import SimulationDisplay from '../SimulationDisplay.vue'
 import VisualizePanel from '../VisualizePanel.vue'
 import { onMounted, ref, reactive, computed, watch, onBeforeUnmount } from 'vue'
 import { useDigitalTwinStore, normalizeTagId } from '../../stores/digital-twin.js'
+import TagsVisualizer from '../TagsVisualizer.vue'
 
 const store = useDigitalTwinStore()
 
@@ -354,7 +355,11 @@ const selectTag = ((tag) => {
     <div class="main-content">
 
     <!-- Visualize Panel -->
-    <VisualizePanel class="visualize-panel" />
+    <VisualizePanel>
+        <template #tags>
+            <TagsVisualizer></TagsVisualizer>
+        </template> 
+    </VisualizePanel>
 
     <!-- Simulation area + Bottom bar -->
     <SimulationDisplay class="display-field">

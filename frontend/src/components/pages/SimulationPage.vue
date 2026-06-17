@@ -183,6 +183,13 @@ const toggleRouteBuilder = () => {
             </button>
         </div>
 
+            <!-- Visualize Panel -->
+        <VisualizePanel class="visualize-panel" >
+            <template #scores>
+                <TagsVisualizer></TagsVisualizer>
+            </template> 
+        </VisualizePanel>
+
         <!-- Simulation area + Bottom bar -->
         <SimulationDisplay class="display-field">
             <!-- Devtool: coordinate picker -->
