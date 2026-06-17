@@ -23,6 +23,8 @@ class CarAgent(mesa.Agent):
         self.max_packages = max_packages
         self.controller = MovementController(waypoints=route.waypoints, target_speed=self.target_speed)
         self.packages_in_cargo = []
+        self._last_distance_travelled = 0.0
+        self.initial_state_of_charge = 100.0
         self.state_of_charge = 100.0
         
         # Delivery state
@@ -52,12 +54,13 @@ class CarAgent(mesa.Agent):
         4. Status time tracking
         """
         dt = self.model.delta_time
-        self.handle_package_pickup(dt)
-        self.handle_package_delivery(dt)
-        self.handle_movement(dt)
-        self.update_status_tracking(dt)
+        self._handle_package_pickup(dt)
+        self._handle_package_delivery(dt)
+        self._handle_movement(dt)
+        self._update_status_tracking(dt)
+        self._update_battery_usage() # note: battery decay is currently purely cosmetic for statistics, it doesn't affect the car's ability to move or deliver packages yet
 
-    def handle_package_pickup(self, dt: float):
+    def _handle_package_pickup(self, dt: float):
         """Handle package pickup logic.
         
         First: pick up available packages if parked and has capacity.
@@ -73,7 +76,7 @@ class CarAgent(mesa.Agent):
         # Second: process package pickup time
         self._pickup_packages(dt)
 
-    def handle_package_delivery(self, dt: float):
+    def _handle_package_delivery(self, dt: float):
         """Handle package delivery logic.
 
         Checks if in delivery zones and handles ongoing deliveries.
@@ -86,7 +89,7 @@ class CarAgent(mesa.Agent):
         else:
             self._check_for_delivery_zone()
 
-    def handle_movement(self, dt: float):
+    def _handle_movement(self, dt: float):
         """Handle movement along the route.
         
         Args:
@@ -106,7 +109,7 @@ class CarAgent(mesa.Agent):
         if can_move:
             self.controller.update()
 
-    def update_status_tracking(self, dt: float):
+    def _update_status_tracking(self, dt: float):
         """Track time spent in each status.
         
         Args:
@@ -347,3 +350,18 @@ class CarAgent(mesa.Agent):
         # If we picked up packages and the route is already finished, reset for another trip
         if packages_picked_up and self.controller.finished:
             self._reset_route()
+    
+    def _update_battery_usage(self):
+        distance_this_step = (
+            self.distance_travelled -
+            self._last_distance_travelled
+        )
+
+        self._last_distance_travelled = self.distance_travelled
+
+        battery_used = distance_this_step * 0.05
+
+        self.state_of_charge = max(
+            0.0,
+            self.state_of_charge - battery_used
+        )

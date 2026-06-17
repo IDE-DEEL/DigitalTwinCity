@@ -3,6 +3,7 @@ import "../assets/Table.css"
 import { watch } from 'vue'
 import { useDigitalTwinStore } from '../stores/digital-twin.js'
 import { useLanguageStore } from '../stores/index.js';
+import { BaseButton } from './CustomComponents.js';
 
 const store = useDigitalTwinStore()
 const langStore = useLanguageStore();
@@ -68,7 +69,7 @@ function send_route(car) {
                 <option v-for="r in store.routes" :key="r.route" :value="r.route" @change="send_route(car)">{{ r.route }}</option>
               </select>
             </td>
-            <td><button class="visualize" @click="visualizing(car)">{{ car.visueel ? langStore.getLabel('carTable.hideRoute') : langStore.getLabel('carTable.showRoute') }}</button></td>
+            <td><BaseButton @click="visualizing(car)">{{ car.visueel ? langStore.getLabel('carTable.hideRoute') : langStore.getLabel('carTable.showRoute') }}</BaseButton></td>
           </tr>
         </tbody>
       </table>

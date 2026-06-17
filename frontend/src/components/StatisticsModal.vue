@@ -1,72 +1,81 @@
-<script setup>
-import '../assets/StatisticsModal.css'
-import { useDigitalTwinStore } from '../stores/digital-twin.js'
-import { useLanguageStore } from '../stores/index.js';
+<template>
+    <div v-if="isOpen" @click.self="closeModal" class="fixed backdrop-blur-xs bg-black/40 inset-0 bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl max-h-[90vh] overflow-auto">
+            <!-- Header -->
+            <div class="sticky top-0 bg-white border-b border-gray-300 p-6 pt-3 pb-3 flex items-center justify-between">
+                <h2 class="text-xl font-bold text-dark">{{ langStore.getLabel('statsModal.simTitle') }}</h2>
+                <BaseButton
+                    @click="emit('close')"
+                    variant="x"
+                >
+                    {{ langStore.getLabel('misc.closeButton') }}
+                </BaseButton>
+            </div>
 
-const store = useDigitalTwinStore()
+            <!-- Concerns Statistics -->
+            <slot name="concerns-statistics"></slot>
+
+            <hr v-if="$slots['concerns-statistics'] && $slots['run-statistics']" class="section-divider" /> 
+
+            <!-- Run Statistics -->
+            <slot name="run-statistics"></slot>
+        </div>
+    </div>
+</template>
+
+<script setup>
+import { onMounted, onBeforeUnmount } from 'vue';
+import { useLanguageStore } from '../stores/index.js';
+import { BaseButton } from './CustomComponents.js';
+
 const langStore = useLanguageStore();
 
-const handleDownloadCSV = () => {
-    // 1. Bouw de CSV tekst op vanuit de store
-    const r = store.results;
-    const csvData = [
-        ['Categorie', 'Score'],
-        ['Omgeving', Number(r.environment || 0).toFixed(1)],
-        ['Economie', Number(r.economic || 0).toFixed(1)],
-        ['Sociaal', Number(r.social || 0).toFixed(1)],
-        ['Energie', Number(r.energy || 0).toFixed(1)],
-        ['Veiligheid', Number(r.safety || 0).toFixed(1)],
-        ['Onderhoudbaarheid', Number(r.maintenance || 0).toFixed(1)],
-        ['Totale score', Number(r.total || 0).toFixed(1)]
-    ].map(row => row.join(',')).join('\n');
+const props = defineProps({
+    isOpen: {
+        type: Boolean,
+        required: true
+    },
+    title: {
+        type: String,
+        default: ''
+    }
+});
 
-    const timestamp = new Date().toISOString().split('T')[0];
+const emit = defineEmits(['close']);
 
-    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `DEEL-simulation_${timestamp}.csv`;
-    link.click();
+const closeModal = () => {
+    emit('close');
 };
 
+const handleKeyDown = (event) => {
+    if (event.key === 'Escape' && props.isOpen) {
+        closeModal();
+    }
+};
+
+onMounted(() => {
+    window.addEventListener('keydown', handleKeyDown);
+});
+
+onBeforeUnmount(() => {
+    window.removeEventListener('keydown', handleKeyDown);
+});
 </script>
 
-<template>
-<div class="modal-mask">
-  <div class="modal-wrapper">
-    <div class="modal-container">
-      <div class="modal-header">
-        <slot name="header">
-        </slot>
+<style scoped>
+/* Ensure modal is on top of everything */
+:deep(.fixed) {
+    z-index: 50;
+}
 
-        <button class="download-csv-button" @click="handleDownloadCSV">
-          <p>{{ langStore.getLabel('impactStats.download') }}</p>
-        </button>
+.header {
+    background: var(--color-primary-gray1);
+}
 
-        <button class="modal-default-button" @click="$emit('close')">
-          <p>{{ langStore.getLabel('misc.closeButton') }}</p>
-        </button>
-      </div>
-
-      <slot name="body">
-        <div class="modal-body">
-          <p>{{ langStore.getLabel('impactStats.surroundings') }}: <span>{{ Number(store.results.environment).toFixed(1) }}</span></p>
-          <p>{{ langStore.getLabel('impactStats.economy') }}: <span>{{ Number(store.results.economic).toFixed(1) }}</span></p>
-          <p>{{ langStore.getLabel('impactStats.social') }}: <span>{{ Number(store.results.social).toFixed(1) }}</span></p>
-          <p>{{ langStore.getLabel('impactStats.energy') }}: <span>{{ Number(store.results.energy).toFixed(1) }}</span></p>
-          <p>{{ langStore.getLabel('impactStats.safety') }}: <span>{{ Number(store.results.safety).toFixed(1) }}</span></p>
-          <p>{{ langStore.getLabel('impactStats.maintainability') }}: <span>{{ Number(store.results.maintenance).toFixed(1) }}</span></p>
-        </div>
-      </slot>
-
-      <slot name="run-statistics"></slot>
-
-      <slot name="footer">
-        <div class="modal-footer">
-          <p>{{ langStore.getLabel('impactStats.total') }}: <span>{{ Number(store.results.total).toFixed(1) }}</span></p>
-        </div>
-      </slot>
-    </div>
-  </div>
-</div>
-</template>
+.section-divider {
+    height: 2px;
+    width: 90%;
+    margin: auto;
+    background: linear-gradient(to right, var(--color-primary-blue-hover), var(--color-primary-blue));
+}
+</style>

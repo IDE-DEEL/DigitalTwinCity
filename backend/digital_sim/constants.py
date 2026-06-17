@@ -40,6 +40,7 @@ PACKAGE_PICKUP_TIME_IN_SECONDS = 0.5
 # Agent property keys
 AGENT_STATUS_KEY = "status"
 AGENT_DISTANCE_TRAVELLED_KEY = "distance_travelled"
+AGENT_STATE_OF_CHARGE_KEY = "state_of_charge"
 AGENT_PACKAGES_DELIVERED_KEY = "packages_delivered"
 AGENT_PACKAGES_IN_CARGO_COUNT_KEY = "packages_in_cargo_count"
 AGENT_DEPOT_LOAD_COUNT_KEY = "depot_load_count"

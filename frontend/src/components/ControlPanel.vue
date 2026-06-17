@@ -5,7 +5,8 @@ import Slider from './Slider.vue'
 import Input from './Input.vue'
 import DropDown from './DropDown.vue'
 import Table from './Table.vue'
-import StatisticsModal from './StatisticsModal.vue'
+import { BaseButton } from './CustomComponents.js'
+import { StatisticsModal, TripScore } from './AreaComponents.js'
 import { useDigitalTwinStore } from '../stores/digital-twin.js'
 import { useLanguageStore } from '../stores/index.js';
 import '../assets/Button.css'
@@ -93,20 +94,20 @@ const formattedTime = computed(() => {
           <div class="timer-area">
             <!-- Deze nieuwe div houdt de twee knoppen netjes naast elkaar -->
             <div class="timer-button-row">
-              <button class="timer-button" @click="start">{{ langStore.getLabel('controls.startButton') }}</button>
-              <button class="timer-button" @click="stop">{{ langStore.getLabel('controls.stopButton') }}</button>
+              <BaseButton variant="timer" @click="start">{{ langStore.getLabel('controls.startButton') }}</BaseButton>
+              <BaseButton variant="timer" @click="stop">{{ langStore.getLabel('controls.stopButton') }}</BaseButton>
             </div>
             <!-- De tijd komt hier nu automatisch strak onder te staan -->
             <p>{{ langStore.getLabel('generalStats.time') }}: {{ formattedTime }}</p>
           </div>
 
           <div class="score-area">
-            <button class="statistics-button" @click="showModal = true"> {{ langStore.getLabel('generalStats.title') }} </button>
+            <BaseButton variant="statistics" class="statistics-button" @click="showModal = true"> {{ langStore.getLabel('generalStats.title') }} </BaseButton>
             <p>{{ langStore.getLabel('generalStats.Score') }}: {{ Number(store.results.total).toFixed(1) }}</p>
           </div>
-          <StatisticsModal v-if="showModal" @close="showModal = false">
-            <template #header>
-              <h2> {{ langStore.getLabel('generalStats.title') }} </h2>
+          <StatisticsModal :is-open="showModal" @close="showModal = false" :title="langStore.getLabel('statsModal.twinTitle')">
+            <template #concerns-statistics>
+                <TripScore/>
             </template>
           </StatisticsModal>
         </slot>

@@ -1,105 +1,15 @@
-<template>
-    <!-- Loading state -->
-    <div v-if="isLoading" class="text-center py-8">
-        <p class="text-gray-600">{{ langStore.getLabel('simStats.loadingState') }}</p>
-    </div>
-
-    <!-- Error state -->
-    <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-md p-4">
-        <p class="text-red-700">{{ error }}</p>
-    </div>
-
-    <!-- Stats content -->
-    <div v-else-if="stats">
-        <!-- Per-agent table -->
-        <div>
-            <h3 class="text-lg font-semibold mb-3 text-dark">{{ langStore.getLabel('carTable.header') }}</h3>
-            <div class="overflow-x-auto">
-                <table class="w-full border-collapse text-sm">
-                    <thead>
-                        <tr class="bg-gray-100 border-b border-gray-300">
-                            <th class="px-4 py-2 text-left font-semibold text-gray-700">{{ langStore.getLabel('carTable.carId') }}</th>
-                            <th class="px-4 py-2 text-right font-semibold text-gray-700">{{ langStore.getLabel('simStats.distance') }}</th>
-                            <th class="px-4 py-2 text-right font-semibold text-gray-700">{{ langStore.getLabel('simStats.drivingTime') }}</th>
-                            <th class="px-4 py-2 text-right font-semibold text-gray-700">{{ langStore.getLabel('simStats.packagesDelivered') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="agent in stats.agents" :key="agent.id" class="border-b border-gray-200 hover:bg-gray-50">
-                            <td class="px-4 py-2 font-mono text-gray-800">
-                                <div class="flex items-center gap-2">
-                                    <div
-                                        class="w-1 h-6 rounded-sm"
-                                        :style="{ backgroundColor: getColorForCarAndRoute(agent.id) }"
-                                    ></div>
-                                    {{ agent.id }}
-                                </div>
-                            </td>
-                            <td class="px-4 py-2 text-right text-gray-700">{{ agent.distance_travelled.toFixed(2) }}</td>
-                            <td class="px-4 py-2 text-right text-gray-700">{{ formatDrivingTime(agent.time_driving_seconds) }}</td>
-                            <td class="px-4 py-2 text-right text-gray-700">{{ agent.packages_delivered }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Totals section -->
-        <div class="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-md p-4">
-            <h3 class="text-lg font-semibold mb-3 text-dark">{{ langStore.getLabel('simStats.totals') }}</h3>
-            <div class="space-y-2">
-                <div class="flex justify-between items-center">
-                    <span class="text-gray-700">{{ langStore.getLabel('simStats.totalDistance') }}:</span>
-                    <span class="font-mono font-bold text-gray-900">{{ stats.totals.total_distance.toFixed(2) }}</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="text-gray-700">{{ langStore.getLabel('simStats.totalDrivingTime') }}:</span>
-                    <span class="font-mono font-bold text-gray-900">{{ formatDrivingTime(stats.totals.total_time_driving) }}</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="text-gray-700">{{ langStore.getLabel('simStats.totalPackages') }}:</span>
-                    <span class="font-mono font-bold text-gray-900">{{ stats.totals.total_packages_delivered }}</span>
-                </div>
-                <div class="flex justify-between items-center text-sm text-gray-600 mt-2 pt-2 border-t border-blue-200">
-                    <span>{{ langStore.getLabel('simStats.totalsSteps') }}:</span>
-                    <span class="font-mono">{{ stats.step_count }}</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Download button -->
-        <div>
-            <button
-                @click="handleDownloadCSV"
-                :disabled="isDownloading"
-                :class="[
-                    'w-full py-3 px-4 rounded-md font-semibold transition-colors',
-                    isDownloading
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        : 'bg-green-500 hover:bg-green-600 text-white'
-                ]"
-            >
-                {{ isDownloading ? langStore.getLabel('simStats.downloadingCsv') : langStore.getLabel('simStats.downloadCsv') }}
-            </button>
-        </div>
-    </div>
-
-    <!-- Empty state -->
-    <div v-else class="text-center py-8 text-gray-600">
-        {{ langStore.getLabel('simStats.emptyState') }}
-    </div>
-</template>
-
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import { useCarColors } from '../composables/useCarColors';
 import { useLanguageStore } from '../stores/index.js';
+import { getCurrentTimestamp } from '../logic/utils/timestamp.js';
+import { BaseButton } from './CustomComponents.js';
 
 const langStore = useLanguageStore();
 
 const props = defineProps({
-    getStats: {
-        type: Function,
+    simulationStats: {
+        type: Object,
         required: true
     },
     exportDataAsCSV: {
@@ -110,35 +20,8 @@ const props = defineProps({
 
 const { getColorForCarAndRoute } = useCarColors();
 
-const stats = ref(null);
-const isLoading = ref(false);
 const isDownloading = ref(false);
 const error = ref(null);
-
-const loadStats = async () => {
-    console.log("Loading stats...");
-    isLoading.value = true;
-    error.value = null;
-    stats.value = null;
-
-    try {
-        const data = await props.getStats();
-        console.log("Stats loaded successfully:", data);
-        stats.value = data;
-    } catch (err) {
-        const errorMsg = err.message || langStore.getLabel('statsRetrievalError');
-        error.value = errorMsg;
-        console.error('Error loading stats:', err);
-    } finally {
-        isLoading.value = false;
-    }
-};
-
-// Component wordt door de modal-shell met v-if gemount/ge-unmount,
-// dus onMounted vervangt hier de oude watch(() => props.isOpen, ...)
-onMounted(() => {
-    loadStats();
-});
 
 function formatDrivingTime(seconds) {
     if (seconds === null || seconds === undefined) return '0s';
@@ -152,20 +35,19 @@ function formatDrivingTime(seconds) {
     const remainingSeconds = totalSeconds % oneMinute;
 
     if (hours > 0) {
-        return `${hours}h ${minutes}m ${remainingSeconds}s`;
+        return `${hours}h ${minutes}m ${remainingSeconds} s`;
     }
 
     if (minutes > 0) {
-        return `${minutes}m ${remainingSeconds}s`;
+        return `${minutes}m ${remainingSeconds} s`;
     }
 
-    return `${remainingSeconds}s`;
+    return `${remainingSeconds} s`;
 }
 
 const handleDownloadCSV = async () => {
     isDownloading.value = true;
     error.value = null;
-    const datePadding = 2; // Pad month, day, hours, minutes, seconds to 2 digits
 
     try {
         const csvData = await props.exportDataAsCSV();
@@ -175,14 +57,7 @@ const handleDownloadCSV = async () => {
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
 
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(datePadding, '0');
-        const day = String(now.getDate()).padStart(datePadding, '0');
-        const hours = String(now.getHours()).padStart(datePadding, '0');
-        const minutes = String(now.getMinutes()).padStart(datePadding, '0');
-        const seconds = String(now.getSeconds()).padStart(datePadding, '0');
-        const timestamp = `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
+        const timestamp = getCurrentTimestamp();
 
         link.setAttribute('href', url);
         link.setAttribute('download', `DEEL-simulation_${timestamp}.csv`);
@@ -199,3 +74,221 @@ const handleDownloadCSV = async () => {
     }
 };
 </script>
+
+<template>
+    <div class="stats-wrapper">
+        <!-- Error state -->
+        <div v-if="error" class="error-state">
+            <p class="text-red-700">{{ error }}</p>
+        </div>
+        
+        <!-- Stats content -->
+        <div v-else class="stats-content">
+            <!-- Per-agent table -->
+            <div>
+                <h3 class="table-header">{{ langStore.getLabel('simStats.title') }}</h3>
+                <div class="table-wrapper">
+                    <table class="stats-table">
+                        <thead>
+                            <tr class="table-header-row">
+                                <th class="table-header-cell table-cell-left">{{ langStore.getLabel('carTable.carId') }}</th>
+                                <th class="table-header-cell table-cell-right">{{ langStore.getLabel('simStats.distance') }}</th>
+                                <th class="table-header-cell table-cell-right">{{ langStore.getLabel('simStats.drivingTime') }}</th>
+                                <th class="table-header-cell table-cell-right">{{ langStore.getLabel('simStats.packagesDelivered') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="agent in simulationStats.agents" :key="agent.id" class="table-body-row">
+                                <td class="table-cell table-cell-left">
+                                    <div class="agent-id-cell">
+                                        <div
+                                        class="agent-color-indicator"
+                                        :style="{ backgroundColor: getColorForCarAndRoute(agent.id) }"
+                                        ></div>
+                                        {{ agent.id }}
+                                    </div>
+                                </td>
+                                <td class="table-cell table-cell-right">{{ agent.distance_travelled.toFixed(2) }} km</td>
+                                <td class="table-cell table-cell-right">{{ formatDrivingTime(agent.time_driving_seconds) }}</td>
+                                <td class="table-cell table-cell-right">{{ agent.packages_delivered }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Totals section -->
+            <div class="totals-section">
+                <h3 class="totals-header">{{ langStore.getLabel('simStats.totals') }}</h3>
+                <div class="totals-content">
+                    <div class="totals-row">
+                        <span class="totals-label">{{ langStore.getLabel('simStats.totalDistance') }}:</span>
+                        <span class="totals-value">{{ simulationStats.totals.total_distance.toFixed(2) }} km</span>
+                    </div>
+                    <div class="totals-row">
+                        <span class="totals-label">{{ langStore.getLabel('simStats.totalDrivingTime') }}:</span>
+                        <span class="totals-value">{{ formatDrivingTime(simulationStats.totals.total_time_driving) }}</span>
+                    </div>
+                    <div class="totals-row">
+                        <span class="totals-label">{{ langStore.getLabel('simStats.totalPackages') }}:</span>
+                        <span class="totals-value">{{ simulationStats.totals.total_packages_delivered }}</span>
+                    </div>
+                    <div class="totals-row totals-row-last">
+                        <span>{{ langStore.getLabel('simStats.totalsSteps') }}:</span>
+                        <span class="font-mono">{{ simulationStats.step_count }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Download button -->
+            <div class="button-container">
+                <BaseButton
+                    @click="handleDownloadCSV"
+                    :disabled="isDownloading"
+                    variant="stats-modal"
+                    >
+                    {{ isDownloading ? langStore.getLabel('simStats.downloadingCsv') : langStore.getLabel('simStats.downloadCsv') }}
+                </BaseButton>
+            </div>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+/* Error state */
+.error-state {
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 0.375rem;
+    padding: 1rem;
+}
+
+.error-text {
+    color: #b91c1c;
+}
+
+/* Table styling */
+.stats-wrapper {
+    padding: 24px 48px;
+}
+
+.stats-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.table-header {
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+    margin-bottom: 0.25rem;
+    color: #1f2937;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.table-header-row {
+    background-color: #f3f4f6;
+    border-bottom: 1px solid #d1d5db;
+    font-size: var(--text-base);
+}
+
+.table-header-cell {
+    padding: 0.5rem 1rem;
+    font-weight: var(--font-semibold);
+    color: #374151;
+}
+
+.table-cell-left {
+    text-align: left;
+}
+
+.table-cell-right {
+    text-align: right;
+}
+
+.table-body-row {
+    border-bottom: 1px solid #e5e7eb;
+    transition: background-color 0.2s;
+    background: white;
+}
+
+.table-body-row:hover {
+    background-color: var(--color-table-gray2);
+}
+
+.table-cell {
+    padding: 0.25rem 1rem;
+    color: #374151;
+}
+
+.agent-id-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: monospace;
+    color: #1f2937;
+}
+
+.agent-color-indicator {
+    width: 0.25rem;
+    height: 1.5rem;
+    border-radius: 0.125rem;
+    flex-shrink: 0;
+}
+
+/* Totals section */
+.totals-section {
+    background: linear-gradient(to right, #eff6ff, #dbeafe);
+    border: 1px solid #93c5fd;
+    border-radius: var(--rounded-sm);
+    padding: 1rem;
+}
+
+.totals-header {
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+    margin-bottom: 0.75rem;
+    color: #1f2937;
+}
+
+.totals-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.totals-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.totals-row-last {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #93c5fd;
+    font-size: 0.875rem;
+    color: #4b5563;
+}
+
+.totals-label {
+    color: #4b5563;
+}
+
+.totals-value {
+    font-weight: var(--font-semibold);
+    color: #111827;
+}
+
+/* Button styling */
+.button-container {
+    display: flex;
+}
+</style>

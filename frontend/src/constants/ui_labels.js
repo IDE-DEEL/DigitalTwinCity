@@ -48,10 +48,15 @@ export const LABELS = {
             time: "Tijd",
             Score: "Score",
         },
+        statsModal: {
+            simTitle: "Simulatie Statistieken",
+            twinTitle: "Digital Twin Statistieken",
+
+        },
         simStats: {
+            title: "Auto gegevens",
             emptyState: "Geen simulatiedata beschikbaar",
             loadingState: "Simulatiedata laden...",
-            title: "Simulatie Statistieken",
             distance: "Afstand",
             drivingTime: "Rijtijd",
             packagesDelivered: "Bezorgde pakketten",
@@ -65,8 +70,8 @@ export const LABELS = {
             statsRetrievalError: "Fout bij het ophalen van statistieken",
             statsCsvError: "Fout bij het downloaden van CSV",
         },
-        impactStats: {
-            title: "Statistieken",
+        tripStats: {
+            title: "Belangen",
             surroundings: "Omgeving",
             economy: "Economie",
             social: "Sociaal",
@@ -75,6 +80,8 @@ export const LABELS = {
             maintainability: "Onderhoudbaarheid",
             total: "Totale score",
             download: "Download CSV",
+            category: "Categorie",
+            score: "Score",
         },
         rfidTags: {
             title: "RFID Tags",
@@ -154,7 +161,7 @@ export const LABELS = {
             codeDelete: "Verwijderen",
         },
         misc: {
-            closeButton: "x",
+            closeButton: "X",
         },
     },
     en: {
@@ -203,10 +210,14 @@ export const LABELS = {
             time: "Time",
             Score: "Score",
         },
+        statsModal: {
+            simTitle: "Simulation Statistics",
+            twinTitle: "Digital Twin Statistics",
+        },
         simStats: {
+            title: "Car data",
             emptyState: "No simulation data available",
             loadingState: "Loading simulation data...",
-            title: "Simulation Statistics",
             distance: "Distance",
             drivingTime: "Driving time",
             packagesDelivered: "Packages delivered",
@@ -220,8 +231,8 @@ export const LABELS = {
             statsRetrievalError: "Error occurred while retrieving statistics",
             statsCsvError: "Error occurred while downloading CSV",
         },
-        impactStats: {
-            title: "Statistics",
+        tripStats: {
+            title: "Concerns",
             surroundings: "Surroundings",
             economy: "Economy",
             social: "Social",
@@ -230,6 +241,8 @@ export const LABELS = {
             maintainability: "Maintainability",
             total: "Combined score",
             download: "Download CSV",
+            category: "Category",
+            score: "Score",
         },
         rfidTags: {
             title: "RFID Tags",
@@ -309,7 +322,7 @@ export const LABELS = {
             codeDelete: "Delete",
         },
         misc: {
-            closeButton: "x",
+            closeButton: "X",
         },
     },
 };

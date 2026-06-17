@@ -2,6 +2,7 @@
 import { useCarColors } from '../composables/useCarColors.js';
 import "../assets/Table.css";
 import { useLanguageStore } from '../stores/index.js';
+import { BaseButton } from './CustomComponents.js';
 
 const langStore = useLanguageStore();
 
@@ -117,13 +118,13 @@ const getStateOfCharge = (carId) => {
               </select>
             </td>
             <td>
-                <button 
-                    class="route-visibility-button"
+                <BaseButton 
                     :disabled="car.routeName === 'inactive' && car.routeVisibility === false"
                     @click="emit('toggle-route-visibility', car.id)"
                 >
                     {{ car.routeVisibility ? langStore.getLabel('carTable.hideRoute') : langStore.getLabel('carTable.showRoute') }}
-                </button></td>
+                </BaseButton>
+            </td>
           </tr>
         </tbody>
       </table>
