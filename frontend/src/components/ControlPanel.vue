@@ -6,7 +6,7 @@ import Input from './Input.vue'
 import DropDown from './DropDown.vue'
 import Table from './Table.vue'
 import { BaseButton } from './CustomComponents.js'
-import { StatsModal, TripScore } from './AreaComponents.js'
+import { StatisticsModal, TripScore } from './AreaComponents.js'
 import { useDigitalTwinStore } from '../stores/digital-twin.js'
 import { useLanguageStore } from '../stores/index.js';
 import '../assets/Button.css'
@@ -105,11 +105,11 @@ const formattedTime = computed(() => {
             <BaseButton variant="statistics" class="statistics-button" @click="showModal = true"> {{ langStore.getLabel('generalStats.title') }} </BaseButton>
             <p>{{ langStore.getLabel('generalStats.Score') }}: {{ Number(store.results.total).toFixed(1) }}</p>
           </div>
-          <StatsModal :is-open="showModal" @close="showModal = false" :title="langStore.getLabel('statsModal.twinTitle')">
+          <StatisticsModal :is-open="showModal" @close="showModal = false" :title="langStore.getLabel('statsModal.twinTitle')">
             <template #concerns-statistics>
                 <TripScore/>
             </template>
-          </StatsModal>
+          </StatisticsModal>
         </slot>
       </div>
     </div>

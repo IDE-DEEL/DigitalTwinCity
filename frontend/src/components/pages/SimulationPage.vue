@@ -7,10 +7,9 @@ import { useCarColors } from '../../composables/useCarColors.js';
 import { buildLane } from '../../logic/service/laneBuilder.js';
 import { normalizeDegree } from '../../logic/utils/rotation.js';
 import { Slider, DropDown, RadioGroup, SimulationTable, WebSocketStatus, RoutePolyline, Car, BaseButton } from '../CustomComponents.js';
-import { ControlPanel, SimulationDisplay, StatsModal, HouseLabelsOverlay, VisualizePanel, SimulationRunStats, TripScore } from '../AreaComponents.js';
+import { ControlPanel, SimulationDisplay, StatisticsModal, HouseLabelsOverlay, VisualizePanel, SimulationRunStats, TripScore } from '../AreaComponents.js';
 import { devTileCoordinateOverlay, devLaneDebugOverlay, devHouseDetectionZonesOverlay, devRouteBuilder } from '../../development/DevtoolComponents.js';
 import '../../assets/MainContent.css';
-import '../../assets/SimulationPage.css';
 
 /*
     =====================
@@ -318,7 +317,7 @@ const toggleRouteBuilder = () => {
         </ControlPanel>
 
         <!-- Stats Modal -->
-        <StatsModal
+        <StatisticsModal
             :isOpen="isStatsModalOpen"
             :title="langStore.getLabel('simStats.title')"
             @close="isStatsModalOpen = false"
@@ -332,7 +331,35 @@ const toggleRouteBuilder = () => {
                     :exportDataAsCSV="exportDataAsCSV"
                 />
             </template>
-        </StatsModal>
+        </StatisticsModal>
        
     </div>
 </template>
+
+<style scoped>
+.devtool-container {
+  position: absolute;
+  top: 2.5%;
+  left: 21%;
+  transform: translateX(-50%);
+  z-index: 40;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+#devtool-button {
+    font-size: var(--text-sm);
+    padding: 5px;
+    background: var(--color-primary-blue);
+    border: black 2px solid;
+}
+
+#devtool-button:hover {
+    background: var(--color-primary-blue-hover);
+}
+
+#devtool-button.active {
+    background: var(--color-button-active);
+}
+</style>
