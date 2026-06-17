@@ -115,6 +115,8 @@ function moveCars() {
       const startPos = tagMap.value[carInfo.tag_id]
       
       if (!startPos) continue
+
+      console.log(state)
       
       state.x = startPos.x
       state.y = startPos.y

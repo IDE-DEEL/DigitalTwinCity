@@ -223,7 +223,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
             break
 
           case 'car_data':
-            console.log("car_data: " + payload)
+            console.log("car_data: ", payload)
             this.car_data = payload
             break
 
