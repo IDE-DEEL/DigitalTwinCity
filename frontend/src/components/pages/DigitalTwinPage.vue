@@ -5,7 +5,7 @@ import ControlPanel from '../ControlPanel.vue'
 import SimulationDisplay from '../SimulationDisplay.vue'
 import VisualizePanel from '../VisualizePanel.vue'
 import { onMounted, ref, reactive, computed, watch, onBeforeUnmount } from 'vue'
-import { useDigitalTwinStore, normalizeTagId } from '../../stores/digital-twin.js'
+import { useDigitalTwinStore } from '../../stores/digital-twin.js'
 import TagsVisualizer from '../TagsVisualizer.vue'
 
 const store = useDigitalTwinStore()
@@ -58,6 +58,10 @@ const carTagMap = Object.fromEntries(
   store.car_data.map(c => [c.auto_id, c.tag_id])
 );
 
+function getNextTag(tags, currentIndex) {
+  return tags[(currentIndex + 1) % tags.length]
+}
+
 for (const car of store.table_data) {
   if (!carState.positions[car.auto_id] && car.status) {
 
@@ -71,96 +75,141 @@ for (const car of store.table_data) {
       routeIndex: 0,
       initialized: false,
       rotation: 0,
-      speed: store.speed / 50,
-      allowed: false
-    }
+      lastTagId: null,
+      targetTagId: null,
+      arrived: false
+    };
   }
 }
 
-function updateCarTag(autoId, tagId) {
-  const car = store.car_data.find(c => c.auto_id === autoId)
-  if (!car) return
+function calculateRotation(from, to) {
+  if (!from || !to) return 0
 
-  const state = carState.positions[autoId]
-  if (!state) return
+  const dx = to.x - from.x
+  const dy = to.y - from.y
 
-  // update huidige positie (belangrijk)
-  car.tag_id = tagId
-
-  const pos = tagMap.value[tagId]
-  if (!pos) return
-
-  state.x = pos.x
-  state.y = pos.y
-
-  state.allowed = true
+  return Math.atan2(dy, dx) * (180 / Math.PI) + 90
 }
 
 function moveCars() {
-  const speed = store.speed / 50
+  const speed = store.speed / 200
 
   for (const car of store.table_data) {
     if (!car.status) continue
 
     const state = carState.positions[car.auto_id]
+    if (!state) continue
+
     const tags = getRouteTags(car.route)
     if (!tags.length) continue
 
-    // Initialiseren
-    if (!state.initialized) {
-      const carInfo = store.car_data.find(c => c.auto_id === car.auto_id)
+    const carInfo = store.car_data.find(
+      c => c.auto_id === car.auto_id
+    )
+    
+    if (!carInfo) continue
+    const currentTagId = carInfo.tag_id
+    const tagMapLocal = tagMap.value
 
-      if (!carInfo) continue
-      
-      const startPos = tagMap.value[carInfo.tag_id]
-      
+    /* -------------------------
+       INIT
+    ------------------------- */
+    if (!state.initialized) {
+      const startPos = tagMapLocal[currentTagId]
       if (!startPos) continue
 
-      console.log(state)
-      
       state.x = startPos.x
       state.y = startPos.y
 
-      const startIndex = tags.findIndex(tag => tag === carInfo.tag_id)
-      state.routeIndex = startIndex >= 0 ? startIndex : 0
-      state.initialized = true
+      state.routeIndex = tags.findIndex(t => t === currentTagId)
+      if (state.routeIndex < 0) state.routeIndex = 0
 
+      state.lastTagId = currentTagId
+      state.targetTagId = null
+      state.arrived = false
       state.initialized = true
-      state.allowed = true // eerste stap mag altijd
+      continue
+    }
+
+    /* -------------------------
+       STOP STATE
+    ------------------------- */
+    if (state.arrived && currentTagId === state.lastTagId) {
+      continue
+    }
+
+    /* -------------------------
+       GEEN SCAN → STOP
+    ------------------------- */
+    if (!currentTagId) continue
+
+    /* -------------------------
+       TARGET SETTEN
+    ------------------------- */
+    if (!state.targetTagId) {
+      state.targetTagId = currentTagId
+    }
+
+    if (!state.targetTagId) continue
+
+    const targetIndex = tags.indexOf(state.targetTagId)
+    if (targetIndex === -1) {
+      state.targetTagId = null
+      continue
     }
 
     const currentIndex = state.routeIndex
-    const nextIndex = (currentIndex + 1) % tags.length
+    const diff = (targetIndex - currentIndex + tags.length) % tags.length
+    const fromTagId = tags[currentIndex]
+    const toTagId = state.targetTagId
+    const from = tagMapLocal[fromTagId]
+    const to = tagMapLocal[toTagId]
 
-    const currentTag = tags[currentIndex]
+    if (!to || !from) {
+      state.targetTagId = null
+      continue
+    }
 
-    if (!state.allowed) continue
-    
-    const nextTag = tags[nextIndex]
-    const from = tagMap.value[currentTag]
-    const to = tagMap.value[nextTag]
+    /* -------------------------
+       JUMP (meer dan 1 stap)
+    ------------------------- */
+    if (diff > 1) {
+      state.x = to.x
+      state.y = to.y
 
-    if (!from || !to) continue
+      state.rotation = calculateRotation(from, to)
 
+      state.routeIndex = targetIndex
+      state.lastTagId = toTagId
+      state.targetTagId = null
+      state.arrived = true
+
+      continue
+    }
+
+    /* -------------------------
+       MOVE (normaal)
+    ------------------------- */
     const dx = to.x - state.x
     const dy = to.y - state.y
     const dist = Math.sqrt(dx * dx + dy * dy)
 
-    if (dist < speed) {
+    state.rotation = calculateRotation(from, to)
+
+    if (dist <= speed) {
       state.x = to.x
       state.y = to.y
 
-      state.routeIndex = nextIndex
-      state.allowed = false
+      state.routeIndex = targetIndex
+      state.lastTagId = toTagId
+      state.targetTagId = null
+      state.arrived = true
 
       continue
     }
 
     state.x += (dx / dist) * speed
     state.y += (dy / dist) * speed
-
-    state.rotation =
-      Math.atan2(dy, dx) * (180 / Math.PI) + 90
   }
 }
 
@@ -218,7 +267,7 @@ const generatePath = ((route_name) => {
             y: store.tag_positions[j].tag_pos.y * store.factor_y
           })
           break;
-      }
+        }
       }
   }
 

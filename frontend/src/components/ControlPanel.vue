@@ -41,6 +41,12 @@ function stop(event) {
   }
 }
 
+/*function change_car_data(event) {
+  store.car_index += 1
+  store.car_data = store.car_test_data[store.car_index]
+  console.log(store.car_data)
+}*/
+
 // Formatting time (MM:SS:MS)
 const formattedTime = computed(() => {
   const totalSeconds = Math.floor(elapsedTime.value / 1000)
@@ -82,6 +88,7 @@ const formattedTime = computed(() => {
     <!-- Slot for car table -->
     <slot name="car-table">
         <Table></Table>
+        <!-- <button @click="change_car_data()"></button> -->
     </slot>
 
     <slot name="simulation-statistics"></slot>
