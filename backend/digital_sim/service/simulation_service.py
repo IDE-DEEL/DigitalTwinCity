@@ -205,42 +205,7 @@ class SimulationService:
         stats["totals"]["total_time_driving"] = round(stats["totals"]["total_time_driving"], 2)
         
         return stats
-        
 
-    # def _calculate_trip_scores(self) -> list[dict] | None:
-    #     """Calculate and return scores for each agent based on current simulation data."""
-    #     if not self.model or not self.model.agents:
-    #         return None
-
-    #     results = []
-
-    #     for agent in self.model.agents:
-    #         total_cost = EXTRA_CONFIG["cost_per_km"] * agent.distance_travelled
-    #         total_revenue = EXTRA_CONFIG["revenue_per_package"] * agent.packages_delivered
-    #         budget_used_pct = (total_cost / EXTRA_CONFIG["total_budget"]) * 100
-
-    #         trip = TripData(
-    #             co2_emission_g_per_km   = EXTRA_CONFIG["co2_emission_g_per_km"],
-    #             wear_factor             = EXTRA_CONFIG["wear_factor"],
-    #             distance_km             = agent.distance_travelled,
-    #             cost_per_km             = EXTRA_CONFIG["cost_per_km"],
-    #             revenue_per_package     = total_revenue,                # total revenue based on packages delivered
-    #             budget_used_pct         = min(budget_used_pct, 100),
-    #             is_rush_hour            = EXTRA_CONFIG["is_rush_hour"],
-    #             soc_start_pct           = agent.initial_state_of_charge,
-    #             soc_end_pct             = agent.state_of_charge,
-    #             is_wrong_way            = False,
-    #             idle_time_sec           = agent.time_delivering_seconds,
-    #             speed_value             = agent.target_speed * 100,
-    #         )
-
-    #         score = calculate_score(trip, WEIGHTS)
-    #         results.append({
-    #             "id": agent.id,
-    #             **score
-    #         })
-
-    #     return results
 
     def _calculate_trip_scores(self) -> dict | None:
         """Calculate one aggregated score for the entire simulation run,
