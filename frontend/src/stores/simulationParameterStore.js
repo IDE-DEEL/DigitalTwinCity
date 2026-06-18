@@ -7,7 +7,7 @@ import { getHousesWithRoutesByScenarioKey, buildOrderedHouseInstancesOnRoutes } 
 import { useMapStore } from "./mapStore";
 import { SIMULATION_SPEED_OPTIONS, MAP_ROWS } from "../constants/constants";
 
-export const useDashboardParametersStore = defineStore("dashboardParameters", () => {
+export const useSimulationParameterStore = defineStore("simulationParameters", () => {
     // ---
     // State
     // ---

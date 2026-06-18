@@ -1,6 +1,6 @@
 import { onMounted, onBeforeUnmount, watch } from "vue";
 import { useToast } from "vue-toastification";
-import { useLanguageStore, useSimulationStateStore, useDashboardParametersStore, useSimulationWebSocketStore } from "../stores/index.js";
+import { useLanguageStore, useSimulationStateStore, useSimulationParameterStore, useSimulationWebSocketStore } from "../stores/index.js";
 
 const CSV_EXPORT_TIMEOUT_IN_MILLIS = 120000;
 const ONE_SECOND_IN_MILLIS = 1000;
@@ -10,21 +10,21 @@ const ONE_SECOND_IN_MILLIS = 1000;
 // ---
 export function useDigitalSimulation(onSimulationEndedCallback) {
     const wsStore = useSimulationWebSocketStore();
-    const dashboardStore = useDashboardParametersStore();
-    const simulationStore = useSimulationStateStore();
+    const paramStore = useSimulationParameterStore();
+    const stateStore = useSimulationStateStore();
     const languageStore = useLanguageStore();
 
     // ---
     // WebSocket lifecycle management
     // ---
     onMounted(() => {
-        wsStore.connect(simulationStore.updateSimulationState, handleSimulationEnded);
+        wsStore.connect(stateStore.updateSimulationState, handleSimulationEnded);
 
         // watch for changes in simulation speed to update the backend simulation
         watch(
-            () => dashboardStore.simulationSpeed,
+            () => paramStore.simulationSpeed,
             (newSpeed) => {
-                if (simulationStore.isSimulating && wsStore.isConnected) {
+                if (stateStore.isSimulating && wsStore.isConnected) {
                     wsStore.send({
                         command: "set_speed",
                         parameters: { simulationSpeed: newSpeed },
@@ -42,24 +42,24 @@ export function useDigitalSimulation(onSimulationEndedCallback) {
     // simulation control
     // ---
     function startSimulation() {
-        simulationStore.resetSimulationState();
+        stateStore.resetSimulationState();
 
-        wsStore.send({command: "start", parameters: dashboardStore.simulationStartPayload});
-        simulationStore.handleSimulationStarted();
+        wsStore.send({command: "start", parameters: paramStore.simulationStartPayload});
+        stateStore.handleSimulationStarted();
     }
 
     function stopSimulation() {
         wsStore.send({command: "stop"});
-        simulationStore.handleSimulationEnded();
+        stateStore.handleSimulationEnded();
     }
 
     function reconnectWebSocket() {
         wsStore.disconnect();
-        wsStore.connect(simulationStore.updateSimulationState, handleSimulationEnded);
+        wsStore.connect(stateStore.updateSimulationState, handleSimulationEnded);
     }
 
     function handleSimulationEnded() {
-        simulationStore.handleSimulationEnded();
+        stateStore.handleSimulationEnded();
         if (onSimulationEndedCallback) {
             onSimulationEndedCallback();
         }
@@ -101,7 +101,7 @@ export function useDigitalSimulation(onSimulationEndedCallback) {
      */
     function validateHousesReachability() {
         const toast = useToast();
-        const payload = dashboardStore.simulationStartPayload;
+        const payload = paramStore.simulationStartPayload;
         
         if (!payload || !payload.cars || !payload.scenario?.houses) {
             return true;

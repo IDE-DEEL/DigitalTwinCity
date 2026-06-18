@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { ref, computed, watch } from "vue";
-import { useDashboardParametersStore } from "./dashboardParametersStore";
+import { useSimulationParameterStore } from "./simulationParameterStore";
 
 export const useSimulationStateStore = defineStore("simulationState", () => {
     // ---
@@ -17,7 +17,7 @@ export const useSimulationStateStore = defineStore("simulationState", () => {
     // ---
     // Watchers to reset simulation state when relevant dashboard parameters change after a previous simulation run
     // ---
-    const dashboardStore = useDashboardParametersStore();
+    const dashboardStore = useSimulationParameterStore();
 
     watch(() => dashboardStore.scenario, () => {
         resetSimulationState();
