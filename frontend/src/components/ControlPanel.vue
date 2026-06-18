@@ -20,7 +20,6 @@ const langStore = useLanguageStore();
 
 function start(event) {
   if (!store.active) {
-    store.active = true
     store.sendData('activation', true)
 
     if (store.active) {
@@ -36,17 +35,10 @@ function start(event) {
 
 function stop(event) {
   if (store.active) {
-    store.active = false
     store.sendData('activation', false)
     clearInterval(timer.value)
   }
 }
-
-/*function change_car_data(event) {
-  store.car_index += 1
-  store.car_data = store.car_test_data[store.car_index]
-  console.log(store.car_data)
-}*/
 
 // Formatting time (MM:SS:MS)
 const formattedTime = computed(() => {
@@ -89,7 +81,6 @@ const formattedTime = computed(() => {
     <!-- Slot for car table -->
     <slot name="car-table">
         <Table></Table>
-        <!-- <button @click="change_car_data()"></button> -->
     </slot>
 
     <slot name="simulation-statistics"></slot>
