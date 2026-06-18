@@ -35,7 +35,7 @@ class SimulationService:
         if self.model is not None:
             self.dispose()
         
-        cars = parameters.get(CARS_KEY, [])  # TODO: throw error if missing/empty
+        cars = parameters.get(CARS_KEY, [])
         car_target_speed = parameters.get(CAR_TARGET_SPEED_KEY, 50)
 
         scenario = parameters.get(SCENARIO_KEY, {})
