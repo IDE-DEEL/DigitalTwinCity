@@ -195,6 +195,8 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
             break
 
           case 'activation':
+            console.log("start: " + payload)
+
             this.active = payload
             break
 
@@ -265,10 +267,9 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
     },
 
     sendData(type, payload) {
-      if (
-        this.socket &&
-        this.socket.readyState === WebSocket.OPEN
-      ) {
+      if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+        console.log(type + " " + payload)
+        
         this.socket.send(
           JSON.stringify({
             type,
