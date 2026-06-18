@@ -9,7 +9,7 @@ from backend.score.config import  WEIGHTS, TRIP
 from typing import Callable
 
 from backend.core.config import settings
-from backend.domain.state import states
+from backend.domain.states import state
 
 
 # ---------------- MQTT CONFIG ----------------
