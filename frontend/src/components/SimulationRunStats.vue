@@ -1,11 +1,12 @@
 <script setup>
 import { ref } from 'vue';
 import { useCarColors } from '../composables/useCarColors';
-import { useLanguageStore } from '../stores/index.js';
+import { useLanguageStore, useSimulationStateStore } from '../stores/index.js';
 import { getCurrentTimestamp } from '../logic/utils/timestamp.js';
 import { BaseButton } from './CustomComponents.js';
 
 const langStore = useLanguageStore();
+const simulationStore = useSimulationStateStore();
 
 const props = defineProps({
     simulationStats: {
@@ -144,7 +145,7 @@ const handleDownloadCSV = async () => {
             <div class="button-container">
                 <BaseButton
                     @click="handleDownloadCSV"
-                    :disabled="isDownloading"
+                    :disabled="isDownloading || !simulationStore.hasSimulated"
                     variant="stats-modal"
                     >
                     {{ isDownloading ? langStore.getLabel('simStats.downloadingCsv') : langStore.getLabel('simStats.downloadCsv') }}

@@ -17,6 +17,10 @@ const props = defineProps({
             maintenance: 0,
             total: 0
         })
+    },
+    disabled: {
+        type: Boolean,
+        default: true
     }
 });
 
@@ -101,7 +105,7 @@ const handleDownloadCSV = () => {
             </div>
             <div>
                 
-                <BaseButton variant="stats-modal" @click="handleDownloadCSV">
+                <BaseButton variant="stats-modal" :disabled="props.disabled" @click="handleDownloadCSV">
                     {{ langStore.getLabel('tripStats.download') }}
                 </BaseButton>
             </div>

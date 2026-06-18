@@ -9,11 +9,11 @@ export const useSimulationStateStore = defineStore("simulationState", () => {
     // ---
     const agentState = ref([]);
     const houseState = ref([]);
-    const currentStep = ref(0);
+    const currentStep = ref(DEFAULT_STEPS);
     const isSimulating = ref(false);
     const hasSimulated = ref(false);
-    const simulationStats = ref({});
-    const tripScores = ref({});
+    const simulationStats = ref(DEFAULT_SIMULATION_STATS);
+    const tripScores = ref(DEFAULT_TRIP_SCORES);
 
     // ---
     // Watchers to reset simulation state when relevant dashboard parameters change after a previous simulation run
@@ -47,18 +47,18 @@ export const useSimulationStateStore = defineStore("simulationState", () => {
         
         agentState.value = convertedAgents;
         houseState.value = result.houses || [];
-        currentStep.value = result.step || 0;
-        simulationStats.value = result.simulation_stats || {};
-        tripScores.value = result.trip_scores || {};
+        currentStep.value = result.step || DEFAULT_STEPS;
+        simulationStats.value = result.simulation_stats || DEFAULT_SIMULATION_STATS;
+        tripScores.value = result.trip_scores || DEFAULT_TRIP_SCORES;
     }
 
     function resetSimulationState() {
         agentState.value = [];
         houseState.value = [];
         isSimulating.value = false;
-        currentStep.value = 0;
-        simulationStats.value = {};
-        tripScores.value = {};
+        currentStep.value = DEFAULT_STEPS;
+        simulationStats.value = DEFAULT_SIMULATION_STATS;
+        tripScores.value = DEFAULT_TRIP_SCORES;
     }
 
     function handleSimulationStarted() {
@@ -121,3 +121,28 @@ export const useSimulationStateStore = defineStore("simulationState", () => {
         handleSimulationEnded,
     };
 });
+
+// ---
+// Default values for refs
+// ---
+const DEFAULT_SIMULATION_STATS = {
+    agents: [],
+    totals: {
+        total_distance: 0,
+        total_time_driving: 0,
+        total_packages_delivered: 0
+    },
+    step_count: 0
+};
+
+const DEFAULT_TRIP_SCORES = {
+    environment: 0,
+    economic: 0,
+    social: 0,
+    energy: 0,
+    safety: 0,
+    maintenance: 0,
+    total: 0
+};
+
+const DEFAULT_STEPS = 0;

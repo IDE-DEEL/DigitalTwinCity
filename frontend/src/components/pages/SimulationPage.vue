@@ -320,7 +320,7 @@ const toggleSensorDebug = () => {
             <!-- Simulation speed, start and stop controls + stats modal open button -->
             <template #simulation-controls>
                 <div class="stats-button-container">
-                    <BaseButton @click="handleStatsOpen" :disabled="!simulationStore.hasSimulated"> {{ langStore.getLabel('generalStats.title') }} </BaseButton>
+                    <BaseButton @click="handleStatsOpen"> {{ langStore.getLabel('generalStats.title') }} </BaseButton>
                 </div>
 
                 <div class="button-area">
@@ -337,7 +337,7 @@ const toggleSensorDebug = () => {
             @close="isStatsModalOpen = false"
         >
             <template #concerns-statistics>
-                <TripScore :scores="simulationStore.tripScores"/>
+                <TripScore :scores="simulationStore.tripScores" :disabled="!simulationStore.hasSimulated"/>
             </template>
             <template #run-statistics>
                 <SimulationRunStats
