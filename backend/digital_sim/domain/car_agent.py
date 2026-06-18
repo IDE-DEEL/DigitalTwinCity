@@ -18,11 +18,14 @@ class CarStatus(Enum):
 
 class CarAgent(mesa.Agent):
 
+    # The target speed is downscaled to improve stability of the movement controller and reduce overshooting.
+    _SPEED_SCALE = 0.7
+
     def __init__(self, model, id: int, car_target_speed: int = 50, route: Optional[Route] = None, max_packages: int = 1):
         super().__init__(model)
 
         self.id = id
-        self.target_speed = car_target_speed
+        self.target_speed = car_target_speed * self._SPEED_SCALE
         self.route = route
         self.max_packages = max_packages
         self._movement_controller = MovementController(waypoints=route.waypoints, target_speed=self.target_speed)
