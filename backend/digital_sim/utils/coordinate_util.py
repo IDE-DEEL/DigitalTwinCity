@@ -41,6 +41,7 @@ def convert_position_math_to_svg(position, map_rows):
     """
     Convert position from mathematical coordinates (backend) to SVG coordinates (frontend)
     Used when sending agent positions from backend to frontend for display
+    Positions are rounded to 2 decimal places for the frontend and CSV export
     
     Args:
         position: Position [x, y] in mathematical coordinates (list or tuple)
@@ -50,6 +51,6 @@ def convert_position_math_to_svg(position, map_rows):
         Position [x, y] in SVG coordinates as a dict
     """
     return {
-        'x': position['x'],
-        'y': map_rows - position['y']
+        'x': round(position['x'], 2),
+        'y': round(map_rows - position['y'], 2)
     }

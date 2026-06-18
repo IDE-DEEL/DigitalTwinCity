@@ -48,7 +48,6 @@ class SimulationService:
         # Convert route waypoints from SVG coordinates to mathematical coordinates for each car
         for car in cars:
             car[CAR_ROUTE_WAYPOINTS_KEY] = convert_waypoints_array_from_svg_to_math(car.get(CAR_ROUTE_WAYPOINTS_KEY, []), map_rows)
-            print(f"Converted car route waypoints for car {car.get(CAR_MAIN_ID_KEY)}: {car[CAR_ROUTE_WAYPOINTS_KEY]}")
         
         # Convert house roadCoords from SVG coordinates to mathematical coordinates for each house
         for house in houses:

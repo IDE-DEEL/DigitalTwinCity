@@ -10,7 +10,7 @@ from backend.digital_sim.utils.coordinate_util import convert_position_math_to_s
 from backend.digital_sim.constants import (
     CAR_ROUTE_NAME_KEY, CAR_ROUTE_WAYPOINTS_KEY, CAR_MAX_PACKAGES_KEY,
     HOUSE_PACKAGE_COUNT_KEY, HOUSE_ID_KEY, HOUSE_ROAD_COORDS_KEY,
-    DELTA_TIME_PER_STEP_IN_SECONDS, CAR_MAIN_ID_KEY,
+    DELTA_TIME_PER_STEP_IN_SECONDS, CAR_MAIN_ID_KEY, AGENT_POSITION_KEY,
     AGENT_STATUS_KEY, AGENT_DISTANCE_TRAVELLED_KEY, AGENT_PACKAGES_DELIVERED_KEY,
     AGENT_PACKAGES_IN_CARGO_COUNT_KEY, AGENT_DEPOT_LOAD_COUNT_KEY, AGENT_STATE_OF_CHARGE_KEY,
     AGENT_TIME_DRIVING_SECONDS_KEY, AGENT_TIME_DELIVERING_SECONDS_KEY,
@@ -45,6 +45,7 @@ class CarModel(mesa.Model):
             },
             agent_reporters={
                 AGENT_STATUS_KEY: lambda agent: agent.status.name,  # enum name of the agent's status
+                AGENT_POSITION_KEY: lambda agent: convert_position_math_to_svg(agent.position, self.map_rows),
                 AGENT_DISTANCE_TRAVELLED_KEY: "distance_travelled",
                 AGENT_STATE_OF_CHARGE_KEY: lambda agent: round(agent.state_of_charge, 2),
                 AGENT_PACKAGES_DELIVERED_KEY: "packages_delivered",
