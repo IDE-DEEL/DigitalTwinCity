@@ -130,8 +130,8 @@ class CarModel(mesa.Model):
                 "time_delivering_seconds": round(agent.time_delivering_seconds, 2),
                 "time_parked_seconds": round(agent.time_parked_seconds, 2),
                 "time_loading_packages_seconds": round(agent.time_loading_packages_seconds, 2),
-                "virtual_sensor_left": agent.virtual_sensor_left,
-                "virtual_sensor_right": agent.virtual_sensor_right,
+                "virtual_sensor_left": convert_position_math_to_svg(agent.virtual_sensor_left, self.map_rows),
+                "virtual_sensor_right": convert_position_math_to_svg(agent.virtual_sensor_right, self.map_rows),
             })
 
         return agents_status

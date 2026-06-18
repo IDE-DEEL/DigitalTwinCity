@@ -30,7 +30,6 @@ const langStore = useLanguageStore();
 const wsStore = useSimulationWebSocketStore();
 
 const {
-    isWebSocketConnected,
     startSimulation,
     stopSimulation,
     reconnectWebSocket,
@@ -217,6 +216,7 @@ const toggleSensorDebug = () => {
                     :title="`Car ${car.id} - ${car.packages_in_cargo.length} packages`"
                     :factorX="MAP_COLUMNS"
                     :factorY="MAP_ROWS"
+                    variant="simulation"
                 />
             </template>
 
