@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
-import { useMapStore, useDashboardParametersStore, useSimulationStateStore, useLanguageStore } from '../../stores';
+import { useMapStore, useDashboardParametersStore, useSimulationStateStore, useLanguageStore, useSimulationWebSocketStore } from '../../stores';
 import { SIMULATION_SPEED_OPTIONS, MAP_COLUMNS, MAP_ROWS, MIN_SPEED, MAX_SPEED } from '../../constants/constants.js';
 import { useDigitalSimulation } from '../../composables/useDigitalSimulation.js';
 import { useCarColors } from '../../composables/useCarColors.js';
@@ -27,6 +27,7 @@ const dashboardStore = useDashboardParametersStore();
 const simulationStore = useSimulationStateStore();
 const mapStore = useMapStore();
 const langStore = useLanguageStore();
+const wsStore = useSimulationWebSocketStore();
 
 const {
     isWebSocketConnected,
@@ -260,7 +261,7 @@ const toggleSensorDebug = () => {
             <!-- WebSocket connection status -->
             <template #websocket-status>
                 <WebSocketStatus 
-                    :is-connected="isWebSocketConnected"
+                    :is-connected="wsStore.isConnected"
                     :reconnect-cooldown="reconnectCooldown"
                     @reconnect="handleWebsocketReconnect"
                 ></WebSocketStatus>
