@@ -55,6 +55,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     await manager.broadcast_update(msg_type, payload)
 
                 case "activation":
+                    state.start = payload
                     await manager.broadcast_update("activation", state.start)
 
                 case "car_data":
