@@ -2,12 +2,14 @@ import math
 from typing import Tuple
 
 from backend.digital_sim.constants import X_COORD_IDX, Y_COORD_IDX
+from backend.digital_sim.domain.pid_controller import PIDController
 
 
 Point = Tuple[float, float]
 
 # DISCLAIMER: this controller is made by AI based on an earlier prototype.
 # It is not perfect and is intended to be replaced in the future.
+
 
 class MovementController:
     """
@@ -45,6 +47,15 @@ class MovementController:
         # Afstand tracking
         self.distance_travelled = 0.0
 
+        # PID Controller voor steering (gebaseerd op magneetsensor simulatie)
+        self.pid_controller = PIDController(kp=6.0, ki=0.02, kd=3.5, imax=15.0)
+        
+        # Virtual magnetometer sensors (offset in auto-lokaal coördinatenstelsel)
+        # Lokaal frame: x = forward, y = left
+        # Sensoren liggen left/right van de middenlijn, niet voor/achter
+        self.sensor_left_offset = (0.05, 0.05)   # 5cm links van middenlijn (y-axis is left)
+        self.sensor_right_offset = (0.05, -0.05)   # 5cm rechts van middenlijn (negative y)
+        
         # Tuning parameters
         self.max_steer = 0.18  # radians per step
         self.acceleration = 0.2  # units/s² voor snelheidsverandering
@@ -53,8 +64,7 @@ class MovementController:
         self.lookahead_speed_factor = 0.1  # lookahead groeit met snelheid
         self.goal_tolerance = 0.12
         self.off_route_threshold = 3.0
-        self.target_heading_gain = 1.0  # steering naar lookahead point
-        self.path_heading_gain = 0.35  # steering naar pad richting
+        self.error_scale_mm = 20.0  # schaal factor voor error berekening (van fysieke auto)
 
     def update(self) -> None:
         """
@@ -95,7 +105,12 @@ class MovementController:
             self.actual_speed = 0.0
 
     def _update_position(self) -> None:
-        """Beweeg de auto langs de route."""
+        """
+        Beweeg de auto langs de route met PID-gebaseerde steering.
+        
+        Simuleert magneetsensoren op linker- en rechterkant van auto,
+        berekent error t.o.v. route, en stuurt via PID controller.
+        """
         # Find dichtstbijzijnde punt op route
         best_seg, proj_point, proj_t, dist_to_route = self._find_closest_point_on_route()
 
@@ -105,34 +120,25 @@ class MovementController:
 
         self.segment_index = best_seg
 
-        # Bepaal dynamische lookahead (snelheid-afhankelijk)
-        lookahead_distance = self.base_lookahead + (self.actual_speed * self.lookahead_speed_factor)
+        # Bereken virtuele magneetsensor posities (in auto-lokaal frame, dan roteren naar wereld)
+        sensor_left_world = self._rotate_point_to_world(self.sensor_left_offset)
+        sensor_right_world = self._rotate_point_to_world(self.sensor_right_offset)
         
-        # Bepaal target point (lookahead) - gebruik t parameter voor nauwkeurige berekening
-        target_point = self._point_along_route(best_seg, proj_t, lookahead_distance)
-
-        # Bereken gewenste heading naar target
-        pos_tuple = (self.position[0], self.position[1])
-        target_heading = math.atan2(
-            target_point[1] - pos_tuple[1],
-            target_point[0] - pos_tuple[0]
-        )
+        # Bereken afstand van beide sensoren tot de route
+        dist_left = self._distance_to_route(sensor_left_world, best_seg)
+        dist_right = self._distance_to_route(sensor_right_world, best_seg)
         
-        # Bereken ook heading van huidige pad segment
-        path_heading = self._segment_heading(best_seg)
-
-        # Stuur bij (combinatie van target heading en pad heading)
-        heading_error_to_target = self._wrap_angle(target_heading - self.heading)
-        heading_error_to_path = self._wrap_angle(path_heading - self.heading)
+        # Error: rechts - links (positief = zwaartepunt naar rechts, auto moet naar links sturen)
+        error = dist_right - dist_left
         
-        desired_steer = (
-            self.target_heading_gain * heading_error_to_target
-            + self.path_heading_gain * heading_error_to_path
-        )
-        steer = max(-self.max_steer, min(self.max_steer, desired_steer))
+        # PID controller bepaalt stuurhoek op basis van error
+        steer_output = self.pid_controller.update(error)
+        
+        # Clamp stuurhoek naar max_steer
+        steer = max(-self.max_steer, min(self.max_steer, steer_output))
         self.heading = self._wrap_angle(self.heading + steer)
 
-        # Beweeg
+        # Beweeg de auto
         move_distance = self.actual_speed * self.dt
         prev_pos = (self.position[0], self.position[1])
         self.position[0] += math.cos(self.heading) * move_distance
@@ -141,6 +147,7 @@ class MovementController:
         # Voeg werkelijk afgelegde afstand toe
         new_pos = (self.position[0], self.position[1])
         self.distance_travelled += math.hypot(new_pos[0] - prev_pos[0], new_pos[1] - prev_pos[1])
+
 
     def _find_closest_point_on_route(self) -> Tuple[int, Point, float, float]:
         """
@@ -255,6 +262,66 @@ class MovementController:
         self.heading = self._initial_heading()
         self.actual_speed = 0.0
         self.off_route = False
+        self.pid_controller.reset()  # Reset PID state voor schone start
+
+
+    def _rotate_point_to_world(self, local_point: Point) -> Point:
+        """
+        Roteert een punt van auto-lokaal frame naar wereld frame.
+        
+        Auto's forward-richting = heading angle
+        Lokaal frame: x = forward, y = left
+        
+        Args:
+            local_point: (x, y) in auto-lokaal frame
+            
+        Returns:
+            (x, y) in wereld frame
+        """
+        cos_h = math.cos(self.heading)
+        sin_h = math.sin(self.heading)
+        
+        local_x, local_y = local_point
+        
+        # Rotatie matrix:
+        # [cos  -sin] [local_x]   [cos*local_x - sin*local_y]
+        # [sin   cos] [local_y] = [sin*local_x + cos*local_y]
+        world_x = cos_h * local_x - sin_h * local_y
+        world_y = sin_h * local_x + cos_h * local_y
+        
+        # Voeg auto's positie toe
+        return (self.position[0] + world_x, self.position[1] + world_y)
+    
+    def _distance_to_route(self, point: Point, segment_index: int) -> float:
+        """
+        Berekent de perpendiculaire afstand van een punt tot de route.
+        
+        Zoekt het dichtstbijzijnde segment aan het gegeven segment_index
+        en berekent de afstand.
+        
+        Args:
+            point: (x, y) punt in wereld frame
+            segment_index: Huibde route segment
+            
+        Returns:
+            Afstand naar dichtstbijzijnde punt op route
+        """
+        waypoints = self.waypoints
+        best_dist = float("inf")
+        
+        # Zoek in huidi en paar volgende segmenten voor nauwkeurigheid
+        search_end = min(segment_index + 3, len(waypoints) - 1)
+        
+        for i in range(max(0, segment_index - 1), search_end):
+            p1 = (waypoints[i][X_COORD_IDX], waypoints[i][Y_COORD_IDX])
+            p2 = (waypoints[i + 1][X_COORD_IDX], waypoints[i + 1][Y_COORD_IDX])
+            
+            _, _, dist = self._project_point_on_segment(point, p1, p2)
+            
+            if dist < best_dist:
+                best_dist = dist
+        
+        return best_dist
 
     @staticmethod
     def _project_point_on_segment(p: Point, a: Point, b: Point) -> Tuple[Point, float, float]:
@@ -309,3 +376,23 @@ class MovementController:
     def heading_deg(self) -> float:
         """Kompas heading in graden (0-360): 0=Noord, 90=Oost, 180=Zuid, 270=West."""
         return (90 - math.degrees(self.heading)) % 360
+    
+    @property
+    def virtual_sensor_left(self) -> Point:
+        """
+        Position van de linker virtuele magneetsensor in wereld coördinaten.
+        
+        Returns:
+            (x, y) tuple van linker sensor positie
+        """
+        return self._rotate_point_to_world(self.sensor_left_offset)
+    
+    @property
+    def virtual_sensor_right(self) -> Point:
+        """
+        Position van de rechter virtuele magneetsensor in wereld coördinaten.
+        
+        Returns:
+            (x, y) tuple van rechter sensor positie
+        """
+        return self._rotate_point_to_world(self.sensor_right_offset)

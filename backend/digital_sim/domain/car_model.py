@@ -125,6 +125,8 @@ class CarModel(mesa.Model):
                 "time_delivering_seconds": round(agent.time_delivering_seconds, 2),
                 "time_parked_seconds": round(agent.time_parked_seconds, 2),
                 "time_loading_packages_seconds": round(agent.time_loading_packages_seconds, 2),
+                "virtual_sensor_left": agent.virtual_sensor_left,
+                "virtual_sensor_right": agent.virtual_sensor_right,
             })
 
         return agents_status

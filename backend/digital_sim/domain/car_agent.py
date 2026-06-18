@@ -183,6 +183,22 @@ class CarAgent(mesa.Agent):
     def packages_in_cargo_count(self):
         """Get the current number of packages in cargo."""
         return len(self.packages_in_cargo)
+    
+    @property
+    def virtual_sensor_left(self):
+        """Get position of left virtual magnetometer as (x, y) tuple."""
+        if self.controller:
+            sensor = self.controller.virtual_sensor_left
+            return sensor if sensor else None
+        return None
+    
+    @property
+    def virtual_sensor_right(self):
+        """Get position of right virtual magnetometer as (x, y) tuple."""
+        if self.controller:
+            sensor = self.controller.virtual_sensor_right
+            return sensor if sensor else None
+        return None
 
     @property
     def status(self):

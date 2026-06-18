@@ -40,7 +40,9 @@ export const useSimulationStateStore = defineStore("simulationState", () => {
         // ensure we convert agent positions from mathematical coordinates (backend) to SVG coordinates (frontend)
         const convertedAgents = (result.agents || []).map(agent => ({
             ...agent,
-            position: convertPositionMathToSvg(agent.position)
+            position: convertPositionMathToSvg(agent.position),
+            virtual_sensor_left: agent.virtual_sensor_left ? convertPositionMathToSvg(agent.virtual_sensor_left) : null,
+            virtual_sensor_right: agent.virtual_sensor_right ? convertPositionMathToSvg(agent.virtual_sensor_right) : null,
         }));
         
         agentState.value = convertedAgents;

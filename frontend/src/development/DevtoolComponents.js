@@ -2,3 +2,4 @@ export { default as devHouseDetectionZonesOverlay } from "./devHouseDetectionZon
 export { default as devLaneDebugOverlay } from "./devLaneDebugOverlay.vue";
 export { default as devRouteBuilder } from "./devRouteBuilder.vue";
 export { default as devTileCoordinateOverlay } from "./devTileCoordinateOverlay.vue";
+export { default as devSensorDebugOverlay } from "./devSensorDebugOverlay.vue";

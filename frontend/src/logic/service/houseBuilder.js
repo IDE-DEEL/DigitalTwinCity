@@ -1,4 +1,4 @@
-const detectionZoneRadius = 0.1;
+const detectionZoneRadius = 0.18;
 
 export function buildHouseCoordinates(instance) {
     const roadCoords = generateRoadCoordsFromCenter(

@@ -8,7 +8,7 @@ import { buildLane } from '../../logic/service/laneBuilder.js';
 import { normalizeDegree } from '../../logic/utils/rotation.js';
 import { Slider, DropDown, RadioGroup, SimulationTable, WebSocketStatus, RoutePolyline, Car, BaseButton } from '../CustomComponents.js';
 import { ControlPanel, SimulationDisplay, StatisticsModal, HouseLabelsOverlay, VisualizePanel, SimulationRunStats, TripScore } from '../AreaComponents.js';
-import { devTileCoordinateOverlay, devLaneDebugOverlay, devHouseDetectionZonesOverlay, devRouteBuilder } from '../../development/DevtoolComponents.js';
+import { devTileCoordinateOverlay, devLaneDebugOverlay, devHouseDetectionZonesOverlay, devRouteBuilder, devSensorDebugOverlay } from '../../development/DevtoolComponents.js';
 import '../../assets/MainContent.css';
 
 /*
@@ -156,6 +156,13 @@ const showDevRouteBuilder = ref(false);
 const toggleRouteBuilder = () => {
     showDevRouteBuilder.value = !showDevRouteBuilder.value;
 };
+
+// Overlay for visualizing sensor positions
+const showDevSensorDebug = ref(false);
+
+const toggleSensorDebug = () => {
+    showDevSensorDebug.value = !showDevSensorDebug.value;
+};
 </script>
 
 <template>
@@ -178,6 +185,10 @@ const toggleRouteBuilder = () => {
 
             <BaseButton :class="{ 'active': showDevHouseDetectionZones }" id="devtool-button" @click="toggleHouseDetectionZones">
                 {{ showDevHouseDetectionZones ? 'Hide house zones' : 'Show house zones' }}
+            </BaseButton>
+
+            <BaseButton :class="{ 'active': showDevSensorDebug }" id="devtool-button" @click="toggleSensorDebug">
+                {{ showDevSensorDebug ? 'Hide sensor debug' : 'Show sensor debug' }}
             </BaseButton>
         </div>
 
@@ -229,6 +240,9 @@ const toggleRouteBuilder = () => {
 
                     <!-- Devtool: house detection zones -->
                     <devHouseDetectionZonesOverlay v-if="showDevHouseDetectionZones" :scenario="dashboardStore.scenario"/>
+
+                    <!-- Devtool: sensor debug -->
+                    <devSensorDebugOverlay v-if="showDevSensorDebug" :agents="simulationStore.agentState"/>
 
                     <!-- House labels for packages -->
                     <HouseLabelsOverlay :houses="simulationStore.housesWithLivePackageData"/>
