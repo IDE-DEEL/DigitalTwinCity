@@ -1,30 +1,6 @@
 import { defineStore } from 'pinia'
 import { wsUrl } from '../config/api'
 
-export const TAG_POSITION_SCALE = 5.33
-export const MAP_PIXEL_SIZE = 100 * TAG_POSITION_SCALE
-
-export const normalizeTagId = (tagId) => {
-  return String(tagId ?? '')
-    .replace(/[\u200B-\u200D\uFEFF]/g, '')
-    .trim()
-}
-
-export const normalizeCarData = (payload) => {
-  if (!Array.isArray(payload)) {
-    return []
-  }
-  
-  return payload
-    .map((car) => ({
-      ...car,
-      tag_id: normalizeTagId(
-        car.tag_id ?? car.rfid_tag ?? car.tag
-      ),
-    }))
-    .filter((car) => car.tag_id)
-}
-
 export const useDigitalTwinStore = defineStore('digitalTwin', {
   state: () => ({
     table_data: [
@@ -219,6 +195,8 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
             break
 
           case 'activation':
+            console.log("start: " + payload)
+
             this.active = payload
             break
 
@@ -289,10 +267,9 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
     },
 
     sendData(type, payload) {
-      if (
-        this.socket &&
-        this.socket.readyState === WebSocket.OPEN
-      ) {
+      if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+        console.log(type + " " + payload)
+        
         this.socket.send(
           JSON.stringify({
             type,

@@ -9,6 +9,7 @@ from backend.score.config import  WEIGHTS, TRIP
 from typing import Callable
 
 from backend.core.config import settings
+from backend.domain.states import state
 
 
 # ---------------- MQTT CONFIG ----------------
@@ -125,7 +126,7 @@ def notify_car_data_listeners():
 
 
 # Global flag controlling whether the vehicle is allowed to move
-start = True
+# start = True
 
 # Reset route index
 
@@ -169,7 +170,7 @@ def on_message(client, userdata, msg):
     notify_car_data_listeners()
 
     # ----- DECISION LOGIC -----
-    if start:
+    if state.start:
         # Ensure vehicle is moving.
         client.publish(f"car/{topic[1]}/cmd/Start", "True")
 
@@ -207,7 +208,7 @@ def on_message(client, userdata, msg):
                 index[topic[1]] = 0
                 # calculate_score(TRIP, WEIGHTS)
 
-    elif not start:
+    elif not state.start:
         # Emergency stop / manual stop mode
         client.publish(f"car/{topic[1]}/cmd/Start", "False")
 

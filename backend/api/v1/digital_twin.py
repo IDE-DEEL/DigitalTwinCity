@@ -8,6 +8,7 @@ from backend.baanvlakreservering.baanvlakreservering import (
 )
 from backend.score.scoreCalculator import TripData, calculate_score
 from backend.score.config import  WEIGHTS, TRIP
+from backend.domain.states import state
 
 router = APIRouter()
 manager = ConnectionManager()
@@ -43,7 +44,7 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             data = await websocket.receive_json()
             msg_type = data.get("type")
-            print(data)
+            # print(data)
             payload = data.get("payload")
 
             match msg_type:
@@ -54,7 +55,8 @@ async def websocket_endpoint(websocket: WebSocket):
                     await manager.broadcast_update(msg_type, payload)
 
                 case "activation":
-                    await manager.broadcast_update(msg_type, payload)
+                    state.start = payload
+                    await manager.broadcast_update("activation", state.start)
 
                 case "car_data":
                     await manager.broadcast_update("car_data", getTag())
