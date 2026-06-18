@@ -6,8 +6,18 @@ from backend.digital_sim.constants import (
     AGENT_DISTANCE_TRAVELLED_KEY, AGENT_TIME_DRIVING_SECONDS_KEY, AGENT_PACKAGES_DELIVERED_KEY,
 )
 from backend.digital_sim.utils.coordinate_util import convert_waypoint_dicts_to_tuples
+from backend.score.scoreCalculator import TripData, calculate_score
+from backend.score.config import WEIGHTS
 import gc
 
+EXTRA_CONFIG = {
+    "wear_factor": 0.1,                 # arbitrary wear factor for EVs
+    "co2_emission_g_per_km": 0.0,       # EV = 0 emissions
+    "cost_per_km": 0.30,                # 30 cents per km
+    "revenue_per_package": 8.0,         # €8 per package delivered
+    "total_budget": 500.0,              # total budget for normalization
+    "is_rush_hour": False,
+}
 
 class SimulationService:
     def __init__(self):
@@ -77,7 +87,8 @@ class SimulationService:
         
         return {
             "status": "simulation_update",
-            **self.model.get_simulation_state()
+            **self.model.get_simulation_state(),
+            **self.get_current_stats(),
         }
 
     def stop_simulation(self):
@@ -88,6 +99,50 @@ class SimulationService:
         return {"status": "simulation_stopped", "final_step": final_step}
 
     def get_current_stats(self):
+        simulation_stats = self._get_simulation_stats()
+        trip_scores = self._calculate_trip_scores()
+
+        return {
+            "simulation_stats": simulation_stats,
+            "trip_scores": trip_scores,
+        }
+
+    def export_data_as_csv(self):
+        """Export Mesa DataCollector agent and model data as combined CSV string.
+        
+        Returns:
+            CSV string with all collected agent and model data or None if no simulation is active.
+            
+            CSV structure includes:
+            - Step, AgentID (from agent data)
+            - Agent metrics: distance_travelled, time_driving_seconds, status, etc.
+            - Model metrics: total_packages_in_scenario, total_packages_undelivered
+        """
+        if not self.model or not self.model.datacollector:
+            return None
+        
+        try:
+            # Get both agent and model variables dataframes from Mesa DataCollector
+            agent_data = self.model.datacollector.get_agent_vars_dataframe()
+            model_data = self.model.datacollector.get_model_vars_dataframe()
+            
+            # Round numeric columns in agent data to 2 decimal places
+            for col in NUMERIC_AGENT_REPORTER_KEYS:
+                if col in agent_data.columns:
+                    agent_data[col] = agent_data[col].round(2)
+            
+            # Merge agent and model data on Step index
+            merged_data = agent_data.copy()
+            for col in model_data.columns:
+                merged_data[col] = agent_data.index.get_level_values('Step').map(model_data[col])
+            
+            # Convert to CSV string
+            return merged_data.to_csv()
+        except Exception as e:
+            print(f"Error exporting data to CSV: {e}")
+            return None
+    
+    def _get_simulation_stats(self) -> dict:
         """Return per-agent stats from the current simulation.
         
         Returns:
@@ -147,41 +202,88 @@ class SimulationService:
         stats["totals"]["total_time_driving"] = round(stats["totals"]["total_time_driving"], 2)
         
         return stats
+        
 
-    def export_data_as_csv(self):
-        """Export Mesa DataCollector agent and model data as combined CSV string.
-        
-        Returns:
-            CSV string with all collected agent and model data or None if no simulation is active.
-            
-            CSV structure includes:
-            - Step, AgentID (from agent data)
-            - Agent metrics: distance_travelled, time_driving_seconds, status, etc.
-            - Model metrics: total_packages_in_scenario, total_packages_undelivered
-        """
-        if not self.model or not self.model.datacollector:
+    # def _calculate_trip_scores(self) -> list[dict] | None:
+    #     """Calculate and return scores for each agent based on current simulation data."""
+    #     if not self.model or not self.model.agents:
+    #         return None
+
+    #     results = []
+
+    #     for agent in self.model.agents:
+    #         total_cost = EXTRA_CONFIG["cost_per_km"] * agent.distance_travelled
+    #         total_revenue = EXTRA_CONFIG["revenue_per_package"] * agent.packages_delivered
+    #         budget_used_pct = (total_cost / EXTRA_CONFIG["total_budget"]) * 100
+
+    #         trip = TripData(
+    #             co2_emission_g_per_km   = EXTRA_CONFIG["co2_emission_g_per_km"],
+    #             wear_factor             = EXTRA_CONFIG["wear_factor"],
+    #             distance_km             = agent.distance_travelled,
+    #             cost_per_km             = EXTRA_CONFIG["cost_per_km"],
+    #             revenue_per_package     = total_revenue,                # total revenue based on packages delivered
+    #             budget_used_pct         = min(budget_used_pct, 100),
+    #             is_rush_hour            = EXTRA_CONFIG["is_rush_hour"],
+    #             soc_start_pct           = agent.initial_state_of_charge,
+    #             soc_end_pct             = agent.state_of_charge,
+    #             is_wrong_way            = False,
+    #             idle_time_sec           = agent.time_delivering_seconds,
+    #             speed_value             = agent.target_speed * 100,
+    #         )
+
+    #         score = calculate_score(trip, WEIGHTS)
+    #         results.append({
+    #             "id": agent.id,
+    #             **score
+    #         })
+
+    #     return results
+
+    def _calculate_trip_scores(self) -> dict | None:
+        """Calculate one aggregated score for the entire simulation run,
+        based on combined data from all agents."""
+        if not self.model or not self.model.agents:
             return None
-        
-        try:
-            # Get both agent and model variables dataframes from Mesa DataCollector
-            agent_data = self.model.datacollector.get_agent_vars_dataframe()
-            model_data = self.model.datacollector.get_model_vars_dataframe()
-            
-            # Round numeric columns in agent data to 2 decimal places
-            for col in NUMERIC_AGENT_REPORTER_KEYS:
-                if col in agent_data.columns:
-                    agent_data[col] = agent_data[col].round(2)
-            
-            # Merge agent and model data on Step index
-            merged_data = agent_data.copy()
-            for col in model_data.columns:
-                merged_data[col] = agent_data.index.get_level_values('Step').map(model_data[col])
-            
-            # Convert to CSV string
-            return merged_data.to_csv()
-        except Exception as e:
-            print(f"Error exporting data to CSV: {e}")
-            return None
+
+        agents = self.model.agents
+        num_agents = len(agents)
+
+        # ── Sum ──────────────────────────────
+        total_distance = sum(agent.distance_travelled for agent in agents)
+        total_packages_delivered = sum(agent.packages_delivered for agent in agents)
+        total_idle_time = sum(agent.time_delivering_seconds for agent in agents)
+
+        # ── Averages ───────────────────────────
+        avg_soc_start = sum(agent.initial_state_of_charge for agent in agents) / num_agents
+        avg_soc_end = sum(agent.state_of_charge for agent in agents) / num_agents
+        avg_target_speed = sum(agent.target_speed for agent in agents) / num_agents
+
+        # ── Cost/revenue over de entire run ────
+        total_cost = EXTRA_CONFIG["cost_per_km"] * total_distance
+        total_revenue = EXTRA_CONFIG["revenue_per_package"] * total_packages_delivered
+        budget_used_pct = (total_cost / EXTRA_CONFIG["total_budget"]) * 100
+
+        # ── Booleans: if 1 agent = true, count for the run ──
+        any_wrong_way = False
+
+        trip = TripData(
+            co2_emission_g_per_km    = EXTRA_CONFIG["co2_emission_g_per_km"],
+            wear_factor              = EXTRA_CONFIG["wear_factor"],
+            distance_km              = total_distance,
+            cost_per_km              = EXTRA_CONFIG["cost_per_km"],
+            revenue_per_package      = total_revenue,
+            budget_used_pct          = min(budget_used_pct, 100),
+            is_rush_hour             = EXTRA_CONFIG["is_rush_hour"],
+            soc_start_pct            = avg_soc_start,
+            soc_end_pct              = avg_soc_end,
+            is_wrong_way             = any_wrong_way,
+            idle_time_sec            = total_idle_time,
+            speed_value              = avg_target_speed * 100,
+        )
+
+        score = calculate_score(trip, WEIGHTS)
+
+        return score
         
     def dispose(self):
         """Destroy all simulation data."""

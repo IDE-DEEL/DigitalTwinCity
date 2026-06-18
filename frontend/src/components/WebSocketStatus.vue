@@ -1,6 +1,6 @@
 <script setup>
 import { useLanguageStore } from '../stores/index.js';
-import "../assets/WebSocketStatus.css";
+import { BaseButton } from './CustomComponents.js';
 
 const langStore = useLanguageStore();
 
@@ -24,13 +24,41 @@ defineEmits(['reconnect']);
     <span class="websocket-status-text">
         {{ langStore.getLabel('websocket.notConnected') }}
     </span>
-    <button 
-      class="websocket-status-button"
+    <BaseButton 
+      variant="websocket"
       @click="$emit('reconnect')"
       :disabled="reconnectCooldown"
-      :class="{ 'websocket-status-button--disabled': reconnectCooldown }"
     >
         {{ langStore.getLabel('websocket.refresh') }}
-    </button>
+    </BaseButton>
   </div>
 </template>
+
+<style scoped>
+.websocket-status-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 1px solid rgb(252, 165, 165);
+    padding: 0.75rem;
+    background-color: rgb(254, 226, 226);
+    border-radius: var(--rounded-xs);
+}
+
+.websocket-status-indicator {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+    background-color: rgb(239, 68, 68);
+}
+
+.websocket-status-text {
+    font-size: var(--text-xs);
+    font-weight: var(--font-medium);
+    color: rgb(159, 18, 57);
+}
+
+.websocket-status-button:hover:not(:disabled) {
+    background-color: var(--color-primary-blue-hover);
+}
+</style>

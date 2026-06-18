@@ -5,7 +5,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { apiUrl } from '../config/api';
 import { useLanguageStore } from '../stores/index.js';
-import { LangToggle } from './CustomComponents.js';
+import { LangToggle, BaseButton } from './CustomComponents.js';
 
 const router = useRouter();
 const isLoggingOut = ref(false);
@@ -37,13 +37,12 @@ const handleLogout = async () => {
     </div>
     <div class="button-container">
       <div class="general-container">
-        <button 
+        <BaseButton 
         @click="handleLogout" 
         :disabled="isLoggingOut"
-        class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md shadow-sm disabled:opacity-50"
         >
           {{ isLoggingOut ? langStore.getLabel('header.loggingOut') : langStore.getLabel('header.logout') }}
-        </button>
+        </BaseButton>
         <Switch/>
       </div>
       <div class="lang-container"><LangToggle/></div>

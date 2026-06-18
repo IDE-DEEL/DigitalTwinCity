@@ -107,7 +107,7 @@ async def websocket_simulation_endpoint(websocket: WebSocket):
                         await websocket.send_json({
                             "command": "get_stats",
                             "status": "success",
-                            "data": stats
+                            "data": stats,
                         })
                 
                 case "export_data":

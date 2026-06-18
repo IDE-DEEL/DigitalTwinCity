@@ -30,13 +30,14 @@
           {{ errorMessage }}
         </div>
 
-        <button 
+        <BaseButton 
           type="submit" 
           :disabled="isLoading"
+          variant="login"
           class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
         >
           {{ isLoading ? langStore.getLabel('login.loggingIn') : langStore.getLabel('login.loginButton') }}
-        </button>
+        </BaseButton>
       </form>
 
     </div>
@@ -48,7 +49,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { apiUrl } from '../config/api';
 import { useLanguageStore } from '../stores/index.js';
-import { LangToggle } from './CustomComponents.js';
+import { LangToggle, BaseButton } from './CustomComponents.js';
 
 const emit = defineEmits(['authenticated']);
 const router = useRouter();
