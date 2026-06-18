@@ -91,17 +91,28 @@ class SimulationService:
         return {
             "status": "simulation_update",
             **self.model.get_simulation_state(),
-            **self.get_current_stats(),
+            **self.get_current_statistics(),
         }
 
     def stop_simulation(self):
         """Stop the current simulation."""
         self.is_running = False
-        final_step = self.model.steps if self.model else 0
 
-        return {"status": "simulation_stopped", "final_step": final_step}
+        return {
+            "status": "simulation_stopped", 
+            **self.model.get_simulation_state(),
+            **self.get_current_statistics(),
+        }
 
-    def get_current_stats(self):
+    def retrieve_final_step_results(self):
+        """Retrieve the final results of the simulation after it has stopped."""     
+        return {
+            "status": "simulation_stopped", 
+            **self.model.get_simulation_state(),
+            **self.get_current_statistics(),
+        }
+
+    def get_current_statistics(self):
         simulation_stats = self._get_simulation_stats()
         trip_scores = self._calculate_trip_scores()
 

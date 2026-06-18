@@ -95,7 +95,7 @@ async def websocket_simulation_endpoint(websocket: WebSocket):
                         })
                 
                 case "get_stats":
-                    stats = simulation_service.get_current_stats()
+                    stats = simulation_service.get_current_statistics()
                     
                     if stats is None:
                         await websocket.send_json({
@@ -199,7 +199,7 @@ async def _run_simulation_loop(websocket: WebSocket, simulation_service: Simulat
                 await websocket.send_json({
                     "command": "simulation_ended",
                     "reason": "All cars parked and all packages delivered",
-                    "result": simulation_service.model.get_simulation_state()
+                    "result": simulation_service.retrieve_final_step_results()
                 })
             except Exception as e:
                 print(f"[digital_sim_api] Error sending simulation_ended message: {e}")
