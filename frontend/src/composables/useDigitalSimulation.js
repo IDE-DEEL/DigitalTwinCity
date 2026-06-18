@@ -1,35 +1,31 @@
 import { onMounted, onBeforeUnmount, watch } from "vue";
 import { useToast } from "vue-toastification";
-import { useWebSocketSimulation } from "./useWebSocketSimulation";
-import { useDashboardParametersStore } from "../stores/dashboardParametersStore";
-import { useSimulationStateStore } from "../stores/simulationStateStore";
-import { useLanguageStore } from "../stores/languageStore";
+import { useLanguageStore, useSimulationStateStore, useSimulationParameterStore, useSimulationWebSocketStore } from "../stores/index.js";
 
-const GET_STATS_TIMEOUT_IN_MILLIS = 5000;
-const CSV_EXPORT_TIMEOUT_IN_MILLIS = 20000;
+const CSV_EXPORT_TIMEOUT_IN_MILLIS = 120000;
 const ONE_SECOND_IN_MILLIS = 1000;
 
 // ---
 // orchestrator composable
 // ---
 export function useDigitalSimulation(onSimulationEndedCallback) {
-    const { isWebSocketConnected, connectWebSocket, disconnectWebSocket, sendWebSocketMessage, registerResponseHandler } = useWebSocketSimulation();
-    const dashboardStore = useDashboardParametersStore();
-    const simulationStore = useSimulationStateStore();
+    const wsStore = useSimulationWebSocketStore();
+    const paramStore = useSimulationParameterStore();
+    const stateStore = useSimulationStateStore();
     const languageStore = useLanguageStore();
 
     // ---
     // WebSocket lifecycle management
     // ---
     onMounted(() => {
-        connectWebSocket(simulationStore.updateSimulationState, handleSimulationEnded);
+        wsStore.connect(stateStore.updateSimulationState, handleSimulationEnded);
 
         // watch for changes in simulation speed to update the backend simulation
         watch(
-            () => dashboardStore.simulationSpeed,
+            () => paramStore.simulationSpeed,
             (newSpeed) => {
-                if (simulationStore.isSimulating && isWebSocketConnected.value) {
-                    sendWebSocketMessage({
+                if (stateStore.isSimulating && wsStore.isConnected) {
+                    wsStore.send({
                         command: "set_speed",
                         parameters: { simulationSpeed: newSpeed },
                     });
@@ -39,58 +35,60 @@ export function useDigitalSimulation(onSimulationEndedCallback) {
     });
 
     onBeforeUnmount(() => {
-        disconnectWebSocket();
+        wsStore.disconnect();
     });
 
     // ---
     // simulation control
     // ---
     function startSimulation() {
-        if (!isWebSocketConnected.value) {
-            console.error("WebSocket not connected. Cannot start simulation.");
-            return;
-        }
+        stateStore.resetSimulationState();
 
-        simulationStore.resetSimulationState();
-
-        const parameters = dashboardStore.simulationStartPayload;
-        console.log("Starting simulation with parameters:", parameters);
-        if (!parameters) {
-            console.error("Parameters not available. Cannot start simulation.");
-            return;
-        }
-
-        sendWebSocketMessage({
-            command: "start",
-            parameters: parameters
-        });
-
-        simulationStore.handleSimulationStarted();
+        wsStore.send({command: "start", parameters: paramStore.simulationStartPayload});
+        stateStore.handleSimulationStarted();
     }
 
     function stopSimulation() {
-        if (!isWebSocketConnected.value) {
-            console.error("WebSocket not connected. Cannot stop simulation.");
-            return;
-        }
-
-        sendWebSocketMessage({
-            command: "stop"
-        });
-
-        simulationStore.handleSimulationEnded();
+        wsStore.send({command: "stop"});
+        stateStore.handleSimulationEnded();
     }
 
     function reconnectWebSocket() {
-        disconnectWebSocket();
-        connectWebSocket(simulationStore.updateSimulationState, handleSimulationEnded);
+        wsStore.disconnect();
+        wsStore.connect(stateStore.updateSimulationState, handleSimulationEnded);
     }
 
     function handleSimulationEnded() {
-        simulationStore.handleSimulationEnded();
+        stateStore.handleSimulationEnded();
         if (onSimulationEndedCallback) {
             onSimulationEndedCallback();
         }
+    }
+
+    // ---
+    // data retrieval
+    // ---
+    function exportDataAsCSV() {
+        return new Promise((resolve, reject) => {
+
+            const timeoutId = setTimeout(() => {
+                console.error(`CSV export request timeout after ${CSV_EXPORT_TIMEOUT_IN_MILLIS / ONE_SECOND_IN_MILLIS} seconds`);
+                reject(new Error("Request timeout: No response from server"));
+            }, CSV_EXPORT_TIMEOUT_IN_MILLIS);
+
+            wsStore.registerResponseHandler("export_data", (response) => {
+                clearTimeout(timeoutId);
+
+                if (response.status === "success") {
+                    resolve(response.data);
+                } else {
+                    console.warn("CSV export error:", response.message);
+                    reject(new Error(response.message));
+                }
+            });
+
+            wsStore.send({ command: "export_data" });
+        });
     }
 
     // ---
@@ -103,7 +101,7 @@ export function useDigitalSimulation(onSimulationEndedCallback) {
      */
     function validateHousesReachability() {
         const toast = useToast();
-        const payload = dashboardStore.simulationStartPayload;
+        const payload = paramStore.simulationStartPayload;
         
         if (!payload || !payload.cars || !payload.scenario?.houses) {
             return true;
@@ -133,77 +131,13 @@ export function useDigitalSimulation(onSimulationEndedCallback) {
     }
 
     // ---
-    // data retrieval
-    // ---
-    function getStats() {
-        return new Promise((resolve, reject) => {
-            if (!isWebSocketConnected.value) {
-                console.warn("WebSocket not connected. Cannot get stats.");
-                reject(new Error("WebSocket not connected"));
-                return;
-            }
-
-            const timeoutId = setTimeout(() => {
-                console.error(`Stats request timeout after ${GET_STATS_TIMEOUT_IN_MILLIS / ONE_SECOND_IN_MILLIS} seconds`);
-                reject(new Error("Request timeout: No response from server"));
-            }, GET_STATS_TIMEOUT_IN_MILLIS);
-
-            registerResponseHandler("get_stats", (response) => {
-                clearTimeout(timeoutId);
-
-                if (response.status === "success") {
-                    console.log("TripData impact stats: ", response.impact);
-                    simulationStore.concernStats = response.impact;
-                    resolve(response.data);
-                } else {
-                    console.warn("Stats request error:", response.message);
-                    reject(new Error(response.message));
-                }
-            });
-
-            sendWebSocketMessage({ command: "get_stats" });
-        });
-    }
-
-    function exportDataAsCSV() {
-        return new Promise((resolve, reject) => {
-            if (!isWebSocketConnected.value) {
-                console.warn("WebSocket not connected. Cannot export data.");
-                reject(new Error("WebSocket not connected"));
-                return;
-            }
-
-            const timeoutId = setTimeout(() => {
-                console.error(`CSV export request timeout after ${CSV_EXPORT_TIMEOUT_IN_MILLIS / ONE_SECOND_IN_MILLIS} seconds`);
-                reject(new Error("Request timeout: No response from server"));
-            }, CSV_EXPORT_TIMEOUT_IN_MILLIS);
-
-            registerResponseHandler("export_data", (response) => {
-                clearTimeout(timeoutId);
-
-                if (response.status === "success") {
-                    resolve(response.data);
-                } else {
-                    console.warn("CSV export error:", response.message);
-                    reject(new Error(response.message));
-                }
-            });
-
-            sendWebSocketMessage({ command: "export_data" });
-        });
-    }
-
-    // ---
     // exporting composable
     // ---
     return {
-        isWebSocketConnected,
-
         startSimulation,
         stopSimulation,
         reconnectWebSocket,
         validateHousesReachability,
-        getStats,
         exportDataAsCSV,
     };
 }

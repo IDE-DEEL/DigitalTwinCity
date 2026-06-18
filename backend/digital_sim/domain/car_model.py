@@ -1,13 +1,16 @@
+from typing import Optional
+
 import mesa
 
 from backend.digital_sim.domain.car_agent import CarAgent, CarStatus
 from backend.digital_sim.domain.route import Route
 from backend.digital_sim.domain.package import Package, PackageStatus
 from backend.digital_sim.domain.house import House
+from backend.digital_sim.utils.coordinate_util import convert_position_math_to_svg
 from backend.digital_sim.constants import (
-    CAR_ROUTE_NAME_KEY, CAR_ROUTE_WAYPOINTS_KEY, CAR_MAX_PACKAGES_KEY, 
-    HOUSE_PACKAGE_COUNT_KEY, HOUSE_ID_KEY, HOUSE_ROAD_COORDS_KEY, 
-    DELTA_TIME_PER_STEP_IN_SECONDS, CAR_MAIN_ID_KEY,
+    CAR_ROUTE_NAME_KEY, CAR_ROUTE_WAYPOINTS_KEY, CAR_MAX_PACKAGES_KEY,
+    HOUSE_PACKAGE_COUNT_KEY, HOUSE_ID_KEY, HOUSE_ROAD_COORDS_KEY,
+    DELTA_TIME_PER_STEP_IN_SECONDS, CAR_MAIN_ID_KEY, AGENT_POSITION_KEY,
     AGENT_STATUS_KEY, AGENT_DISTANCE_TRAVELLED_KEY, AGENT_PACKAGES_DELIVERED_KEY,
     AGENT_PACKAGES_IN_CARGO_COUNT_KEY, AGENT_DEPOT_LOAD_COUNT_KEY, AGENT_STATE_OF_CHARGE_KEY,
     AGENT_TIME_DRIVING_SECONDS_KEY, AGENT_TIME_DELIVERING_SECONDS_KEY,
@@ -18,7 +21,7 @@ from backend.digital_sim.constants import (
 
 class CarModel(mesa.Model):
 
-    def __init__(self, cars: list[dict], car_target_speed: int, scenario_name: str, houses: list[dict], houses_on_routes: dict = None, rng=None):
+    def __init__(self, cars: list[dict], car_target_speed: int, scenario_name: str, houses: list[dict], map_rows: int, houses_on_routes: Optional[dict] = None, rng=None):
         super().__init__(rng=rng)
 
         self.num_agents = len(cars)
@@ -27,10 +30,11 @@ class CarModel(mesa.Model):
         self.car_target_speed = car_target_speed / 100
         self.houses = {}
         self.scenario_name = scenario_name
-        
+        self.map_rows = map_rows
+
         routes = self._setup_cars_and_routes(cars, self.car_target_speed)
         self._setup_houses(houses or [], houses_on_routes or {}, routes)
-        
+
         self.datacollector = mesa.DataCollector(
             model_reporters={
                 MODEL_TOTAL_PACKAGES_IN_SCENARIO_KEY: lambda m: sum(len(h.packages) for h in m.houses.values()),
@@ -40,7 +44,8 @@ class CarModel(mesa.Model):
                 ),
             },
             agent_reporters={
-                AGENT_STATUS_KEY: lambda agent: agent.status.name, # enum name of the agent's status
+                AGENT_STATUS_KEY: lambda agent: agent.status.name,  # enum name of the agent's status
+                AGENT_POSITION_KEY: lambda agent: convert_position_math_to_svg(agent.position, self.map_rows),
                 AGENT_DISTANCE_TRAVELLED_KEY: "distance_travelled",
                 AGENT_STATE_OF_CHARGE_KEY: lambda agent: round(agent.state_of_charge, 2),
                 AGENT_PACKAGES_DELIVERED_KEY: "packages_delivered",
@@ -52,10 +57,10 @@ class CarModel(mesa.Model):
                 AGENT_TIME_LOADING_PACKAGES_SECONDS_KEY: "time_loading_packages_seconds",
             }
         )
-    
+
     def step(self):
         """Execute one simulation step.
-        
+
         Executes step for all agents. Each agent handles:
         - Package pickup (when parked with capacity)
         - Delivery logic (zone detection, delivery countdown)
@@ -64,22 +69,22 @@ class CarModel(mesa.Model):
         Then collects simulation data.
         """
         self.agents.do("agent_cycle")
-        
+
         self.datacollector.collect(self)
 
         super().step()
         self.simulation_time += self.delta_time
-    
+
     def get_simulation_state(self):
         """
         Get the complete state of the simulation including agents and houses with package delivery info.
-        
+
         Returns:
             Dictionary containing:
             - agents: list of agent status
             - houses: list of houses with package delivery statistics
             - step: current simulation step
-        """        
+        """
         return {
             "step": self.steps,
             "sim_time_seconds": round(self.simulation_time, 2),
@@ -90,7 +95,7 @@ class CarModel(mesa.Model):
     def _get_agents_status(self):
         """
         Get the current status of all agents.
-        
+
         Returns:
             List of dictionaries containing information about each agent
         """
@@ -100,7 +105,7 @@ class CarModel(mesa.Model):
             agents_status.append({
                 "mesa_id": agent.unique_id,
                 "id": agent.id,
-                "position": agent.position,
+                "position": convert_position_math_to_svg(agent.position, self.map_rows),
                 "heading_radial": agent.heading,
                 "heading_deg": agent.heading_deg,
                 "target_speed": agent.target_speed,
@@ -125,10 +130,12 @@ class CarModel(mesa.Model):
                 "time_delivering_seconds": round(agent.time_delivering_seconds, 2),
                 "time_parked_seconds": round(agent.time_parked_seconds, 2),
                 "time_loading_packages_seconds": round(agent.time_loading_packages_seconds, 2),
+                "virtual_sensor_left": convert_position_math_to_svg(agent.virtual_sensor_left, self.map_rows),
+                "virtual_sensor_right": convert_position_math_to_svg(agent.virtual_sensor_right, self.map_rows),
             })
 
         return agents_status
-    
+
     def _get_houses_status(self):
         """List of dictionaries containing house status;
         (id, road_coords, total_packages, delivered_packages, undelivered_packages, package details)."""
@@ -138,7 +145,7 @@ class CarModel(mesa.Model):
             delivered_count = sum(1 for pkg in house.packages if pkg.status == PackageStatus.DELIVERED)
             total_count = len(house.packages)
             undelivered_count = total_count - delivered_count
-            
+
             houses_status.append({
                 "id": house.id,
                 "road_coords": house.road_coords,
@@ -174,34 +181,34 @@ class CarModel(mesa.Model):
             CarAgent(model=self, id=id, car_target_speed=car_target_speed, route=route, max_packages=max_packages)
 
         return routes_by_name
-    
+
     def is_simulation_complete(self) -> bool:
         """
         Check if simulation should stop.
-        
+
         Conditions:
         1. All cars are PARKED
         2. No packages with IN_DEPOT status remain on any car's route
-        
+
         Returns:
             True if both conditions are met, False otherwise
         """
         for agent in self.agents:
             if agent.status != CarStatus.PARKED:
                 return False
-            
+
             if agent.route and self._route_has_remaining_packages(agent.route):
                 return False
-        
+
         return True
-    
+
     def _route_has_remaining_packages(self, route: Route) -> bool:
         """
         Check if a route has any packages still in IN_DEPOT status.
-        
+
         Args:
             route: The Route object to check
-            
+
         Returns:
             True if any house on the route has IN_DEPOT packages, False otherwise
         """
@@ -209,12 +216,12 @@ class CarModel(mesa.Model):
             if any(pkg.status == PackageStatus.IN_DEPOT for pkg in house.packages):
                 return True
         return False
-    
+
     def _setup_houses(self, houses: list[dict], houses_on_routes: dict, routes_by_name: dict):
-        """Create house objects and link them to routes and packages.
-        
-        Uses housesOnRoutes if provided (new format with ordered houses per route),
-        otherwise falls back to HOUSE_ROUTE_NAMES_LIST_KEY per house (old format).
+        """Create House objects from the house definitions and link them to routes.
+
+        Houses are linked to routes using `houses_on_routes`, which maps each
+        route name to an ordered list of house ids.
         """
         # Instantiate all house objects
         for house_data in houses:
@@ -228,9 +235,9 @@ class CarModel(mesa.Model):
                 num_undelivered_packages=len(packages),
             )
             self.houses[house.id] = house
-        
-        # Link houses to routes using housesOnRoutes
-        for route_name, route_houses_data in houses_on_routes.items():        
+
+        # Link houses to routes using houses_on_routes
+        for route_name, route_houses_data in houses_on_routes.items():
             routes = routes_by_name.get(route_name, [])
             for route in routes:
                 for house_id in route_houses_data:

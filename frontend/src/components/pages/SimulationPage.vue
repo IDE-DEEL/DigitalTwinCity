@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
-import { useMapStore, useDashboardParametersStore, useSimulationStateStore, useLanguageStore } from '../../stores';
+import { useMapStore, useSimulationParameterStore, useSimulationStateStore, useLanguageStore, useSimulationWebSocketStore } from '../../stores';
 import { SIMULATION_SPEED_OPTIONS, MAP_COLUMNS, MAP_ROWS, MIN_SPEED, MAX_SPEED } from '../../constants/constants.js';
 import { useDigitalSimulation } from '../../composables/useDigitalSimulation.js';
 import { useCarColors } from '../../composables/useCarColors.js';
@@ -8,7 +8,7 @@ import { buildLane } from '../../logic/service/laneBuilder.js';
 import { normalizeDegree } from '../../logic/utils/rotation.js';
 import { Slider, DropDown, RadioGroup, SimulationTable, WebSocketStatus, RoutePolyline, Car, BaseButton } from '../CustomComponents.js';
 import { ControlPanel, SimulationDisplay, StatisticsModal, HouseLabelsOverlay, VisualizePanel, SimulationRunStats, TripScore } from '../AreaComponents.js';
-import { devTileCoordinateOverlay, devLaneDebugOverlay, devHouseDetectionZonesOverlay, devRouteBuilder } from '../../development/DevtoolComponents.js';
+import { devTileCoordinateOverlay, devLaneDebugOverlay, devHouseDetectionZonesOverlay, devRouteBuilder, devSensorDebugOverlay } from '../../development/DevtoolComponents.js';
 import '../../assets/MainContent.css';
 
 /*
@@ -23,13 +23,13 @@ const isDevelopment = import.meta.env.DEV;
     Stores and composables
     =====================
 */
-const dashboardStore = useDashboardParametersStore();
-const simulationStore = useSimulationStateStore();
+const paramStore = useSimulationParameterStore();
+const stateStore = useSimulationStateStore();
 const mapStore = useMapStore();
 const langStore = useLanguageStore();
+const wsStore = useSimulationWebSocketStore();
 
 const {
-    isWebSocketConnected,
     startSimulation,
     stopSimulation,
     reconnectWebSocket,
@@ -71,7 +71,7 @@ const lanes = computed(() => buildLane(lanePositions.value));
 
 // Check if all cars have the inactive route
 const allCarsHaveInactiveRoute = computed(() => {
-    return dashboardStore.cars.every(car => car.routeName === 'inactive');
+    return paramStore.cars.every(car => car.routeName === 'inactive');
 });
 
 /*
@@ -80,12 +80,12 @@ const allCarsHaveInactiveRoute = computed(() => {
     =====================
 */
 watch(
-    () => simulationStore.autoOpenStatsModal,
+    () => stateStore.autoOpenStatsModal,
     (newValue) => {
         if (newValue.value) {
             console.log("Auto-opening stats modal after simulation completion.");
             isStatsModalOpen.value = true;
-            simulationStore.resetAutoOpenStatsModal();
+            stateStore.resetAutoOpenStatsModal();
         }
     }
 );
@@ -111,7 +111,7 @@ const handleWebsocketReconnect = () => {
 };
 
 const handleSimulationStart = () => {
-    console.log('Requested simulation start with parameters: ', dashboardStore.collectParameters());
+    console.log('Requested simulation start with parameters: ', paramStore.collectParameters());
     validateHousesReachability();
     startSimulation();
 };
@@ -156,6 +156,13 @@ const showDevRouteBuilder = ref(false);
 const toggleRouteBuilder = () => {
     showDevRouteBuilder.value = !showDevRouteBuilder.value;
 };
+
+// Overlay for visualizing sensor positions
+const showDevSensorDebug = ref(false);
+
+const toggleSensorDebug = () => {
+    showDevSensorDebug.value = !showDevSensorDebug.value;
+};
 </script>
 
 <template>
@@ -179,6 +186,10 @@ const toggleRouteBuilder = () => {
             <BaseButton :class="{ 'active': showDevHouseDetectionZones }" id="devtool-button" @click="toggleHouseDetectionZones">
                 {{ showDevHouseDetectionZones ? 'Hide house zones' : 'Show house zones' }}
             </BaseButton>
+
+            <BaseButton :class="{ 'active': showDevSensorDebug }" id="devtool-button" @click="toggleSensorDebug">
+                {{ showDevSensorDebug ? 'Hide sensor debug' : 'Show sensor debug' }}
+            </BaseButton>
         </div>
 
             <!-- Visualize Panel -->
@@ -197,7 +208,7 @@ const toggleRouteBuilder = () => {
             <!-- Car sprites -->
             <template #car>
                 <Car
-                    v-for="car in simulationStore.agentState"
+                    v-for="car in stateStore.agentState"
                     :key="`car-${car.id}`"
                     :car="car"
                     :bodyColor="getColorForCarAndRoute(car.id)"
@@ -205,6 +216,7 @@ const toggleRouteBuilder = () => {
                     :title="`Car ${car.id} - ${car.packages_in_cargo.length} packages`"
                     :factorX="MAP_COLUMNS"
                     :factorY="MAP_ROWS"
+                    variant="simulation"
                 />
             </template>
 
@@ -218,7 +230,7 @@ const toggleRouteBuilder = () => {
 
                     <!-- Route polyline -->
                     <RoutePolyline
-                        v-for="car in dashboardStore.selectedCarsWithRoutes"
+                        v-for="car in paramStore.selectedCarsWithRoutes"
                         :key="`route-${car.id}`"
                         :waypoints="car.routeWaypoints"
                         :stroke="getColorForCarAndRoute(car.id)"
@@ -228,10 +240,13 @@ const toggleRouteBuilder = () => {
                     <devLaneDebugOverlay v-if="showDevLaneDebug" :lanes="lanes"/>
 
                     <!-- Devtool: house detection zones -->
-                    <devHouseDetectionZonesOverlay v-if="showDevHouseDetectionZones" :scenario="dashboardStore.scenario"/>
+                    <devHouseDetectionZonesOverlay v-if="showDevHouseDetectionZones" :scenario="paramStore.scenario"/>
+
+                    <!-- Devtool: sensor debug -->
+                    <devSensorDebugOverlay v-if="showDevSensorDebug" :agents="stateStore.agentState"/>
 
                     <!-- House labels for packages -->
-                    <HouseLabelsOverlay :houses="simulationStore.housesWithLivePackageData"/>
+                    <HouseLabelsOverlay :houses="stateStore.housesWithLivePackageData"/>
                 </svg>
             </template>
 
@@ -246,7 +261,7 @@ const toggleRouteBuilder = () => {
             <!-- WebSocket connection status -->
             <template #websocket-status>
                 <WebSocketStatus 
-                    :is-connected="isWebSocketConnected"
+                    :is-connected="wsStore.isConnected"
                     :reconnect-cooldown="reconnectCooldown"
                     @reconnect="handleWebsocketReconnect"
                 ></WebSocketStatus>
@@ -257,32 +272,32 @@ const toggleRouteBuilder = () => {
                 <Slider 
                     class="slider-area" 
                     :name="langStore.getLabel('parameters.carSpeed')"
-                    :disabled="simulationStore.isSimulating"
+                    :disabled="stateStore.isSimulating"
                     :min="MIN_SPEED"
                     :max="MAX_SPEED"
                     type="speed" 
-                    v-model="dashboardStore.carTargetSpeed"
+                    v-model="paramStore.carTargetSpeed"
                 ></Slider>
                 <DropDown 
                     class="scenario-area" 
                     :name="langStore.getLabel('parameters.scenario')"
-                    :disabled="simulationStore.isSimulating"
+                    :disabled="stateStore.isSimulating"
                     type="scenario" 
-                    :list="dashboardStore.scenarioOptions" 
-                    v-model="dashboardStore.scenario"
+                    :list="paramStore.scenarioOptions" 
+                    v-model="paramStore.scenario"
                 ></DropDown>
             </template>
 
             <!-- Car table -->
             <template #car-table>
                 <SimulationTable 
-                    v-model="dashboardStore.cars" 
+                    v-model="paramStore.cars" 
                     :max-packages="MAX_PACKAGES" 
                     :min-packages="MIN_PACKAGES" 
-                    :route-options="dashboardStore.routeOptions"
+                    :route-options="paramStore.routeOptions"
                     :name="langStore.getLabel('carTable.header')"
-                    :live-agents="simulationStore.agentState"
-                    :disabled="simulationStore.isSimulating"
+                    :live-agents="stateStore.agentState"
+                    :disabled="stateStore.isSimulating"
                     :headers="[
                         langStore.getLabel('carTable.carId'),
                         langStore.getLabel('carTable.energy'),
@@ -290,7 +305,7 @@ const toggleRouteBuilder = () => {
                         langStore.getLabel('carTable.route'),
                         langStore.getLabel('carTable.routeVisibility')
                     ]"
-                    @toggle-route-visibility="dashboardStore.toggleCarRouteVisibility"
+                    @toggle-route-visibility="paramStore.toggleCarRouteVisibility"
                 ></SimulationTable>
             </template>
 
@@ -299,19 +314,19 @@ const toggleRouteBuilder = () => {
                     class="radio-group-area" 
                     :name="langStore.getLabel('controls.simulationSpeed')" 
                     :list="SIMULATION_SPEED_OPTIONS" 
-                    v-model="dashboardStore.simulationSpeed"
+                    v-model="paramStore.simulationSpeed"
                 ></RadioGroup>
             </template>
 
             <!-- Simulation speed, start and stop controls + stats modal open button -->
             <template #simulation-controls>
                 <div class="stats-button-container">
-                    <BaseButton @click="handleStatsOpen" :disabled="!simulationStore.hasSimulated"> {{ langStore.getLabel('generalStats.title') }} </BaseButton>
+                    <BaseButton @click="handleStatsOpen"> {{ langStore.getLabel('generalStats.title') }} </BaseButton>
                 </div>
 
                 <div class="button-area">
-                    <BaseButton @click="handleSimulationStart" :disabled="simulationStore.isSimulating || allCarsHaveInactiveRoute"> {{ langStore.getLabel('controls.startButton') }} </BaseButton>
-                    <BaseButton @click="handleSimulationStop" :disabled="!simulationStore.isSimulating"> {{ langStore.getLabel('controls.stopButton') }} </BaseButton>
+                    <BaseButton @click="handleSimulationStart" :disabled="stateStore.isSimulating || allCarsHaveInactiveRoute"> {{ langStore.getLabel('controls.startButton') }} </BaseButton>
+                    <BaseButton @click="handleSimulationStop" :disabled="!stateStore.isSimulating"> {{ langStore.getLabel('controls.stopButton') }} </BaseButton>
                 </div>
             </template>
         </ControlPanel>
@@ -323,11 +338,11 @@ const toggleRouteBuilder = () => {
             @close="isStatsModalOpen = false"
         >
             <template #concerns-statistics>
-                <TripScore :scores="simulationStore.tripScores"/>
+                <TripScore :scores="stateStore.tripScores" :disabled="!stateStore.hasSimulated"/>
             </template>
             <template #run-statistics>
                 <SimulationRunStats
-                    :simulationStats="simulationStore.simulationStats"
+                    :simulationStats="stateStore.simulationStats"
                     :exportDataAsCSV="exportDataAsCSV"
                 />
             </template>

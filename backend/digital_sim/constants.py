@@ -4,6 +4,7 @@
 CAR_TARGET_SPEED_KEY = "carTargetSpeed"
 SIMULATION_SPEED_KEY = "simulationSpeed"
 HOUSES_ON_ROUTES_KEY = "housesOnRoutes"
+MAP_ROWS_KEY = "mapRows"
 
 # Car properties
 CARS_KEY = "cars"
@@ -28,8 +29,8 @@ UPDATES_PER_SECOND = 10
 DELTA_TIME_PER_STEP_IN_SECONDS = 1.0 / UPDATES_PER_SECOND
 
 # Coordinate indices for waypoints
-X_COORD_IDX = 0
-Y_COORD_IDX = 1
+X_COORD_KEY = "x"
+Y_COORD_KEY = "y"
 
 # Packages
 PACKAGE_DELIVERY_TIME_IN_SECONDS = 1.0
@@ -39,6 +40,7 @@ PACKAGE_PICKUP_TIME_IN_SECONDS = 0.5
 # Mesa DataCollector reporter keys
 # Agent property keys
 AGENT_STATUS_KEY = "status"
+AGENT_POSITION_KEY = "position"
 AGENT_DISTANCE_TRAVELLED_KEY = "distance_travelled"
 AGENT_STATE_OF_CHARGE_KEY = "state_of_charge"
 AGENT_PACKAGES_DELIVERED_KEY = "packages_delivered"

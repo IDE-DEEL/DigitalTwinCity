@@ -30,6 +30,7 @@ class SimulationStartPayload(BaseModel):
     cars: list[Car] = Field(..., min_items=1, max_items=5, description="List of cars, must contain 1-5 cars")
     scenario: Scenario = Field(..., description="Scenario configuration")
     housesOnRoutes: dict[str, list[str]] = Field(..., description="Dictionary mapping route names to lists of houses on those routes")
+    mapRows: int = Field(..., ge=7, le=7, description="Number of rows in the map - used for coordinate conversion (Y-coordinate)")
 
     @field_validator('cars')
     @classmethod

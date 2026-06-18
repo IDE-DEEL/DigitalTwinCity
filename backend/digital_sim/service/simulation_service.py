@@ -3,9 +3,10 @@ from backend.digital_sim.constants import (
     CAR_ROUTE_WAYPOINTS_KEY, CARS_KEY, CAR_TARGET_SPEED_KEY, SCENARIO_KEY, 
     SCENARIO_NAME_KEY, SCENARIO_HOUSES_LIST_KEY, HOUSE_ROAD_COORDS_KEY, 
     HOUSES_ON_ROUTES_KEY, NUMERIC_AGENT_REPORTER_KEYS, CAR_MAIN_ID_KEY,
-    AGENT_DISTANCE_TRAVELLED_KEY, AGENT_TIME_DRIVING_SECONDS_KEY, AGENT_PACKAGES_DELIVERED_KEY,
+    AGENT_DISTANCE_TRAVELLED_KEY, AGENT_TIME_DRIVING_SECONDS_KEY, 
+    AGENT_PACKAGES_DELIVERED_KEY, MAP_ROWS_KEY,
 )
-from backend.digital_sim.utils.coordinate_util import convert_waypoint_dicts_to_tuples
+from backend.digital_sim.utils.coordinate_util import convert_waypoints_array_from_svg_to_math
 from backend.score.scoreCalculator import TripData, calculate_score
 from backend.score.config import WEIGHTS
 import gc
@@ -35,21 +36,22 @@ class SimulationService:
         if self.model is not None:
             self.dispose()
         
-        cars = parameters.get(CARS_KEY, [])  # TODO: throw error if missing/empty
+        cars = parameters.get(CARS_KEY, [])
         car_target_speed = parameters.get(CAR_TARGET_SPEED_KEY, 50)
 
         scenario = parameters.get(SCENARIO_KEY, {})
         scenario_name = scenario.get(SCENARIO_NAME_KEY, "unknown")
         houses = scenario.get(SCENARIO_HOUSES_LIST_KEY, [])
         houses_on_routes = parameters.get(HOUSES_ON_ROUTES_KEY, {})
+        map_rows = parameters.get(MAP_ROWS_KEY, 7)
 
-        # Convert route waypoints from dicts to tuples for each car
+        # Convert route waypoints from SVG coordinates to mathematical coordinates for each car
         for car in cars:
-            car[CAR_ROUTE_WAYPOINTS_KEY] = convert_waypoint_dicts_to_tuples(car.get(CAR_ROUTE_WAYPOINTS_KEY, []))
+            car[CAR_ROUTE_WAYPOINTS_KEY] = convert_waypoints_array_from_svg_to_math(car.get(CAR_ROUTE_WAYPOINTS_KEY, []), map_rows)
         
-        # Convert house roadCoords from dicts to tuples for each house
+        # Convert house roadCoords from SVG coordinates to mathematical coordinates for each house
         for house in houses:
-            house[HOUSE_ROAD_COORDS_KEY] = convert_waypoint_dicts_to_tuples(house.get(HOUSE_ROAD_COORDS_KEY, []))
+            house[HOUSE_ROAD_COORDS_KEY] = convert_waypoints_array_from_svg_to_math(house.get(HOUSE_ROAD_COORDS_KEY, []), map_rows)
         
         # Create model with configuration
         self.model = CarModel(
@@ -58,6 +60,7 @@ class SimulationService:
             scenario_name=scenario_name,
             houses=houses,
             houses_on_routes=houses_on_routes,
+            map_rows=map_rows,
         )
         self.is_running = True
 
@@ -88,17 +91,28 @@ class SimulationService:
         return {
             "status": "simulation_update",
             **self.model.get_simulation_state(),
-            **self.get_current_stats(),
+            **self.get_current_statistics(),
         }
 
     def stop_simulation(self):
         """Stop the current simulation."""
         self.is_running = False
-        final_step = self.model.steps if self.model else 0
 
-        return {"status": "simulation_stopped", "final_step": final_step}
+        return {
+            "status": "simulation_stopped", 
+            **self.model.get_simulation_state(),
+            **self.get_current_statistics(),
+        }
 
-    def get_current_stats(self):
+    def retrieve_final_step_results(self):
+        """Retrieve the final results of the simulation after it has stopped."""     
+        return {
+            "status": "simulation_stopped", 
+            **self.model.get_simulation_state(),
+            **self.get_current_statistics(),
+        }
+
+    def get_current_statistics(self):
         simulation_stats = self._get_simulation_stats()
         trip_scores = self._calculate_trip_scores()
 
@@ -202,42 +216,7 @@ class SimulationService:
         stats["totals"]["total_time_driving"] = round(stats["totals"]["total_time_driving"], 2)
         
         return stats
-        
 
-    # def _calculate_trip_scores(self) -> list[dict] | None:
-    #     """Calculate and return scores for each agent based on current simulation data."""
-    #     if not self.model or not self.model.agents:
-    #         return None
-
-    #     results = []
-
-    #     for agent in self.model.agents:
-    #         total_cost = EXTRA_CONFIG["cost_per_km"] * agent.distance_travelled
-    #         total_revenue = EXTRA_CONFIG["revenue_per_package"] * agent.packages_delivered
-    #         budget_used_pct = (total_cost / EXTRA_CONFIG["total_budget"]) * 100
-
-    #         trip = TripData(
-    #             co2_emission_g_per_km   = EXTRA_CONFIG["co2_emission_g_per_km"],
-    #             wear_factor             = EXTRA_CONFIG["wear_factor"],
-    #             distance_km             = agent.distance_travelled,
-    #             cost_per_km             = EXTRA_CONFIG["cost_per_km"],
-    #             revenue_per_package     = total_revenue,                # total revenue based on packages delivered
-    #             budget_used_pct         = min(budget_used_pct, 100),
-    #             is_rush_hour            = EXTRA_CONFIG["is_rush_hour"],
-    #             soc_start_pct           = agent.initial_state_of_charge,
-    #             soc_end_pct             = agent.state_of_charge,
-    #             is_wrong_way            = False,
-    #             idle_time_sec           = agent.time_delivering_seconds,
-    #             speed_value             = agent.target_speed * 100,
-    #         )
-
-    #         score = calculate_score(trip, WEIGHTS)
-    #         results.append({
-    #             "id": agent.id,
-    #             **score
-    #         })
-
-    #     return results
 
     def _calculate_trip_scores(self) -> dict | None:
         """Calculate one aggregated score for the entire simulation run,

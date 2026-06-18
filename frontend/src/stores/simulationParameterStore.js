@@ -3,50 +3,16 @@ import { computed, ref } from "vue";
 import { ROUTE_OPTIONS } from "../logic/domain/routes";
 import { SCENARIO_OPTIONS } from "../logic/domain/scenarios";
 import { addWaypointsToCarRoute } from "../logic/service/carService";
-import { convertWaypointsArrayFromSvgToMath, convertWaypointFromSvgToMath } from "../logic/utils/coordinateConverter";
 import { getHousesWithRoutesByScenarioKey, buildOrderedHouseInstancesOnRoutes } from "../logic/service/houseService";
 import { useMapStore } from "./mapStore";
-import { SIMULATION_SPEED_OPTIONS } from "../constants/constants";
+import { SIMULATION_SPEED_OPTIONS, MAP_ROWS } from "../constants/constants";
 
-const defaultCarSpeed = 50;
-
-export const useDashboardParametersStore = defineStore("dashboardParameters", () => {
+export const useSimulationParameterStore = defineStore("simulationParameters", () => {
     // ---
     // State
     // ---
-    const cars = ref([
-        {
-            id: 1,
-            maxPackages: 1,
-            routeName: ROUTE_OPTIONS[1]?.value ?? '',
-            routeVisibility: false,
-        },
-        {
-            id: 2,
-            maxPackages: 1,
-            routeName: ROUTE_OPTIONS[0]?.value ?? '',
-            routeVisibility: false,
-        },
-        {
-            id: 3,
-            maxPackages: 1,
-            routeName: ROUTE_OPTIONS[0]?.value ?? '',
-            routeVisibility: false,
-        },
-        {
-            id: 4,
-            maxPackages: 1,
-            routeName: ROUTE_OPTIONS[0]?.value ?? '',
-            routeVisibility: false,
-        },
-        {
-            id: 5,
-            maxPackages: 1,
-            routeName: ROUTE_OPTIONS[0]?.value ?? '',
-            routeVisibility: false,
-        },
-    ]);
-    const carTargetSpeed = ref(defaultCarSpeed);
+    const cars = ref(DEFAULT_CARS);
+    const carTargetSpeed = ref(DEFAULT_CAR_SPEED);
     const scenario = ref(SCENARIO_OPTIONS[0]?.value ?? '');
     const simulationSpeed = ref(1);
 
@@ -107,20 +73,12 @@ export const useDashboardParametersStore = defineStore("dashboardParameters", ()
         }
 
         try {
-            return addWaypointsToCarRoute(cars.value);
+            return addWaypointsToCarRoute(cars.value)
+                .filter((car) => car.routeWaypoints); // Filter cars without route waypoints (e.g., 'inactive' route)
         } catch (error) {
             console.error("Error building configured car routes:", error);
             return [];
         }
-    });
-
-    const allCarsAndRoutesWithConvertedCoordinates = computed(() => {
-        return allCarsWithRoutes.value
-            .filter((car) => car.routeWaypoints) // Filter cars without route waypoints (e.g., 'inactive' route)
-            .map((car) => ({
-                ...car,
-                routeWaypoints: convertWaypointsArrayFromSvgToMath(car.routeWaypoints),
-            }));
     });
 
     const housesLinkedToRoutes = computed(() => {
@@ -162,27 +120,20 @@ export const useDashboardParametersStore = defineStore("dashboardParameters", ()
         }
     });
 
-    const housesWithConvertedCoordinates = computed(() => {
-        return housesLinkedToRoutes.value.map((house) => ({
-            ...house,
-            labelCoords: convertWaypointFromSvgToMath(house.labelCoords),
-            roadCoords: convertWaypointsArrayFromSvgToMath(house.roadCoords),
-        }));
-    });
-
     // ---
     // Simulation start payload getter
     // ---
     const simulationStartPayload = computed(() => {
         return {
-            cars: allCarsAndRoutesWithConvertedCoordinates.value,
+            cars: allCarsWithRoutes.value,
             carTargetSpeed: carTargetSpeed.value,
             simulationSpeed: simulationSpeed.value,
             scenario: {
                 name: scenario.value,
-                houses: housesWithConvertedCoordinates.value,
+                houses: housesLinkedToRoutes.value,
             },
             housesOnRoutes: orderedHouseInstancesOnRoutes.value,
+            mapRows: MAP_ROWS,
         };
     });
 
@@ -199,7 +150,6 @@ export const useDashboardParametersStore = defineStore("dashboardParameters", ()
         carTargetSpeed,
         scenario,
         simulationSpeed,
-        mapData,
 
         // Constants
         routeOptions: ROUTE_OPTIONS,
@@ -218,13 +168,49 @@ export const useDashboardParametersStore = defineStore("dashboardParameters", ()
         listOfCarsWithRouteVisibilityToggledOn,
         selectedCarsWithRoutes,
         allCarsWithRoutes,
-        allCarsAndRoutesWithConvertedCoordinates,
         baseHousesFromScenario,
         housesLinkedToRoutes,
-        housesWithConvertedCoordinates,
         simulationStartPayload,
 
         // Utilities
         collectParameters,
     };
 });
+
+// ---
+// Default values for refs
+// ---
+const DEFAULT_CAR_SPEED = 50;
+
+const DEFAULT_CARS = [
+    {
+        id: 1,
+        maxPackages: 1,
+        routeName: ROUTE_OPTIONS[1]?.value ?? '',
+        routeVisibility: false,
+    },
+    {
+        id: 2,
+        maxPackages: 1,
+        routeName: ROUTE_OPTIONS[0]?.value ?? '',
+        routeVisibility: false,
+    },
+    {
+        id: 3,
+        maxPackages: 1,
+        routeName: ROUTE_OPTIONS[0]?.value ?? '',
+        routeVisibility: false,
+    },
+    {
+        id: 4,
+        maxPackages: 1,
+        routeName: ROUTE_OPTIONS[0]?.value ?? '',
+        routeVisibility: false,
+    },
+    {
+        id: 5,
+        maxPackages: 1,
+        routeName: ROUTE_OPTIONS[0]?.value ?? '',
+        routeVisibility: false,
+    },
+];
