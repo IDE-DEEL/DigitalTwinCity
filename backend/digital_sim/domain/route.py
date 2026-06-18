@@ -3,7 +3,8 @@ from backend.digital_sim.domain.package import PackageStatus
 
 
 class Route:
-    def __init__(self, name: str, waypoints: list[tuple[float, float]], houses: list[House]):
+
+    def __init__(self, name: str, waypoints: list[dict[str, float]], houses: list[House]):
         self.name = name
         self.waypoints = waypoints
         self.houses = houses
@@ -15,7 +16,7 @@ class Route:
             List of Package objects that are IN_DEPOT and not yet assigned to any agent
         """
         available_packages = []
-
+        
         for house in self.houses:
             for package in house.packages:
                 if package.status == PackageStatus.IN_DEPOT and package.assigned_car_id is None:

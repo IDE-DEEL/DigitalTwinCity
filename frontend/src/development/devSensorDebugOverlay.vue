@@ -12,13 +12,13 @@ defineProps({
         <!-- Left sensors (red) -->
         <g v-for="agent in agents" :key="`sensor-left-${agent.id}`">
         <circle
-            :cx="agent.virtual_sensor_left?.[0]"
-            :cy="agent.virtual_sensor_left?.[1]"
+            :cx="agent.virtual_sensor_left?.x"
+            :cy="agent.virtual_sensor_left?.y"
             class="sensor-circle sensor-circle-left"
         />
         <text
-            :x="agent.virtual_sensor_left?.[0]"
-            :y="agent.virtual_sensor_left?.[1]"
+            :x="agent.virtual_sensor_left?.x"
+            :y="agent.virtual_sensor_left?.y"
             class="sensor-text"
         >
             L
@@ -28,14 +28,14 @@ defineProps({
         <!-- Right sensors (blue) -->
         <g v-for="agent in agents" :key="`sensor-right-${agent.id}`">
         <circle
-            :cx="agent.virtual_sensor_right?.[0]"
-            :cy="agent.virtual_sensor_right?.[1]"
+            :cx="agent.virtual_sensor_right?.x"
+            :cy="agent.virtual_sensor_right?.y"
             class="sensor-circle sensor-circle-right"
 
         />
         <text
-            :x="agent.virtual_sensor_right?.[0]"
-            :y="agent.virtual_sensor_right?.[1]"
+            :x="agent.virtual_sensor_right?.x"
+            :y="agent.virtual_sensor_right?.y"
             class="sensor-text"
         >
             R

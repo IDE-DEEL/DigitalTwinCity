@@ -1,11 +1,11 @@
 import math
 from typing import Tuple
 
-from backend.digital_sim.constants import X_COORD_IDX, Y_COORD_IDX
+from backend.digital_sim.constants import X_COORD_KEY, Y_COORD_KEY
 from backend.digital_sim.domain.pid_controller import PIDController
 
 
-Point = Tuple[float, float]
+Point = dict[str, float]
 
 
 class MovementController:
@@ -35,7 +35,7 @@ class MovementController:
     def __init__(self, waypoints: list[Point], target_speed: float, dt: float = 0.1):
         """
         Args:
-            waypoints: List of waypoints in [x, y] format
+            waypoints: List of waypoints as {"x": ..., "y": ...} dicts
             target_speed: Speed the car will accelerate/decelerate towards
             dt: Timestep in seconds
         """
@@ -47,7 +47,7 @@ class MovementController:
 
         # Position and heading
         start = self.waypoints[0]
-        self.position = [float(start[X_COORD_IDX]), float(start[Y_COORD_IDX])]
+        self.position = {X_COORD_KEY: float(start[X_COORD_KEY]), Y_COORD_KEY: float(start[Y_COORD_KEY])}
         self.heading = self._initial_heading()
         self.segment_index = 0
 
@@ -65,13 +65,13 @@ class MovementController:
         # PID controller for steering, based on the virtual magnetometer simulation.
         self._steering_pid = PIDController(kp=6.0, ki=0.02, kd=3.5, imax=15.0)
 
-        self.sensor_left_offset = (self._SENSOR_FORWARD_OFFSET_M, self._SENSOR_LATERAL_OFFSET_M)
-        self.sensor_right_offset = (self._SENSOR_FORWARD_OFFSET_M, -self._SENSOR_LATERAL_OFFSET_M)
+        self.sensor_left_offset = {X_COORD_KEY: self._SENSOR_FORWARD_OFFSET_M, Y_COORD_KEY: self._SENSOR_LATERAL_OFFSET_M}
+        self.sensor_right_offset = {X_COORD_KEY: self._SENSOR_FORWARD_OFFSET_M, Y_COORD_KEY: -self._SENSOR_LATERAL_OFFSET_M}
 
         # Tuning parameters
-        self.max_steer = 0.18  # radians per step
-        self.acceleration = 0.2  # units/s^2 for speeding up
-        self.deceleration = 0.3  # units/s^2 for braking
+        self.max_steer = 0.18 # radians per step
+        self.acceleration = 0.2 # units/s^2 for speeding up
+        self.deceleration = 0.3 # units/s^2 for braking
         self.goal_tolerance = 0.12
         self.off_route_threshold = 3.0
 
@@ -90,7 +90,7 @@ class MovementController:
         self._update_speed()
 
         # 2. Update position and heading
-        if self.actual_speed >= 0.01:  # Only move if speed > 0
+        if self.actual_speed >= 0.01:
             self._update_position()
             self._check_route_finished()
 
@@ -151,13 +151,13 @@ class MovementController:
 
         # Move the car
         move_distance = self.actual_speed * self.dt
-        prev_pos = (self.position[0], self.position[1])
-        self.position[0] += math.cos(self.heading) * move_distance
-        self.position[1] += math.sin(self.heading) * move_distance
+        prev_pos = {X_COORD_KEY: self.position[X_COORD_KEY], Y_COORD_KEY: self.position[Y_COORD_KEY]}
+        self.position[X_COORD_KEY] += math.cos(self.heading) * move_distance
+        self.position[Y_COORD_KEY] += math.sin(self.heading) * move_distance
 
         # Add the distance actually travelled
-        new_pos = (self.position[0], self.position[1])
-        self.distance_travelled += math.hypot(new_pos[0] - prev_pos[0], new_pos[1] - prev_pos[1])
+        new_pos = {X_COORD_KEY: self.position[X_COORD_KEY], Y_COORD_KEY: self.position[Y_COORD_KEY]}
+        self.distance_travelled += math.hypot(new_pos[X_COORD_KEY] - prev_pos[X_COORD_KEY], new_pos[Y_COORD_KEY] - prev_pos[Y_COORD_KEY])
 
     def _find_closest_point_on_route(self) -> Tuple[int, Point, float, float]:
         """
@@ -166,7 +166,7 @@ class MovementController:
         Returns:
             (segment_index, projection_point, t_on_segment, distance_to_projection)
         """
-        pos = (self.position[X_COORD_IDX], self.position[Y_COORD_IDX])
+        pos = {X_COORD_KEY: self.position[X_COORD_KEY], Y_COORD_KEY: self.position[Y_COORD_KEY]}
         waypoints = self.waypoints
 
         # Search the current segment and the next few segments
@@ -178,8 +178,8 @@ class MovementController:
         search_end = min(self.segment_index + self._ROUTE_SEARCH_WINDOW, len(waypoints) - 1)
 
         for i in range(self.segment_index, search_end):
-            p1 = (waypoints[i][X_COORD_IDX], waypoints[i][Y_COORD_IDX])
-            p2 = (waypoints[i + 1][X_COORD_IDX], waypoints[i + 1][Y_COORD_IDX])
+            p1 = {X_COORD_KEY: waypoints[i][X_COORD_KEY], Y_COORD_KEY: waypoints[i][Y_COORD_KEY]}
+            p2 = {X_COORD_KEY: waypoints[i + 1][X_COORD_KEY], Y_COORD_KEY: waypoints[i + 1][Y_COORD_KEY]}
 
             proj, t, dist = self._project_point_on_segment(pos, p1, p2)
 
@@ -193,23 +193,23 @@ class MovementController:
 
     def _check_route_finished(self) -> None:
         """Check whether the end of the route has been reached."""
-        final = (self.waypoints[-1][X_COORD_IDX], self.waypoints[-1][Y_COORD_IDX])
+        final = {X_COORD_KEY: self.waypoints[-1][X_COORD_KEY], Y_COORD_KEY: self.waypoints[-1][Y_COORD_KEY]}
         dist_to_goal = math.hypot(
-            self.position[X_COORD_IDX] - final[X_COORD_IDX],
-            self.position[Y_COORD_IDX] - final[Y_COORD_IDX]
+            self.position[X_COORD_KEY] - final[X_COORD_KEY],
+            self.position[Y_COORD_KEY] - final[Y_COORD_KEY]
         )
 
         # Only check once we're on the last segment
         if self.segment_index >= len(self.waypoints) - 2:
             if dist_to_goal <= self.goal_tolerance:
-                self.position = [final[X_COORD_IDX], final[Y_COORD_IDX]]
+                self.position = {X_COORD_KEY: final[X_COORD_KEY], Y_COORD_KEY: final[Y_COORD_KEY]}
                 self.finished = True
 
     def _initial_heading(self) -> float:
         """Determine the initial heading from the first segment of the route."""
         p1 = self.waypoints[0]
         p2 = self.waypoints[1]
-        return math.atan2(p2[Y_COORD_IDX] - p1[Y_COORD_IDX], p2[X_COORD_IDX] - p1[X_COORD_IDX])
+        return math.atan2(p2[Y_COORD_KEY] - p1[Y_COORD_KEY], p2[X_COORD_KEY] - p1[X_COORD_KEY])
 
     def reset_for_new_trip(self) -> None:
         """Reset controller to start position for a new trip.
@@ -219,11 +219,11 @@ class MovementController:
         """
         self.finished = False
         self.segment_index = 0
-        self.position = [float(self.waypoints[0][X_COORD_IDX]), float(self.waypoints[0][Y_COORD_IDX])]
+        self.position = {X_COORD_KEY: float(self.waypoints[0][X_COORD_KEY]), Y_COORD_KEY: float(self.waypoints[0][Y_COORD_KEY])}
         self.heading = self._initial_heading()
         self.actual_speed = 0.0
         self.off_route = False
-        self._steering_pid.reset()  # Reset PID state for a clean start
+        self._steering_pid.reset() # Reset PID state for a clean start
 
     def _rotate_point_to_world(self, local_point: Point) -> Point:
         """
@@ -233,15 +233,15 @@ class MovementController:
         Local frame: x = forward, y = left.
 
         Args:
-            local_point: (x, y) in the car-local frame
+            local_point: {"x": ..., "y": ...} dict in the car-local frame
 
         Returns:
-            (x, y) in the world frame
+            {"x": ..., "y": ...} dict in the world frame
         """
         cos_h = math.cos(self.heading)
         sin_h = math.sin(self.heading)
 
-        local_x, local_y = local_point
+        local_x, local_y = local_point[X_COORD_KEY], local_point[Y_COORD_KEY]
 
         # Rotation matrix:
         # [cos  -sin] [local_x]   [cos*local_x - sin*local_y]
@@ -250,7 +250,7 @@ class MovementController:
         world_y = sin_h * local_x + cos_h * local_y
 
         # Add the car's position
-        return (self.position[0] + world_x, self.position[1] + world_y)
+        return {X_COORD_KEY: self.position[X_COORD_KEY] + world_x, Y_COORD_KEY: self.position[Y_COORD_KEY] + world_y}
 
     def _distance_to_route(self, point: Point, segment_index: int) -> float:
         """
@@ -260,7 +260,7 @@ class MovementController:
         returns the smallest distance found.
 
         Args:
-            point: (x, y) point in the world frame
+            point: {"x": ..., "y": ...} point in the world frame
             segment_index: Current route segment
 
         Returns:
@@ -273,8 +273,8 @@ class MovementController:
         search_end = min(segment_index + self._SENSOR_SEARCH_WINDOW, len(waypoints) - 1)
 
         for i in range(max(0, segment_index - 1), search_end):
-            p1 = (waypoints[i][X_COORD_IDX], waypoints[i][Y_COORD_IDX])
-            p2 = (waypoints[i + 1][X_COORD_IDX], waypoints[i + 1][Y_COORD_IDX])
+            p1 = {X_COORD_KEY: waypoints[i][X_COORD_KEY], Y_COORD_KEY: waypoints[i][Y_COORD_KEY]}
+            p2 = {X_COORD_KEY: waypoints[i + 1][X_COORD_KEY], Y_COORD_KEY: waypoints[i + 1][Y_COORD_KEY]}
 
             _, _, dist = self._project_point_on_segment(point, p1, p2)
 
@@ -291,9 +291,9 @@ class MovementController:
         Returns:
             (projected_point, t_on_segment, distance_from_p_to_projection)
         """
-        ax, ay = a
-        bx, by = b
-        px, py = p
+        ax, ay = a[X_COORD_KEY], a[Y_COORD_KEY]
+        bx, by = b[X_COORD_KEY], b[Y_COORD_KEY]
+        px, py = p[X_COORD_KEY], p[Y_COORD_KEY]
 
         dx = bx - ax
         dy = by - ay
@@ -305,8 +305,8 @@ class MovementController:
         t = ((px - ax) * dx + (py - ay) * dy) / seg_len_sq
         t = max(0.0, min(1.0, t))
 
-        proj = (ax + t * dx, ay + t * dy)
-        dist = math.hypot(px - proj[0], py - proj[1])
+        proj = {X_COORD_KEY: ax + t * dx, Y_COORD_KEY: ay + t * dy}
+        dist = math.hypot(px - proj[X_COORD_KEY], py - proj[Y_COORD_KEY])
         return proj, t, dist
 
     @staticmethod
@@ -315,8 +315,9 @@ class MovementController:
         return (angle + math.pi) % (2 * math.pi) - math.pi
 
     @property
-    def position_tuple(self) -> Point:
-        return (self.position[X_COORD_IDX], self.position[Y_COORD_IDX])
+    def position_dict(self) -> Point:
+        """Get current position as a {"x": ..., "y": ...} dict (a defensive copy)."""
+        return {X_COORD_KEY: self.position[X_COORD_KEY], Y_COORD_KEY: self.position[Y_COORD_KEY]}
 
     @property
     def heading_deg(self) -> float:
@@ -325,10 +326,10 @@ class MovementController:
 
     @property
     def virtual_sensor_left(self) -> Point:
-        """Position of the left virtual magnetometer sensor, in world coordinates."""
+        """Position of the left virtual magnetometer sensor, as a dict, in world coordinates."""
         return self._rotate_point_to_world(self.sensor_left_offset)
 
     @property
     def virtual_sensor_right(self) -> Point:
-        """Position of the right virtual magnetometer sensor, in world coordinates."""
+        """Position of the right virtual magnetometer sensor, as a dict, in world coordinates."""
         return self._rotate_point_to_world(self.sensor_right_offset)

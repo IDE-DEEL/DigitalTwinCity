@@ -40,8 +40,8 @@ const getCarSpriteStyle = () => {
             top: `${props.car.y * props.factorY}px`,
         };
     } else {
-        const xPercent = (props.car.position[0] / props.factorX) * 100;
-        const yPercent = (props.car.position[1] / props.factorY) * 100;
+        const xPercent = (props.car.position.x / props.factorX) * 100;
+        const yPercent = (props.car.position.y / props.factorY) * 100;
 
         return {
             left: `calc(${xPercent}%`,

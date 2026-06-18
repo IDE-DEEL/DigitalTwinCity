@@ -3,9 +3,10 @@ from backend.digital_sim.constants import (
     CAR_ROUTE_WAYPOINTS_KEY, CARS_KEY, CAR_TARGET_SPEED_KEY, SCENARIO_KEY, 
     SCENARIO_NAME_KEY, SCENARIO_HOUSES_LIST_KEY, HOUSE_ROAD_COORDS_KEY, 
     HOUSES_ON_ROUTES_KEY, NUMERIC_AGENT_REPORTER_KEYS, CAR_MAIN_ID_KEY,
-    AGENT_DISTANCE_TRAVELLED_KEY, AGENT_TIME_DRIVING_SECONDS_KEY, AGENT_PACKAGES_DELIVERED_KEY,
+    AGENT_DISTANCE_TRAVELLED_KEY, AGENT_TIME_DRIVING_SECONDS_KEY, 
+    AGENT_PACKAGES_DELIVERED_KEY, MAP_ROWS_KEY,
 )
-from backend.digital_sim.utils.coordinate_util import convert_waypoint_dicts_to_tuples
+from backend.digital_sim.utils.coordinate_util import convert_waypoints_array_from_svg_to_math
 from backend.score.scoreCalculator import TripData, calculate_score
 from backend.score.config import WEIGHTS
 import gc
@@ -42,14 +43,16 @@ class SimulationService:
         scenario_name = scenario.get(SCENARIO_NAME_KEY, "unknown")
         houses = scenario.get(SCENARIO_HOUSES_LIST_KEY, [])
         houses_on_routes = parameters.get(HOUSES_ON_ROUTES_KEY, {})
+        map_rows = parameters.get(MAP_ROWS_KEY, 7)
 
-        # Convert route waypoints from dicts to tuples for each car
+        # Convert route waypoints from SVG coordinates to mathematical coordinates for each car
         for car in cars:
-            car[CAR_ROUTE_WAYPOINTS_KEY] = convert_waypoint_dicts_to_tuples(car.get(CAR_ROUTE_WAYPOINTS_KEY, []))
+            car[CAR_ROUTE_WAYPOINTS_KEY] = convert_waypoints_array_from_svg_to_math(car.get(CAR_ROUTE_WAYPOINTS_KEY, []), map_rows)
+            print(f"Converted car route waypoints for car {car.get(CAR_MAIN_ID_KEY)}: {car[CAR_ROUTE_WAYPOINTS_KEY]}")
         
-        # Convert house roadCoords from dicts to tuples for each house
+        # Convert house roadCoords from SVG coordinates to mathematical coordinates for each house
         for house in houses:
-            house[HOUSE_ROAD_COORDS_KEY] = convert_waypoint_dicts_to_tuples(house.get(HOUSE_ROAD_COORDS_KEY, []))
+            house[HOUSE_ROAD_COORDS_KEY] = convert_waypoints_array_from_svg_to_math(house.get(HOUSE_ROAD_COORDS_KEY, []), map_rows)
         
         # Create model with configuration
         self.model = CarModel(
@@ -58,6 +61,7 @@ class SimulationService:
             scenario_name=scenario_name,
             houses=houses,
             houses_on_routes=houses_on_routes,
+            map_rows=map_rows,
         )
         self.is_running = True
 

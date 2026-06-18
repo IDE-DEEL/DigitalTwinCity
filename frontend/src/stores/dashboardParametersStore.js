@@ -3,10 +3,9 @@ import { computed, ref } from "vue";
 import { ROUTE_OPTIONS } from "../logic/domain/routes";
 import { SCENARIO_OPTIONS } from "../logic/domain/scenarios";
 import { addWaypointsToCarRoute } from "../logic/service/carService";
-import { convertWaypointsArrayFromSvgToMath, convertWaypointFromSvgToMath } from "../logic/utils/coordinateConverter";
 import { getHousesWithRoutesByScenarioKey, buildOrderedHouseInstancesOnRoutes } from "../logic/service/houseService";
 import { useMapStore } from "./mapStore";
-import { SIMULATION_SPEED_OPTIONS } from "../constants/constants";
+import { SIMULATION_SPEED_OPTIONS, MAP_ROWS } from "../constants/constants";
 
 export const useDashboardParametersStore = defineStore("dashboardParameters", () => {
     // ---
@@ -74,20 +73,12 @@ export const useDashboardParametersStore = defineStore("dashboardParameters", ()
         }
 
         try {
-            return addWaypointsToCarRoute(cars.value);
+            return addWaypointsToCarRoute(cars.value)
+                .filter((car) => car.routeWaypoints); // Filter cars without route waypoints (e.g., 'inactive' route)
         } catch (error) {
             console.error("Error building configured car routes:", error);
             return [];
         }
-    });
-
-    const allCarsAndRoutesWithConvertedCoordinates = computed(() => {
-        return allCarsWithRoutes.value
-            .filter((car) => car.routeWaypoints) // Filter cars without route waypoints (e.g., 'inactive' route)
-            .map((car) => ({
-                ...car,
-                routeWaypoints: convertWaypointsArrayFromSvgToMath(car.routeWaypoints),
-            }));
     });
 
     const housesLinkedToRoutes = computed(() => {
@@ -129,27 +120,20 @@ export const useDashboardParametersStore = defineStore("dashboardParameters", ()
         }
     });
 
-    const housesWithConvertedCoordinates = computed(() => {
-        return housesLinkedToRoutes.value.map((house) => ({
-            ...house,
-            labelCoords: convertWaypointFromSvgToMath(house.labelCoords),
-            roadCoords: convertWaypointsArrayFromSvgToMath(house.roadCoords),
-        }));
-    });
-
     // ---
     // Simulation start payload getter
     // ---
     const simulationStartPayload = computed(() => {
         return {
-            cars: allCarsAndRoutesWithConvertedCoordinates.value,
+            cars: allCarsWithRoutes.value,
             carTargetSpeed: carTargetSpeed.value,
             simulationSpeed: simulationSpeed.value,
             scenario: {
                 name: scenario.value,
-                houses: housesWithConvertedCoordinates.value,
+                houses: housesLinkedToRoutes.value,
             },
             housesOnRoutes: orderedHouseInstancesOnRoutes.value,
+            mapRows: MAP_ROWS,
         };
     });
 
@@ -184,10 +168,8 @@ export const useDashboardParametersStore = defineStore("dashboardParameters", ()
         listOfCarsWithRouteVisibilityToggledOn,
         selectedCarsWithRoutes,
         allCarsWithRoutes,
-        allCarsAndRoutesWithConvertedCoordinates,
         baseHousesFromScenario,
         housesLinkedToRoutes,
-        housesWithConvertedCoordinates,
         simulationStartPayload,
 
         // Utilities

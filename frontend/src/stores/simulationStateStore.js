@@ -1,6 +1,5 @@
 import { defineStore } from "pinia";
 import { ref, computed, watch } from "vue";
-import { convertPositionMathToSvg } from "../logic/utils/coordinateConverter";
 import { useDashboardParametersStore } from "./dashboardParametersStore";
 
 export const useSimulationStateStore = defineStore("simulationState", () => {
@@ -37,15 +36,8 @@ export const useSimulationStateStore = defineStore("simulationState", () => {
     // Actions
     // ---
     function updateSimulationState(result) {
-        // ensure we convert agent positions from mathematical coordinates (backend) to SVG coordinates (frontend)
-        const convertedAgents = (result.agents || []).map(agent => ({
-            ...agent,
-            position: convertPositionMathToSvg(agent.position),
-            virtual_sensor_left: agent.virtual_sensor_left ? convertPositionMathToSvg(agent.virtual_sensor_left) : null,
-            virtual_sensor_right: agent.virtual_sensor_right ? convertPositionMathToSvg(agent.virtual_sensor_right) : null,
-        }));
-        
-        agentState.value = convertedAgents;
+        // Agent position coordinates are convert to SVG-coordinates in the backend
+        agentState.value = result.agents || [];
         houseState.value = result.houses || [];
         currentStep.value = result.step || DEFAULT_STEPS;
         simulationStats.value = result.simulation_stats || DEFAULT_SIMULATION_STATS;

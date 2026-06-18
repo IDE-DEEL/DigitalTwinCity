@@ -6,6 +6,7 @@ from backend.digital_sim.domain.car_agent import CarAgent, CarStatus
 from backend.digital_sim.domain.route import Route
 from backend.digital_sim.domain.package import Package, PackageStatus
 from backend.digital_sim.domain.house import House
+from backend.digital_sim.utils.coordinate_util import convert_position_math_to_svg
 from backend.digital_sim.constants import (
     CAR_ROUTE_NAME_KEY, CAR_ROUTE_WAYPOINTS_KEY, CAR_MAX_PACKAGES_KEY,
     HOUSE_PACKAGE_COUNT_KEY, HOUSE_ID_KEY, HOUSE_ROAD_COORDS_KEY,
@@ -20,7 +21,7 @@ from backend.digital_sim.constants import (
 
 class CarModel(mesa.Model):
 
-    def __init__(self, cars: list[dict], car_target_speed: int, scenario_name: str, houses: list[dict], houses_on_routes: Optional[dict] = None, rng=None):
+    def __init__(self, cars: list[dict], car_target_speed: int, scenario_name: str, houses: list[dict], map_rows: int, houses_on_routes: Optional[dict] = None, rng=None):
         super().__init__(rng=rng)
 
         self.num_agents = len(cars)
@@ -29,6 +30,7 @@ class CarModel(mesa.Model):
         self.car_target_speed = car_target_speed / 100
         self.houses = {}
         self.scenario_name = scenario_name
+        self.map_rows = map_rows
 
         routes = self._setup_cars_and_routes(cars, self.car_target_speed)
         self._setup_houses(houses or [], houses_on_routes or {}, routes)
@@ -102,7 +104,7 @@ class CarModel(mesa.Model):
             agents_status.append({
                 "mesa_id": agent.unique_id,
                 "id": agent.id,
-                "position": agent.position,
+                "position": convert_position_math_to_svg(agent.position, self.map_rows),
                 "heading_radial": agent.heading,
                 "heading_deg": agent.heading_deg,
                 "target_speed": agent.target_speed,

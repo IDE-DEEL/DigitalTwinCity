@@ -140,9 +140,9 @@ class CarAgent(mesa.Agent):
 
     @property
     def position(self):
-        """Get current position as (x, y) tuple."""
+        """Get current position as (x, y) dictionary."""
         if self._movement_controller:
-            return self._movement_controller.position_tuple
+            return self._movement_controller.position_dict
         return None
 
     @property
