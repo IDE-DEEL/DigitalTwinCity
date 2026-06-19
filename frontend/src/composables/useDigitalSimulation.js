@@ -13,6 +13,7 @@ export function useDigitalSimulation(onSimulationEndedCallback) {
     const paramStore = useSimulationParameterStore();
     const stateStore = useSimulationStateStore();
     const languageStore = useLanguageStore();
+    const toast = useToast();
 
     // ---
     // WebSocket lifecycle management
@@ -48,10 +49,17 @@ export function useDigitalSimulation(onSimulationEndedCallback) {
     // simulation control
     // ---
     function startSimulation() {
+        if (!wsStore.isConnected) {
+            toast.error(languageStore.getToastMessage("error.WS_CONNECTION_ERROR"));
+            return;
+        }
+
         stateStore.resetSimulationState();
 
         wsStore.send({command: "start", parameters: paramStore.simulationStartPayload});
         stateStore.handleSimulationStarted();
+
+        validateHousesReachability();
     }
 
     function stopSimulation() {
@@ -117,7 +125,6 @@ export function useDigitalSimulation(onSimulationEndedCallback) {
      * @returns {boolean} true if all houses are reachable, false if some are unreachable
      */
     function validateHousesReachability() {
-        const toast = useToast();
         const payload = paramStore.simulationStartPayload;
         
         if (!payload || !payload.cars || !payload.scenario?.houses) {
