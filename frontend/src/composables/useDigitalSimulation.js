@@ -18,6 +18,8 @@ export function useDigitalSimulation(onSimulationEndedCallback) {
     // WebSocket lifecycle management
     // ---
     onMounted(() => {
+        stateStore.resetSimulationState();
+
         wsStore.connect(stateStore.updateSimulationState, handleSimulationEnded);
 
         // watch for changes in simulation speed to update the backend simulation
@@ -35,6 +37,10 @@ export function useDigitalSimulation(onSimulationEndedCallback) {
     });
 
     onBeforeUnmount(() => {
+        if (stateStore.isSimulating) {
+            wsStore.send({ command: "stop" });
+        }
+        
         wsStore.disconnect();
     });
 
