@@ -42,7 +42,7 @@ const handleDownloadCSV = () => {
     const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `DEEL-simulation_${timestamp}.csv`;
+    link.download = `DEEL-concerns_${timestamp}.csv`;
     link.click();
 };
 
@@ -177,7 +177,6 @@ const handleDownloadCSV = () => {
     font-weight: var(--font-semibold);
     display: flex;
     justify-content: space-between;
-    /* padding: 0rem 0.5rem; */
 }
 
 #surroundings {
