@@ -45,7 +45,7 @@ class CarModel(mesa.Model):
             },
             agent_reporters={
                 AGENT_STATUS_KEY: lambda agent: agent.status.name,  # enum name of the agent's status
-                AGENT_POSITION_KEY: lambda agent: convert_position_math_to_svg(agent.position, self.map_rows),
+                AGENT_POSITION_KEY: lambda agent: agent.svg_position,
                 AGENT_DISTANCE_TRAVELLED_KEY: "distance_travelled",
                 AGENT_STATE_OF_CHARGE_KEY: lambda agent: round(agent.state_of_charge, 2),
                 AGENT_PACKAGES_DELIVERED_KEY: "packages_delivered",
@@ -105,7 +105,7 @@ class CarModel(mesa.Model):
             agents_status.append({
                 "mesa_id": agent.unique_id,
                 "id": agent.id,
-                "position": convert_position_math_to_svg(agent.position, self.map_rows),
+                "position": agent.svg_position,
                 "heading_radial": agent.heading,
                 "heading_deg": agent.heading_deg,
                 "target_speed": agent.target_speed,
@@ -130,8 +130,8 @@ class CarModel(mesa.Model):
                 "time_delivering_seconds": round(agent.time_delivering_seconds, 2),
                 "time_parked_seconds": round(agent.time_parked_seconds, 2),
                 "time_loading_packages_seconds": round(agent.time_loading_packages_seconds, 2),
-                "virtual_sensor_left": convert_position_math_to_svg(agent.virtual_sensor_left, self.map_rows),
-                "virtual_sensor_right": convert_position_math_to_svg(agent.virtual_sensor_right, self.map_rows),
+                "virtual_sensor_left": agent.svg_virtual_sensor_left,
+                "virtual_sensor_right": agent.svg_virtual_sensor_right,
             })
 
         return agents_status

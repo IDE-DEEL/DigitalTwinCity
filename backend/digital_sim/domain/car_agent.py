@@ -6,6 +6,7 @@ import mesa
 from backend.digital_sim.domain.route import Route
 from backend.digital_sim.domain.movement_controller import MovementController
 from backend.digital_sim.constants import PACKAGE_PICKUP_TIME_IN_SECONDS, PACKAGE_DELIVERY_TIME_IN_SECONDS
+from backend.digital_sim.utils.coordinate_util import convert_position_math_to_svg
 
 
 class CarStatus(Enum):
@@ -144,6 +145,13 @@ class CarAgent(mesa.Agent):
         if self._movement_controller:
             return self._movement_controller.position_dict
         return None
+    
+    @property
+    def svg_position(self):
+        """Get current position as (x, y) dictionary for SVG rendering."""
+        if self._movement_controller:
+            return convert_position_math_to_svg(self._movement_controller.position_dict, self.model.map_rows)
+        return None
 
     @property
     def actual_speed(self):
@@ -194,18 +202,34 @@ class CarAgent(mesa.Agent):
 
     @property
     def virtual_sensor_left(self):
-        """Get position of left virtual magnetometer as (x, y) tuple."""
+        """Get position of left virtual magnetometer as (x, y) dictionary."""
         if self._movement_controller:
             sensor = self._movement_controller.virtual_sensor_left
             return sensor if sensor else None
         return None
+    
+    @property
+    def svg_virtual_sensor_left(self):
+        """Get position of left virtual magnetometer as (x, y) dictionary for SVG rendering."""
+        if self._movement_controller:
+            sensor = self._movement_controller.virtual_sensor_left
+            return convert_position_math_to_svg(sensor, self.model.map_rows) if sensor else None
+        return None
 
     @property
     def virtual_sensor_right(self):
-        """Get position of right virtual magnetometer as (x, y) tuple."""
+        """Get position of right virtual magnetometer as (x, y) dictionary."""
         if self._movement_controller:
             sensor = self._movement_controller.virtual_sensor_right
             return sensor if sensor else None
+        return None
+    
+    @property
+    def svg_virtual_sensor_right(self):
+        """Get position of right virtual magnetometer as (x, y) dictionary for SVG rendering."""
+        if self._movement_controller:
+            sensor = self._movement_controller.virtual_sensor_right
+            return convert_position_math_to_svg(sensor, self.model.map_rows) if sensor else None
         return None
 
     @property
