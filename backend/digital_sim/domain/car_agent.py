@@ -5,7 +5,7 @@ import mesa
 
 from backend.digital_sim.domain.route import Route
 from backend.digital_sim.domain.movement_controller import MovementController
-from backend.digital_sim.constants import PACKAGE_PICKUP_TIME_IN_SECONDS, PACKAGE_DELIVERY_TIME_IN_SECONDS
+from backend.digital_sim.constants import PACKAGE_PICKUP_TIME_IN_SECONDS, PACKAGE_DELIVERY_TIME_IN_SECONDS, METERS_PER_TILE
 from backend.digital_sim.utils.coordinate_util import convert_position_math_to_svg
 
 
@@ -187,6 +187,12 @@ class CarAgent(mesa.Agent):
         if self._movement_controller:
             return self._movement_controller.distance_travelled
         return 0.0
+    
+    @property
+    def distance_travelled_km(self):
+        """Get total distance travelled in kilometers, scaled to kilometers based on the map tile scale."""
+        ONE_KM_IN_METERS = 1000
+        return self.distance_travelled * METERS_PER_TILE / ONE_KM_IN_METERS
 
     @property
     def has_started_route(self):

@@ -5,6 +5,7 @@ CAR_TARGET_SPEED_KEY = "carTargetSpeed"
 SIMULATION_SPEED_KEY = "simulationSpeed"
 HOUSES_ON_ROUTES_KEY = "housesOnRoutes"
 MAP_ROWS_KEY = "mapRows"
+METERS_PER_TILE = 100
 
 # Car properties
 CARS_KEY = "cars"
@@ -42,6 +43,7 @@ PACKAGE_PICKUP_TIME_IN_SECONDS = 0.5
 AGENT_STATUS_KEY = "status"
 AGENT_POSITION_KEY = "position"
 AGENT_DISTANCE_TRAVELLED_KEY = "distance_travelled"
+AGENT_DISTANCE_TRAVELLED_KM_KEY = "distance_travelled_km"
 AGENT_STATE_OF_CHARGE_KEY = "state_of_charge"
 AGENT_PACKAGES_DELIVERED_KEY = "packages_delivered"
 AGENT_PACKAGES_IN_CARGO_COUNT_KEY = "packages_in_cargo_count"

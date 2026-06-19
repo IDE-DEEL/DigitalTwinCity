@@ -1,6 +1,6 @@
 from backend.digital_sim.domain.car_model import CarModel
 from backend.digital_sim.constants import (
-    CAR_ROUTE_WAYPOINTS_KEY, CARS_KEY, CAR_TARGET_SPEED_KEY, SCENARIO_KEY, 
+    AGENT_DISTANCE_TRAVELLED_KM_KEY, CAR_ROUTE_WAYPOINTS_KEY, CARS_KEY, CAR_TARGET_SPEED_KEY, SCENARIO_KEY, 
     SCENARIO_NAME_KEY, SCENARIO_HOUSES_LIST_KEY, HOUSE_ROAD_COORDS_KEY, 
     HOUSES_ON_ROUTES_KEY, NUMERIC_AGENT_REPORTER_KEYS, CAR_MAIN_ID_KEY,
     AGENT_DISTANCE_TRAVELLED_KEY, AGENT_TIME_DRIVING_SECONDS_KEY, 
@@ -168,7 +168,7 @@ class SimulationService:
                 "agents": [
                     {
                         "id": agent.id,
-                        "distance_travelled": float,
+                        "distance_travelled_km": float,
                         "packages_delivered": int,
                         "time_driving_seconds": float,
                     },
@@ -202,12 +202,12 @@ class SimulationService:
         for agent in self.model.agents:
             agent_stat = {
                 CAR_MAIN_ID_KEY: getattr(agent, CAR_MAIN_ID_KEY),
-                AGENT_DISTANCE_TRAVELLED_KEY: round(getattr(agent, AGENT_DISTANCE_TRAVELLED_KEY), 2),
+                AGENT_DISTANCE_TRAVELLED_KM_KEY: round(getattr(agent, AGENT_DISTANCE_TRAVELLED_KM_KEY), 2),
                 AGENT_TIME_DRIVING_SECONDS_KEY: round(getattr(agent, AGENT_TIME_DRIVING_SECONDS_KEY), 2),
                 AGENT_PACKAGES_DELIVERED_KEY: getattr(agent, AGENT_PACKAGES_DELIVERED_KEY),
             }
             stats["agents"].append(agent_stat)
-            stats["totals"]["total_distance"] += getattr(agent, AGENT_DISTANCE_TRAVELLED_KEY)
+            stats["totals"]["total_distance"] += getattr(agent, AGENT_DISTANCE_TRAVELLED_KM_KEY)
             stats["totals"]["total_packages_delivered"] += getattr(agent, AGENT_PACKAGES_DELIVERED_KEY)
             stats["totals"]["total_time_driving"] += getattr(agent, AGENT_TIME_DRIVING_SECONDS_KEY)
         
@@ -228,7 +228,7 @@ class SimulationService:
         num_agents = len(agents)
 
         # ── Sum ──────────────────────────────
-        total_distance = sum(agent.distance_travelled for agent in agents)
+        total_distance = sum(agent.distance_travelled_km for agent in agents)
         total_packages_delivered = sum(agent.packages_delivered for agent in agents)
         total_idle_time = sum(agent.time_delivering_seconds for agent in agents)
 
