@@ -333,35 +333,36 @@ class CarAgent(mesa.Agent):
         Packages are queued for loading (not immediately added to cargo).
         Loading duration is calculated as: number_of_packages * PACKAGE_PICKUP_TIME_IN_SECONDS.
         Packages are loaded one by one, with each taking PACKAGE_PICKUP_TIME_IN_SECONDS.
-        If we pick up packages after a completed trip, reset the route.
+        If we pick up packages or still have packages in cargo after a completed trip, reset the route.
         """
-        if not self.route or (len(self.packages_in_cargo) + len(self.packages_pending_load)) >= self.max_packages:
-            return
-
-        # Get all available packages from the route
-        available_packages = self.route.get_available_packages()
-
         packages_picked_up = False
-        for package in available_packages:
-            # Check if we still have capacity (including pending packages)
-            if len(self.packages_in_cargo) + len(self.packages_pending_load) >= self.max_packages:
-                break
+        
+        has_capacity = (len(self.packages_in_cargo) + len(self.packages_pending_load)) < self.max_packages
+        if self.route and has_capacity:
 
-            # Assign package to this agent and queue for loading
-            package.assign_to_agent(self.unique_id)
-            self.packages_pending_load.append(package)
-            packages_picked_up = True
+            # Get all available packages from the route
+            available_packages = self.route.get_available_packages()
 
-        # Start pickup loading time if we picked up packages and increment depot load count
-        if packages_picked_up:
-            self.depot_load_count += 1
-            self.is_picking_up = True
-            self.pickup_duration = len(self.packages_pending_load) * PACKAGE_PICKUP_TIME_IN_SECONDS
-            # Timer for first package
-            self.pickup_time_remaining = PACKAGE_PICKUP_TIME_IN_SECONDS
+            for package in available_packages:
+                # Check if we still have capacity (including pending packages)
+                if len(self.packages_in_cargo) + len(self.packages_pending_load) >= self.max_packages:
+                    break
 
-        # If we picked up packages and the route is already finished, reset for another trip
-        if packages_picked_up and self._movement_controller.finished:
+                # Assign package to this agent and queue for loading
+                package.assign_to_agent(self.unique_id)
+                self.packages_pending_load.append(package)
+                packages_picked_up = True
+
+            # Start pickup loading time if we picked up packages and increment depot load count
+            if packages_picked_up:
+                self.depot_load_count += 1
+                self.is_picking_up = True
+                self.pickup_duration = len(self.packages_pending_load) * PACKAGE_PICKUP_TIME_IN_SECONDS
+                # Timer for first package
+                self.pickup_time_remaining = PACKAGE_PICKUP_TIME_IN_SECONDS
+
+        # If we finish the route and picked up new packages or still have packages in cargo, reset for another trip
+        if self._movement_controller.finished and (packages_picked_up or self.packages_in_cargo):
             self._reset_route()
 
     def _update_battery_usage(self) -> None:
