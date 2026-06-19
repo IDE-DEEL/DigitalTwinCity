@@ -1,7 +1,9 @@
+import threading
 import paho.mqtt.client as mqtt
 import ssl
 import sys
 import json
+import time
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "score"))
 from backend.score.scoreCalculator import TripData, calculate_score
@@ -65,26 +67,12 @@ Direction = {
 # The tags in the dict below are the tags where the robot has to change direction.
 # these will probably be made into JSON files
 route = {
-    "route_1": [["5A:A5:97:E3:0A:41:89",Direction["LEFT"]], ["5A:95:B3:DE:0A:41:89",Direction["STRAIGHT"]], ["5A:25:6B:E0:0A:41:89",Direction["RIGHT"]],
+    "route_1": [["5A:A5:97:E3:0A:41:89",Direction["LEFT"]], ["5A:95:B3:DE:0A:41:89",Direction["STRAIGHT"]], ["5A:95:B3:DE:0A:41:89", "load", 3], ["5A:25:6B:E0:0A:41:89",Direction["RIGHT"]],
                 ["5A:A5:C9:E1:0A:41:89",Direction["STRAIGHT"]], ["5A:B5:6B:DD:0A:41:89",Direction["ROUNDABOUT"]],  ["5A:F5:D5:DB:0A:41:89", Direction["RIGHT_ROUND"]],
                 ["5A:65:C3:DA:0A:41:89", Direction["STRAIGHT"]]],
     "route_2": [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
 }
 
-# This is a dict of all the tags and their adjacent tags. This will go into a Json file.
-# Tags = {
-#     "tag 1": ["adjacent tag", "adjacent tag", "adjacent tag"],
-#     "tag 2": ["adjacent tag", "adjacent tag", "adjacent tag"],
-#     "tag 3": ["adjacent tag", "adjacent tag", "adjacent tag"],
-#     "tag 4": ["adjacent tag", "adjacent tag", "adjacent tag"],
-#     "tag 5": ["adjacent tag", "adjacent tag", "adjacent tag"],
-#     "tag 6": ["adjacent tag", "adjacent tag", "adjacent tag"],
-#     "tag 7": ["adjacent tag", "adjacent tag", "adjacent tag"],
-#     "tag 8": ["adjacent tag", "adjacent tag", "adjacent tag"],
-#     "tag 9": ["adjacent tag", "adjacent tag", "adjacent tag"],
-#     "tag 10": ["adjacent tag", "adjacent tag", "adjacent tag"],
-#     "tag 11": ["adjacent tag", "adjacent tag", "adjacent tag"]
-# }
 
 # Reset route index per car
 index = {
@@ -124,11 +112,32 @@ def notify_car_data_listeners():
             print(f"Failed to notify car data listener: {exc}")
 
 
+# Creating a separate thread to wait for the transfer time before resuming the car's movement
+def resume_after_wait(client, car_id, total_time):
+    time.sleep((total_time / 1000)+1)
+    client.publish(f"car/{car_id}/cmd/Screen", 0)
+    client.publish(f"car/{car_id}/cmd/Start", "True")
 
-# Global flag controlling whether the vehicle is allowed to move
-# start = True
+def load_packages(client, car_id, packages, ms_per_package, package_action):
+    if package_action == "load":
+        action = 1
+    elif package_action == "unload":
+        action = 2
+    else:
+        action = 0
+    # Stop the car before loading
+    client.publish(f"car/{car_id}/cmd/Start", "False")
 
-# Reset route index
+    # Calculate total transfer time and publish to the car's MQTT topics
+    total_time = packages * ms_per_package
+    client.publish(f"car/{car_id}/cmd/TransferTime", total_time)
+    client.publish(f"car/{car_id}/cmd/Package", packages)
+    client.publish(f"car/{car_id}/cmd/Screen", action)
+    threading.Thread(target=resume_after_wait, args=(client, car_id, total_time), daemon=True).start()
+
+
+
+
 
 # ---------------- CALLBACKS ----------------
 def on_connect(client, userdata, flags, reason_code, properties):
@@ -194,19 +203,24 @@ def on_message(client, userdata, msg):
         # the current route waypoint
         if rfid == route[chosen_route][index[topic[1]]][0]:
 
-            # Stop vehicle before changing direction
-            client.publish(f"car/{topic[1]}/cmd/Start", "False")
-            # Send next direction command
-            client.publish(f"car/{topic[1]}/cmd/Direction", route[chosen_route][index[topic[1]]][1])
-            # Resume movement
-            client.publish(f"car/{topic[1]}/cmd/Start", "True")
-            # Advance to next route step
-            index[topic[1]] += 1
+            # Checks if the there are packages and loads or unloads them
+            if route[chosen_route][index[topic[1]]][1] == "load" or route[chosen_route][index[topic[1]]][1] == "unload":
+                load_packages(client, topic[1], route[chosen_route][index[topic[1]]][2], 500, route[chosen_route][index[topic[1]]][1])
 
-            # Loop back to start when route completes.
-            if len(route[chosen_route]) == index[topic[1]]:
-                index[topic[1]] = 0
-                # calculate_score(TRIP, WEIGHTS)
+            else:
+                # Stop vehicle before changing direction
+                client.publish(f"car/{topic[1]}/cmd/Start", "False")
+                # Send next direction command
+                client.publish(f"car/{topic[1]}/cmd/Direction", route[chosen_route][index[topic[1]]][1])
+                # Resume movement
+                client.publish(f"car/{topic[1]}/cmd/Start", "True")
+                # Advance to next route step
+                index[topic[1]] += 1
+
+                # Loop back to start when route completes.
+                if len(route[chosen_route]) == index[topic[1]]:
+                    index[topic[1]] = 0
+                    # calculate_score(TRIP, WEIGHTS)
 
     elif not state.start:
         # Emergency stop / manual stop mode
