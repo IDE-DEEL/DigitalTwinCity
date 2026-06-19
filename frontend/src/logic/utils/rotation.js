@@ -42,6 +42,28 @@ export function rotatePointAroundCenter(p, center, rotationDegree) {
 }
 
 /**
+ * Rotates a point around a pivot by a given angle without normalization/snapping.
+ *
+ * @param {Object} point - { x, y } point to rotate.
+ * @param {Object} center - { x, y } pivot point.
+ * @param {number} angleDegrees - Rotation angle in degrees.
+ * @returns {Object} The rotated { x, y } point.
+ */
+export function rotatePointAroundCenterByAngle(point, center, angleDegrees) {
+    const angleRad = (angleDegrees * Math.PI) / 180;
+    const cos = Math.cos(angleRad);
+    const sin = Math.sin(angleRad);
+
+    const dx = point.x - center.x;
+    const dy = point.y - center.y;
+
+    return {
+        x: center.x + dx * cos - dy * sin,
+        y: center.y + dx * sin + dy * cos,
+    };
+}
+
+/**
  * Roteert een lokaal tile-punt (0..1) rond het midden van de tile (0.5, 0.5).
  *
  * Dit is de versie die we gebruiken voor lanes,

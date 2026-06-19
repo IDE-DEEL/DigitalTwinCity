@@ -1,15 +1,16 @@
-const detectionZoneRadius = 0.18;
+import { rotatePointAroundCenterByAngle } from "../utils/rotation";
 
-export function buildHouseCoordinates(instance) {
+export function buildHouseCoordinates(houseInstance) {
     const roadCoords = generateRoadCoordsFromCenter(
-        instance.roadCenter,
-        detectionZoneRadius
+        houseInstance.roadCenter,
+        houseInstance.tileType,
+        houseInstance.tileRotation
     );
 
     return {
-        roadCoords: localToGlobalCoordsArray(roadCoords, instance.tileX, instance.tileY),
-        labelCoords: localToGlobalCoords(instance.labelCoords, instance.tileX, instance.tileY),
-        supportedLanes: instance.supportedLanes
+        roadCoords: localToGlobalCoordsArray(roadCoords, houseInstance.tileX, houseInstance.tileY),
+        labelCoords: localToGlobalCoords(houseInstance.labelCoords, houseInstance.tileX, houseInstance.tileY),
+        supportedLanes: houseInstance.supportedLanes
     };
 }
 
@@ -19,30 +20,27 @@ export function buildHouseCoordinates(instance) {
  * @param {number} radius - Half the width of the square (default 0.1)
  * @returns {Array<Object>} Array of four points representing the corners of the square around the center point
  */
-export function generateRoadCoordsFromCenter(centerPoint, radius = detectionZoneRadius) {
+export function generateRoadCoordsFromCenter(centerPoint, tileType, tileRotation = 0) {
     const { x, y } = centerPoint;
+    const { radiusX, radiusY } = getRadiusForType(tileType);
     
-    return [
-        { x: x - radius, y: y - radius }, // top-left
-        { x: x + radius, y: y - radius }, // top-right
-        { x: x + radius, y: y + radius }, // bottom-right
-        { x: x - radius, y: y + radius }, // bottom-left
+    const corners = [
+        { x: x - radiusX, y: y - radiusY }, // top-left
+        { x: x + radiusX, y: y - radiusY }, // top-right
+        { x: x + radiusX, y: y + radiusY }, // bottom-right
+        { x: x - radiusX, y: y + radiusY }, // bottom-left
     ];
-}
+    
+    if (tileType === 'curve') {
+        const rotationAngle = 45;
+        return corners.map((corner) => rotatePointAroundCenterByAngle(corner, centerPoint, rotationAngle));
+    }
 
-/**
- * Helper function to convert an array of local coordinates to global
- * 
- * @param {Array<Object>} coordsArray - Array of coordinates in tile space (0-1)
- * @param {number} tileX - The x-coordinate of the tile
- * @param {number} tileY - The y-coordinate of the tile
- * @returns {Array<Object>} Array of global coordinates
- */
-function localToGlobalCoordsArray(coordsArray, tileX, tileY) {
-    return coordsArray.map(coord => ({
-        x: tileX + coord.x,
-        y: tileY + coord.y,
-    }));
+    if (tileType === 't_split') {
+        return corners.map((corner) => rotatePointAroundCenterByAngle(corner, centerPoint, tileRotation));
+    }
+
+    return corners;
 }
 
 /**
@@ -63,4 +61,37 @@ export function localToGlobalCoords(rotatedCoords, tileX, tileY) {
         x: tileX + rotatedCoords.x,
         y: tileY + rotatedCoords.y,
     };
+}
+
+/**
+ * Helper function to determine the radius of the detection zone based on the tile type.
+ * 
+ * @param {string} tileType - The type of the tile (e.g., 'straight', 'curve', 't_split').
+ * @returns {Object} An object containing radiusX and radiusY for the detection zone.
+ */
+function getRadiusForType(tileType) {
+    const smallZone = 0.12;
+    const largeZone = 0.24;
+
+    switch (tileType) {
+        case 't_split':
+            return { radiusX: largeZone, radiusY: smallZone };
+        default:
+            return { radiusX: smallZone, radiusY: smallZone };
+    }
+};
+
+/**
+ * Helper function to convert an array of local coordinates to global
+ * 
+ * @param {Array<Object>} coordsArray - Array of coordinates in tile space (0-1)
+ * @param {number} tileX - The x-coordinate of the tile
+ * @param {number} tileY - The y-coordinate of the tile
+ * @returns {Array<Object>} Array of global coordinates
+ */
+function localToGlobalCoordsArray(coordsArray, tileX, tileY) {
+    return coordsArray.map(coord => ({
+        x: tileX + coord.x,
+        y: tileY + coord.y,
+    }));
 }

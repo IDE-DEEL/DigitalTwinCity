@@ -3,25 +3,39 @@ import { HOUSE_INSTANCES } from "../domain/houseInstances";
 import { buildHouseCoordinates } from "./houseBuilder";
 import { findRoutesForHouse, findHousesForRoute } from "./houseRouteMatchingService";
 import { ROUTES_TILES } from "../domain/routes";
+import { useMapStore } from "../../stores/index.js";
 
 /**
  * Builds necessary house data for the simulation payload and package overlay based on the selected scenario and map data.
- *
- * @param {string} scenarioKey - The key/name of the scenario to retrieve houses for.
- * @returns {Array<Object>} An array of house objects with coordinates and package counts for the simulation.
- */
+*
+* @param {string} scenarioKey - The key/name of the scenario to retrieve houses for.
+* @returns {Array<Object>} An array of house objects with coordinates and package counts for the simulation.
+*/
 export function getHousesByScenarioKey(scenarioKey) {
+    const mapStore = useMapStore();
+
     const houses = getHousesForScenarioByValue(scenarioKey);
 
     return Object.entries(houses).map(([houseInstanceId, expectedPackages]) => {
-        const instance = HOUSE_INSTANCES.find(house => house.id === houseInstanceId);
+        const houseInstance = HOUSE_INSTANCES.find(house => house.id === houseInstanceId);
 
-        const coordinates = buildHouseCoordinates(instance);
+        const tileData = mapStore.mapData.find(
+            tile => tile.x === houseInstance.tileX && tile.y === houseInstance.tileY
+        );
+        
+        // add tile types to the houses for better detection zone building
+        const enrichedHouseInstances = {
+            ...houseInstance,
+            tileType: tileData?.type,
+            tileRotation: tileData?.rotation,
+        };
+
+        const coordinates = buildHouseCoordinates(enrichedHouseInstances);
 
         return {
             houseInstanceId,
-            tileX: instance.tileX,
-            tileY: instance.tileY,
+            tileX: enrichedHouseInstances.tileX,
+            tileY: enrichedHouseInstances.tileY,
             expectedPackages,
             roadCoords: coordinates.roadCoords,
             labelCoords: coordinates.labelCoords,
