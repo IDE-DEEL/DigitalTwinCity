@@ -142,9 +142,6 @@ def load_packages(client, car_id, packages, ms_per_package, package_action):
     threading.Thread(target=resume_after_wait, args=(client, car_id, total_time), daemon=True).start()
 
 
-
-
-
 # ---------------- CALLBACKS ----------------
 def on_connect(client, userdata, flags, reason_code, properties):
     if reason_code == 0:
@@ -226,7 +223,7 @@ def on_message(client, userdata, msg):
                 # Loop back to start when route completes.
                 if len(route[chosen_route[topic[1]]]) == index[topic[1]]:
                     index[topic[1]] = 0
-                    # calculate_score(TRIP, WEIGHTS)
+                    calculate_score(TRIP, WEIGHTS, topic[1])
 
     elif not state.start:
         # Emergency stop / manual stop mode
