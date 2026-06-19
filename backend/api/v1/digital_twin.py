@@ -57,11 +57,12 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 case "activation":
                     state.start = payload
-                    drive_command("auto_A", payload)
-                    drive_command("auto_B", payload)
-                    drive_command("auto_C", payload)
-                    drive_command("auto_D", payload)
-                    drive_command("auto_E", payload)
+                    print(f"Activation state changed to: {state.start}")
+                    drive_command("auto_A", state.start)
+                    drive_command("auto_B", state.start)
+                    drive_command("auto_C", state.start)
+                    drive_command("auto_D", state.start)
+                    drive_command("auto_E", state.start)
                     await manager.broadcast_update("activation", state.start)
 
                 case "car_data":
