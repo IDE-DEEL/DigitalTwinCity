@@ -40,7 +40,7 @@ export function useDigitalSimulation(onSimulationEndedCallback) {
         if (stateStore.isSimulating) {
             wsStore.send({ command: "stop" });
         }
-        
+
         wsStore.disconnect();
     });
 
@@ -75,6 +75,15 @@ export function useDigitalSimulation(onSimulationEndedCallback) {
     // data retrieval
     // ---
     function exportDataAsCSV() {
+        // If the CSV data for the current step is already cached, return it immediately
+        if (
+            stateStore.cachedCsvData !== null &&
+            stateStore.cachedCsvStep === stateStore.currentStep
+        ) {
+            return Promise.resolve(stateStore.cachedCsvData);
+        }
+
+        // If not cached, request the CSV data from the backend and cache it for future requests
         return new Promise((resolve, reject) => {
 
             const timeoutId = setTimeout(() => {
@@ -86,6 +95,8 @@ export function useDigitalSimulation(onSimulationEndedCallback) {
                 clearTimeout(timeoutId);
 
                 if (response.status === "success") {
+                    stateStore.cachedCsvData = response.data;
+                    stateStore.cachedCsvStep = stateStore.currentStep;
                     resolve(response.data);
                 } else {
                     console.warn("CSV export error:", response.message);

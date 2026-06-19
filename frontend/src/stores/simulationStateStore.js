@@ -14,6 +14,9 @@ export const useSimulationStateStore = defineStore("simulationState", () => {
     const simulationStats = ref(DEFAULT_SIMULATION_STATS);
     const tripScores = ref(DEFAULT_TRIP_SCORES);
 
+    const cachedCsvData = ref(null);
+    const cachedCsvStep = ref(null);
+
     // ---
     // Watchers to reset simulation state when relevant dashboard parameters change after a previous simulation run
     // ---
@@ -51,6 +54,8 @@ export const useSimulationStateStore = defineStore("simulationState", () => {
         currentStep.value = DEFAULT_STEPS;
         simulationStats.value = DEFAULT_SIMULATION_STATS;
         tripScores.value = DEFAULT_TRIP_SCORES;
+        cachedCsvData.value = null;
+        cachedCsvStep.value = null;
     }
 
     function handleSimulationStarted() {
