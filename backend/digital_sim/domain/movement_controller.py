@@ -57,7 +57,7 @@ class MovementController:
 
         # Status
         self.finished = False
-        self.off_route = False
+        self.went_out_of_lane = False
 
         # Distance tracking
         self.distance_travelled = 0.0
@@ -73,7 +73,7 @@ class MovementController:
         self.acceleration = 0.2 # units/s^2 for speeding up
         self.deceleration = 0.3 # units/s^2 for braking
         self.goal_tolerance = 0.12
-        self.off_route_threshold = 3.0
+        self.out_of_lane_threshold = 0.12
 
     def update(self) -> None:
         """
@@ -82,7 +82,7 @@ class MovementController:
         Updates actual_speed towards target_speed, then advances position
         and heading along the route if the car is currently moving.
         """
-        if self.finished or self.off_route:
+        if self.finished:
             self.actual_speed = 0.0
             return
 
@@ -124,9 +124,8 @@ class MovementController:
         # Find the closest point on the route
         best_seg, _proj_point, _proj_t, dist_to_route = self._find_closest_point_on_route()
 
-        if dist_to_route > self.off_route_threshold:
-            self.off_route = True
-            return
+        if dist_to_route > self.out_of_lane_threshold:
+            self.went_out_of_lane = True
 
         self.segment_index = best_seg
 
@@ -222,7 +221,6 @@ class MovementController:
         self.position = {X_COORD_KEY: float(self.waypoints[0][X_COORD_KEY]), Y_COORD_KEY: float(self.waypoints[0][Y_COORD_KEY])}
         self.heading = self._initial_heading()
         self.actual_speed = 0.0
-        self.off_route = False
         self._steering_pid.reset() # Reset PID state for a clean start
 
     def _rotate_point_to_world(self, local_point: Point) -> Point:

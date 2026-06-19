@@ -237,6 +237,13 @@ class CarAgent(mesa.Agent):
             sensor = self._movement_controller.virtual_sensor_right
             return convert_position_math_to_svg(sensor, self.model.map_rows) if sensor else None
         return None
+    
+    @property
+    def went_out_of_lane(self):
+        """Check if the car went out of lane based on distance from route."""
+        if self._movement_controller:
+            return self._movement_controller.went_out_of_lane
+        return False
 
     @property
     def status(self):

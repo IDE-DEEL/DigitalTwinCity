@@ -243,7 +243,7 @@ class SimulationService:
         budget_used_pct = (total_cost / EXTRA_CONFIG["total_budget"]) * 100
 
         # ── Booleans: if 1 agent = true, count for the run ──
-        any_wrong_way = False
+        any_wrong_way = any(agent.went_out_of_lane for agent in agents)
 
         trip = TripData(
             co2_emission_g_per_km    = EXTRA_CONFIG["co2_emission_g_per_km"],
