@@ -5,7 +5,6 @@ from backend.api.manager import ConnectionManager
 from backend.baanvlakreservering.baanvlakreservering import (
     add_car_data_listener,
     getTag,
-    drive_command,
 )
 from backend.score.scoreCalculator import TripData, calculate_score
 from backend.score.config import  WEIGHTS, TRIP
@@ -57,13 +56,6 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 case "activation":
                     state.start = payload
-                    drive_command("auto_A", payload)
-                    drive_command("auto_B", payload)
-                    drive_command("auto_C", payload)
-                    drive_command("auto_D", payload)
-                    drive_command("auto_E", payload)
-
-
                     await manager.broadcast_update("activation", state.start)
 
                 case "car_data":
