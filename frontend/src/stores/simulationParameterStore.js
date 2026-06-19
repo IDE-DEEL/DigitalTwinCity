@@ -185,31 +185,31 @@ const DEFAULT_CAR_SPEED = 50;
 const DEFAULT_CARS = [
     {
         id: 1,
-        maxPackages: 1,
+        maxPackages: 5,
         routeName: ROUTE_OPTIONS[1]?.value ?? '',
         routeVisibility: false,
     },
     {
         id: 2,
-        maxPackages: 1,
+        maxPackages: 5,
         routeName: ROUTE_OPTIONS[0]?.value ?? '',
         routeVisibility: false,
     },
     {
         id: 3,
-        maxPackages: 1,
+        maxPackages: 5,
         routeName: ROUTE_OPTIONS[0]?.value ?? '',
         routeVisibility: false,
     },
     {
         id: 4,
-        maxPackages: 1,
+        maxPackages: 5,
         routeName: ROUTE_OPTIONS[0]?.value ?? '',
         routeVisibility: false,
     },
     {
         id: 5,
-        maxPackages: 1,
+        maxPackages: 5,
         routeName: ROUTE_OPTIONS[0]?.value ?? '',
         routeVisibility: false,
     },

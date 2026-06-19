@@ -49,7 +49,7 @@ const { getColorForCarAndRoute } = useCarColors();
 const reconnectCooldown = ref(false);
 const isStatsModalOpen = ref(false);
 
-const MAX_PACKAGES = 20;
+const MAX_PACKAGES = 25;
 const MIN_PACKAGES = 1;
 
 /*
