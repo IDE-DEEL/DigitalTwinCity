@@ -141,6 +141,11 @@ def load_packages(client, car_id, packages, ms_per_package, package_action):
     client.publish(f"car/{car_id}/cmd/Screen", action)
     threading.Thread(target=resume_after_wait, args=(client, car_id, total_time), daemon=True).start()
 
+# Start
+def drive_command(car_id, start_or_stop, client):
+    print("test function, if you see this that means you aren't useless")
+    client.publish(f"car/{car_id}/cmd/Start", start_or_stop)
+
 
 # ---------------- CALLBACKS ----------------
 def on_connect(client, userdata, flags, reason_code, properties):
