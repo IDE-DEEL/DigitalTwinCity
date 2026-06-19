@@ -1,13 +1,13 @@
 [
 
-    {"tag_id": "53:5D:73:16:23:00:01", "tag_pos": {"x": 0.375, "y": 0.125}, "Tile": "1", "cord": "0-0", "type": "curve"},
-    {"tag_id": "53:53:73:16:23:00:01", "tag_pos": {"x": 0.462, "y": 0.375}, "Tile": "1", "cord": "0-0", "type": "curve"},
+    {"tag_id": "53:5D:73:16:23:00:01", "tag_pos": {"x": 0.375, "y": 0.875}, "Tile": "1", "cord": "0-0", "type": "curve"},
+    {"tag_id": "53:53:73:16:23:00:01", "tag_pos": {"x": 0.5, "y": 0.625}, "Tile": "1", "cord": "0-0", "type": "curve"},
     {"tag_id": "53:5E:73:16:23:00:01", "tag_pos": {"x": 0.625, "y": 0.5}, "Tile": "1", "cord": "0-0", "type": "curve"},
-    {"tag_id": "53:5C:73:16:23:00:01", "tag_pos": {"x": 0.875, "y": 0.625}, "Tile": "1", "cord": "0-0", "type": "curve"},
+    {"tag_id": "53:5C:73:16:23:00:01", "tag_pos": {"x": 0.875, "y": 0.375}, "Tile": "1", "cord": "0-0", "type": "curve"},
 
-    {"tag_id": "53:66:73:16:23:00:01", "tag_pos": {"x": 0.625, "y": 0.125}, "Tile": "1", "cord": "0-0", "type": "curve"},
-    {"tag_id": "53:5B:73:16:23:00:01", "tag_pos": {"x": 0.725, "y": 0.25}, "Tile": "1", "cord": "0-0", "type": "curve"},
-    {"tag_id": "53:65:73:16:23:00:01", "tag_pos": {"x": 0.887, "y": 0.375}, "Tile": "1", "cord": "0-0", "type": "curve"},
+    {"tag_id": "53:66:73:16:23:00:01", "tag_pos": {"x": 0.625, "y": 0.875}, "Tile": "1", "cord": "0-0", "type": "curve"},
+    {"tag_id": "53:5B:73:16:23:00:01", "tag_pos": {"x": 0.75, "y": 0.75}, "Tile": "1", "cord": "0-0", "type": "curve"},
+    {"tag_id": "53:65:73:16:23:00:01", "tag_pos": {"x": 0.875, "y": 0.625}, "Tile": "1", "cord": "0-0", "type": "curve"},
 
 
     {"tag_id": "53:48:96:02:63:00:01", "tag_pos": {"x": 1.125, "y": 0.375}, "Tile": "2", "cord": "1-0", "type": "t_split"},
@@ -31,17 +31,17 @@
 
     {"tag_id": "53:9C:73:16:23:00:01", "tag_pos": {"x": 2.125, "y": 0.625}, "Tile": "3", "cord": "2-0", "type": "curve"},
     {"tag_id": "53:9D:73:16:23:00:01", "tag_pos": {"x": 2.25, "y": 0.75}, "Tile": "3", "cord": "2-0", "type": "curve"},
-    {"tag_id": "53:A6:73:16:23:00:01", "tag_pos": {"x": 0.375, "y": 0.875}, "Tile": "3", "cord": "2-0", "type": "curve"},
+    {"tag_id": "53:A6:73:16:23:00:01", "tag_pos": {"x": 2.375, "y": 0.875}, "Tile": "3", "cord": "2-0", "type": "curve"},
 
 
     {"tag_id": "53:33:75:16:23:00:01", "tag_pos": {"x": 3.375, "y": 0.875}, "Tile": "4", "cord": "3-0", "type": "curve"},
     {"tag_id": "53:3B:75:16:23:00:01", "tag_pos": {"x": 3.5, "y": 0.625}, "Tile": "4", "cord": "3-0", "type": "curve"},
     {"tag_id": "53:3E:75:16:23:00:01", "tag_pos": {"x": 3.625, "y": 0.5}, "Tile": "4", "cord": "3-0", "type": "curve"},
-    {"tag_id": "53:34:75:16:23:00:01", "tag_pos": {"x": 3.125, "y": 0.375}, "Tile": "4", "cord": "3-0", "type": "curve"},
+    {"tag_id": "53:34:75:16:23:00:01", "tag_pos": {"x": 3.875, "y": 0.375}, "Tile": "4", "cord": "3-0", "type": "curve"},
 
     {"tag_id": "53:3E:75:16:23:00:01", "tag_pos": {"x": 3.625, "y": 0.875}, "Tile": "4", "cord": "3-0", "type": "curve"},
     {"tag_id": "53:46:75:16:23:00:01", "tag_pos": {"x": 3.75, "y": 0.75}, "Tile": "4", "cord": "3-0", "type": "curve"},
-    {"tag_id": "53:3D:75:16:23:00:01", "tag_pos": {"x": 0.875, "y": 0.625}, "Tile": "4", "cord": "3-0", "type": "curve"},
+    {"tag_id": "53:3D:75:16:23:00:01", "tag_pos": {"x": 3.875, "y": 0.625}, "Tile": "4", "cord": "3-0", "type": "curve"},
 
 
     {"tag_id": "53:15:75:16:23:00:01", "tag_pos": {"x": 4.125, "y": 0.375}, "Tile": "5", "cord": "4-0", "type": "straight"},
@@ -148,9 +148,8 @@
     {"tag_id": "53:1C:75:16:23:00:01", "tag_pos": {"x": 5.875, "y": 1.625}, "Tile": "13", "cord": "5-1", "type": "straight"},
 
 
-    {"tag_id": "04:5D:41:6D:BC:2A:81", "tag_pos": {"x": 6.125, "y": 0.375}, "Tile": "14", "cord": "6-1", "type": "t_split"},
-    {"tag_id": "04:5C:41:6D:BC:2A:81", "tag_pos": {"x": 6.125, "y": 0.625}, "Tile": "14", "cord": "6-1", "type": "t_split"},
-
+    {"tag_id": "04:5D:41:6D:BC:2A:81", "tag_pos": {"x": 6.125, "y": 1.375}, "Tile": "14", "cord": "6-1", "type": "t_split"},
+    {"tag_id": "04:5C:41:6D:BC:2A:81", "tag_pos": {"x": 6.125, "y": 1.625}, "Tile": "14", "cord": "6-1", "type": "t_split"},
     {"tag_id": "04:44:41:6D:BC:2A:81", "tag_pos": {"x": 6.375, "y": 1.125}, "Tile": "14", "cord": "6-1", "type": "t_split"},  
     {"tag_id": "04:3C:41:6D:BC:2A:81", "tag_pos": {"x": 6.375, "y": 1.375}, "Tile": "14", "cord": "6-1", "type": "t_split"},
     {"tag_id": "04:42:41:6D:BC:2A:81", "tag_pos": {"x": 6.375, "y": 1.625}, "Tile": "14", "cord": "6-1", "type": "t_split"},
@@ -275,12 +274,12 @@
 
     {"tag_id": "53:6E:78:16:23:00:01", "tag_pos": {"x": 2.125, "y": 3.375}, "Tile": "24", "cord": "2-3", "type": "curve"},
     {"tag_id": "53:76:78:16:23:00:01", "tag_pos": {"x": 2.375, "y": 3.5}, "Tile": "24", "cord": "2-3", "type": "curve"},
-    {"tag_id": "53:77:78:16:23:00:01", "tag_pos": {"x": 2.5, "y": 3.375}, "Tile": "24", "cord": "2-3", "type": "curve"},
-    {"tag_id": "53:6F:78:16:23:00:01", "tag_pos": {"x": 2.625, "y": 3.125}, "Tile": "24", "cord": "2-3", "type": "curve"},
+    {"tag_id": "53:77:78:16:23:00:01", "tag_pos": {"x": 2.5, "y": 3.625}, "Tile": "24", "cord": "2-3", "type": "curve"},
+    {"tag_id": "53:6F:78:16:23:00:01", "tag_pos": {"x": 2.625, "y": 3.875}, "Tile": "24", "cord": "2-3", "type": "curve"},
     
     {"tag_id": "53:75:78:16:23:00:01", "tag_pos": {"x": 2.125, "y": 3.625}, "Tile": "24", "cord": "2-3", "type": "curve"},
-    {"tag_id": "53:85:78:16:23:00:01", "tag_pos": {"x": 2.25, "y": 3.25}, "Tile": "24", "cord": "2-3", "type": "curve"},
-    {"tag_id": "53:70:78:16:23:00:01", "tag_pos": {"x": 2.375, "y": 3.125}, "Tile": "24", "cord": "2-3", "type": "curve"},
+    {"tag_id": "53:85:78:16:23:00:01", "tag_pos": {"x": 2.25, "y": 3.75}, "Tile": "24", "cord": "2-3", "type": "curve"},
+    {"tag_id": "53:70:78:16:23:00:01", "tag_pos": {"x": 2.375, "y": 3.875}, "Tile": "24", "cord": "2-3", "type": "curve"},
     
 
 
@@ -307,14 +306,14 @@
     {"tag_id": "53:05:75:16:23:00:01", "tag_pos": {"x": 4.875, "y": 3.625}, "Tile": "26", "cord": "4-3", "type": "straight"},
 
 
-    {"tag_id": "53:6E:73:16:23:00:01", "tag_pos": {"x": 5.125, "y": 3.625}, "Tile": "27", "cord": "5-3", "type": "curve"},
+    {"tag_id": "53:6E:73:16:23:00:01", "tag_pos": {"x": 5.125, "y": 3.375}, "Tile": "27", "cord": "5-3", "type": "curve"},
     {"tag_id": "53:64:73:16:23:00:01", "tag_pos": {"x": 5.375, "y": 3.5}, "Tile": "27", "cord": "5-3", "type": "curve"},
-    {"tag_id": "53:1D:5C:17:23:00:01", "tag_pos": {"x": 5.5, "y": 3.375}, "Tile": "27", "cord": "5-3", "type": "curve"},
-    {"tag_id": "53:6B:73:16:23:00:01", "tag_pos": {"x": 5.625, "y": 3.125}, "Tile": "27", "cord": "5-3", "type": "curve"},
+    {"tag_id": "53:1D:5C:17:23:00:01", "tag_pos": {"x": 5.5, "y": 3.625}, "Tile": "27", "cord": "5-3", "type": "curve"},
+    {"tag_id": "53:6B:73:16:23:00:01", "tag_pos": {"x": 5.625, "y": 3.875}, "Tile": "27", "cord": "5-3", "type": "curve"},
     
-    {"tag_id": "53:6C:73:16:23:00:01", "tag_pos": {"x": 5.125, "y": 3.375}, "Tile": "27", "cord": "5-3", "type": "curve"},
-    {"tag_id": "53:6D:73:16:23:00:01", "tag_pos": {"x": 5.25, "y": 3.25}, "Tile": "27", "cord": "5-3", "type": "curve"},
-    {"tag_id": "53:D6:74:16:23:00:01", "tag_pos": {"x": 5.375, "y": 3.125}, "Tile": "27", "cord": "5-3", "type": "curve"},
+    {"tag_id": "53:6C:73:16:23:00:01", "tag_pos": {"x": 5.125, "y": 3.625}, "Tile": "27", "cord": "5-3", "type": "curve"},
+    {"tag_id": "53:6D:73:16:23:00:01", "tag_pos": {"x": 5.25, "y": 3.75}, "Tile": "27", "cord": "5-3", "type": "curve"},
+    {"tag_id": "53:D6:74:16:23:00:01", "tag_pos": {"x": 5.375, "y": 3.875}, "Tile": "27", "cord": "5-3", "type": "curve"},
 
 
 
@@ -535,15 +534,15 @@
     {"tag_id": "04:56:41:6D:BC:2A:81", "tag_pos": {"x": 4.375, "y": 6.125}, "Tile": "47", "cord": "4-6", "type": "t_split_in"},
     {"tag_id": "04:55:41:6D:BC:2A:81", "tag_pos": {"x": 4.625, "y": 6.125}, "Tile": "47", "cord": "4-6", "type": "t_split_in"},
     
-    {"tag_id": "04:5B:41:6D:BC:2A:81", "tag_pos": {"x": 4.125, "y": 6}, "Tile": "47", "cord": "4-6", "type": "t_split_in"},
-    {"tag_id": "04:18:41:6D:BC:2A:81", "tag_pos": {"x": 4.375, "y": 6}, "Tile": "47", "cord": "4-6", "type": "t_split_in"},
-    {"tag_id": "04:17:41:6D:BC:2A:81", "tag_pos": {"x": 4.625, "y": 6}, "Tile": "47", "cord": "4-6", "type": "t_split_in"},
-    {"tag_id": "04:54:41:6D:BC:2A:81", "tag_pos": {"x": 4.875, "y": 6}, "Tile": "47", "cord": "4-6", "type": "t_split_in"},
+    {"tag_id": "04:5B:41:6D:BC:2A:81", "tag_pos": {"x": 4.125, "y": 6.375}, "Tile": "47", "cord": "4-6", "type": "t_split_in"},
+    {"tag_id": "04:18:41:6D:BC:2A:81", "tag_pos": {"x": 4.375, "y": 6.375}, "Tile": "47", "cord": "4-6", "type": "t_split_in"},
+    {"tag_id": "04:17:41:6D:BC:2A:81", "tag_pos": {"x": 4.625, "y": 6.375}, "Tile": "47", "cord": "4-6", "type": "t_split_in"},
+    {"tag_id": "04:54:41:6D:BC:2A:81", "tag_pos": {"x": 4.875, "y": 6.375}, "Tile": "47", "cord": "4-6", "type": "t_split_in"},
 
-    {"tag_id": "04:D3:41:6D:BC:2A:81", "tag_pos": {"x": 4.125, "y": 6}, "Tile": "47", "cord": "4-6", "type": "t_split_in"},
-    {"tag_id": "04:12:41:6D:BC:2A:81", "tag_pos": {"x": 4.375, "y": 6}, "Tile": "47", "cord": "4-6", "type": "t_split_in"},
-    {"tag_id": "04:11:41:6D:BC:2A:81", "tag_pos": {"x": 4.625, "y": 6}, "Tile": "47", "cord": "4-6", "type": "t_split_in"},
-    {"tag_id": "04:53:41:6D:BC:2A:81", "tag_pos": {"x": 4.875, "y": 6}, "Tile": "47", "cord": "4-6", "type": "t_split_in"},
+    {"tag_id": "04:D3:41:6D:BC:2A:81", "tag_pos": {"x": 4.125, "y": 6.625}, "Tile": "47", "cord": "4-6", "type": "t_split_in"},
+    {"tag_id": "04:12:41:6D:BC:2A:81", "tag_pos": {"x": 4.375, "y": 6.625}, "Tile": "47", "cord": "4-6", "type": "t_split_in"},
+    {"tag_id": "04:11:41:6D:BC:2A:81", "tag_pos": {"x": 4.625, "y": 6.625}, "Tile": "47", "cord": "4-6", "type": "t_split_in"},
+    {"tag_id": "04:53:41:6D:BC:2A:81", "tag_pos": {"x": 4.875, "y": 6.625}, "Tile": "47", "cord": "4-6", "type": "t_split_in"},
 
 
     {"tag_id": "", "tag_pos": {"x": 0, "y": 0}, "Tile": "48", "cord": "5-6", "type": "depot_down"},
