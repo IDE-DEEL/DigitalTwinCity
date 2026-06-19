@@ -17,89 +17,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
         {"auto_id": "auto_C", "tag_id": "53:EA:6B:00:63:00:01"}
     ],
 
-    tag_positions: [
-        /*Tile 1
-        {"tag_id": "1A", "tag_pos": {"x": 155, "y": 350}},
-        {"tag_id": "2A", "tag_pos": {"x": 193, "y": 260}},
-        {"tag_id": "3A", "tag_pos": {"x": 260, "y": 193}},
-        {"tag_id": "4A", "tag_pos": {"x": 350, "y": 150}},*/
-        
-        {"tag_id": "5A:75:C3:DA:0A:41:89", "tag_pos": {"x": 260, "y": 350}},
-        {"tag_id": "5A:05:D6:DB:0A:41:89", "tag_pos": {"x": 295, "y": 294}},
-        {"tag_id": "5A:B5:6B:DD:0A:41:89", "tag_pos": {"x": 350, "y": 259}},
-
-        /*Tile 2
-        {"tag_id": "1B", "tag_pos": {"x": 440, "y": 150}},
-        {"tag_id": "2B", "tag_pos": {"x": 515, "y": 119}},
-        {"tag_id": "3B", "tag_pos": {"x": 550, "y": 40}},
-        
-        {"tag_id": "4B", "tag_pos": {"x": 650, "y": 40}},
-        {"tag_id": "5B", "tag_pos": {"x": 685, "y": 119}},
-        {"tag_id": "6B", "tag_pos": {"x": 760, "y": 150}},
-        
-        {"tag_id": "7B", "tag_pos": {"x": 760, "y": 250}},
-        {"tag_id": "8B", "tag_pos": {"x": 685, "y": 290}},
-        {"tag_id": "9B", "tag_pos": {"x": 650, "y": 360}},*/
-        
-        {"tag_id": "5A:F5:D5:DB:0A:41:89", "tag_pos": {"x": 440, "y": 259}},
-        {"tag_id": "5A:65:C3:DA:0A:41:89", "tag_pos": {"x": 515, "y": 290}},
-        {"tag_id": "5A:D5:6A:E0:0A:41:89", "tag_pos": {"x": 550, "y": 360}},
-
-        /*{"tag_id": "13B", "tag_pos": {"x": 600, "y": 89}},
-        {"tag_id": "14B", "tag_pos": {"x": 715, "y": 204.5}},
-        {"tag_id": "15B", "tag_pos": {"x": 600, "y": 320}},
-        {"tag_id": "16B", "tag_pos": {"x": 485, "y": 204.5}},*/
-    
-        /*Tile 3
-        {"tag_id": "1C", "tag_pos": {"x": 150, "y": 450}},
-        {"tag_id": "2C", "tag_pos": {"x": 150, "y": 550}},
-        {"tag_id": "3C", "tag_pos": {"x": 150, "y": 650}},
-        {"tag_id": "4C", "tag_pos": {"x": 150, "y": 750}},*/
-        
-        {"tag_id": "53:E4:70:00:63:00:01", "tag_pos": {"x": 250, "y": 450}},
-        {"tag_id": "53:EA:6B:00:63:00:01", "tag_pos": {"x": 250, "y": 550}},
-        {"tag_id": "5A:B5:B3:DE:0A:41:89", "tag_pos": {"x": 250, "y": 650}},
-        {"tag_id": "5A:C5:97:E3:0A:41:89", "tag_pos": {"x": 250, "y": 750}},
-
-        /*Tile 4
-        {"tag_id": "1D", "tag_pos": {"x": 650, "y": 450}},
-        {"tag_id": "2D", "tag_pos": {"x": 650, "y": 550}},
-        {"tag_id": "3D", "tag_pos": {"x": 650, "y": 650}},
-        {"tag_id": "4D", "tag_pos": {"x": 650, "y": 750}},*/
-        
-        {"tag_id": "5A:05:6B:E0:0A:41:89", "tag_pos": {"x": 550, "y": 450}},
-        {"tag_id": "5A:B5:C9:E1:0A:41:89", "tag_pos": {"x": 550, "y": 550}},
-        {"tag_id": "5A:75:97:E3:0A:41:89", "tag_pos": {"x": 550, "y": 650}},
-        {"tag_id": "5A:65:B3:DE:0A:41:89", "tag_pos": {"x": 550, "y": 750}},
-
-        //Tile 5
-        //{"tag_id": "1E", "tag_pos": {"x": 150, "y": 850}},
-        //{"tag_id": "2E", "tag_pos": {"x": 150, "y": 950}},
-        //{"tag_id": "3E", "tag_pos": {"x": 150, "y": 1050}},
-        //{"tag_id": "4E", "tag_pos": {"x": 150, "y": 1150}},
-        {"tag_id": "5A:55:C3:DA:0A:41:89", "tag_pos": {"x": 260, "y": 850}},
-        {"tag_id": "5A:55:B3:DE:0A:41:89", "tag_pos": {"x": 260, "y": 950}},
-        //{"tag_id": "7E", "tag_pos": {"x": 260, "y": 1050}},
-        //{"tag_id": "8E", "tag_pos": {"x": 260, "y": 1150}},
-        //{"tag_id": "9E", "tag_pos": {"x": 50, "y": 950}},
-        //{"tag_id": "10E", "tag_pos": {"x": 50, "y": 1050}},
-        {"tag_id": "5A:A5:C9:E1:0A:41:89", "tag_pos": {"x": 350, "y": 950}},
-        //{"tag_id": "12E", "tag_pos": {"x": 350, "y": 1050}},
-
-        //Tile 6
-        //{"tag_id": "1F", "tag_pos": {"x": 650, "y": 850}},
-        {"tag_id": "5A:45:6B:E0:0A:41:89", "tag_pos": {"x": 650, "y": 950}},
-        {"tag_id": "5A:95:B3:DE:0A:41:89", "tag_pos": {"x": 650, "y": 1050}},
-        {"tag_id": "5A:A5:97:E3:0A:41:89", "tag_pos": {"x": 650, "y": 1150}},
-        
-        {"tag_id": "5A:E5:C9:E1:0A:41:89", "tag_pos": {"x": 550, "y": 850}},
-        {"tag_id": "5A:E5:D5:DB:0A:41:89", "tag_pos": {"x": 550, "y": 950}},
-        {"tag_id": "5A:25:6B:E0:0A:41:89", "tag_pos": {"x": 450, "y": 950}},
-    
-        //{"tag_id": "8F", "tag_pos": {"x": 450, "y": 1050}},
-        {"tag_id": "5A:15:CA:E1:0A:41:89", "tag_pos": {"x": 550, "y": 1050}},
-        {"tag_id": "5A:95:97:E3:0A:41:89", "tag_pos": {"x": 550, "y": 1150}}
-    ],
+    tag_positions: [],
 
     routes: [
         {"route": "Route 1", 
@@ -280,5 +198,14 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
         console.error('Socket is not open')
       }
     },
+
+    async fetchTagPositions() {
+      try {
+        const response = await fetch('/data/test-map4-tags.json');
+        this.tag_positions = await response.json(); 
+      } catch (error) {
+        console.error('Kon de tag posities niet laden:', error);
+      }
+    }
   }
 })

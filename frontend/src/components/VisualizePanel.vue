@@ -1,17 +1,15 @@
 <script setup>
+import '../assets/VisualizePanel.css'
 </script>
 
 <template>
     <div class="visualize-panel">
-        <slot name="tags"></slot>
-        <slot name="scores"></slot>
+        <div class="tags-wrapper">
+            <slot name="tags"></slot>
+        </div>
+        <div class="spacer"></div>
+        <div class="scores-wrapper">
+            <slot name="scores"></slot>
+        </div>
     </div>
 </template>
-
-<style scoped>
-.visualize-panel {
-  padding: 28px;
-  background-color: var(--color-primary-gray2);
-  flex: 0 1 21%;
-}
-</style>

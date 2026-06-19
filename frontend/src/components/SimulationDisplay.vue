@@ -6,9 +6,9 @@ import { buildLane } from '../logic/service/laneBuilder.js';
 import { normalizeDegree } from '../logic/utils/rotation.js';
 import { useMapStore } from '../stores/mapStore.js';
 import { MAP_COLUMNS } from '../constants/constants.js'
-const MAP_DIMENSION = 3;
+const MAP_DIMENSION = 7;
 import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
-import { normalizeTagId, useDigitalTwinStore } from '../stores/digital-twin.js'
+import { useDigitalTwinStore } from '../stores/digital-twin.js'
 import '../assets/Display.css';
 
 const store = useDigitalTwinStore();
@@ -117,8 +117,8 @@ const vResize = {
 
 // Update factor to scale the x and y coordinates of a tag or car
 const updateFactor = (event) => {
-  store.factor_x = (event.target.clientWidth / 400)
-  store.factor_y = (event.target.clientHeight / 400)
+  store.factor_x = (event.target.clientWidth)
+  store.factor_y = (event.target.clientHeight)
 }
 </script>
 
