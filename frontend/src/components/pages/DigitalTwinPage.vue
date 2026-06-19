@@ -18,7 +18,7 @@ const carState = reactive({
 onMounted(() => {
   store.connect();
   store.fetchTagPositions()
-  //store.fetchRoutes()
+  store.fetchRoutes()
 })
 
 /* -------------------------
@@ -357,6 +357,7 @@ const selectTag = ((tag) => {
             <TagsVisualizer></TagsVisualizer>
         </template>
         <template #scores>
+          <p class="visual-label">Scores: </p>
           <BarChart :scoreData="[50.0, 75.0, 10.0, 15.0, 5.0, 60.0]"></BarChart>
         </template>
     </VisualizePanel>
@@ -394,7 +395,7 @@ const selectTag = ((tag) => {
                 :d="generatePath(car.route)"
                 fill="none"
                 :stroke="car.color"
-                stroke-width="4" />
+                stroke-width="2" />
         </svg>
       </template>
       

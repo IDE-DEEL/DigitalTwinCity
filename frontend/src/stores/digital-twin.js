@@ -18,43 +18,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
     ],
 
     tag_positions: [],
-
-    routes: [
-        {"route": "Route 1", 
-          "tags": 
-          [
-            "5A:A5:97:E3:0A:41:89", 
-            "5A:95:B3:DE:0A:41:89",  
-            "5A:E5:D5:DB:0A:41:89", 
-            "5A:25:6B:E0:0A:41:89",
-
-            "5A:A5:C9:E1:0A:41:89",
-            "5A:55:C3:DA:0A:41:89",
-            
-            "5A:C5:97:E3:0A:41:89",
-            "5A:B5:B3:DE:0A:41:89",
-            "53:EA:6B:00:63:00:01",
-            "53:E4:70:00:63:00:01",
-
-            "5A:75:C3:DA:0A:41:89",
-            "5A:05:D6:DB:0A:41:89",
-            "5A:B5:6B:DD:0A:41:89",
-
-            "5A:F5:D5:DB:0A:41:89",
-            "5A:65:C3:DA:0A:41:89",
-            "5A:D5:6A:E0:0A:41:89",
-
-            "5A:05:6B:E0:0A:41:89",
-            "5A:B5:C9:E1:0A:41:89",
-            "5A:75:97:E3:0A:41:89",
-            "5A:65:B3:DE:0A:41:89",
-
-            "5A:E5:C9:E1:0A:41:89",
-            "5A:E5:D5:DB:0A:41:89",
-            "5A:15:CA:E1:0A:41:89",
-            "5A:95:97:E3:0A:41:89"
-          ]}
-    ],
+    routes: [],
 
     scenarios: [
         "Rustig",
@@ -205,6 +169,15 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
         this.tag_positions = await response.json(); 
       } catch (error) {
         console.error('Kon de tag posities niet laden:', error);
+      }
+    },
+
+    async fetchRoutes() {
+      try {
+        const response = await fetch('/data/routes.json');
+        this.routes = await response.json(); 
+      } catch (error) {
+        console.error('Kon de routes niet laden:', error);
       }
     }
   }
