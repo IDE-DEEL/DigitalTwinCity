@@ -54,45 +54,45 @@ const handleDownloadCSV = () => {
             <h3 class="stats-header">{{ langStore.getLabel('tripStats.title') }}</h3>
             <div class="modal-content">
                 <div class="modal-body">
-                    <div class="concern-row">
+                    <div class="concern-row" id="surroundings">
                         <div class="concern-label">
                             <img src="/assets/results/Omgeving.svg" alt="" class="concern-icon" />
                             <span>{{ langStore.getLabel('tripStats.surroundings') }}</span>
                         </div>
                         <span class="concern-value">{{ Number(props.scores.environment).toFixed(1) }}</span>
                     </div>
-                    <div class="concern-row">
+                    <div class="concern-row" id="economy">
                         <div class="concern-label">
                             <img src="/assets/results/Economie.svg" alt="" class="concern-icon" />
                             <span>{{ langStore.getLabel('tripStats.economy') }}</span>
                         </div>
                         <span class="concern-value">{{ Number(props.scores.economic).toFixed(1) }}</span>
                     </div>
-                    <div class="concern-row">
+                    <div class="concern-row" id="social">
                         <div class="concern-label">
                             <img src="/assets/results/Sociaal.svg" alt="" class="concern-icon" />
                             <span>{{ langStore.getLabel('tripStats.social') }}</span>
                         </div>
                         <span class="concern-value">{{ Number(props.scores.social).toFixed(1) }}</span>
                     </div>
-                    <div class="concern-row">
+                    <div class="concern-row" id="energy">
                         <div class="concern-label">
                             <img src="/assets/results/Energie.svg" alt="" class="concern-icon" />
                             <span>{{ langStore.getLabel('tripStats.energy') }}</span>
                         </div>
                         <span class="concern-value">{{ Number(props.scores.energy).toFixed(1) }}</span>
                     </div>
-                    <div class="concern-row">
+                    <div class="concern-row" id="safety">
                         <div class="concern-label">
                             <img src="/assets/results/Veiligheid.svg" alt="" class="concern-icon" />
                             <span>{{ langStore.getLabel('tripStats.safety') }}</span>
                         </div>
                         <span class="concern-value">{{ Number(props.scores.safety).toFixed(1) }}</span>
                     </div>
-                    <div class="concern-row">
+                    <div class="concern-row" id="maintenance">
                         <div class="concern-label">
                             <img src="/assets/results/Onderhoudbaarheid.svg" alt="" class="concern-icon" />
-                            <span>{{ langStore.getLabel('tripStats.maintainability') }}</span>
+                            <span>{{ langStore.getLabel('tripStats.maintenance') }}</span>
                         </div>
                         <span class="concern-value">{{ Number(props.scores.maintenance).toFixed(1) }}</span>
                     </div>
@@ -143,6 +143,7 @@ const handleDownloadCSV = () => {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-radius: var(--rounded-sm);
 }
 
 .concern-icon {
@@ -155,11 +156,13 @@ const handleDownloadCSV = () => {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    padding-left: 0.5rem;
 }
 
 .concern-value {
     font-weight: var(--font-semibold);
     color: #111827;
+    padding-right: 0.5rem;
 }
 
 .modal-footer-divider{
@@ -174,5 +177,31 @@ const handleDownloadCSV = () => {
     font-weight: var(--font-semibold);
     display: flex;
     justify-content: space-between;
+    /* padding: 0rem 0.5rem; */
+}
+
+#surroundings {
+    background-color: var(--color-concern-surroundings);
+    border: 1px solid var(--color-concern-surroundings-border);
+}
+#economy {
+    background-color: var(--color-concern-economy);
+    border: 1px solid var(--color-concern-economy-border);
+}
+#social {
+    background-color: var(--color-concern-social);
+    border: 1px solid var(--color-concern-social-border);
+}
+#energy {
+    background-color: var(--color-concern-energy);
+    border: 1px solid var(--color-concern-energy-border);
+}
+#safety {
+    background-color: var(--color-concern-safety);
+    border: 1px solid var(--color-concern-safety-border);
+}
+#maintenance {
+    background-color: var(--color-concern-maintenance);
+    border: 1px solid var(--color-concern-maintenance-border);
 }
 </style>
