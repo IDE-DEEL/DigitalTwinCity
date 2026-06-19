@@ -45,8 +45,9 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             data = await websocket.receive_json()
             msg_type = data.get("type")
-            # print(data)
+            print(data)
             payload = data.get("payload")
+            
 
             match msg_type:
                 case "speed":
