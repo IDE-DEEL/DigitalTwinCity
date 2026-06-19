@@ -27,8 +27,14 @@ PUB_TOPIC_DIR = "car/auto_B/cmd/Direction"
 PUB_TOPIC_MOVE = "car/auto_B/cmd/Start"
 
 # Chosen route from the front end. Currently is a placeholder.
-chosen_route = "route_1"
+chosen_route = {
 
+    "auto_A": "route_1",
+    "auto_B": "route_1",
+    "auto_C": "route_1",
+    "auto_D": "route_1",
+    "auto_E": "route_1"
+}
 # The cars last scanned tag. This is for later use so we can check the adjacency.
 cars = {
     "auto_A": "",
@@ -201,24 +207,24 @@ def on_message(client, userdata, msg):
 
         # Check whether the scanned RFID matches
         # the current route waypoint
-        if rfid == route[chosen_route][index[topic[1]]][0]:
+        if rfid == route[chosen_route[topic[1]]][index[topic[1]]][0]:
 
             # Checks if the there are packages and loads or unloads them
-            if route[chosen_route][index[topic[1]]][1] == "load" or route[chosen_route][index[topic[1]]][1] == "unload":
-                load_packages(client, topic[1], route[chosen_route][index[topic[1]]][2], 500, route[chosen_route][index[topic[1]]][1])
+            if route[chosen_route[topic[1]]][index[topic[1]]][1] == "load" or route[chosen_route[topic[1]]][index[topic[1]]][1] == "unload":
+                load_packages(client, topic[1], route[chosen_route[topic[1]]][index[topic[1]]][2], 500, route[chosen_route[topic[1]]][index[topic[1]]][1])
 
             else:
                 # Stop vehicle before changing direction
                 client.publish(f"car/{topic[1]}/cmd/Start", "False")
                 # Send next direction command
-                client.publish(f"car/{topic[1]}/cmd/Direction", route[chosen_route][index[topic[1]]][1])
+                client.publish(f"car/{topic[1]}/cmd/Direction", route[chosen_route[topic[1]]][index[topic[1]]][1])
                 # Resume movement
                 client.publish(f"car/{topic[1]}/cmd/Start", "True")
                 # Advance to next route step
                 index[topic[1]] += 1
 
                 # Loop back to start when route completes.
-                if len(route[chosen_route]) == index[topic[1]]:
+                if len(route[chosen_route[topic[1]]]) == index[topic[1]]:
                     index[topic[1]] = 0
                     # calculate_score(TRIP, WEIGHTS)
 
