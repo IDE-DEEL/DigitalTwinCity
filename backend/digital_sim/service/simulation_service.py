@@ -3,22 +3,13 @@ from backend.digital_sim.constants import (
     AGENT_DISTANCE_TRAVELLED_KM_KEY, CAR_ROUTE_WAYPOINTS_KEY, CARS_KEY, CAR_TARGET_SPEED_KEY, SCENARIO_KEY, 
     SCENARIO_NAME_KEY, SCENARIO_HOUSES_LIST_KEY, HOUSE_ROAD_COORDS_KEY, 
     HOUSES_ON_ROUTES_KEY, NUMERIC_AGENT_REPORTER_KEYS, CAR_MAIN_ID_KEY,
-    AGENT_DISTANCE_TRAVELLED_KEY, AGENT_TIME_DRIVING_SECONDS_KEY, 
-    AGENT_PACKAGES_DELIVERED_KEY, MAP_ROWS_KEY,
+    AGENT_TIME_DRIVING_SECONDS_KEY, AGENT_PACKAGES_DELIVERED_KEY, MAP_ROWS_KEY,
 )
 from backend.digital_sim.utils.coordinate_util import convert_waypoints_array_from_svg_to_math
 from backend.score.scoreCalculator import TripData, calculate_score
-from backend.score.config import WEIGHTS
+from backend.score.config import WEIGHTS, TRIP
 import gc
 
-EXTRA_CONFIG = {
-    "wear_factor": 0.1,                 # arbitrary wear factor for EVs
-    "co2_emission_g_per_km": 0.0,       # EV = 0 emissions
-    "cost_per_km": 0.30,                # 30 cents per km
-    "revenue_per_package": 8.0,         # €8 per package delivered
-    "total_budget": 500.0,              # total budget for normalization
-    "is_rush_hour": False,
-}
 
 class SimulationService:
     def __init__(self):
@@ -238,21 +229,22 @@ class SimulationService:
         avg_target_speed = sum(agent.target_speed for agent in agents) / num_agents
 
         # ── Cost/revenue over de entire run ────
-        total_cost = EXTRA_CONFIG["cost_per_km"] * total_distance
-        total_revenue = EXTRA_CONFIG["revenue_per_package"] * total_packages_delivered
-        budget_used_pct = (total_cost / EXTRA_CONFIG["total_budget"]) * 100
+        total_budget = 500.0
+        total_cost = TRIP.cost_per_km * total_distance
+        total_revenue = TRIP.revenue_per_package * total_packages_delivered
+        budget_used_pct = (total_cost / total_budget) * 100
 
         # ── Booleans: if 1 agent = true, count for the run ──
         any_wrong_way = any(agent.went_out_of_lane for agent in agents)
 
         trip = TripData(
-            co2_emission_g_per_km    = EXTRA_CONFIG["co2_emission_g_per_km"],
-            wear_factor              = EXTRA_CONFIG["wear_factor"],
+            co2_emission_g_per_km    = TRIP.co2_emission_g_per_km,
+            wear_factor              = TRIP.wear_factor,
             distance_km              = total_distance,
-            cost_per_km              = EXTRA_CONFIG["cost_per_km"],
+            cost_per_km              = TRIP.cost_per_km,
             revenue_per_package      = total_revenue,
             budget_used_pct          = min(budget_used_pct, 100),
-            is_rush_hour             = EXTRA_CONFIG["is_rush_hour"],
+            is_rush_hour             = TRIP.is_rush_hour,
             soc_start_pct            = avg_soc_start,
             soc_end_pct              = avg_soc_end,
             is_wrong_way             = any_wrong_way,
@@ -260,7 +252,7 @@ class SimulationService:
             speed_value              = avg_target_speed * 100,
         )
 
-        score = calculate_score(trip, WEIGHTS)
+        score = calculate_score(trip, WEIGHTS, 1)
 
         return score
         
