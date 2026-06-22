@@ -4,11 +4,11 @@ import { wsUrl } from '../config/api'
 export const useDigitalTwinStore = defineStore('digitalTwin', {
   state: () => ({
     table_data: [
-        {"status": true, "color": "#0000FF", "auto_id": "auto_A", "energie": 100, "pakketje": 2, "route": "Route 1", "visueel": true},
-        {"status": true, "color": "#FF0000", "auto_id": "auto_B", "energie": 100, "pakketje": 4, "route": "Route 1", "visueel": false},
-        {"status": true, "color": "#008000", "auto_id": "auto_C", "energie": 100, "pakketje": 1, "route": "Route 1", "visueel": false},
-        {"status": true, "color": "#FFFF00", "auto_id": "auto_D", "energie": 100, "pakketje": 2, "route": "Route 1", "visueel": false},
-        {"status": true, "color": "#800080", "auto_id": "auto_E", "energie": 100, "pakketje": 2, "route": "Route 1", "visueel": false}
+        {"status": true, "color": "#0000FF", "auto_id": "auto_A", "energie": 100, "pakketje": 2, "route": "route_1", "visueel": true},
+        {"status": true, "color": "#FF0000", "auto_id": "auto_B", "energie": 100, "pakketje": 4, "route": "route_1", "visueel": false},
+        {"status": true, "color": "#008000", "auto_id": "auto_C", "energie": 100, "pakketje": 1, "route": "route_1", "visueel": false},
+        {"status": true, "color": "#FFFF00", "auto_id": "auto_D", "energie": 100, "pakketje": 2, "route": "route_1", "visueel": false},
+        {"status": true, "color": "#800080", "auto_id": "auto_E", "energie": 100, "pakketje": 2, "route": "route_1", "visueel": false}
     ],
 
     car_data: [

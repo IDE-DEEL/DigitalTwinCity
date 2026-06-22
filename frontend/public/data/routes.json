@@ -1,6 +1,6 @@
 [
     {
-        "route": "Route 1", 
+        "route": "route_1", 
         "tags": [
             "5A:A5:97:E3:0A:41:89", 
             "5A:95:B3:DE:0A:41:89",  
@@ -35,19 +35,19 @@
         ]
     }, 
     {
-        "route": "Route 2", 
+        "route": "route_2", 
         "tags": []
     }, 
     {
-        "route": "Route 3", 
+        "route": "route_3", 
         "tags": []
     },
     {
-        "route": "Route 4", 
+        "route": "route_4", 
         "tags": []
     },
     {
-        "route": "Route 5", 
+        "route": "route_5", 
         "tags": []
     }
 ]
