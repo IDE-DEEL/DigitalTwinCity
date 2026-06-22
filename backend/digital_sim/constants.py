@@ -42,6 +42,7 @@ PACKAGE_PICKUP_TIME_IN_SECONDS = 0.5
 # Agent property keys
 AGENT_STATUS_KEY = "status"
 AGENT_POSITION_KEY = "position"
+AGENT_IS_OUT_OF_LANE_KEY = "is_out_of_lane"
 AGENT_DISTANCE_TRAVELLED_KEY = "distance_travelled"
 AGENT_DISTANCE_TRAVELLED_KM_KEY = "distance_travelled_km"
 AGENT_STATE_OF_CHARGE_KEY = "state_of_charge"
