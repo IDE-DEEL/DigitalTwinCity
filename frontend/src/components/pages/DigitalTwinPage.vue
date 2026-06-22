@@ -2,6 +2,7 @@
 import '../../assets/MainContent.css'
 import '../../assets/Cars.css'
 import ControlPanel from '../ControlPanel.vue'
+import BarChart from '../BarChart.vue'
 import SimulationDisplay from '../SimulationDisplay.vue'
 import VisualizePanel from '../VisualizePanel.vue'
 import { onMounted, ref, reactive, computed, watch, onBeforeUnmount } from 'vue'
@@ -16,6 +17,8 @@ const carState = reactive({
 
 onMounted(() => {
   store.connect();
+  store.fetchTagPositions()
+  store.fetchRoutes()
 })
 
 /* -------------------------
@@ -352,7 +355,11 @@ const selectTag = ((tag) => {
     <VisualizePanel>
         <template #tags>
             <TagsVisualizer></TagsVisualizer>
-        </template> 
+        </template>
+        <template #scores>
+          <p class="visual-label">Scores: </p>
+          <BarChart :scoreData="[50.0, 75.0, 10.0, 15.0, 5.0, 60.0]"></BarChart>
+        </template>
     </VisualizePanel>
 
     <!-- Simulation area + Bottom bar -->
@@ -388,7 +395,7 @@ const selectTag = ((tag) => {
                 :d="generatePath(car.route)"
                 fill="none"
                 :stroke="car.color"
-                stroke-width="4" />
+                stroke-width="2" />
         </svg>
       </template>
       

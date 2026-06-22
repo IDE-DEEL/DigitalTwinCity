@@ -13,3 +13,8 @@
   background-color: var(--color-primary-gray2);
   flex: 0 1 35%;
 }
+
+.visual-label {
+  font-weight: bold; 
+  font-size: 24px;
+}
