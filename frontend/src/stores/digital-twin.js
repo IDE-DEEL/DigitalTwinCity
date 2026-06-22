@@ -7,14 +7,16 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
         {"status": true, "color": "#0000FF", "auto_id": "auto_A", "energie": 100, "pakketje": 2, "route": "Route 1", "visueel": true},
         {"status": true, "color": "#FF0000", "auto_id": "auto_B", "energie": 100, "pakketje": 4, "route": "Route 1", "visueel": false},
         {"status": true, "color": "#008000", "auto_id": "auto_C", "energie": 100, "pakketje": 1, "route": "Route 1", "visueel": false},
-        {"status": false, "color": "#FFFF00", "auto_id": "auto_D", "energie": 100, "pakketje": 2, "route": "Route 1", "visueel": false},
-        {"status": false, "color": "#800080", "auto_id": "auto_E", "energie": 100, "pakketje": 2, "route": "Route 1", "visueel": false}
+        {"status": true, "color": "#FFFF00", "auto_id": "auto_D", "energie": 100, "pakketje": 2, "route": "Route 1", "visueel": false},
+        {"status": true, "color": "#800080", "auto_id": "auto_E", "energie": 100, "pakketje": 2, "route": "Route 1", "visueel": false}
     ],
 
     car_data: [
-        {"auto_id": "auto_A", "tag_id": "5A:A5:97:E3:0A:41:89"},
-        {"auto_id": "auto_B", "tag_id": "5A:95:B3:DE:0A:41:89"},
-        {"auto_id": "auto_C", "tag_id": "53:EA:6B:00:63:00:01"}
+        {"auto_id": "auto_A", "tag_id": "53:D1:7A:16:23:00:01"},
+        {"auto_id": "auto_B", "tag_id": "5A:85:D6:DB:0A:41:89"},
+        {"auto_id": "auto_C", "tag_id": "04:A1:41:6D:BC:2A:81"},
+        {"auto_id": "auto_D", "tag_id": "53:6E:75:16:23:00:01"},
+        {"auto_id": "auto_E", "tag_id": "53:A3:7A:16:23:00:01"}
     ],
 
     tag_positions: [],

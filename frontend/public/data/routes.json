@@ -33,5 +33,21 @@
             "5A:15:CA:E1:0A:41:89",
             "5A:95:97:E3:0A:41:89"
         ]
+    }, 
+    {
+        "route": "Route 2", 
+        "tags": []
+    }, 
+    {
+        "route": "Route 3", 
+        "tags": []
+    },
+    {
+        "route": "Route 4", 
+        "tags": []
+    },
+    {
+        "route": "Route 5", 
+        "tags": []
     }
 ]
