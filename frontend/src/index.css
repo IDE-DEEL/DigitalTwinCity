@@ -19,10 +19,10 @@
     --color-button-active: #095aa6;
 
     /* Concerns colors */
-    --color-concern-surroundings: rgba(30, 255, 0, 0.1);
-    --color-concern-surroundings-border: rgba(30, 255, 0, 0.2);
-    --color-concern-economy: rgba(255, 243, 0, 0.1);
-    --color-concern-economy-border: rgba(255, 243, 0, 0.2);
+    --color-concern-surroundings: rgba(26, 220, 0, 0.1);
+    --color-concern-surroundings-border: rgba(26, 220, 0, 0.2);
+    --color-concern-economy: rgba(222, 211, 0, 0.1);
+    --color-concern-economy-border: rgba(222, 211, 0, 0.2);
     --color-concern-social: rgba(64, 0, 255, 0.1);
     --color-concern-social-border: rgba(64, 0, 255, 0.2);
     --color-concern-energy: rgba(0, 116, 255, 0.1);

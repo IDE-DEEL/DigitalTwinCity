@@ -24,8 +24,8 @@ const props = defineProps({
 });
 
 const categories = [
-    { key: 'environment', labelKey: 'tripStats.surroundings', icon: 'Omgeving', color: 'rgba(30, 255, 0, 0.5)' },
-    { key: 'economic', labelKey: 'tripStats.economy', icon: 'Economie', color: 'rgba(255, 243, 0, 0.5)' },
+    { key: 'environment', labelKey: 'tripStats.surroundings', icon: 'Omgeving', color: 'rgba(26, 220, 0, 0.5)' },
+    { key: 'economic', labelKey: 'tripStats.economy', icon: 'Economie', color: 'rgba(222, 211, 0, 0.5)' },
     { key: 'social', labelKey: 'tripStats.social', icon: 'Sociaal', color: 'rgba(64, 0, 255, 0.5)' },
     { key: 'energy', labelKey: 'tripStats.energy', icon: 'Energie', color: 'rgba(0, 116, 255, 0.5)' },
     { key: 'safety', labelKey: 'tripStats.safety', icon: 'Veiligheid', color: 'rgba(255, 0, 0, 0.5)' },
