@@ -1,0 +1,40 @@
+dependencies:
+  espressif/mqtt:
+    component_hash: ffdad5659706b4dc14bc63f8eb73ef765efa015bf7e9adf71c813d52a2dc9342
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=5.3'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 1.0.0
+  garag/esp-idf-pn532:
+    component_hash: aac8ca6ebb69a2b4e344991fa1764d2d298ae44bb90f308794a52bc8104c1d9f
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=5.2'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 0.2.1
+  idf:
+    source:
+      type: idf
+    version: 6.0.1
+  lvgl/lvgl:
+    component_hash: 2409fdc84e9766d2a18afd84b051aef3f838348136cdb1c10ac2e8bcdb012bf6
+    dependencies: []
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 9.2.0
+direct_dependencies:
+- espressif/mqtt
+- garag/esp-idf-pn532
+- idf
+- lvgl/lvgl
+manifest_hash: 19fd339b3669264488f6b55a0eb637ce4d179713835461c593372bd93d942347
+target: esp32
+version: 3.0.0

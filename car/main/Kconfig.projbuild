@@ -1,0 +1,33 @@
+menu "DEEL configuration"
+    config CAR_NAME
+        string "Auto naam"
+        default "auto_X"
+        help 
+            Vul hier de naam van de auto in. Deze naam zal worden gebruikt voor mqtt topics en andere configuraties.
+
+    config WIFI_SSID
+        string "WIFI SSID"
+        default "WIFI_SSID"
+        help 
+            Vul hier de SSID in dat wordt gebruikt voor de WIFI verbinding. Zorg ervoor dat dit overeenkomt met de car name en mac address
+
+
+    config WIFI_PASSWORD
+        string "WIFI wachtwoord"
+        default "WIFI_password"
+        help 
+            Vul hier het wachtwoord in dat wordt gebruikt voor de WIFI verbinding. Zorg ervoor dat dit wachtwoord overeenkomt met de car name en mac address
+
+    config MQTT_PASSWORD
+        string "MQTT wachtwoord"
+        default "mqtt_password"
+        help 
+            Vul hier het wachtwoord in dat wordt gebruikt voor de MQTT verbinding. Zorg ervoor dat dit wachtwoord overeenkomt met de car name
+    
+    config MQTT_ADDRESS
+        string "MQTT adres"
+        default "wss://digitaltwin.duckdns.org/mqtt"
+        help 
+            Vul hier het adres in dat wordt gebruikt voor de MQTT verbinding.
+
+endmenu
