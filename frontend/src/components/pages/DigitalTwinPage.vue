@@ -357,8 +357,16 @@ const selectTag = ((tag) => {
             <TagsVisualizer></TagsVisualizer>
         </template>
         <template #scores>
-          <p class="visual-label">Scores: </p>
-          <BarChart :scoreData="[50.0, 75.0, 10.0, 15.0, 5.0, 60.0]"></BarChart>
+          <BarChart :scoreData="{
+            environment: 50,
+            economic: 75,
+            social: 10,
+            energy: 15,
+            safety: 5,
+            maintenance: 60,
+            total: 30
+          }
+            "></BarChart>
         </template>
     </VisualizePanel>
 

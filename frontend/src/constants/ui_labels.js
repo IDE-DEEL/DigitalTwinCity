@@ -73,7 +73,7 @@ export const LABELS = {
         tripStats: {
             title: "Belangen",
             surroundings: "Omgeving",
-            economy: "Economie",
+            economy: "Economisch",
             social: "Sociaal",
             energy: "Energie",
             safety: "Veiligheid",
@@ -81,6 +81,10 @@ export const LABELS = {
             total: "Totale score",
             download: "Download CSV",
             category: "Categorie",
+            score: "Score",
+        },
+        barChart: {
+            title: "Scores",
             score: "Score",
         },
         rfidTags: {
@@ -242,7 +246,7 @@ export const LABELS = {
         tripStats: {
             title: "Concerns",
             surroundings: "Surroundings",
-            economy: "Economy",
+            economy: "Economical",
             social: "Social",
             energy: "Energy",
             safety: "Safety",
@@ -250,6 +254,10 @@ export const LABELS = {
             total: "Combined score",
             download: "Download CSV",
             category: "Category",
+            score: "Score",
+        },
+        barChart: {
+            title: "Scores",
             score: "Score",
         },
         rfidTags: {
