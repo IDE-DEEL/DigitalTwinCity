@@ -101,7 +101,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
             this.updateEnergy(payload)
             break
 
-          case 'car_route':
+          case 'route':
             this.updateRoute(payload)
             break
 
