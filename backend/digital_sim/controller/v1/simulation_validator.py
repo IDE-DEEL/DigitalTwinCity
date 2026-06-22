@@ -54,7 +54,7 @@ class SimulationStartPayload(BaseModel):
             route_names_in_houses = set(info.data['housesOnRoutes'].keys())
             route_names_in_cars = {car.routeName for car in v}
             
-            # Elke auto moet een route hebben die in housesOnRoutes staat
+            # Every car must have a route that is present in housesOnRoutes
             missing_routes = route_names_in_cars - route_names_in_houses
             if missing_routes:
                 raise ValueError(f'Routes in cars must be present in housesOnRoutes: {missing_routes}')
