@@ -6,7 +6,7 @@ import { useDigitalSimulation } from '../../composables/useDigitalSimulation.js'
 import { useCarColors } from '../../composables/useCarColors.js';
 import { buildLane } from '../../logic/service/laneBuilder.js';
 import { normalizeDegree } from '../../logic/utils/rotation.js';
-import { Slider, DropDown, RadioGroup, SimulationTable, WebSocketStatus, RoutePolyline, Car, BaseButton } from '../CustomComponents.js';
+import { Slider, DropDown, RadioGroup, SimulationTable, WebSocketStatus, RoutePolyline, Car, BaseButton, BarChart } from '../CustomComponents.js';
 import { ControlPanel, SimulationDisplay, StatisticsModal, HouseLabelsOverlay, VisualizePanel, SimulationRunStats, TripScore } from '../AreaComponents.js';
 import { devTileCoordinateOverlay, devLaneDebugOverlay, devHouseDetectionZonesOverlay, devRouteBuilder, devSensorDebugOverlay } from '../../development/DevtoolComponents.js';
 import '../../assets/MainContent.css';
@@ -193,6 +193,7 @@ const toggleSensorDebug = () => {
             <!-- Visualize Panel -->
         <VisualizePanel class="visualize-panel" >
             <template #scores>
+                <BarChart :scoreData="stateStore.tripScores"></BarChart>
             </template> 
         </VisualizePanel>
 

@@ -16,6 +16,7 @@ from backend.digital_sim.constants import (
     AGENT_TIME_DRIVING_SECONDS_KEY, AGENT_TIME_DELIVERING_SECONDS_KEY,
     AGENT_TIME_PARKED_SECONDS_KEY, AGENT_TIME_LOADING_PACKAGES_SECONDS_KEY,
     MODEL_TOTAL_PACKAGES_IN_SCENARIO_KEY, MODEL_TOTAL_PACKAGES_UNDELIVERED_KEY,
+    AGENT_IS_OUT_OF_LANE_KEY,
 )
 
 
@@ -46,6 +47,7 @@ class CarModel(mesa.Model):
             agent_reporters={
                 AGENT_STATUS_KEY: lambda agent: agent.status.name,  # enum name of the agent's status
                 AGENT_POSITION_KEY: lambda agent: agent.svg_position,
+                AGENT_IS_OUT_OF_LANE_KEY: "is_out_of_lane",
                 AGENT_DISTANCE_TRAVELLED_KEY: lambda agent: round(agent.distance_travelled_km, 2),
                 AGENT_DISTANCE_TRAVELLED_KM_KEY: lambda agent: round(agent.distance_travelled_km, 2),
                 AGENT_STATE_OF_CHARGE_KEY: lambda agent: round(agent.state_of_charge, 2),
@@ -133,6 +135,7 @@ class CarModel(mesa.Model):
                 "time_parked_seconds": round(agent.time_parked_seconds, 2),
                 "time_loading_packages_seconds": round(agent.time_loading_packages_seconds, 2),
                 "went_out_of_lane": agent.went_out_of_lane,
+                "is_out_of_lane": agent.is_out_of_lane,
                 "virtual_sensor_left": agent.svg_virtual_sensor_left,
                 "virtual_sensor_right": agent.svg_virtual_sensor_right,
             })

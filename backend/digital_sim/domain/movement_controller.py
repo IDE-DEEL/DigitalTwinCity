@@ -57,6 +57,7 @@ class MovementController:
 
         # Status
         self.finished = False
+        self.is_out_of_lane = False
         self.went_out_of_lane = False
 
         # Distance tracking
@@ -91,6 +92,7 @@ class MovementController:
 
         # 2. Update position and heading
         if self.actual_speed >= 0.01:
+            self.is_out_of_lane = False
             self._update_position()
             self._check_route_finished()
 
@@ -126,6 +128,7 @@ class MovementController:
 
         if dist_to_route > self.out_of_lane_threshold:
             self.went_out_of_lane = True
+            self.is_out_of_lane = True
 
         self.segment_index = best_seg
 

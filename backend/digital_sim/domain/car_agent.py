@@ -244,6 +244,13 @@ class CarAgent(mesa.Agent):
         if self._movement_controller:
             return self._movement_controller.went_out_of_lane
         return False
+    
+    @property
+    def is_out_of_lane(self):
+        """Check if the car is currently out of lane based on distance from route."""
+        if self._movement_controller:
+            return self._movement_controller.is_out_of_lane
+        return False
 
     @property
     def status(self):

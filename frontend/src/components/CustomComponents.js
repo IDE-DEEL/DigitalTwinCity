@@ -10,3 +10,4 @@ export { default as RoutePolyline } from "./RoutePolyline.vue";
 export { default as Car } from "./Car.vue";
 export { default as LangToggle } from "./LangToggle.vue";
 export { default as BaseButton } from "./BaseButton.vue";
+export { default as BarChart } from "./BarChart.vue";
