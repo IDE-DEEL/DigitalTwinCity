@@ -18,6 +18,20 @@
     --color-button-disabled: #a0a0a0;
     --color-button-active: #095aa6;
 
+    /* Concerns colors */
+    --color-concern-surroundings: rgba(30, 255, 0, 0.1);
+    --color-concern-surroundings-border: rgba(30, 255, 0, 0.2);
+    --color-concern-economy: rgba(255, 243, 0, 0.1);
+    --color-concern-economy-border: rgba(255, 243, 0, 0.2);
+    --color-concern-social: rgba(64, 0, 255, 0.1);
+    --color-concern-social-border: rgba(64, 0, 255, 0.2);
+    --color-concern-energy: rgba(0, 116, 255, 0.1);
+    --color-concern-energy-border: rgba(0, 116, 255, 0.2);
+    --color-concern-safety: rgba(255, 0, 0, 0.1);
+    --color-concern-safety-border: rgba(255, 0, 0, 0.2);
+    --color-concern-maintenance: rgba(255, 115, 0, 0.1);
+    --color-concern-maintenance-border: rgba(255, 115, 0, 0.2);
+
     /* Border-radius */
     --rounded-xs: 0.125rem;     /* 2px */
     --rounded-sm: 0.25rem;      /* 4px */

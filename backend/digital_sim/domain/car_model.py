@@ -8,7 +8,7 @@ from backend.digital_sim.domain.package import Package, PackageStatus
 from backend.digital_sim.domain.house import House
 from backend.digital_sim.utils.coordinate_util import convert_position_math_to_svg
 from backend.digital_sim.constants import (
-    CAR_ROUTE_NAME_KEY, CAR_ROUTE_WAYPOINTS_KEY, CAR_MAX_PACKAGES_KEY,
+    AGENT_DISTANCE_TRAVELLED_KM_KEY, CAR_ROUTE_NAME_KEY, CAR_ROUTE_WAYPOINTS_KEY, CAR_MAX_PACKAGES_KEY,
     HOUSE_PACKAGE_COUNT_KEY, HOUSE_ID_KEY, HOUSE_ROAD_COORDS_KEY,
     DELTA_TIME_PER_STEP_IN_SECONDS, CAR_MAIN_ID_KEY, AGENT_POSITION_KEY,
     AGENT_STATUS_KEY, AGENT_DISTANCE_TRAVELLED_KEY, AGENT_PACKAGES_DELIVERED_KEY,
@@ -45,8 +45,9 @@ class CarModel(mesa.Model):
             },
             agent_reporters={
                 AGENT_STATUS_KEY: lambda agent: agent.status.name,  # enum name of the agent's status
-                AGENT_POSITION_KEY: lambda agent: convert_position_math_to_svg(agent.position, self.map_rows),
-                AGENT_DISTANCE_TRAVELLED_KEY: "distance_travelled",
+                AGENT_POSITION_KEY: lambda agent: agent.svg_position,
+                AGENT_DISTANCE_TRAVELLED_KEY: lambda agent: round(agent.distance_travelled_km, 2),
+                AGENT_DISTANCE_TRAVELLED_KM_KEY: lambda agent: round(agent.distance_travelled_km, 2),
                 AGENT_STATE_OF_CHARGE_KEY: lambda agent: round(agent.state_of_charge, 2),
                 AGENT_PACKAGES_DELIVERED_KEY: "packages_delivered",
                 AGENT_PACKAGES_IN_CARGO_COUNT_KEY: "packages_in_cargo_count",
@@ -105,12 +106,13 @@ class CarModel(mesa.Model):
             agents_status.append({
                 "mesa_id": agent.unique_id,
                 "id": agent.id,
-                "position": convert_position_math_to_svg(agent.position, self.map_rows),
+                "position": agent.svg_position,
                 "heading_radial": agent.heading,
                 "heading_deg": agent.heading_deg,
                 "target_speed": agent.target_speed,
                 "actual_speed": agent.actual_speed,
-                "distance_travelled": agent.distance_travelled,
+                "distance_travelled": round(agent.distance_travelled, 2),
+                "distance_travelled_km": round(agent.distance_travelled_km, 2),
                 "finished": agent.is_finished,
                 "maxPackages": agent.max_packages,
                 "status": agent.status.name,
@@ -130,8 +132,9 @@ class CarModel(mesa.Model):
                 "time_delivering_seconds": round(agent.time_delivering_seconds, 2),
                 "time_parked_seconds": round(agent.time_parked_seconds, 2),
                 "time_loading_packages_seconds": round(agent.time_loading_packages_seconds, 2),
-                "virtual_sensor_left": convert_position_math_to_svg(agent.virtual_sensor_left, self.map_rows),
-                "virtual_sensor_right": convert_position_math_to_svg(agent.virtual_sensor_right, self.map_rows),
+                "went_out_of_lane": agent.went_out_of_lane,
+                "virtual_sensor_left": agent.svg_virtual_sensor_left,
+                "virtual_sensor_right": agent.svg_virtual_sensor_right,
             })
 
         return agents_status

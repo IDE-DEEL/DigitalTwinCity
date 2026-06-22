@@ -33,7 +33,6 @@ const {
     startSimulation,
     stopSimulation,
     reconnectWebSocket,
-    validateHousesReachability,
     exportDataAsCSV,
 } = useDigitalSimulation(() => {
     isStatsModalOpen.value = true;
@@ -49,7 +48,7 @@ const { getColorForCarAndRoute } = useCarColors();
 const reconnectCooldown = ref(false);
 const isStatsModalOpen = ref(false);
 
-const MAX_PACKAGES = 10;
+const MAX_PACKAGES = 25;
 const MIN_PACKAGES = 1;
 
 /*
@@ -112,7 +111,6 @@ const handleWebsocketReconnect = () => {
 
 const handleSimulationStart = () => {
     console.log('Requested simulation start with parameters: ', paramStore.collectParameters());
-    validateHousesReachability();
     startSimulation();
 };
 
@@ -325,7 +323,7 @@ const toggleSensorDebug = () => {
                 </div>
 
                 <div class="button-area">
-                    <BaseButton @click="handleSimulationStart" :disabled="stateStore.isSimulating || allCarsHaveInactiveRoute"> {{ langStore.getLabel('controls.startButton') }} </BaseButton>
+                    <BaseButton @click="handleSimulationStart" :disabled="stateStore.isSimulating || allCarsHaveInactiveRoute || !wsStore.isConnected"> {{ langStore.getLabel('controls.startButton') }} </BaseButton>
                     <BaseButton @click="handleSimulationStop" :disabled="!stateStore.isSimulating"> {{ langStore.getLabel('controls.stopButton') }} </BaseButton>
                 </div>
             </template>

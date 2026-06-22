@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { ref, computed, watch } from "vue";
-import { useSimulationParameterStore } from "./simulationParameterStore";
+import { useSimulationParameterStore, useSimulationWebSocketStore } from "./index";
 
 export const useSimulationStateStore = defineStore("simulationState", () => {
     // ---
@@ -14,10 +14,14 @@ export const useSimulationStateStore = defineStore("simulationState", () => {
     const simulationStats = ref(DEFAULT_SIMULATION_STATS);
     const tripScores = ref(DEFAULT_TRIP_SCORES);
 
+    const cachedCsvData = ref(null);
+    const cachedCsvStep = ref(null);
+
     // ---
     // Watchers to reset simulation state when relevant dashboard parameters change after a previous simulation run
     // ---
     const dashboardStore = useSimulationParameterStore();
+    const wsStore = useSimulationWebSocketStore();
 
     watch(() => dashboardStore.scenario, () => {
         resetSimulationState();
@@ -31,6 +35,12 @@ export const useSimulationStateStore = defineStore("simulationState", () => {
     () => {
         resetSimulationState();
     }, { deep: true });
+
+    watch(() => wsStore.isConnected, (connected) => {
+        if (!connected) {
+            handleConnectionLost();
+        }
+    });
 
     // ---
     // Actions
@@ -51,6 +61,8 @@ export const useSimulationStateStore = defineStore("simulationState", () => {
         currentStep.value = DEFAULT_STEPS;
         simulationStats.value = DEFAULT_SIMULATION_STATS;
         tripScores.value = DEFAULT_TRIP_SCORES;
+        cachedCsvData.value = null;
+        cachedCsvStep.value = null;
     }
 
     function handleSimulationStarted() {
@@ -60,6 +72,13 @@ export const useSimulationStateStore = defineStore("simulationState", () => {
 
     function handleSimulationEnded() {
         isSimulating.value = false;
+    }
+
+    function handleConnectionLost() {
+        if (!isSimulating.value) return;
+
+        resetSimulationState();
+        hasSimulated.value = false;
     }
 
     // ---
@@ -111,6 +130,7 @@ export const useSimulationStateStore = defineStore("simulationState", () => {
         resetSimulationState,
         handleSimulationStarted,
         handleSimulationEnded,
+        handleConnectionLost,
     };
 });
 

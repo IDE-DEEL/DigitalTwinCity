@@ -110,6 +110,8 @@ export const HOUSE_INSTANCES = [
 
         supportedLanes: [
             { from: 'N', to: 'S' },
+            { from: 'N', to: 'E' },
+            { from: 'E', to: 'S' },
         ],
         labelCoords: { x: 0.14, y: 0.49 },
         roadCenter: { x: 0.38, y: 0.5 },
@@ -143,6 +145,8 @@ export const HOUSE_INSTANCES = [
 
         supportedLanes: [
             { from: 'S', to: 'N' },
+            { from: 'S', to: 'W' },
+            { from: 'W', to: 'N' },
         ],
         labelCoords: { x: 0.86, y: 0.48 },
         roadCenter: { x: 0.63, y: 0.48 },
@@ -200,6 +204,8 @@ export const HOUSE_INSTANCES = [
 
         supportedLanes: [
             { from: 'N', to: 'S' },
+            { from: 'N', to: 'E' },
+            { from: 'E', to: 'S' }
         ],
         labelCoords: { x: 0.15, y: 0.5 },
         roadCenter: { x: 0.37, y: 0.51 },
@@ -222,6 +228,8 @@ export const HOUSE_INSTANCES = [
 
         supportedLanes: [
             { from: 'N', to: 'S' },
+            { from: 'N', to: 'E' },
+            { from: 'E', to: 'S' }
         ],
         labelCoords: { x: 0.14, y: 0.49 },
         roadCenter: { x: 0.37, y: 0.49 },
@@ -247,6 +255,8 @@ export const HOUSE_INSTANCES = [
 
         supportedLanes: [
             { from: 'S', to: 'N' },
+            { from: 'S', to: 'W' },
+            { from: 'W', to: 'N' },
         ],
         labelCoords: { x: 0.86, y: 0.51 },
         roadCenter: { x: 0.64, y: 0.5 },

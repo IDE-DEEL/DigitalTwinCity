@@ -109,7 +109,7 @@ const handleDownloadCSV = async () => {
                                         {{ agent.id }}
                                     </div>
                                 </td>
-                                <td class="table-cell table-cell-right">{{ agent.distance_travelled.toFixed(2) }} km</td>
+                                <td class="table-cell table-cell-right">{{ agent.distance_travelled_km.toFixed(2) }} km</td>
                                 <td class="table-cell table-cell-right">{{ formatDrivingTime(agent.time_driving_seconds) }}</td>
                                 <td class="table-cell table-cell-right">{{ agent.packages_delivered }}</td>
                             </tr>

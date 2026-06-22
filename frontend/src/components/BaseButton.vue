@@ -3,7 +3,7 @@
         :disabled="disabled"
         :type="type"
         @click="$emit('click', $event)"
-        :class="['base-button', `base-button--${variant}`]"
+        :class="['base-button', `base-button--${variant}`, { 'base-button--active': isActive }]"
     >
         <slot></slot>
     </button>
@@ -34,6 +34,10 @@ defineProps({
             'login',
         ].includes(value),
     },
+    isActive: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 defineEmits(['click']);
@@ -60,6 +64,10 @@ defineEmits(['click']);
 .base-button:disabled {
     background-color: var(--color-button-disabled);
     cursor: not-allowed;
+}
+
+.base-button--active {
+    background-color: var(--color-button-active);
 }
 
 /* Variant styles */

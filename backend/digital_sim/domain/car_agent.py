@@ -5,7 +5,8 @@ import mesa
 
 from backend.digital_sim.domain.route import Route
 from backend.digital_sim.domain.movement_controller import MovementController
-from backend.digital_sim.constants import PACKAGE_PICKUP_TIME_IN_SECONDS, PACKAGE_DELIVERY_TIME_IN_SECONDS
+from backend.digital_sim.constants import PACKAGE_PICKUP_TIME_IN_SECONDS, PACKAGE_DELIVERY_TIME_IN_SECONDS, METERS_PER_TILE
+from backend.digital_sim.utils.coordinate_util import convert_position_math_to_svg
 
 
 class CarStatus(Enum):
@@ -144,6 +145,13 @@ class CarAgent(mesa.Agent):
         if self._movement_controller:
             return self._movement_controller.position_dict
         return None
+    
+    @property
+    def svg_position(self):
+        """Get current position as (x, y) dictionary for SVG rendering."""
+        if self._movement_controller:
+            return convert_position_math_to_svg(self._movement_controller.position_dict, self.model.map_rows)
+        return None
 
     @property
     def actual_speed(self):
@@ -179,6 +187,12 @@ class CarAgent(mesa.Agent):
         if self._movement_controller:
             return self._movement_controller.distance_travelled
         return 0.0
+    
+    @property
+    def distance_travelled_km(self):
+        """Get total distance travelled in kilometers, scaled to kilometers based on the map tile scale."""
+        ONE_KM_IN_METERS = 1000
+        return self.distance_travelled * METERS_PER_TILE / ONE_KM_IN_METERS
 
     @property
     def has_started_route(self):
@@ -194,19 +208,42 @@ class CarAgent(mesa.Agent):
 
     @property
     def virtual_sensor_left(self):
-        """Get position of left virtual magnetometer as (x, y) tuple."""
+        """Get position of left virtual magnetometer as (x, y) dictionary."""
         if self._movement_controller:
             sensor = self._movement_controller.virtual_sensor_left
             return sensor if sensor else None
         return None
+    
+    @property
+    def svg_virtual_sensor_left(self):
+        """Get position of left virtual magnetometer as (x, y) dictionary for SVG rendering."""
+        if self._movement_controller:
+            sensor = self._movement_controller.virtual_sensor_left
+            return convert_position_math_to_svg(sensor, self.model.map_rows) if sensor else None
+        return None
 
     @property
     def virtual_sensor_right(self):
-        """Get position of right virtual magnetometer as (x, y) tuple."""
+        """Get position of right virtual magnetometer as (x, y) dictionary."""
         if self._movement_controller:
             sensor = self._movement_controller.virtual_sensor_right
             return sensor if sensor else None
         return None
+    
+    @property
+    def svg_virtual_sensor_right(self):
+        """Get position of right virtual magnetometer as (x, y) dictionary for SVG rendering."""
+        if self._movement_controller:
+            sensor = self._movement_controller.virtual_sensor_right
+            return convert_position_math_to_svg(sensor, self.model.map_rows) if sensor else None
+        return None
+    
+    @property
+    def went_out_of_lane(self):
+        """Check if the car went out of lane based on distance from route."""
+        if self._movement_controller:
+            return self._movement_controller.went_out_of_lane
+        return False
 
     @property
     def status(self):
@@ -333,35 +370,36 @@ class CarAgent(mesa.Agent):
         Packages are queued for loading (not immediately added to cargo).
         Loading duration is calculated as: number_of_packages * PACKAGE_PICKUP_TIME_IN_SECONDS.
         Packages are loaded one by one, with each taking PACKAGE_PICKUP_TIME_IN_SECONDS.
-        If we pick up packages after a completed trip, reset the route.
+        If we pick up packages or still have packages in cargo after a completed trip, reset the route.
         """
-        if not self.route or (len(self.packages_in_cargo) + len(self.packages_pending_load)) >= self.max_packages:
-            return
-
-        # Get all available packages from the route
-        available_packages = self.route.get_available_packages()
-
         packages_picked_up = False
-        for package in available_packages:
-            # Check if we still have capacity (including pending packages)
-            if len(self.packages_in_cargo) + len(self.packages_pending_load) >= self.max_packages:
-                break
+        
+        has_capacity = (len(self.packages_in_cargo) + len(self.packages_pending_load)) < self.max_packages
+        if self.route and has_capacity:
 
-            # Assign package to this agent and queue for loading
-            package.assign_to_agent(self.unique_id)
-            self.packages_pending_load.append(package)
-            packages_picked_up = True
+            # Get all available packages from the route
+            available_packages = self.route.get_available_packages()
 
-        # Start pickup loading time if we picked up packages and increment depot load count
-        if packages_picked_up:
-            self.depot_load_count += 1
-            self.is_picking_up = True
-            self.pickup_duration = len(self.packages_pending_load) * PACKAGE_PICKUP_TIME_IN_SECONDS
-            # Timer for first package
-            self.pickup_time_remaining = PACKAGE_PICKUP_TIME_IN_SECONDS
+            for package in available_packages:
+                # Check if we still have capacity (including pending packages)
+                if len(self.packages_in_cargo) + len(self.packages_pending_load) >= self.max_packages:
+                    break
 
-        # If we picked up packages and the route is already finished, reset for another trip
-        if packages_picked_up and self._movement_controller.finished:
+                # Assign package to this agent and queue for loading
+                package.assign_to_agent(self.unique_id)
+                self.packages_pending_load.append(package)
+                packages_picked_up = True
+
+            # Start pickup loading time if we picked up packages and increment depot load count
+            if packages_picked_up:
+                self.depot_load_count += 1
+                self.is_picking_up = True
+                self.pickup_duration = len(self.packages_pending_load) * PACKAGE_PICKUP_TIME_IN_SECONDS
+                # Timer for first package
+                self.pickup_time_remaining = PACKAGE_PICKUP_TIME_IN_SECONDS
+
+        # If we finish the route and picked up new packages or still have packages in cargo, reset for another trip
+        if self._movement_controller.finished and (packages_picked_up or self.packages_in_cargo):
             self._reset_route()
 
     def _update_battery_usage(self) -> None:

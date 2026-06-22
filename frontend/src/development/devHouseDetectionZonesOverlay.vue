@@ -34,9 +34,7 @@
 
 <script setup>
 import { computed } from "vue";
-import { buildHouseCoordinates } from "../logic/service/houseBuilder.js";
-import { getAllHouseInstances, getHousesForScenario } from "../logic/service/houseService.js";
-import { useMapStore } from "../stores/mapStore.js";
+import { getHousesByScenarioKey } from "../logic/service/houseService.js";
 import { MAP_COLUMNS, MAP_ROWS } from '../constants/constants.js';
 
 const props = defineProps({
@@ -68,49 +66,13 @@ function calculateCentroid(points) {
  */
 const detectionZones = computed(() => {
     try {
-        const scenarioHouses =
-            getHousesForScenario(props.scenario);
-
-        const mapStore = useMapStore();
-        const houseInstances = getAllHouseInstances();
-
-        return Object.keys(scenarioHouses)
-            .map((houseInstanceId) => {
-                const instance = houseInstances.find(
-                    h => h.id === houseInstanceId
-                );
-
-                if (!instance) {
-                    return null;
-                }
-
-                const tile = mapStore.mapData.find(
-                    t =>
-                        t.x === instance.tileX &&
-            t.y === instance.tileY
-                );
-
-                const coordinates = buildHouseCoordinates(
-                    instance,
-                    tile?.rotation || 0
-                );
-
-                return {
-                    houseInstanceId,
-                    points: coordinates.roadCoords,
-                    labelPos: calculateCentroid(
-                        coordinates.roadCoords
-                    ),
-                };
-            })
-            .filter(Boolean);
-
+        return getHousesByScenarioKey(props.scenario).map((house) => ({
+            houseInstanceId: house.houseInstanceId,
+            points: house.roadCoords,
+            labelPos: calculateCentroid(house.roadCoords),
+        }));
     } catch (error) {
-        console.error(
-            "Error building detection zones:",
-            error
-        );
-
+        console.error("Error building detection zones:", error);
         return [];
     }
 });
