@@ -4,6 +4,7 @@ import '../../assets/Cars.css'
 import ControlPanel from '../ControlPanel.vue'
 import BarChart from '../BarChart.vue'
 import SimulationDisplay from '../SimulationDisplay.vue'
+import Timer from '../Timer.vue'
 import VisualizePanel from '../VisualizePanel.vue'
 import { onMounted, ref, reactive, computed, watch, onBeforeUnmount } from 'vue'
 import { useDigitalTwinStore } from '../../stores/digital-twin.js'
@@ -431,8 +432,20 @@ const selectTag = ((tag) => {
       </template>
     </SimulationDisplay>
 
-    <!-- Control Panel -->
-    <ControlPanel class="control-panel" />
+    <!-- Control Panel  -->
+    <ControlPanel 
+      class="control-panel"
+      v-model:speed="store.speed"
+      :scenarios="store.scenarios"
+      v-model:chosenScenario="store.chosen_scenario"
+      :score="Number(store.results.total)"
+      @change-speed="store.sendData('speed', store.speed)"
+      @change-scenario="store.sendData('scenario', store.chosen_scenario)"
+    >
+      <template #simulation-controls>
+        <Timer :store="store" />
+      </template>
+    </ControlPanel>
        
   </div>
 </template>
