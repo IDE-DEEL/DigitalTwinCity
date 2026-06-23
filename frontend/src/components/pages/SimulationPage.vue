@@ -308,7 +308,7 @@ const toggleSensorDebug = () => {
                 ></SimulationTable>
             </template>
 
-            <template #simulation-statistics>
+            <template #simulation-speed>
                 <RadioGroup 
                     class="radio-group-area" 
                     :name="langStore.getLabel('controls.simulationSpeed')" 

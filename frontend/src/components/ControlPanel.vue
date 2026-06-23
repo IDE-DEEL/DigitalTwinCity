@@ -58,7 +58,7 @@ const showModal = ref(false)
         <Table></Table>
     </slot>
 
-    <slot name="simulation-statistics"></slot>
+    <slot name="simulation-speed"></slot>
 
     <div class="simulation-container">
       <div class="state">
