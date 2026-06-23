@@ -33,7 +33,7 @@ const handleDownloadCSV = () => {
         [langStore.getLabel('tripStats.social'), Number(result.social || 0).toFixed(1)],
         [langStore.getLabel('tripStats.energy'), Number(result.energy || 0).toFixed(1)],
         [langStore.getLabel('tripStats.safety'), Number(result.safety || 0).toFixed(1)],
-        [langStore.getLabel('tripStats.maintainability'), Number(result.maintenance || 0).toFixed(1)],
+        [langStore.getLabel('tripStats.maintenance'), Number(result.maintenance || 0).toFixed(1)],
         [langStore.getLabel('tripStats.total'), Number(result.total || 0).toFixed(1)]
     ].map(row => row.join(',')).join('\n');
 
