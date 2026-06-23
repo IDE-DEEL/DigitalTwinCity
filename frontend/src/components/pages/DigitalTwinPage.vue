@@ -76,6 +76,7 @@ for (const car of store.table_data) {
       id: car.auto_id,
       x: pos?.x ?? 0,
       y: pos?.y ?? 0,
+      packages: car.pakketje,
       routeIndex: 0,
       initialized: false,
       rotation: 0,
@@ -346,6 +347,18 @@ const darkenColor = (hex, percent = 20) => {
 const selectTag = ((tag) => {
   store.chosen_tag = tag
 })
+
+const getPackages = ((id) => {
+  for (let i = 0; i < store.table_data.length; i++) {
+    const car = store.table_data[i]
+    
+    if (car.auto_id === id) {
+      return car.pakketje
+    }
+  }
+
+  return 0;
+})
 </script>
 
 <template>
@@ -382,6 +395,9 @@ const selectTag = ((tag) => {
               v-for="tag in store.tag_positions"
               :key="tag.tag_id"
               class="absolute cursor-pointer rounded-full bg-black flex items-center justify-center"
+              :class="{
+                'ring-2 ring-offset-2 ring-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.8)]': store.chosen_tag?.tag_id === tag.tag_id
+              }"
               :style="{
                 left: (tag.tag_pos.x * store.factor_x) + 'px',
                 top: (tag.tag_pos.y * store.factor_y) + 'px',
@@ -427,6 +443,9 @@ const selectTag = ((tag) => {
                 <span></span>
               </div>
             </div>
+            <span class="cargo-counter">
+              {{ getPackages(car.id) }}
+            </span>
           </div>
         </div>
       </template>
