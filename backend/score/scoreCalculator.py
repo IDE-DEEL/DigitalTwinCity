@@ -56,11 +56,13 @@ class TripData:
     soc_end_pct:             float   # State of Charge at end of trip [0–100]
 
     # ── Safety ───────────────────────────────────────────────────────
+    pid_crash_value:         float   # PID deviation related to cornering [0–10]
     is_wrong_way:            bool    # Wrong-way driving detected? (True/False)
     idle_time_sec:           float   # Unnecessary idle time in seconds
 
     # ── Maintenance ──────────────────────────────────────────────────
     speed_value:             float   # Abstract speed value from vehicle [0–100]
+    pid_wear_value:          float   # PID correction intensity [0–1]
 
 
 @dataclass
@@ -236,6 +238,19 @@ def score_safety(data: TripData) -> float:
     Starts at a perfect 100 and applies deductions for detected
     safety violations.
 
+    PID crash error (up to 80 pt deduction):
+        deduction_pid = clamp(8 * pid_crash_value, 0, 80)
+
+        The vehicle's steering system uses PID control to stay on the
+        planned path. High PID values indicate large deviations — the
+        vehicle is constantly over/under-correcting, which suggests
+        unsafe, erratic driving (e.g. swerving through curves).
+
+        Multiplying by 8 maps the range [0–10] to [0–80] pts deduction.
+        This means pid_crash_value of 10 (worst case) loses 80 points,
+        leaving a minimum score of 20. A score of 0 would imply the
+        vehicle is completely broken, not just driving erratically.
+
     Wrong-way driving (fixed 30 pt deduction):
         This is a hard, binary event — the vehicle either drove the
         wrong way or it did not. A fixed 30-point deduction reflects
@@ -252,9 +267,14 @@ def score_safety(data: TripData) -> float:
         the worst-case scenario. Anything above 120 s is capped at the
         maximum 20-point deduction by clamp().
 
-    The two deductions are intentionally kept separate so they can be
+    The three deductions are intentionally kept separate so they can be
     adjusted independently in the future.
     """
+    # Scale PID crash error to a max deduction of 80 pts over a [0–10] range.
+    # High PID values indicate erratic steering (swerving, constant correction),
+    # which is a safety concern on top of being inefficient.
+    deduction_pid   = clamp(8 * data.pid_crash_value, 0, 80)
+
     # Fixed penalty for wrong-way driving — binary event, no scaling needed.
     deduction_wrong = 30 if data.is_wrong_way else 0
 
@@ -263,39 +283,60 @@ def score_safety(data: TripData) -> float:
     # maps that onto the [0–20] deduction range.
     deduction_idle  = clamp((data.idle_time_sec / 120) * 20, 0, 20)
 
-    return clamp(100 - deduction_wrong - deduction_idle)
+    return clamp(100 - deduction_pid - deduction_wrong - deduction_idle)
 
 
 def score_maintenance(data: TripData) -> float:
     """
-    Estimates wear on the vehicle based on driving speed.
+    Estimates wear on the vehicle based on driving speed and steering control.
 
-    S_maintenance = clamp(100 - speed_value * 0.6)
+    Speed-based wear:
+        S_speed = clamp(100 - speed_value * 0.6)
 
-    The vehicle does not report speed in km/h but as an abstract
-    value on a 0–100 scale. The factor 0.6 was chosen to map this
-    range onto a meaningful score range:
+        The vehicle does not report speed in km/h but as an abstract
+        value on a 0–100 scale. The factor 0.6 was chosen to map this
+        range onto a meaningful score range:
 
-        speed  0  → 100 - (0   * 0.6) = 100 pts  (no wear)
-        speed 50  → 100 - (50  * 0.6) =  70 pts  (moderate wear)
-        speed 100 → 100 - (100 * 0.6) =  40 pts  (maximum wear)
+            speed  0  → 100 - (0   * 0.6) = 100 pts  (no wear)
+            speed 50  → 100 - (50  * 0.6) =  70 pts  (moderate wear)
+            speed 100 → 100 - (100 * 0.6) =  40 pts  (maximum wear)
 
-    The minimum score at full speed is intentionally set to 40 rather
-    than 0, because even at maximum speed the vehicle is not causing
-    catastrophic damage — it is simply wearing faster than optimal.
-    A score of 0 would imply the vehicle is broken, which is not the
-    case. The 0.6 factor directly encodes this design decision.
+        The minimum score at full speed is intentionally set to 40 rather
+        than 0, because even at maximum speed the vehicle is not causing
+        catastrophic damage — it is simply wearing faster than optimal.
+
+    PID-based wear:
+        S_pid = clamp((1 - pid_wear_value) * 100)
+
+        The PID correction intensity measures how much the steering system
+        must work to keep the vehicle on course. Low PID values (0) indicate
+        smooth, stable driving with minimal correction — good for wear.
+        High PID values (1) indicate constant steering adjustments, which
+        stresses the steering mechanism and causes premature wear.
+
+    Combined maintenance:
+        S_maintenance = 0.5 * S_speed + 0.5 * S_pid
+
+        Speed and PID wear are weighted equally (50/50) because both
+        directly contribute to mechanical degradation. A vehicle driving
+        fast AND constantly correcting steering is in the worst condition.
     """
-    # Multiply speed by 0.6 so that the full speed range [0–100] maps
-    # to a deduction range of [0–60], keeping the minimum score at 40.
-    return clamp(100 - data.speed_value * 0.6)
+    # Speed-based wear: higher speed = more engine/brake wear
+    speed_score = clamp(100 - data.speed_value * 0.6)
+
+    # PID-based wear: invert pid_wear_value so 0 (stable) → 100 pts,
+    # 1 (constant correction) → 0 pts
+    pid_score = clamp((1 - data.pid_wear_value) * 100)
+
+    # Combine: both factors matter equally for overall mechanical health
+    return 0.5 * speed_score + 0.5 * pid_score
 
 
 # ─────────────────────────────────────────────
 # Main formula
 # ─────────────────────────────────────────────
 
-def calculate_score(data: TripData, weights: Weights, car_id) -> dict:
+def calculate_score(data: TripData, weights: Weights, car_id=None) -> dict:
     """
     Combines all subscores into a single weighted total for one car.
 
@@ -310,13 +351,11 @@ def calculate_score(data: TripData, weights: Weights, car_id) -> dict:
     If the sum of weights is 0 (all weights set to 0), the total
     defaults to 0 to avoid division by zero.
 
-    car_id is passed straight through into the result so the caller
-    can tell which car a score belongs to. This matters once multiple
-    cars are scored (e.g. a fleet of 5) — without an identifier, the
-    results would be indistinguishable once collected into a list.
-    car_id is intentionally left untyped (no type hint) since it could
-    be an int, a string, or whatever identifier scheme the rest of the
-    system uses (e.g. "car_01" or 3).
+    car_id is optional (default None). If provided, it is included
+    in the returned dict so the caller can identify which car a score
+    belongs to. If not provided, the result dict will not have a
+    car_id field. This allows flexible usage: score a single car
+    without needing to track an ID, or score multiple cars with IDs.
 
     Returns a flat dict so the caller can access any value directly
     with result["total"] or result["safety"] without extra nesting.
@@ -326,12 +365,12 @@ def calculate_score(data: TripData, weights: Weights, car_id) -> dict:
     ----------
     data    : TripData   — trip measurements (from config.py)
     weights : Weights    — category weights (from config.py)
-    car_id  : any        — identifier for the car this score belongs to
+    car_id  : any        — (optional, default None) identifier for the car
 
     Returns
     -------
-    Flat dict with keys in order:
-        car_id, environment, economic, social, energy, safety, maintenance, total
+    Flat dict with keys:
+        [car_id (if provided)], environment, economic, social, energy, safety, maintenance, total
     """
     environment = score_environment(data)
     economic    = score_economic(data)
@@ -357,8 +396,7 @@ def calculate_score(data: TripData, weights: Weights, car_id) -> dict:
     else:
         total = sum(w * s for w, s in zip(weight_list, score_list)) / total_weight
 
-    return {
-        "car_id":      car_id,
+    result = {
         "environment": round(environment, 2),
         "economic":    round(economic, 2),
         "social":      round(social, 2),
@@ -367,3 +405,376 @@ def calculate_score(data: TripData, weights: Weights, car_id) -> dict:
         "maintenance": round(maintenance, 2),
         "total":       round(total, 2),
     }
+
+    # Only include car_id in the result if it was provided
+    if car_id is not None:
+        result = {"car_id": car_id, **result}
+
+    return result
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# MQTT Integration — Vehicle Telemetry Collection
+# ═════════════════════════════════════════════════════════════════════════════
+"""
+MQTT handler that collects vehicle telemetry data and triggers score
+calculations when a trip completes.
+
+Subscribes to topics like:
+  car/{vehicle_name}/data/battery
+  car/{vehicle_name}/data/speed
+  car/{vehicle_name}/data/LastRFID
+  etc.
+"""
+
+try:
+    import paho.mqtt.client as mqtt
+    MQTT_AVAILABLE = True
+except ImportError:
+    MQTT_AVAILABLE = False
+    print("⚠️  paho-mqtt not installed. MQTT features disabled.")
+
+from dataclasses import dataclass
+
+
+# ─────────────────────────────────────────────
+# MQTT Configuration
+# ─────────────────────────────────────────────
+
+MQTT_BROKER = "localhost"       # Replace with your MQTT broker address
+MQTT_PORT   = 1883              # Standard MQTT port
+MQTT_QOS    = 1                 # Quality of Service
+
+# Topics to subscribe to
+MQTT_TOPICS = [
+    "car/+/data/LastRFID",
+    "car/+/data/battery",
+    "car/+/data/charging",
+    "car/+/data/speed",
+    "car/+/data/lost",
+    "car/+/data/pid",
+]
+
+
+# ─────────────────────────────────────────────
+# Vehicle State Tracking
+# ─────────────────────────────────────────────
+
+@dataclass
+class VehicleState:
+    """
+    Tracks real-time telemetry for one vehicle.
+
+    Accumulates MQTT messages until a complete trip is available,
+    then triggers score calculation.
+    """
+    car_id: str
+
+    # Trip boundaries — set by RFID tags or delivery markers
+    trip_start_rfid:     str = None
+    trip_end_rfid:       str = None
+
+    # Energy tracking
+    soc_start_pct:       float = None
+    soc_end_pct:         float = None
+
+    # Distance & cost
+    distance_km:         float = 0.0
+    cost_per_km:         float = 0.0
+    revenue_per_package: float = 0.0
+
+    # Emissions & wear (estimated)
+    co2_emission_g_per_km: float = 80.0
+    wear_factor:         float = 0.3
+
+    # Budget
+    budget_used_pct:     float = 0.0
+
+    # Real-time telemetry
+    current_speed:       float = 0.0
+    is_charging:         bool = False
+    is_lost:             bool = False
+
+    # PID metrics for scoring
+    pid_crash_value:     float = 0.0   # Steering deviation [0–10]
+    pid_wear_value:      float = 0.0   # Steering correction intensity [0–1]
+
+    # Trip flags
+    is_rush_hour:        bool = False
+    is_wrong_way:        bool = False
+    idle_time_sec:       float = 0.0
+
+
+# Store state for all vehicles
+vehicle_states = {}
+
+
+# ─────────────────────────────────────────────
+# MQTT Callbacks
+# ─────────────────────────────────────────────
+
+def mqtt_on_connect(client, userdata, flags, reason_code, properties):
+    """Called when MQTT client connects to broker."""
+    if reason_code == 0:
+        print("✅ Connected to MQTT broker")
+        for topic in MQTT_TOPICS:
+            client.subscribe(topic, MQTT_QOS)
+            print(f"   Subscribed: {topic}")
+    else:
+        print(f"❌ Connection failed: reason_code {reason_code}")
+
+
+def mqtt_on_message(client, userdata, msg):
+    """
+    Called when a message arrives on a subscribed topic.
+    Parses topic to extract vehicle name and data type, then routes to handler.
+    """
+    topic = msg.topic
+    payload = msg.payload.decode("utf-8").strip()
+
+    # Parse topic: car/{vehicle_name}/data/{metric}
+    parts = topic.split('/')
+    if len(parts) < 4:
+        print(f"⚠️  Invalid topic format: {topic}")
+        return
+
+    vehicle_name = parts[1]
+    data_type    = parts[3]
+
+    # Ensure vehicle state exists
+    if vehicle_name not in vehicle_states:
+        vehicle_states[vehicle_name] = VehicleState(car_id=vehicle_name)
+
+    # Route to handler
+    try:
+        if data_type == "LastRFID":
+            mqtt_handle_rfid_tag(vehicle_name, payload)
+        elif data_type == "battery":
+            mqtt_handle_battery_soc(vehicle_name, payload)
+        elif data_type == "charging":
+            mqtt_handle_charging_state(vehicle_name, payload)
+        elif data_type == "speed":
+            mqtt_handle_speed(vehicle_name, payload)
+        elif data_type == "lost":
+            mqtt_handle_lost_signal(vehicle_name, payload)
+        elif data_type == "pid":
+            mqtt_handle_pid_error(vehicle_name, payload)
+    except Exception as e:
+        print(f"❌ Error processing {data_type} for {vehicle_name}: {e}")
+
+
+# ─────────────────────────────────────────────
+# Message Handlers
+# ─────────────────────────────────────────────
+
+def mqtt_handle_rfid_tag(vehicle_name: str, rfid_uid: str):
+    """
+    Track RFID tags to mark trip start/end.
+    First scan = pickup, second scan = delivery.
+    When both are set, attempt score calculation.
+    """
+    state = vehicle_states[vehicle_name]
+
+    if state.trip_start_rfid is None:
+        state.trip_start_rfid = rfid_uid
+        print(f"📍 [{vehicle_name}] Trip started at RFID {rfid_uid}")
+    else:
+        state.trip_end_rfid = rfid_uid
+        print(f"📍 [{vehicle_name}] Trip ended at RFID {rfid_uid}")
+        mqtt_attempt_score_calculation(vehicle_name)
+
+
+def mqtt_handle_battery_soc(vehicle_name: str, payload: str):
+    """
+    Track State of Charge (battery level).
+    First non-100% reading marks trip start.
+    Always update current ending SoC.
+    """
+    try:
+        soc = float(payload)
+    except ValueError:
+        print(f"⚠️  Invalid battery value: {payload}")
+        return
+
+    state = vehicle_states[vehicle_name]
+
+    if state.soc_start_pct is None and soc < 100:
+        state.soc_start_pct = soc
+        print(f"🔋 [{vehicle_name}] Trip start SoC: {soc}%")
+
+    state.soc_end_pct = soc
+    print(f"🔋 [{vehicle_name}] Current SoC: {soc}%")
+
+
+def mqtt_handle_charging_state(vehicle_name: str, payload: str):
+    """Track whether the vehicle is plugged in."""
+    is_charging = payload.lower() in ("true", "1", "yes", "on")
+    state = vehicle_states[vehicle_name]
+
+    if is_charging != state.is_charging:
+        state.is_charging = is_charging
+        status = "🔌 charging" if is_charging else "🚗 driving"
+        print(f"   [{vehicle_name}] {status}")
+
+
+def mqtt_handle_speed(vehicle_name: str, payload: str):
+    """Track abstract speed [0–100] from vehicle."""
+    try:
+        speed = float(payload)
+    except ValueError:
+        print(f"⚠️  Invalid speed value: {payload}")
+        return
+
+    state = vehicle_states[vehicle_name]
+    state.current_speed = speed
+
+
+def mqtt_handle_lost_signal(vehicle_name: str, payload: str):
+    """Track lost signal flag (communication or GPS issue)."""
+    is_lost = payload.lower() in ("true", "1", "yes", "on")
+    state = vehicle_states[vehicle_name]
+
+    if is_lost != state.is_lost:
+        state.is_lost = is_lost
+        icon = "⚠️ " if is_lost else "✅"
+        status = "signal lost" if is_lost else "signal restored"
+        print(f"{icon} [{vehicle_name}] {status}")
+
+
+def mqtt_handle_pid_error(vehicle_name: str, payload: str):
+    """
+    Track PID error and map to scoring metrics.
+
+    The incoming MQTT PID value represents steering control quality.
+    We use it for both:
+      - pid_crash_value [0–10]: steering deviation during cornering
+      - pid_wear_value [0–1]:  steering correction intensity
+
+    This maps a single MQTT value to both metrics. If your system sends
+    separate values, customize this function to handle them independently.
+    """
+    try:
+        pid_raw = float(payload)
+    except ValueError:
+        print(f"⚠️  Invalid PID value: {payload}")
+        return
+
+    state = vehicle_states[vehicle_name]
+
+    # Map raw PID to [0–10] for crash scoring
+    # Assume raw PID is also [0–10] or needs scaling
+    state.pid_crash_value = clamp(pid_raw, 0, 10)
+
+    # Map raw PID to [0–1] for wear scoring
+    # Scale from [0–10] to [0–1] by dividing by 10
+    state.pid_wear_value = clamp(pid_raw / 10, 0, 1)
+
+
+# ─────────────────────────────────────────────
+# Score Calculation
+# ─────────────────────────────────────────────
+
+def mqtt_attempt_score_calculation(vehicle_name: str):
+    """
+    Try to calculate a score when a trip completes.
+
+    Requires:
+      - soc_start_pct and soc_end_pct (battery readings)
+      - At least one RFID scan (trip marker)
+      - Config data (cost, revenue, weights)
+    """
+    state = vehicle_states[vehicle_name]
+
+    # Check for missing data
+    missing = []
+    if state.soc_start_pct is None:
+        missing.append("soc_start_pct")
+    if state.soc_end_pct is None:
+        missing.append("soc_end_pct")
+    if state.trip_start_rfid is None:
+        missing.append("trip_start_rfid")
+
+    if missing:
+        print(f"⏳ [{vehicle_name}] Waiting for: {', '.join(missing)}")
+        return
+
+    print(f"\n{'='*50}")
+    print(f"📊 Calculating score for {vehicle_name}...")
+    print(f"{'='*50}")
+
+    # Build TripData from vehicle state
+    try:
+        trip = TripData(
+            co2_emission_g_per_km   = state.co2_emission_g_per_km,
+            wear_factor             = state.wear_factor,
+            distance_km             = state.distance_km,
+            cost_per_km             = state.cost_per_km,
+            revenue_per_package     = state.revenue_per_package,
+            budget_used_pct         = state.budget_used_pct,
+            is_rush_hour            = state.is_rush_hour,
+            soc_start_pct           = state.soc_start_pct,
+            soc_end_pct             = state.soc_end_pct,
+            pid_crash_value         = state.pid_crash_value,
+            is_wrong_way            = state.is_wrong_way,
+            idle_time_sec           = state.idle_time_sec,
+            speed_value             = state.current_speed,
+            pid_wear_value          = state.pid_wear_value,
+        )
+    except Exception as e:
+        print(f"❌ Failed to construct TripData: {e}")
+        return
+
+    # Import weights from config
+    try:
+        from config import WEIGHTS
+    except ImportError:
+        print("❌ Could not import WEIGHTS from config.py")
+        return
+
+    # Calculate score
+    result = calculate_score(trip, WEIGHTS, vehicle_name)
+
+    # Display results
+    print(f"Total score:    {result['total']} / 100")
+    print(f"  Environment:  {result['environment']}")
+    print(f"  Economic:     {result['economic']}")
+    print(f"  Social:       {result['social']}")
+    print(f"  Energy:       {result['energy']}")
+    print(f"  Safety:       {result['safety']}")
+    print(f"  Maintenance:  {result['maintenance']}")
+    print(f"{'='*50}\n")
+
+    # Reset trip state for next trip
+    state.trip_start_rfid = None
+    state.trip_end_rfid   = None
+    state.soc_start_pct   = None
+    state.soc_end_pct     = None
+
+
+# ─────────────────────────────────────────────
+# MQTT Client Initialization
+# ─────────────────────────────────────────────
+
+def start_mqtt_client():
+    """
+    Create and connect the MQTT client.
+    Runs indefinitely, listening for vehicle telemetry.
+
+    Usage:
+        from score_calculator import start_mqtt_client
+        start_mqtt_client()  # Blocks forever
+    """
+    if not MQTT_AVAILABLE:
+        print("❌ paho-mqtt is not installed. Cannot start MQTT client.")
+        print("   Install with: pip install paho-mqtt")
+        return
+
+    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+    client.on_connect = mqtt_on_connect
+    client.on_message = mqtt_on_message
+
+    print(f"Connecting to MQTT broker: {MQTT_BROKER}:{MQTT_PORT}")
+    client.connect(MQTT_BROKER, MQTT_PORT, keepalive=60)
+
+    print("Listening for vehicle telemetry...\n")
+    client.loop_forever()

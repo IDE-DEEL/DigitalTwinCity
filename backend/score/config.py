@@ -1,4 +1,3 @@
-
 """
 config.py — Input values & weights
 =====================================
@@ -6,7 +5,7 @@ Fill in all variables here for the score calculation.
 Then import in your own script:
 
     from config import TRIP, WEIGHTS
-    from score_calculator import calculate_score
+    from scoreCalculator import calculate_score
 
     result = calculate_score(TRIP, WEIGHTS)
     print(result["total"])
@@ -53,6 +52,9 @@ TRIP = TripData(
                                      #         | e.g. 60 = battery 60% full after trip
 
     # ── Safety ───────────────────────────────
+    pid_crash_value         = 0.0,   # float  | PID deviation for cornering [0.0–10.0]
+                                     #         | 0 = perfect steering, 10 = completely off track
+
     is_wrong_way            = False,   # bool   | Wrong-way driving detected? True or False
 
     idle_time_sec           = 2.0,   # float  | Unnecessary idle time in seconds
@@ -61,6 +63,9 @@ TRIP = TripData(
     # ── Maintenance ──────────────────────────
     speed_value             = 30.0,   # float  | Abstract speed value from vehicle [0–100]
                                      #         | 0 = slowest, 100 = fastest; higher = more wear
+
+    pid_wear_value          = 0.0,   # float  | PID correction intensity [0.0–1.0]
+                                     #         | 0.0 = stable steering, 1.0 = heavy correction
 )
 
 
