@@ -56,7 +56,6 @@ class TripData:
     soc_end_pct:             float   # State of Charge at end of trip [0–100]
 
     # ── Safety ───────────────────────────────────────────────────────
-    pid_crash_value:         float   # PID deviation related to cornering [0–10]
     is_wrong_way:            bool    # Wrong-way driving detected? (True/False)
     idle_time_sec:           float   # Unnecessary idle time in seconds
 
@@ -238,19 +237,6 @@ def score_safety(data: TripData) -> float:
     Starts at a perfect 100 and applies deductions for detected
     safety violations.
 
-    PID crash error (up to 80 pt deduction):
-        deduction_pid = clamp(8 * pid_crash_value, 0, 80)
-
-        The vehicle's steering system uses PID control to stay on the
-        planned path. High PID values indicate large deviations — the
-        vehicle is constantly over/under-correcting, which suggests
-        unsafe, erratic driving (e.g. swerving through curves).
-
-        Multiplying by 8 maps the range [0–10] to [0–80] pts deduction.
-        This means pid_crash_value of 10 (worst case) loses 80 points,
-        leaving a minimum score of 20. A score of 0 would imply the
-        vehicle is completely broken, not just driving erratically.
-
     Wrong-way driving (fixed 30 pt deduction):
         This is a hard, binary event — the vehicle either drove the
         wrong way or it did not. A fixed 30-point deduction reflects
@@ -267,14 +253,9 @@ def score_safety(data: TripData) -> float:
         the worst-case scenario. Anything above 120 s is capped at the
         maximum 20-point deduction by clamp().
 
-    The three deductions are intentionally kept separate so they can be
+    The two deductions are intentionally kept separate so they can be
     adjusted independently in the future.
     """
-    # Scale PID crash error to a max deduction of 80 pts over a [0–10] range.
-    # High PID values indicate erratic steering (swerving, constant correction),
-    # which is a safety concern on top of being inefficient.
-    deduction_pid   = clamp(8 * data.pid_crash_value, 0, 80)
-
     # Fixed penalty for wrong-way driving — binary event, no scaling needed.
     deduction_wrong = 30 if data.is_wrong_way else 0
 
@@ -283,7 +264,7 @@ def score_safety(data: TripData) -> float:
     # maps that onto the [0–20] deduction range.
     deduction_idle  = clamp((data.idle_time_sec / 120) * 20, 0, 20)
 
-    return clamp(100 - deduction_pid - deduction_wrong - deduction_idle)
+    return clamp(100 - deduction_wrong - deduction_idle)
 
 
 def score_maintenance(data: TripData) -> float:
@@ -496,7 +477,6 @@ class VehicleState:
     is_lost:             bool = False
 
     # PID metrics for scoring
-    pid_crash_value:     float = 0.0   # Steering deviation [0–10]
     pid_wear_value:      float = 0.0   # Steering correction intensity [0–1]
 
     # Trip flags
@@ -646,12 +626,11 @@ def mqtt_handle_pid_error(vehicle_name: str, payload: str):
     Track PID error and map to scoring metrics.
 
     The incoming MQTT PID value represents steering control quality.
-    We use it for both:
-      - pid_crash_value [0–10]: steering deviation during cornering
-      - pid_wear_value [0–1]:  steering correction intensity
+    We use it for:
+      - pid_wear_value [0–1]: steering correction intensity
 
-    This maps a single MQTT value to both metrics. If your system sends
-    separate values, customize this function to handle them independently.
+    This maps the raw MQTT value (assumed [0–10]) to [0–1] by dividing
+    by 10.
     """
     try:
         pid_raw = float(payload)
@@ -660,10 +639,6 @@ def mqtt_handle_pid_error(vehicle_name: str, payload: str):
         return
 
     state = vehicle_states[vehicle_name]
-
-    # Map raw PID to [0–10] for crash scoring
-    # Assume raw PID is also [0–10] or needs scaling
-    state.pid_crash_value = clamp(pid_raw, 0, 10)
 
     # Map raw PID to [0–1] for wear scoring
     # Scale from [0–10] to [0–1] by dividing by 10
@@ -714,7 +689,6 @@ def mqtt_attempt_score_calculation(vehicle_name: str):
             is_rush_hour            = state.is_rush_hour,
             soc_start_pct           = state.soc_start_pct,
             soc_end_pct             = state.soc_end_pct,
-            pid_crash_value         = state.pid_crash_value,
             is_wrong_way            = state.is_wrong_way,
             idle_time_sec           = state.idle_time_sec,
             speed_value             = state.current_speed,
