@@ -62,18 +62,19 @@ const showModal = ref(false)
 
     <div class="simulation-container">
       <div class="state">
+          <!-- De score-area kan hieronder blijven staan, of ook in het slot -->
+          <div class="score-area">
+              <slot name="statistics-button">
+                  <BaseButton variant="statistics" class="statistics-button" @click="showModal = true"> 
+                    {{ langStore.getLabel('generalStats.title') }} 
+                </BaseButton>
+            </slot>
+        </div>
+        
         <!-- Flexibel slot waar de parent de timer in kan schieten -->
         <slot name="simulation-controls">
           <!-- Dit is de fallback-content voor als er niks wordt meegegeven -->
         </slot>
-
-        <!-- De score-area kan hieronder blijven staan, of ook in het slot -->
-        <div class="score-area">
-          <BaseButton variant="statistics" class="statistics-button" @click="showModal = true"> 
-            {{ langStore.getLabel('generalStats.title') }} 
-          </BaseButton>
-          <p>{{ langStore.getLabel('generalStats.Score') }}: {{ props.score.toFixed(1) }}</p>
-        </div>
         
         <StatisticsModal :is-open="showModal" @close="showModal = false" :title="langStore.getLabel('statsModal.twinTitle')">
           <template #concerns-statistics>
