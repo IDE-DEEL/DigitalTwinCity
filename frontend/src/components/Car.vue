@@ -187,7 +187,7 @@ const getNormalizedHeading = (currentHeading, carId) => {
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 7.5px;
+  font-size: 8px;
   font-weight: bold;
   text-shadow: 
     -0.75px -0.75px 0 black,
