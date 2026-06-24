@@ -89,11 +89,15 @@ class SimulationService:
         """Stop the current simulation."""
         self.is_running = False
 
-        return {
-            "status": "simulation_stopped", 
-            **self.model.get_simulation_state(),
-            **self.get_current_statistics(),
+        result = {
+            "status": "simulation_stopped",
         }
+
+        if self.model is not None:
+            result.update(self.model.get_simulation_state())
+            result.update(self.get_current_statistics())
+
+        return result
 
     def retrieve_final_step_results(self):
         """Retrieve the final results of the simulation after it has stopped."""     
