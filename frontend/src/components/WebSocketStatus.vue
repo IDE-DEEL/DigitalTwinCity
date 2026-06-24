@@ -19,23 +19,29 @@ defineEmits(['reconnect']);
 </script>
 
 <template>
-  <div v-if="!isConnected" class="websocket-status-container">
-    <div class="websocket-status-indicator"></div>
-    <span class="websocket-status-text">
-        {{ langStore.getLabel('websocket.notConnected') }}
-    </span>
-    <BaseButton 
-      variant="websocket"
-      @click="$emit('reconnect')"
-      :disabled="reconnectCooldown"
-    >
-        {{ langStore.getLabel('websocket.refresh') }}
-    </BaseButton>
-  </div>
+    <div class="websocket-status-container">
+        <div v-if="!isConnected" class="websocket-status-content">
+            <div class="websocket-status-indicator"></div>
+            <span class="websocket-status-text">
+                {{ langStore.getLabel('websocket.notConnected') }}
+            </span>
+            <BaseButton 
+                variant="websocket"
+                @click="$emit('reconnect')"
+                :disabled="reconnectCooldown"
+            >
+                {{ langStore.getLabel('websocket.refresh') }}
+            </BaseButton>
+        </div>
+    </div>
 </template>
 
 <style scoped>
 .websocket-status-container {
+    padding-bottom: var(--parameter-padding);
+}
+
+.websocket-status-content {
     display: flex;
     align-items: center;
     gap: 0.5rem;
