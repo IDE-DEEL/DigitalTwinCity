@@ -75,7 +75,7 @@ route = {
     "route_1": [["5A:A5:97:E3:0A:41:89",Direction["LEFT"]], ["5A:95:B3:DE:0A:41:89",Direction["STRAIGHT"]], ["5A:95:B3:DE:0A:41:89", "load", 3], ["5A:25:6B:E0:0A:41:89",Direction["RIGHT"]],
                 ["5A:A5:C9:E1:0A:41:89",Direction["STRAIGHT"]], ["5A:B5:6B:DD:0A:41:89",Direction["ROUNDABOUT"]],  ["5A:F5:D5:DB:0A:41:89", Direction["RIGHT_ROUND"]],
                 ["5A:65:C3:DA:0A:41:89", Direction["STRAIGHT"]]],
-        "route_2": [
+    "route_2": [
             ["04:A2:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:8E:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:89:41:6D:BC:2A:81", Direction["STRAIGHT"]],
             ["04:A1:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:3F:78:16:23:00:01", Direction["STRAIGHT"]], ["53:40:78:16:23:00:01", Direction["STRAIGHT"]],
             ["53:45:78:16:23:00:01", Direction["STRAIGHT"]], ["53:3E:78:16:23:00:01", Direction["STRAIGHT"]], ["04:6F:41:6D:BC:2A:81", Direction["LEFT"]], 
@@ -109,6 +109,7 @@ route = {
             ["53:23:75:16:23:00:01", Direction["STRAIGHT"]], ["53:24:75:16:23:00:01", Direction["STRAIGHT"]], ["04:D3:41:6D:BC:2A:81", Direction["STRAIGHT"]], 
             ["04:12:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:11:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:53:41:6D:BC:2A:81", Direction["STRAIGHT"]]]
 }
+
 
 
 # Reset route index per car
@@ -172,10 +173,12 @@ def load_packages(client, car_id, packages, ms_per_package, package_action):
     client.publish(f"car/{car_id}/cmd/Screen", action)
     threading.Thread(target=resume_after_wait, args=(client, car_id, total_time), daemon=True).start()
 
+
 # Start
 def drive_command(car_id, start_or_stop):
     print("test function, if you see this that means you aren't useless")
-    client.publish(f"car/{car_id}/cmd/Start", f"{start_or_stop}")
+    start_mqtt_client()
+    _client.publish(f"car/{car_id}/cmd/Start", f"{start_or_stop}")
 
 
 # ---------------- CALLBACKS ----------------
