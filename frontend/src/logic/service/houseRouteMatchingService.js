@@ -1,7 +1,5 @@
 import { ROUTES_TILES } from "../domain/routes";
 import { buildLaneSequenceFromTilePath } from "./routeBuilder";
-import { useMapStore } from "../../stores/mapStore";
-import { normalizeDegree } from "../utils/rotation";
 
 /**
  * Determines which routes pass through the tile where a house is located.
@@ -14,11 +12,9 @@ import { normalizeDegree } from "../utils/rotation";
 export function findRoutesForHouse(house) {
     const matchingRoutes = [];
 
-    const rotatedSupportedLanes = getRotatedSupportedLanes(house);
-
     for (const [routeName, route] of Object.entries(ROUTES_TILES)) {
         if (routeName === "inactive") {
-            continue; // Skip inactiv routes (e.g., 'inactive' route)
+            continue; // Skip inactive routes (e.g., 'inactive' route)
         }
 
         const laneSequence = buildLaneSequenceFromTilePath(route.tiles);
@@ -30,7 +26,7 @@ export function findRoutesForHouse(house) {
                 
             if (!sameTile) return false;
 
-            return rotatedSupportedLanes.some(supported =>
+            return house.supportedLanes.some(supported =>
                 supported.from === lane.from &&
                 supported.to === lane.to
             );
@@ -69,8 +65,7 @@ export function findHousesForRoute(routeName, allHouses) {
             const onSameTile = house.tileX === lane.tileX && house.tileY === lane.tileY;
             if (!onSameTile) return false;
 
-            const rotatedSupportedLanes = getRotatedSupportedLanes(house);
-            return rotatedSupportedLanes.some(supported =>
+            return house.supportedLanes.some(supported =>
                 supported.from === lane.from &&
                 supported.to === lane.to
             );
@@ -85,36 +80,4 @@ export function findHousesForRoute(routeName, allHouses) {
     }
 
     return housesOnRoute;
-}
-
-/**
- * Rotates the supported lanes of a house based on the rotation of its tile.
- * 
- * @param {Object} house - A house object with tileX and tileY properties.
- * @returns {Array<Object>} An array of rotated lane objects.
- */
-function getRotatedSupportedLanes(house) {
-    if (!house.supportedLanes) {
-        throw new Error(
-            `House ${house.houseInstanceId} missing supportedLanes`
-        );
-    }
-
-    const mapStore = useMapStore();
-
-    const tile = mapStore.mapData.find(t => t.x === house.tileX && t.y === house.tileY);
-    normalizeDegree(tile.rotation || 0);
-
-    return house.supportedLanes;
-
-    // TODO:
-    // find out why this return works but:
-    // using house.supportedLanes in main function doesn't and
-    // this also doesnt work:
-    /**
-     * return house.supportedLanes.map(lane => ({
-        from: rotateCardinalDirection(lane.from, rotation),
-        to: rotateCardinalDirection(lane.to, rotation),
-    }));
-     */
 }
