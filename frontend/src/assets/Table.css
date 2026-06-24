@@ -1,4 +1,8 @@
 .table-container {
+    padding-bottom: var(--parameter-padding);
+}
+
+.table-content {
     --container-radius: 10px;
     width: 100%;
     border-collapse: separate;

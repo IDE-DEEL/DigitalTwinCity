@@ -70,9 +70,9 @@ const getStateOfCharge = (carId) => {
 </script>
 
 <template>
-  <div>
+  <div class="table-container">
     <label class="block text-sm font-semibold mb-1">{{ props.name }}</label>
-      <table class="table-container">
+      <table class="table-content">
         <thead>
           <tr class="title-row">
             <th v-for="(header, index) in props.headers" :key="index">

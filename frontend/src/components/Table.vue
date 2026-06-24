@@ -28,9 +28,9 @@ function send_route(car) {
 </script>
 
 <template>
-  <div>
+  <div class="table-container">
     <label class="block text-sm font-semibold mb-1">Auto's:</label>
-      <table class="table-container">
+      <table class="table-content">
         <thead>
           <tr class="title-row">
             <th>{{ langStore.getLabel('carTable.status') }}</th>
