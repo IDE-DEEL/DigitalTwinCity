@@ -19,6 +19,7 @@ const carState = reactive({
 onMounted(() => {
   store.connect();
   store.fetchTagPositions()
+  store.fetchDepotRoutes()
   store.fetchRoutes()
 })
 
@@ -38,6 +39,32 @@ function get_route_tags(route_name) {
   return tags
 }
 
+function get_suffix_depot_route_tags(car_id) {
+  let tags = []
+  
+  for (let i = 0; i < store.car_depot_routes.length; i++) {
+    if (car_id === store.car_depot_routes[i].auto_id) {
+      tags = store.car_depot_routes[i].tags_suffix
+      break
+    }
+  }
+
+  return tags
+}
+
+function get_prefix_depot_route_tags(car_id) {
+  let tags = []
+  
+  for (let i = 0; i < store.car_depot_routes.length; i++) {
+    if (car_id === store.car_depot_routes[i].auto_id) {
+      tags = store.car_depot_routes[i].tags_prefix
+      break
+    }
+  }
+
+  return tags
+}
+
 const tagMap = computed(() => {
   const map = {}
   for (const t of store.tag_positions) {
@@ -49,9 +76,13 @@ const tagMap = computed(() => {
   return map
 })
 
-function getRouteTags(routeName) {
-  const route = store.routes.find(r => r.route === routeName)
-  return route ? route.tags : []
+function getRouteTags(car_id, route_name) {
+  let route_tags = get_route_tags(route_name)
+  let depot_prefix_tags = get_prefix_depot_route_tags(car_id)
+  let depot_suffix_tags = get_suffix_depot_route_tags(car_id)
+  let tags = [...depot_suffix_tags, ...route_tags, ...depot_prefix_tags]
+  
+  return tags
 }
 
 const tagPosMap = Object.fromEntries(
@@ -79,7 +110,7 @@ for (const car of store.table_data) {
       packages: car.pakketje,
       routeIndex: 0,
       initialized: false,
-      rotation: 0,
+      rotation: 90,
       lastTagId: null,
       targetTagId: null,
       arrived: false
@@ -105,7 +136,8 @@ function moveCars() {
     const state = carState.positions[car.auto_id]
     if (!state) continue
 
-    const tags = getRouteTags(car.route)
+    const tags = getRouteTags(car.auto_id, car.route)
+    console.log(tags)
     if (!tags.length) continue
 
     const carInfo = store.car_data.find(
@@ -259,8 +291,11 @@ function getRotation(car) {
 }
 
 /* Code to generate route lines */
-const generatePath = ((route_name) => {
-  let tags = get_route_tags(route_name)
+const generatePath = ((car_id, route_name) => {
+  let route_tags = get_route_tags(route_name)
+  let depot_prefix_tags = get_prefix_depot_route_tags(car_id)
+  let depot_suffix_tags = get_suffix_depot_route_tags(car_id)
+  let tags = [...depot_suffix_tags, ...route_tags, ...depot_prefix_tags]
   let positions = []
 
    // Collect and scale all tag positions
@@ -417,7 +452,7 @@ const getPackages = ((id) => {
         width=${MAP_DIMENSION} height=${MAP_DIMENSION}
         v-for="car in store.table_data.filter(c => (c.visueel && c.status))">
             <path
-                :d="generatePath(car.route)"
+                :d="generatePath(car.auto_id, car.route)"
                 fill="none"
                 :stroke="car.color"
                 stroke-width="2" />

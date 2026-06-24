@@ -12,13 +12,14 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
     ],
 
     car_data: [
-        {"auto_id": "auto_A", "tag_id": "53:D1:7A:16:23:00:01"},
-        {"auto_id": "auto_B", "tag_id": "5A:85:D6:DB:0A:41:89"},
-        {"auto_id": "auto_C", "tag_id": "04:A1:41:6D:BC:2A:81"},
-        {"auto_id": "auto_D", "tag_id": "53:6E:75:16:23:00:01"},
-        {"auto_id": "auto_E", "tag_id": "53:A3:7A:16:23:00:01"}
+        {"auto_id": "auto_A", "tag_id": "04:CA:41:6D:BC:2A:81"},
+        {"auto_id": "auto_B", "tag_id": "04:CB:41:6D:BC:2A:81"},
+        {"auto_id": "auto_C", "tag_id": "04:CC:41:6D:BC:2A:81"},
+        {"auto_id": "auto_D", "tag_id": "04:CD:41:6D:BC:2A:81"},
+        {"auto_id": "auto_E", "tag_id": "04:B5:71:6E:BC:2A:81"}
     ],
 
+    car_depot_routes: [],
     tag_positions: [],
     routes: [],
 
@@ -173,6 +174,15 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
         this.tag_positions = await response.json(); 
       } catch (error) {
         console.error('Kon de tag posities niet laden:', error);
+      }
+    },
+
+    async fetchDepotRoutes() {
+      try {
+        const response = await fetch('/data/depot-routes.json');
+        this.car_depot_routes = await response.json(); 
+      } catch (error) {
+        console.error('Kon de depot routes niet laden:', error);
       }
     },
 
