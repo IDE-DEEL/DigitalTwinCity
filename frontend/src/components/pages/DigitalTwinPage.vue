@@ -77,6 +77,7 @@ const tagMap = computed(() => {
 })
 
 function getRouteTags(car_id, route_name) {
+  if (route_name === 'inactive') return []
   let route_tags = get_route_tags(route_name)
   let depot_prefix_tags = get_prefix_depot_route_tags(car_id)
   let depot_suffix_tags = get_suffix_depot_route_tags(car_id)
@@ -292,6 +293,7 @@ function getRotation(car) {
 
 /* Code to generate route lines */
 const generatePath = ((car_id, route_name) => {
+  if (route_name === 'inactive') return ''
   let route_tags = get_route_tags(route_name)
   let depot_prefix_tags = get_prefix_depot_route_tags(car_id)
   let depot_suffix_tags = get_suffix_depot_route_tags(car_id)

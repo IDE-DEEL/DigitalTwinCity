@@ -234,6 +234,12 @@ def on_message(client, userdata, msg):
 
     # ----- DECISION LOGIC -----
     if state.start:
+        is_inactive_route = state.chosen_route[topic[1]] == "inactive" or state.chosen_route[topic[1]] not in route
+        
+        if is_inactive_route:
+            client.publish(f"car/{topic[1]}/cmd/Start", "False")
+            return
+
         # Ensure vehicle is moving.
         client.publish(f"car/{topic[1]}/cmd/Start", "True")
 
@@ -250,31 +256,33 @@ def on_message(client, userdata, msg):
         if len(car_stopped) != 0:
             for i in car_stopped:
                 if cars[i[1]] != i[2]:
-                    client.publish(f"car/{i[0]}/cmd/Start", "True")
+                    if state.chosen_route[i[0]] != "inactive":
+                        client.publish(f"car/{i[0]}/cmd/Start", "True")
                     car_stopped.remove(i)
 
-        # Check whether the scanned RFID matches
-        # the current route waypoint
-        if rfid == route[state.chosen_route[topic[1]]][index[topic[1]]][0]:
+        if not is_inactive_route:
+            # Check whether the scanned RFID matches
+            # the current route waypoint
+            if rfid == route[state.chosen_route[topic[1]]][index[topic[1]]][0]:
 
-            # Checks if the there are packages and loads or unloads them
-            if route[state.chosen_route[topic[1]]][index[topic[1]]][1] == "load" or route[state.chosen_route[topic[1]]][index[topic[1]]][1] == "unload":
-                load_packages(client, topic[1], route[state.chosen_route[topic[1]]][index[topic[1]]][2], 500, route[state.chosen_route[topic[1]]][index[topic[1]]][1])
+                # Checks if the there are packages and loads or unloads them
+                if route[state.chosen_route[topic[1]]][index[topic[1]]][1] == "load" or route[state.chosen_route[topic[1]]][index[topic[1]]][1] == "unload":
+                    load_packages(client, topic[1], route[state.chosen_route[topic[1]]][index[topic[1]]][2], 500, route[state.chosen_route[topic[1]]][index[topic[1]]][1])
 
-            else:
-                # Stop vehicle before changing direction
-                client.publish(f"car/{topic[1]}/cmd/Start", "False")
-                # Send next direction command
-                client.publish(f"car/{topic[1]}/cmd/Direction", route[state.chosen_route[topic[1]]][index[topic[1]]][1])
-                # Resume movement
-                client.publish(f"car/{topic[1]}/cmd/Start", "True")
-                # Advance to next route step
-                index[topic[1]] += 1
+                else:
+                    # Stop vehicle before changing direction
+                    client.publish(f"car/{topic[1]}/cmd/Start", "False")
+                    # Send next direction command
+                    client.publish(f"car/{topic[1]}/cmd/Direction", route[state.chosen_route[topic[1]]][index[topic[1]]][1])
+                    # Resume movement
+                    client.publish(f"car/{topic[1]}/cmd/Start", "True")
+                    # Advance to next route step
+                    index[topic[1]] += 1
 
-                # Loop back to start when route completes.
-                if len(route[state.chosen_route[topic[1]]]) == index[topic[1]]:
-                    index[topic[1]] = 0
-                    calculate_score(TRIP, WEIGHTS, topic[1])
+                    # Loop back to start when route completes.
+                    if len(route[state.chosen_route[topic[1]]]) == index[topic[1]]:
+                        index[topic[1]] = 0
+                        calculate_score(TRIP, WEIGHTS, topic[1])
 
     elif not state.start:
         # Emergency stop / manual stop mode

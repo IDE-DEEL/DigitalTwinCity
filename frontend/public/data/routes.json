@@ -1,5 +1,9 @@
 [
     {
+        "route": "inactive",
+        "tags": []
+    },
+    {
         "route": "route_1",
         "tags": [
             "04:A2:41:6D:BC:2A:81",

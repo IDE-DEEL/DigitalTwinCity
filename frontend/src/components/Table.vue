@@ -66,7 +66,7 @@ function send_route(car) {
               <select class="route-select" 
                       v-model="car.route" 
                       @change="send_route(car)">
-                <option v-for="r in store.routes" :key="r.route" :value="r.route" @change="send_route(car)">{{ r.route }}</option>
+                <option v-for="r in store.routes" :key="r.route" :value="r.route" @change="send_route(car)">{{ langStore.getLabel(`simRoutes.${r.route}`) || r.route }}</option>
               </select>
             </td>
             <td><BaseButton @click="visualizing(car)" :is-active="car.visueel">{{ car.visueel ? langStore.getLabel('carTable.hideRoute') : langStore.getLabel('carTable.showRoute') }}</BaseButton></td>
