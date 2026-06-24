@@ -98,18 +98,7 @@ class MovementController:
 
     def _update_speed(self) -> None:
         """Move actual_speed towards target_speed."""
-        if self.target_speed > self.actual_speed:
-            # Accelerate
-            self.actual_speed = min(
-                self.actual_speed + self.acceleration * self.dt,
-                self.target_speed
-            )
-        else:
-            # Decelerate
-            self.actual_speed = max(
-                self.actual_speed - self.deceleration * self.dt,
-                self.target_speed
-            )
+        self.actual_speed = self.target_speed
 
         # Clamp to 0 if very small
         if abs(self.actual_speed) < 0.01:
