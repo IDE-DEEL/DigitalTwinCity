@@ -226,7 +226,7 @@ class SimulationService:
         # ── Averages ───────────────────────────
         avg_soc_start = sum(agent.initial_state_of_charge for agent in agents) / num_agents
         avg_soc_end = sum(agent.state_of_charge for agent in agents) / num_agents
-        avg_target_speed = sum(agent.target_speed for agent in agents) / num_agents
+        avg_target_speed = self.model.car_target_speed
 
         # ── Cost/revenue over de entire run ────
         total_budget = 500.0
