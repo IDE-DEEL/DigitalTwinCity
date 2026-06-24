@@ -15,6 +15,7 @@ class CarStatus(Enum):
     LOADING_PACKAGES = "loading_packages"
     DRIVING = "driving"
     DELIVERING = "delivering"
+    DEADLOCKED = "deadlocked"
 
 
 class CarAgent(mesa.Agent):
@@ -262,6 +263,8 @@ class CarAgent(mesa.Agent):
         """
         if self.is_picking_up:
             return CarStatus.LOADING_PACKAGES
+        elif self._check_for_deadlock():
+            return CarStatus.DEADLOCKED
         elif self.current_delivery_house is not None:
             return CarStatus.DELIVERING
         elif self.actual_speed > 0:
@@ -403,8 +406,19 @@ class CarAgent(mesa.Agent):
                 self.pickup_time_remaining = PACKAGE_PICKUP_TIME_IN_SECONDS
 
         # If we finish the route and picked up new packages or still have packages in cargo, reset for another trip
-        if self._movement_controller.finished and (packages_picked_up or self.packages_in_cargo):
+        if self._movement_controller.finished and packages_picked_up:
             self._reset_route()
+    
+    def _check_for_deadlock(self) -> bool:
+        """Check if the car is deadlocked.
+
+        Conditions:
+        1. A car completes its route without having delivered any packages from its cargo.
+
+        Returns:
+            bool: True if the car is deadlocked, False otherwise.
+        """
+        return len(self.packages_in_cargo) == self.max_packages and self.is_finished
 
     def _update_battery_usage(self) -> None:
         """Update the battery state-of-charge statistic based on distance travelled this step.

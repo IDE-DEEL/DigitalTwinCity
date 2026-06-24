@@ -50,9 +50,7 @@ export const useSimulationWebSocketStore = defineStore("simulationWebSocket", ()
                 isConnecting.value = false;
                 websocket = null;
 
-                toast.error(
-                    languageStore.getToastMessage("error.WS_CONNECTION_ERROR")
-                );
+                toast.error(languageStore.getToastMessage("error.WS_CONNECTION_ERROR"));
             };
 
             websocket.onmessage = (event) => {
@@ -76,6 +74,12 @@ export const useSimulationWebSocketStore = defineStore("simulationWebSocket", ()
                     case "simulation_ended":
                         onSimulationUpdate?.(result);
                         onSimulationEnded?.();
+                        break;
+                    
+                    case "simulation_deadlocked":
+                        onSimulationUpdate?.(result);
+                        onSimulationEnded?.();
+                        toast.info(languageStore.getToastMessage("info.SIMULATION_DEADLOCKED"));
                         break;
 
                     case "error":

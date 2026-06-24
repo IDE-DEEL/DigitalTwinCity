@@ -177,32 +177,39 @@ async def _run_simulation_loop(websocket: WebSocket, simulation_service: Simulat
             for _ in range(steps_multiplier):
                 step_result = simulation_service.execute_step()
                 
-                # Stop inner loop if simulation ended
+                # Stop inner loop if simulation ended (either completed or deadlocked)
+                if step_result.get("status") in ["simulation_completed", "simulation_deadlocked"]:
+                    break
                 if not simulation_service.is_running:
                     break
             
-            # Send update to client after all steps
-            try:
-                await websocket.send_json({
-                    "command": "simulation_update",
-                    "result": step_result
-                })
-            except Exception as e:
-                print(f"[digital_sim_api] Error sending simulation update: {e}")
-                break
+            # Send update to client
+            if step_result:
+                try:
+                    if step_result.get("status") == "simulation_deadlocked":
+                        await websocket.send_json({
+                            "command": "simulation_deadlocked",
+                            "reason": "Simulation entered a deadlock state",
+                            "result": step_result
+                        })
+                    elif step_result.get("status") == "simulation_completed":
+                        await websocket.send_json({
+                            "command": "simulation_ended",
+                            "reason": "All cars parked and all packages delivered",
+                            "result": step_result
+                        })
+                    else:
+                        await websocket.send_json({
+                            "command": "simulation_update",
+                            "result": step_result
+                        })
+                except Exception as e:
+                    print(f"[digital_sim_api] Error sending simulation update: {e}")
+                    break
             
-            await asyncio.sleep(update_interval)
-        
-        # Simulation has auto-stopped - send final notification
-        if simulation_service.model and not simulation_service.is_running:
-            try:
-                await websocket.send_json({
-                    "command": "simulation_ended",
-                    "reason": "All cars parked and all packages delivered",
-                    "result": simulation_service.retrieve_final_step_results()
-                })
-            except Exception as e:
-                print(f"[digital_sim_api] Error sending simulation_ended message: {e}")
+            # Wait for the next update cycle
+            if simulation_service.is_running:
+                await asyncio.sleep(update_interval)
     
     except asyncio.CancelledError:
         print("[digital_sim_api] Simulation loop cancelled")

@@ -213,6 +213,22 @@ class CarModel(mesa.Model):
                 return False
 
         return True
+    
+    def is_deadlocked(self) -> bool:
+        """
+        Check if simulation is deadlocked.
+
+        Conditions:
+        1. A car returns to the depot without having delivered any packages on its route
+
+        Returns:
+            True if deadlocked, False otherwise
+        """
+        for agent in self.agents:
+            if agent.status == CarStatus.DEADLOCKED:
+                return True
+
+        return False
 
     def _route_has_remaining_packages(self, route: Route) -> bool:
         """

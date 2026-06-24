@@ -11,6 +11,7 @@ export const TOAST_MESSAGES = {
         },
         info: {
             UNREACHABLE_HOUSES: "Let op: er zijn huizen die niet bereikt worden met de geselecteerde routes.",
+            SIMULATION_DEADLOCKED: "Let op: de simulatie is vastgelopen en kan niet verder gaan. Probeer andere parameters",
         },
       
     },
@@ -21,6 +22,7 @@ export const TOAST_MESSAGES = {
         },
         info: {
             UNREACHABLE_HOUSES: "Note: There are houses that are not reachable with the selected routes.",
+            SIMULATION_DEADLOCKED: "Note: The simulation has deadlocked and cannot proceed. Please try different parameters.",
         },
     },
 };

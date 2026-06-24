@@ -75,12 +75,18 @@ class SimulationService:
         # Execute one step in the simulation
         self.model.step()
         
-        # Check if simulation should auto-complete
+        # Determine status of the simulation
         if self.model.is_simulation_complete():
             self.is_running = False
+            status = "simulation_completed"
+        elif self.model.is_deadlocked():
+            self.is_running = False
+            status = "simulation_deadlocked"
+        else:
+            status = "simulation_running"
         
         return {
-            "status": "simulation_update",
+            "status": status,
             **self.model.get_simulation_state(),
             **self.get_current_statistics(),
         }
@@ -98,14 +104,6 @@ class SimulationService:
             result.update(self.get_current_statistics())
 
         return result
-
-    def retrieve_final_step_results(self):
-        """Retrieve the final results of the simulation after it has stopped."""     
-        return {
-            "status": "simulation_stopped", 
-            **self.model.get_simulation_state(),
-            **self.get_current_statistics(),
-        }
 
     def get_current_statistics(self):
         simulation_stats = self._get_simulation_stats()
