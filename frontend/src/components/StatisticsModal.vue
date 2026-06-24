@@ -1,6 +1,6 @@
 <template>
     <div v-if="isOpen" @click.self="closeModal" class="fixed backdrop-blur-xs bg-black/40 inset-0 bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl max-h-[90vh] overflow-auto">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl max-h-[95vh] overflow-auto">
             <!-- Header -->
             <div class="sticky top-0 bg-white border-b border-gray-300 p-6 pt-3 pb-3 flex items-center justify-between">
                 <h2 class="text-xl font-bold text-dark">{{ langStore.getLabel('statsModal.simTitle') }}</h2>
