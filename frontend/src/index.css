@@ -39,6 +39,9 @@
     --rounded-lg: 0.5rem;       /* 8px */
     --rounded-xl: 0.75rem;      /* 12px */
 
+    /* Spacing */
+    --parameter-padding: 2rem;  /* 32px */
+
     /* Font size */
     --text-xs: 0.75rem;         /* 12px */
     --text-sm: 0.875rem;        /* 14px */

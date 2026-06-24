@@ -12,7 +12,7 @@ defineProps({
 </script>
 
 <template>
-  <div class="rg-root">
+  <div class="rg-container">
     <label class="rg-label">{{ name }}:</label>
     <div class="rg-list">
       <label 
@@ -45,6 +45,10 @@ defineProps({
 </template>
 
 <style scoped>
+.rg-container {
+    padding-bottom: var(--parameter-padding);
+}
+
 /* Label styling */
 .rg-label {
     display: block;
