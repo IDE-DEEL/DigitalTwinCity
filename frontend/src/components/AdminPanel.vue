@@ -6,12 +6,12 @@
         <p class="text-xs font-semibold uppercase tracking-[0.22em] text-sky-700">{{ langStore.getLabel('adminHeader.title') }}</p>
         <h2 class="text-2xl font-bold text-slate-900">{{ langStore.getLabel('adminHeader.subTitle') }}</h2>
       </div>
-      <button @click="$emit('close-admin')" class="self-start rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50">
+      <BaseButton @click="$emit('close-admin')">
         {{langStore.getLabel('adminHeader.back2Login')}}
-      </button>
+      </BaseButton>
     </div>
 
-    <div v-if="!isAuthenticated" class="mx-auto mt-10 max-w-xl rounded-2xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
+    <div v-if="isAuthenticated" class="mx-auto mt-10 max-w-xl rounded-2xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
       <h3 class="text-xl font-bold text-slate-900">{{ langStore.getLabel('adminLogin.loginTitle') }}</h3>
       <form @submit.prevent="verifyAdmin" class="space-y-4">
         <div>
@@ -22,9 +22,9 @@
           <label class="block text-sm font-medium text-slate-700">{{ langStore.getLabel('adminLogin.passwordLabel') }}</label>
           <input v-model="adminPass" type="password" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" />
         </div>
-        <button type="submit" class="w-full rounded-lg bg-sky-700 px-4 py-2 font-medium text-white transition hover:bg-sky-800">
+        <BaseButton type="submit" variant="login">
           {{ langStore.getLabel('adminLogin.loginButton') }}
-        </button>
+        </BaseButton>
       </form>
       <p v-if="authError" class="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{{ authError }}</p>
     </div>
@@ -45,9 +45,9 @@
             <label class="block text-sm font-medium text-slate-700">{{ langStore.getLabel('adminCode.expiresLabel') }}</label>
             <input v-model="newCode.expires_at" type="datetime-local" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" />
           </div>
-          <button type="submit" class="w-full rounded-lg bg-emerald-600 py-2 font-medium text-white transition hover:bg-emerald-700">
+          <BaseButton type="submit" variant="login">
             {{ langStore.getLabel('adminCode.codeButton') }}
-          </button>
+          </BaseButton>
         </form>
 
         <div v-if="generatedRawCode" class="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">
@@ -68,12 +68,12 @@
               <input type="checkbox" :checked="allSelected" @change="toggleSelectAll" />
               {{ langStore.getLabel('adminManage.selectAll') }}
             </label>
-            <button @click="bulkExtendCodes" :disabled="selectedCount === 0" class="rounded-lg bg-sky-700 px-3 py-1 font-medium text-white transition hover:bg-sky-800 disabled:cursor-not-allowed disabled:opacity-50">
+            <BaseButton @click="bulkExtendCodes" :disabled="selectedCount === 0">
               {{ langStore.getLabel('adminManage.groupExtend') }} ({{ selectedCount }})
-            </button>
-            <button @click="bulkDeleteCodes" :disabled="selectedCount === 0" class="rounded-lg bg-slate-800 px-3 py-1 font-medium text-white transition hover:bg-slate-950 disabled:cursor-not-allowed disabled:opacity-50">
+            </BaseButton>
+            <BaseButton @click="bulkDeleteCodes" :disabled="selectedCount === 0">
               {{ langStore.getLabel('adminManage.groupDelete') }} ({{ selectedCount }})
-            </button>
+            </BaseButton>
           </div>
         </div>
         <table class="min-w-full whitespace-nowrap text-left text-sm">
@@ -100,15 +100,15 @@
               </td>
               <td class="px-4 py-3">
                 <div class="flex flex-wrap items-center gap-3">
-                  <button v-if="!code.is_revoked && new Date(code.expires_at) > new Date()" @click="revokeCode(code.id)" class="font-medium text-red-600 hover:text-red-800">
+                  <BaseButton v-if="!code.is_revoked && new Date(code.expires_at) > new Date()" @click="revokeCode(code.id)" variant="admin-revoke">
                     {{ langStore.getLabel('adminManage.codeRevoke') }}
-                  </button>
-                  <button @click="extendCode(code.id, code.expires_at)" class="font-medium text-sky-700 hover:text-sky-900">
+                  </BaseButton>
+                  <BaseButton @click="extendCode(code.id, code.expires_at)" variant="admin-codes">
                     {{ langStore.getLabel('adminManage.codeExtend') }}
-                  </button>
-                  <button @click="deleteCode(code.id, code.name)" class="font-medium text-slate-700 hover:text-slate-950">
+                  </BaseButton>
+                  <BaseButton @click="deleteCode(code.id, code.name)" variant="admin-codes">
                     {{ langStore.getLabel('adminManage.codeDelete') }}
-                  </button>
+                  </BaseButton>
                 </div>
               </td>
             </tr>
@@ -123,7 +123,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { apiUrl } from '../config/api';
 import { useLanguageStore } from '../stores/index.js';
-import { LangToggle } from './CustomComponents.js';
+import { LangToggle, BaseButton } from './CustomComponents.js';
 
 const isAuthenticated = ref(false);
 const adminUser = ref('');

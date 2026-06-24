@@ -32,6 +32,8 @@ defineProps({
             'dev-small',
             'websocket',
             'login',
+            'admin-revoke',
+            'admin-codes',
         ].includes(value),
     },
     isActive: {
@@ -142,5 +144,29 @@ defineEmits(['click']);
     box-shadow:
         0 0 0 2px #fff,
         0 0 0 4px #3b82f6;
+}
+
+.base-button--admin-revoke {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #dc2626;
+    font-weight: 500;
+}
+
+.base-button--admin-revoke:hover:not(:disabled) {
+    color: #991b1b;
+}
+
+.base-button--admin-codes {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #0369a1;
+    font-weight: 500;
+}
+
+.base-button--admin-codes:hover:not(:disabled) {
+    color: #0c4a6e;
 }
 </style>
