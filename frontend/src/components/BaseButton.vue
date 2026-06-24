@@ -1,14 +1,3 @@
-<template>
-    <button
-        :disabled="disabled"
-        :type="type"
-        @click="$emit('click', $event)"
-        :class="['base-button', `base-button--${variant}`, { 'base-button--active': isActive }]"
-    >
-        <slot></slot>
-    </button>
-</template>
-
 <script setup>
 defineProps({
     disabled: {
@@ -44,6 +33,17 @@ defineProps({
 
 defineEmits(['click']);
 </script>
+
+<template>
+    <button
+        :disabled="disabled"
+        :type="type"
+        @click="$emit('click', $event)"
+        :class="['base-button', `base-button--${variant}`, { 'base-button--active': isActive }]"
+    >
+        <slot></slot>
+    </button>
+</template>
 
 <style scoped>
 /* Base styling */

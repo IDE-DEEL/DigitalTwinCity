@@ -1,37 +1,3 @@
-<template>
-    <!-- SVG group for house labels -->
-  <g class="house-labels-overlay">
-    <g 
-      v-for="house in houses" 
-      :key="house.houseInstanceId"
-      class="house-label"
-    >
-      <!-- label background -->
-      <circle
-        :cx="house.labelCoords.x"
-        :cy="house.labelCoords.y"
-        :r="DEFAULT_CIRCLE_RADIUS"
-        fill="white"
-        stroke="black"
-        stroke-width="0.02"
-        :class="{ 'package-delivered': animatedHouses.has(house.houseInstanceId) }"
-      />
-      <!-- Package count text -->
-      <text
-        :x="house.labelCoords.x"
-        :y="house.labelCoords.y + TEXT_Y_OFFSET"
-        text-anchor="middle"
-        dominant-baseline="middle"
-        font-size="0.1"
-        font-weight="500"
-        fill="black"
-      >
-        {{ house.expectedPackages }}
-      </text>
-    </g>
-  </g>
-</template>
-
 <script setup>
 import { ref, watch } from 'vue';
 import { useSimulationStateStore } from '../stores/index';
@@ -81,6 +47,40 @@ function triggerAnimation(houseInstanceId) {
     }, durationInMillis);
 }
 </script>
+
+<template>
+    <!-- SVG group for house labels -->
+  <g class="house-labels-overlay">
+    <g 
+      v-for="house in houses" 
+      :key="house.houseInstanceId"
+      class="house-label"
+    >
+      <!-- label background -->
+      <circle
+        :cx="house.labelCoords.x"
+        :cy="house.labelCoords.y"
+        :r="DEFAULT_CIRCLE_RADIUS"
+        fill="white"
+        stroke="black"
+        stroke-width="0.02"
+        :class="{ 'package-delivered': animatedHouses.has(house.houseInstanceId) }"
+      />
+      <!-- Package count text -->
+      <text
+        :x="house.labelCoords.x"
+        :y="house.labelCoords.y + TEXT_Y_OFFSET"
+        text-anchor="middle"
+        dominant-baseline="middle"
+        font-size="0.1"
+        font-weight="500"
+        fill="black"
+      >
+        {{ house.expectedPackages }}
+      </text>
+    </g>
+  </g>
+</template>
 
 <style scoped>
 @keyframes package-pulse {
