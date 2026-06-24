@@ -43,6 +43,14 @@ cars = {
     "auto_E": ""
 }
 
+packets = {
+    "auto_A": 0,
+    "auto_B": 0,
+    "auto_C": 0,
+    "auto_D": 0,
+    "auto_E": 0
+}
+
 car_stopped = []
 
 # reading the tag file and making it a variable.
@@ -159,8 +167,12 @@ def resume_after_wait(client, car_id, total_time):
 def load_packages(client, car_id, packages, ms_per_package, package_action):
     if package_action == "load":
         action = 1
+        packets[car_id] += packages
     elif package_action == "unload":
         action = 2
+        packets[car_id] -= packages
+        if packets[car_id] < 0:
+            packets[car_id] = 0
     else:
         action = 0
     # Stop the car before loading
