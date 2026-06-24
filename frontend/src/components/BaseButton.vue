@@ -78,7 +78,7 @@ defineEmits(['click']);
 }
 
 .base-button--statistics {
-    width: 160px;
+    width: 184px;
     height: 40px;
     padding: 0px;
 }

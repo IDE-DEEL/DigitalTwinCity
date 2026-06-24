@@ -317,15 +317,17 @@ const toggleSensorDebug = () => {
                 ></RadioGroup>
             </template>
 
+            <template #statistics-button>
+                <!-- <div class="stats-button-container"> -->
+                    <BaseButton @click="handleStatsOpen" variant="statistics"> {{ langStore.getLabel('generalStats.title') }} </BaseButton>
+                <!-- </div> -->
+            </template>
+
             <!-- Simulation speed, start and stop controls + stats modal open button -->
             <template #simulation-controls>
-                <div class="stats-button-container">
-                    <BaseButton @click="handleStatsOpen"> {{ langStore.getLabel('generalStats.title') }} </BaseButton>
-                </div>
-
                 <div class="button-area">
-                    <BaseButton @click="handleSimulationStart" :disabled="stateStore.isSimulating || allCarsHaveInactiveRoute || !wsStore.isConnected"> {{ langStore.getLabel('controls.startButton') }} </BaseButton>
-                    <BaseButton @click="handleSimulationStop" :disabled="!stateStore.isSimulating"> {{ langStore.getLabel('controls.stopButton') }} </BaseButton>
+                    <BaseButton @click="handleSimulationStart" variant="timer" :disabled="stateStore.isSimulating || allCarsHaveInactiveRoute || !wsStore.isConnected"> {{ langStore.getLabel('controls.startButton') }} </BaseButton>
+                    <BaseButton @click="handleSimulationStop" variant="timer" :disabled="!stateStore.isSimulating"> {{ langStore.getLabel('controls.stopButton') }} </BaseButton>
                 </div>
             </template>
         </ControlPanel>
@@ -375,5 +377,11 @@ const toggleSensorDebug = () => {
 
 #devtool-button.active {
     background: var(--color-button-active);
+}
+
+.button-area {
+    flex: 1;
+    display: flex;
+    gap: 8px;
 }
 </style>
