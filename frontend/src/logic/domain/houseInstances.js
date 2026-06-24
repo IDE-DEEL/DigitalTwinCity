@@ -6,7 +6,7 @@ export const HOUSE_INSTANCES = [
         tileY: 0,
 
         supportedLanes: [
-            { from: 'E', to: 'W' },
+            { from: 'E', to: 'S' },
         ],
         labelCoords: { x: 0.33, y: 0.34 },
         roadCenter: { x: 0.56, y: 0.55 },
@@ -133,7 +133,7 @@ export const HOUSE_INSTANCES = [
         tileY: 2,
 
         supportedLanes: [
-            { from: 'N', to: 'S' },
+            { from: 'W', to: 'E' },
         ],
         labelCoords: { x: 0.5, y: 0.85 },
         roadCenter: { x: 0.5, y: 0.61 },
