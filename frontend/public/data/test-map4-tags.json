@@ -556,11 +556,11 @@
 
     {"tag_id": "04:FD:3A:6D:BC:2A:81", "tag_pos": {"x": 5.0625, "y": 6.625}, "Tile": "48", "cord": "5-6", "type": "depot_down"},
     {"tag_id": "53:33:7A:16:23:00:01", "tag_pos": {"x": 5.5875, "y": 6.625}, "Tile": "48", "cord": "5-6", "type": "depot_down"},
-    {"tag_id": "53:33:7A:16:23:00:01", "tag_pos": {"x": 5.9625, "y": 6.625}, "Tile": "48", "cord": "5-6", "type": "depot_down"},
+    {"tag_id": "04:B5:71:6E:BC:2A:81", "tag_pos": {"x": 5.9625, "y": 6.625}, "Tile": "48", "cord": "5-6", "type": "depot_down"},
 
     {"tag_id": "04:DC:41:6D:BC:2A:81", "tag_pos": {"x": 5.3, "y": 6.475}, "Tile": "48", "cord": "5-6", "type": "depot_down"},
 
-    {"tag_id": "04:DC:41:6D:BC:2A:81", "tag_pos": {"x": 5.5875, "y": 6.225}, "Tile": "48", "cord": "5-6", "type": "depot_down"},
+    {"tag_id": "53:20:7A:16:23:00:01", "tag_pos": {"x": 5.5875, "y": 6.225}, "Tile": "48", "cord": "5-6", "type": "depot_down"},
     {"tag_id": "04:CD:41:6D:BC:2A:81", "tag_pos": {"x": 5.9625, "y": 6.225}, "Tile": "48", "cord": "5-6", "type": "depot_down"},
     {"tag_id": "04:DD:41:6D:BC:2A:81", "tag_pos": {"x": 5.3, "y": 6.15}, "Tile": "48", "cord": "5-6", "type": "depot_down"},
     
