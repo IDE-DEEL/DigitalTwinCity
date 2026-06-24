@@ -255,7 +255,6 @@ class SimulationService:
             is_rush_hour             = TRIP.is_rush_hour,
             soc_start_pct            = avg_soc_start,
             soc_end_pct              = avg_soc_end,
-            pid_crash_value          = TRIP.pid_crash_value,
             is_wrong_way             = any_wrong_way,
             idle_time_sec            = total_idle_time,
             speed_value              = avg_target_speed * 100,
