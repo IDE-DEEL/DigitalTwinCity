@@ -47,24 +47,26 @@ async def websocket_endpoint(websocket: WebSocket):
             msg_type = data.get("type")
             print(data)
             payload = data.get("payload")
-            
 
             match msg_type:
                 case "speed":
                     await manager.broadcast_update(msg_type, payload)
 
                 case "route":
-                    print("Case werkt: " + payload)
-                    if payload.car_id in state.chosen_route:
-                        print("If statement werkt: " + payload.car_id)
-                        state.chosen_route[payload.car_id] = payload.route
+                    print("Case werkt: ", payload)
+                    if payload["car_id"] in state.chosen_route:
+                        state.chosen_route[payload["car_id"]] = payload["route"]
 
-                        print("Code werkt volledig: " + state.chosen_route[payload.car_id])
-                    
-                        await manager.broadcast_update(msg_type, {
-                                "car_id": payload.car_id,
-                                "route": state.chosen_route[payload.car_id]
-                            })
+                        print(type(payload))
+                        print(payload)
+
+                        await manager.broadcast_update(
+                            msg_type,
+                            {
+                                "car_id": payload["car_id"],
+                                "route": state.chosen_route[payload["car_id"]]
+                            }
+                        )
 
                 case "scenario":
                     await manager.broadcast_update(msg_type, payload)
