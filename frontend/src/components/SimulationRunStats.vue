@@ -134,6 +134,10 @@ const handleDownloadCSV = async () => {
                         <span class="totals-label">{{ langStore.getLabel('simStats.totalPackages') }}:</span>
                         <span class="totals-value">{{ simulationStats.totals.total_packages_delivered }}</span>
                     </div>
+                    <div class="totals-row">
+                        <span class="totals-label">{{ langStore.getLabel('simStats.totalUndeliveredPackages') }}:</span>
+                        <span class="totals-value">{{ simulationStats.totals.total_undelivered_packages }}</span>
+                    </div>
                     <div class="totals-row totals-row-last">
                         <span>{{ langStore.getLabel('simStats.totalsSteps') }}:</span>
                         <span class="font-mono">{{ simulationStats.step_count }}</span>

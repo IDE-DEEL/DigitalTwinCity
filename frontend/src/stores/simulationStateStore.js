@@ -95,7 +95,7 @@ export const useSimulationStateStore = defineStore("simulationState", () => {
         // use live data for remaining packages when available
         return baseHouses.map(house => {
             const liveHouseData = houseState.value.find(
-                h => h.id === house.houseInstanceId // TODO: houseInstanceId needs better name
+                h => h.id === house.houseInstanceId
             );
 
             if (liveHouseData) {
@@ -142,7 +142,8 @@ const DEFAULT_SIMULATION_STATS = {
     totals: {
         total_distance: 0,
         total_time_driving: 0,
-        total_packages_delivered: 0
+        total_packages_delivered: 0,
+        total_undelivered_packages: 0
     },
     step_count: 0
 };

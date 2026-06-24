@@ -209,6 +209,7 @@ class SimulationService:
         # Round totals to 2 decimal places
         stats["totals"]["total_distance"] = round(stats["totals"]["total_distance"], 2)
         stats["totals"]["total_time_driving"] = round(stats["totals"]["total_time_driving"], 2)
+        stats["totals"]["total_undelivered_packages"] = self.model.get_total_packages_undelivered() 
         
         return stats
 
@@ -254,12 +255,14 @@ class SimulationService:
             is_rush_hour             = TRIP.is_rush_hour,
             soc_start_pct            = avg_soc_start,
             soc_end_pct              = avg_soc_end,
+            pid_crash_value          = TRIP.pid_crash_value,
             is_wrong_way             = any_wrong_way,
             idle_time_sec            = total_idle_time,
             speed_value              = avg_target_speed * 100,
+            pid_wear_value           = TRIP.pid_wear_value
         )
 
-        score = calculate_score(trip, WEIGHTS, 1)
+        score = calculate_score(trip, WEIGHTS)
 
         return score
         

@@ -39,10 +39,7 @@ class CarModel(mesa.Model):
         self.datacollector = mesa.DataCollector(
             model_reporters={
                 MODEL_TOTAL_PACKAGES_IN_SCENARIO_KEY: lambda m: sum(len(h.packages) for h in m.houses.values()),
-                MODEL_TOTAL_PACKAGES_UNDELIVERED_KEY: lambda m: sum(
-                    len([p for p in h.packages if p.status != PackageStatus.DELIVERED])
-                    for h in m.houses.values()
-                ),
+                MODEL_TOTAL_PACKAGES_UNDELIVERED_KEY: lambda m: m.get_total_packages_undelivered()
             },
             agent_reporters={
                 AGENT_STATUS_KEY: lambda agent: agent.status.name,  # enum name of the agent's status
@@ -187,6 +184,14 @@ class CarModel(mesa.Model):
             CarAgent(model=self, id=id, car_target_speed=car_target_speed, route=route, max_packages=max_packages)
 
         return routes_by_name
+    
+    def get_total_packages_undelivered(self):
+        return sum(
+            1
+            for house in self.houses.values()
+            for package in house.packages
+            if package.status != PackageStatus.DELIVERED
+        )
 
     def is_simulation_complete(self) -> bool:
         """
