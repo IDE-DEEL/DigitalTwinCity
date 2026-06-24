@@ -16,7 +16,7 @@ from backend.digital_sim.constants import (
     AGENT_TIME_DRIVING_SECONDS_KEY, AGENT_TIME_DELIVERING_SECONDS_KEY,
     AGENT_TIME_PARKED_SECONDS_KEY, AGENT_TIME_LOADING_PACKAGES_SECONDS_KEY,
     MODEL_TOTAL_PACKAGES_IN_SCENARIO_KEY, MODEL_TOTAL_PACKAGES_UNDELIVERED_KEY,
-    AGENT_IS_OUT_OF_LANE_KEY,
+    AGENT_IS_OUT_OF_LANE_KEY, CAR_SPEED_SCALE
 )
 
 
@@ -29,11 +29,12 @@ class CarModel(mesa.Model):
         self.delta_time = DELTA_TIME_PER_STEP_IN_SECONDS
         self.simulation_time = 0.0
         self.car_target_speed = car_target_speed / 100
+        self.car_scaled_speed = max(0.01, self.car_target_speed * CAR_SPEED_SCALE)
         self.houses = {}
         self.scenario_name = scenario_name
         self.map_rows = map_rows
 
-        routes = self._setup_cars_and_routes(cars, self.car_target_speed)
+        routes = self._setup_cars_and_routes(cars, self.car_scaled_speed)
         self._setup_houses(houses or [], houses_on_routes or {}, routes)
 
         self.datacollector = mesa.DataCollector(
@@ -166,7 +167,7 @@ class CarModel(mesa.Model):
 
         return houses_status
 
-    def _setup_cars_and_routes(self, cars: list[dict], car_target_speed: int) -> dict:
+    def _setup_cars_and_routes(self, cars: list[dict], car_scaled_speed: int) -> dict:
         """Create routes and agents based on car settings from frontend."""
         routes_by_name = {}
 
@@ -181,7 +182,7 @@ class CarModel(mesa.Model):
                 routes_by_name[route_name] = []
             routes_by_name[route_name].append(route)
 
-            CarAgent(model=self, id=id, car_target_speed=car_target_speed, route=route, max_packages=max_packages)
+            CarAgent(model=self, id=id, car_scaled_speed=car_scaled_speed, route=route, max_packages=max_packages)
 
         return routes_by_name
     

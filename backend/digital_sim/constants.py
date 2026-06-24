@@ -37,6 +37,9 @@ Y_COORD_KEY = "y"
 PACKAGE_DELIVERY_TIME_IN_SECONDS = 1.0
 PACKAGE_PICKUP_TIME_IN_SECONDS = 0.5
 
+# Car speed
+CAR_SPEED_SCALE = 0.7
+
 # --- --- --- --- --- --- --- --- --- --- ---
 # Mesa DataCollector reporter keys
 # Agent property keys
