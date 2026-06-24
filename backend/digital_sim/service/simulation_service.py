@@ -228,17 +228,20 @@ class SimulationService:
         avg_soc_end = sum(agent.state_of_charge for agent in agents) / num_agents
         avg_target_speed = self.model.car_target_speed
 
-        # ── Cost/revenue over de entire run ────
+        # ── Cost/revenue over the entire run ────
         total_budget = 500.0
         total_cost = TRIP.cost_per_km * total_distance
         total_revenue = TRIP.revenue_per_package * total_packages_delivered
         budget_used_pct = (total_cost / total_budget) * 100
+        
+        #  ── Emissions over the entire run ──────
+        total_emissions = TRIP.co2_emission_g_per_km * total_distance
 
         # ── Booleans: if 1 agent = true, count for the run ──
         any_wrong_way = any(agent.went_out_of_lane for agent in agents)
 
         trip = TripData(
-            co2_emission_g_per_km    = TRIP.co2_emission_g_per_km,
+            co2_emission_g_per_km    = total_emissions,
             wear_factor              = TRIP.wear_factor,
             distance_km              = total_distance,
             cost_per_km              = TRIP.cost_per_km,
