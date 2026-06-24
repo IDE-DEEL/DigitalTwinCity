@@ -133,6 +133,8 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
       const car = this.findCar(payload.car_id)
       if (car) {
         car.route = payload.route
+
+        console.log(car.route)
       }
     },
 
