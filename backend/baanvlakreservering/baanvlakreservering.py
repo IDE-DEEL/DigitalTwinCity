@@ -43,12 +43,65 @@ cars = {
     "auto_E": ""
 }
 
+# Active list of how many packages each car is carrying
 packets = {
     "auto_A": 0,
     "auto_B": 0,
     "auto_C": 0,
     "auto_D": 0,
     "auto_E": 0
+}
+
+# the amount of packages the houses want
+houses_requested = {
+"53:46:78:16:23:00:01" : 5,
+"53:3B:73:16:23:00:01" : 4,
+"53:53:73:16:23:00:01" : 2,
+"53:93:73:16:23:00:01" : 3,
+"53:A8:7A:16:23:00:01" : 5,
+"53:2D:78:16:23:00:01" : 5,
+"53:4D:75:16:23:00:01" : 4,
+"53:26:78:16:23:00:01" : 6,
+"53:7C:73:16:23:00:01" : 1,
+"53:C2:7A:16:23:00:01" : 2,
+"53:93:75:16:23:00:01" : 2,
+"53:8D:36:01:63:00:01" : 3,
+"53:91:7A:16:23:00:01" : 1,
+"53:66:75:16:23:00:01" : 2,
+"5A:25:6C:DD:0A:41:89" : 6,
+"53:3C:75:16:23:00:01" : 7,
+"53:0E:75:16:23:00:01" : 5,
+"53:13:75:16:23:00:01" : 6,
+"53:5E:75:16:23:00:01" : 4,
+"53:B2:7A:16:23:00:01" : 5,
+"53:73:75:16:23:00:01" : 6,
+"53:88:7A:16:23:00:01" : 4
+}
+
+# the amount of packages the houses want
+houses_receaved = {
+"53:46:78:16:23:00:01" : 0,
+"53:3B:73:16:23:00:01" : 0,
+"53:53:73:16:23:00:01" : 0,
+"53:93:73:16:23:00:01" : 0,
+"53:A8:7A:16:23:00:01" : 0,
+"53:2D:78:16:23:00:01" : 0,
+"53:4D:75:16:23:00:01" : 0,
+"53:26:78:16:23:00:01" : 0,
+"53:7C:73:16:23:00:01" : 0,
+"53:C2:7A:16:23:00:01" : 0,
+"53:93:75:16:23:00:01" : 0,
+"53:8D:36:01:63:00:01" : 0,
+"53:91:7A:16:23:00:01" : 0,
+"53:66:75:16:23:00:01" : 0,
+"5A:25:6C:DD:0A:41:89" : 0,
+"53:3C:75:16:23:00:01" : 0,
+"53:0E:75:16:23:00:01" : 0,
+"53:13:75:16:23:00:01" : 0,
+"53:5E:75:16:23:00:01" : 0,
+"53:B2:7A:16:23:00:01" : 0,
+"53:73:75:16:23:00:01" : 0,
+"53:88:7A:16:23:00:01" : 0
 }
 
 car_stopped = []
@@ -128,6 +181,7 @@ index = {
     "auto_D": 0,
     "auto_E": 0
 }
+
 
 # Stores the latest vehicle RFID data
 car_data = []
@@ -249,6 +303,18 @@ def on_message(client, userdata, msg):
         # Ensure vehicle is moving.
         client.publish(f"car/{topic[1]}/cmd/Start", "True")
 
+        # Checks if the car is at a house and delivers up to the max amount of packages possible
+        for i in houses_requested:
+            if i == rfid:
+                if (houses_requested[i] - houses_receaved[i]) != 0 :
+                    if (packets[topic[1]] - (houses_requested[i] - houses_receaved[i])) < 0:
+                        houses_receaved[i] += packets[topic[1]]
+                        load_packages(client, topic[1], packets[topic[1]], 1500, "unload")
+
+                    else:
+                        houses_receaved[i] += houses_requested[i]
+                        load_packages(client, topic[1], (houses_requested[i] - houses_receaved[i]), 1500, "unload")
+
         # stops the car if there is any other car in the adjacent tags.
         for i in cars:
             adjacent_tags = Json_file.get(rfid, [])
@@ -273,25 +339,25 @@ def on_message(client, userdata, msg):
             # Check whether the scanned RFID matches
             # the current route waypoint
             if rfid == route[state.chosen_route[topic[1]]][index[topic[1]]][0]:
+                #
+                # # Checks if the there are packages and loads or unloads them
+                # if route[state.chosen_route[topic[1]]][index[topic[1]]][1] == "load" or route[state.chosen_route[topic[1]]][index[topic[1]]][1] == "unload":
+                #     load_packages(client, topic[1], route[state.chosen_route[topic[1]]][index[topic[1]]][2], 500, route[state.chosen_route[topic[1]]][index[topic[1]]][1])
 
-                # Checks if the there are packages and loads or unloads them
-                if route[state.chosen_route[topic[1]]][index[topic[1]]][1] == "load" or route[state.chosen_route[topic[1]]][index[topic[1]]][1] == "unload":
-                    load_packages(client, topic[1], route[state.chosen_route[topic[1]]][index[topic[1]]][2], 500, route[state.chosen_route[topic[1]]][index[topic[1]]][1])
+                # else:
+                # Stop vehicle before changing direction
+                client.publish(f"car/{topic[1]}/cmd/Start", "False")
+                # Send next direction command
+                client.publish(f"car/{topic[1]}/cmd/Direction", route[state.chosen_route[topic[1]]][index[topic[1]]][1])
+                # Resume movement
+                client.publish(f"car/{topic[1]}/cmd/Start", "True")
+                # Advance to next route step
+                index[topic[1]] += 1
 
-                else:
-                    # Stop vehicle before changing direction
-                    client.publish(f"car/{topic[1]}/cmd/Start", "False")
-                    # Send next direction command
-                    client.publish(f"car/{topic[1]}/cmd/Direction", route[state.chosen_route[topic[1]]][index[topic[1]]][1])
-                    # Resume movement
-                    client.publish(f"car/{topic[1]}/cmd/Start", "True")
-                    # Advance to next route step
-                    index[topic[1]] += 1
-
-                    # Loop back to start when route completes.
-                    if len(route[state.chosen_route[topic[1]]]) == index[topic[1]]:
-                        index[topic[1]] = 0
-                        calculate_score(TRIP, WEIGHTS, topic[1])
+                # Loop back to start when route completes.
+                if len(route[state.chosen_route[topic[1]]]) == index[topic[1]]:
+                    index[topic[1]] = 0
+                    calculate_score(TRIP, WEIGHTS, topic[1])
 
     elif not state.start:
         # Emergency stop / manual stop mode
