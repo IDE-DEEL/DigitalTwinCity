@@ -340,15 +340,18 @@ def on_message(client, userdata, msg):
         # Checks if the car is at a house and delivers up to the max amount of packages possible
         for i in houses_requested:
             if i == rfid:
-                if (houses_requested[i] - houses_receaved[i]) != 0 :
-                    if (packets[topic[1]] - (houses_requested[i] - houses_receaved[i])) < 0:
-                        houses_receaved[i] += packets[topic[1]]
-                        load_packages(topic[1], packets[topic[1]], 1500, "unload")
-
-                    else:
-                        houses_receaved[i] += houses_requested[i]
-                        completed_houses[topic[1]] += 1
-                        load_packages(topic[1], (houses_requested[i] - houses_receaved[i]), 1500, "unload")
+                needed = houses_requested[i] - houses_receaved[i]
+                if needed > 0:
+                    available = packets[topic[1]]
+                    if available > 0:
+                        amount_to_deliver = min(needed, available)
+                        
+                        houses_receaved[i] += amount_to_deliver
+                        
+                        if houses_receaved[i] == houses_requested[i]:
+                            completed_houses[topic[1]] += 1
+                            
+                        load_packages(topic[1], amount_to_deliver, 1500, "unload")
 
 
         # stops the car if there is any other car in the adjacent tags.
