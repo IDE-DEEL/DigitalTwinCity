@@ -80,17 +80,16 @@ defineProps({
     text-align: center;
     font-weight: var(--font-medium);
     transition: background-color 150ms ease, color 150ms ease;
-    border: 1px groove var(--color-button-border);
     display: block;
     box-sizing: border-box;
-    border-radius: var(--rounded-xl);
+    border-radius: var(--rounded-sm);
     font-size: var(--text-base);
 }
 
 /* Active / selected */
 .rg-active {
     color: var(--color-primary-blue);
-    border: 0.25rem outset var(--color-primary-blue);
+    border: 2px outset var(--color-primary-blue);
     cursor: not-allowed;
     background-color: var(--color-text-white);
 }
@@ -98,7 +97,7 @@ defineProps({
 /* Inactive / unselected */
 .rg-inactive {
     color: var(--color-text-white);
-    border: 0.25rem outset var(--color-text-white);
+    border: 2px outset var(--color-text-white);
     background-color: var(--color-primary-blue);
 }
 .rg-inactive:hover {
