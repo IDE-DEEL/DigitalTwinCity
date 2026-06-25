@@ -228,7 +228,8 @@ def resume_after_wait(client, car_id, total_time):
     client.publish(f"car/{car_id}/cmd/Screen", 0)
     client.publish(f"car/{car_id}/cmd/Start", "True")
 
-def load_packages(client, car_id, packages, ms_per_package, package_action):
+def load_packages(car_id, packages, ms_per_package, package_action):
+    start_mqtt_client()
     if package_action == "load":
         action = 1
         packets[car_id] += packages
@@ -240,14 +241,14 @@ def load_packages(client, car_id, packages, ms_per_package, package_action):
     else:
         action = 0
     # Stop the car before loading
-    client.publish(f"car/{car_id}/cmd/Start", "False")
+    _client.publish(f"car/{car_id}/cmd/Start", "False")
 
     # Calculate total transfer time and publish to the car's MQTT topics
     total_time = packages * ms_per_package
-    client.publish(f"car/{car_id}/cmd/TransferTime", total_time)
-    client.publish(f"car/{car_id}/cmd/Package", packages)
-    client.publish(f"car/{car_id}/cmd/Screen", action)
-    threading.Thread(target=resume_after_wait, args=(client, car_id, total_time), daemon=True).start()
+    _client.publish(f"car/{car_id}/cmd/TransferTime", total_time)
+    _client.publish(f"car/{car_id}/cmd/Package", packages)
+    _client.publish(f"car/{car_id}/cmd/Screen", action)
+    threading.Thread(target=resume_after_wait, args=(_client, car_id, total_time), daemon=True).start()
 
 
 # Start
@@ -319,12 +320,12 @@ def on_message(client, userdata, msg):
                 if (houses_requested[i] - houses_receaved[i]) != 0 :
                     if (packets[topic[1]] - (houses_requested[i] - houses_receaved[i])) < 0:
                         houses_receaved[i] += packets[topic[1]]
-                        load_packages(client, topic[1], packets[topic[1]], 1500, "unload")
+                        load_packages(topic[1], packets[topic[1]], 1500, "unload")
 
                     else:
                         houses_receaved[i] += houses_requested[i]
                         completed_houses[topic[1]] += 1
-                        load_packages(client, topic[1], (houses_requested[i] - houses_receaved[i]), 1500, "unload")
+                        load_packages(topic[1], (houses_requested[i] - houses_receaved[i]), 1500, "unload")
 
 
         # stops the car if there is any other car in the adjacent tags.

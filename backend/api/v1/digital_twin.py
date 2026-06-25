@@ -6,6 +6,7 @@ from backend.baanvlakreservering.baanvlakreservering import (
     add_car_data_listener,
     getTag,
     drive_command,
+    load_packages,
 )
 from backend.score.scoreCalculator import TripData, calculate_score
 from backend.score.config import  WEIGHTS, TRIP
@@ -81,6 +82,9 @@ async def websocket_endpoint(websocket: WebSocket):
                     drive_command("auto_E", state.start)
                     await manager.broadcast_update("activation", state.start)
 
+                    if state.start == False:
+                        await manager.broadcast_update("results", calculate_score(TRIP, WEIGHTS))
+
                 case "car_data":
                     await manager.broadcast_update("car_data", getTag())
 
@@ -92,9 +96,6 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 case "car_energy":
                     await manager.broadcast_update(msg_type, payload)
-
-                case "results":
-                    await manager.broadcast_update(msg_type, calculate_score(TRIP, WEIGHTS))
 
     except WebSocketDisconnect:
         manager.disconnect(websocket)

@@ -138,7 +138,6 @@ function moveCars() {
     if (!state) continue
 
     const tags = getRouteTags(car.auto_id, car.route)
-    console.log(tags)
     if (!tags.length) continue
 
     const carInfo = store.car_data.find(
@@ -408,16 +407,8 @@ const getPackages = ((id) => {
             <TagsVisualizer></TagsVisualizer>
         </template>
         <template #scores>
-          <BarChart :scoreData="{
-            environment: 50,
-            economic: 75,
-            social: 10,
-            energy: 15,
-            safety: 5,
-            maintenance: 60,
-            total: 30
-          }
-            "></BarChart>
+          <BarChart :scoreData="store.results">
+          </BarChart>
         </template>
     </VisualizePanel>
 
