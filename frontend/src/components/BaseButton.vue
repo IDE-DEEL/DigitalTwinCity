@@ -23,6 +23,7 @@ defineProps({
             'login',
             'admin-revoke',
             'admin-codes',
+            'logout',
         ].includes(value),
     },
     isActive: {
@@ -48,7 +49,6 @@ defineEmits(['click']);
 <style scoped>
 /* Base styling */
 .base-button {
-    padding: 10px;
     background-color: var(--color-primary-blue);
     place-items: center;
     color: var(--color-text-white);
@@ -57,6 +57,9 @@ defineEmits(['click']);
     font-size: var(--text-xl);
     cursor: pointer;
     transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .base-button:hover {
@@ -76,13 +79,11 @@ defineEmits(['click']);
 .base-button--timer {
     width: 88px;
     height: 36px;
-    padding: 0px;
 }
 
 .base-button--statistics {
     width: 184px;
     height: 40px;
-    padding: 0px;
 }
 
 .base-button--stats-modal {
@@ -94,7 +95,6 @@ defineEmits(['click']);
     font-weight: bold;
     border: 2px solid #dc2626;
     width: 40px;
-    padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -114,7 +114,6 @@ defineEmits(['click']);
 .base-button--tags {
     width: 120px;
     height: 38px;
-    padding: 0px;
 }
 
 .base-button--dev-small {
@@ -149,7 +148,6 @@ defineEmits(['click']);
 .base-button--admin-revoke {
     background: none;
     border: none;
-    padding: 0;
     color: #dc2626;
     font-weight: 500;
 }
@@ -161,12 +159,15 @@ defineEmits(['click']);
 .base-button--admin-codes {
     background: none;
     border: none;
-    padding: 0;
     color: #0369a1;
     font-weight: 500;
 }
 
 .base-button--admin-codes:hover:not(:disabled) {
     color: #0c4a6e;
+}
+
+.base-button--logout {
+    height: 35px;
 }
 </style>

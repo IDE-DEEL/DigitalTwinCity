@@ -102,7 +102,7 @@ const getStateOfCharge = (carId) => {
                     type="number" 
                     :min="props.minPackages" 
                     :max="props.maxPackages" 
-                    :disabled="props.disabled"
+                    :disabled="props.disabled || car.routeName === 'inactive'"
                     v-model="car.maxPackages"
                     @blur="handleMaxPackagesInput(car.id)"
                     @keydown.enter="handleMaxPackagesInput(car.id)"
@@ -113,13 +113,21 @@ const getStateOfCharge = (carId) => {
                 v-model="car.routeName" 
                 :disabled="props.disabled"
                 class="route-select"
+                :class="{ 'inactive-route': car.routeName === 'inactive' }"
               >
-                <option v-for="routeOption in props.routeOptions" :key="routeOption.key" :value="routeOption.value">{{ langStore.getLabel(`simRoutes.${routeOption.label}`) }}</option>
+                <option 
+                    :class="{ 'inactive-route-option': car.routeName === 'inactive' }" 
+                    v-for="routeOption in props.routeOptions" 
+                    :key="routeOption.key" 
+                    :value="routeOption.value"
+                >
+                    {{ langStore.getLabel(`simRoutes.${routeOption.label}`) }}
+                </option>
               </select>
             </td>
-            <td>
+            <td class="button-cell">
                 <BaseButton 
-                    :disabled="car.routeName === 'inactive' && car.routeVisibility === false"
+                    :disabled="car.routeName === 'inactive' && !car.routeVisibility"
                     :isActive="car.routeVisibility"
                     @click="emit('toggle-route-visibility', car.id)"
                 >

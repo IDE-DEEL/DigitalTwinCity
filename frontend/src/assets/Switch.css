@@ -3,7 +3,7 @@
     --container-radius: 28px;
     width: fit-content;
     min-width: 240px;
-    height: 45%;
+    height: 35px;
     border: 1px solid #000000;
     border-radius: var(--container-radius);
     overflow: hidden;
@@ -17,9 +17,9 @@
     text-decoration: none;
     border: none;
     cursor: pointer;
-    transition: background-color 0.3s ease;
-    background-color: transparent; 
-    color: black;
+    transition: background-color 0.3s linear, color 0.3s linear;
+    background-color: var(--color-primary-blue); 
+    color: var(--color-text-white);
     cursor: pointer;
 }
 
@@ -32,6 +32,6 @@
 }
 
 .is-active {
-    background-color: var(--color-primary-blue);
-    color: white;
+    background-color: white;
+    color: black;
 }

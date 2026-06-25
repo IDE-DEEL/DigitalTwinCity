@@ -40,6 +40,7 @@ const handleLogout = async () => {
         <BaseButton 
         @click="handleLogout" 
         :disabled="isLoggingOut"
+        variant="logout"
         >
           {{ isLoggingOut ? langStore.getLabel('header.loggingOut') : langStore.getLabel('header.logout') }}
         </BaseButton>
