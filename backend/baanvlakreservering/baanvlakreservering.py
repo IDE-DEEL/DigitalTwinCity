@@ -207,6 +207,7 @@ car_data_listeners: list[Callable[[list[dict]], None]] = []
 def getTag():
     return car_data
 
+# to reset the values when the route needs to be reset
 def reset():
     packets = {
         "auto_A": 0,
