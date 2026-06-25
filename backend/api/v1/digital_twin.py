@@ -6,6 +6,7 @@ from backend.baanvlakreservering.baanvlakreservering import (
     add_car_data_listener,
     getTag,
     drive_command,
+    load_packages,
 )
 from backend.score.scoreCalculator import TripData, calculate_score
 from backend.score.config import  WEIGHTS, TRIP

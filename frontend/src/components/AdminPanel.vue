@@ -11,7 +11,7 @@
       </BaseButton>
     </div>
 
-    <div v-if="isAuthenticated" class="mx-auto mt-10 max-w-xl rounded-2xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
+    <div v-if="!isAuthenticated" class="mx-auto mt-10 max-w-xl rounded-2xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
       <h3 class="text-xl font-bold text-slate-900">{{ langStore.getLabel('adminLogin.loginTitle') }}</h3>
       <form @submit.prevent="verifyAdmin" class="space-y-4">
         <div>

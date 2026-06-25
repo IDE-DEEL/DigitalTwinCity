@@ -256,6 +256,7 @@ class SimulationService:
             is_wrong_way             = any_wrong_way,
             idle_time_sec            = total_idle_time,
             speed_value              = avg_target_speed * 100,
+            pid_crash_value          = TRIP.pid_crash_value,
             pid_wear_value           = TRIP.pid_wear_value
         )
 

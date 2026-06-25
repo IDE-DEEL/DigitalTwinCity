@@ -59,17 +59,28 @@ function send_route(car) {
                      min=0 
                      :max=store.max_packages 
                      v-model="car.pakketje" 
+                     :disabled="car.route === 'inactive'"
                      @change="send_packages(car)">
               </input>
             </td>
             <td>
               <select class="route-select" 
                       v-model="car.route" 
-                      @change="send_route(car)">
-                <option v-for="r in store.routes" :key="r.route" :value="r.route" @change="send_route(car)">{{ langStore.getLabel(`simRoutes.${r.route}`) || r.route }}</option>
+                      @change="send_route(car)"
+                      :class="{ 'inactive-route': car.route === 'inactive' }"
+              >
+                <option 
+                    :class="{ 'inactive-route-option': car.route === 'inactive' }" 
+                    v-for="r in store.routes" 
+                    :key="r.route" 
+                    :value="r.route" 
+                    @change="send_route(car)"
+                >
+                    {{ langStore.getLabel(`simRoutes.${r.route}`) || r.route }}
+                </option>
               </select>
             </td>
-            <td><BaseButton @click="visualizing(car)" :is-active="car.visueel">{{ car.visueel ? langStore.getLabel('carTable.hideRoute') : langStore.getLabel('carTable.showRoute') }}</BaseButton></td>
+            <td class="button-cell"><BaseButton @click="visualizing(car)" :is-active="car.visueel" :disabled="car.route === 'inactive' && !car.visueel">{{ car.visueel ? langStore.getLabel('carTable.hideRoute') : langStore.getLabel('carTable.showRoute') }}</BaseButton></td>
           </tr>
         </tbody>
       </table>

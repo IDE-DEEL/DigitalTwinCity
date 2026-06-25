@@ -70,7 +70,7 @@ tbody:nth-child(even) {
 
 .package-input {
     text-align: center;
-    background-color: var(--color-table-gray1);
+    background-color: white;
     border: 1px solid rgba(0, 0, 0, 0.15);
     border-radius: 4px;
     padding: 4px 2px 4px 8px;
@@ -81,6 +81,8 @@ tbody:nth-child(even) {
 }
 
 .package-input:disabled {
+    background-color: var(--color-button-disabled);
+    color: var(--color-text-white);
     cursor: not-allowed;
 }
 
@@ -92,7 +94,7 @@ tbody:nth-child(even) {
 
 .route-select {
     text-align: center;
-    background-color: var(--color-table-gray1);
+    background-color: white;
     border: 1px solid rgba(0, 0, 0, 0.15);
     border-radius: 4px;
     padding: 4px 24px 4px 8px;
@@ -109,7 +111,22 @@ tbody:nth-child(even) {
 .route-select:focus {
     outline: none;
     border-color: var(--color-primary-blue);
-    background-color: var(--color-primary-gray1);
+}
+
+.inactive-route {
+    background-color: var(--color-primary-blue);
+    color: var(--color-text-white);
+}
+
+.inactive-route-option {
+    background-color: white;
+    color: #000;
+}
+
+.button-cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .car-id-container {
