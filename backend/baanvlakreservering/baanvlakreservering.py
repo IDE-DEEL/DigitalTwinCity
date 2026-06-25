@@ -369,7 +369,7 @@ def on_message(client, userdata, msg):
 
                 # Loop back to start when route completes.
                 if len(route[state.chosen_route[topic[1]]]) == index[topic[1]]:
-                    index[topic[1]] = 0
+                    index[topic[1]] = 1
                     if completed_houses[topic[1]] == route[state.chosen_route[topic[1]][0]]:
                         calculate_score(TRIP, WEIGHTS, topic[1])
 

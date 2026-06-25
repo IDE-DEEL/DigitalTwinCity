@@ -14,6 +14,8 @@ const langStore = useLanguageStore()
 function start() {
   if (!props.store.active) {
     props.store.sendData('activation', true)
+    props.store.sendData('load_max_packages', props.store.table_data)
+    props.store.active = true
 
     if (props.store.active) {
       elapsedTime.value = 0
@@ -29,6 +31,7 @@ function start() {
 function stop() {
   if (props.store.active) {
     props.store.sendData('activation', false)
+    props.store.active = false
     clearInterval(timer.value)
   }
 }

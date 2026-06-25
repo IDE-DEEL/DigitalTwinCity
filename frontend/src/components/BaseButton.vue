@@ -21,9 +21,11 @@ defineProps({
             'dev-small',
             'websocket',
             'login',
+            'admin-general',
             'admin-revoke',
             'admin-codes',
             'logout',
+            'table',
         ].includes(value),
     },
     isActive: {
@@ -60,19 +62,24 @@ defineEmits(['click']);
     display: flex;
     align-items: center;
     justify-content: center;
+    border: 2px outset var(--color-primary-blue);
+    box-sizing: border-box;
 }
 
 .base-button:hover {
     background-color: var(--color-primary-blue-hover);
+    border: 2px outset var(--color-primary-blue-hover);
 }
 
 .base-button:disabled {
     background-color: var(--color-button-disabled);
+    border: 2px outset var(--color-button-disabled);
     cursor: not-allowed;
 }
 
 .base-button--active {
     background-color: var(--color-button-active);
+    border: 2px outset var(--color-button-active);
 }
 
 /* Variant styles */
@@ -88,21 +95,24 @@ defineEmits(['click']);
 
 .base-button--stats-modal {
     width: 100%;
+    height: 51px;
 }
 
 .base-button--x {
     background-color: #ef9c9c;
+    border: 2px outset #ef9c9c;;
     font-weight: bold;
-    border: 2px solid #dc2626;
     width: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
+    height: 3rem;
 }
 
 .base-button--x:hover {
     background-color: #dc2626;
+    border: 2px outset #dc2626;
     transform: scale(1.1);
     box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
 }
@@ -136,6 +146,7 @@ defineEmits(['click']);
     padding: 0.5rem 1rem;
     border-radius: var(--rounded-md);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    height: 42px;
 }
 
 .base-button--login:focus {
@@ -143,6 +154,10 @@ defineEmits(['click']);
     box-shadow:
         0 0 0 2px #fff,
         0 0 0 4px #3b82f6;
+}
+
+.base-button--admin-general {
+    height: 50px;
 }
 
 .base-button--admin-revoke {
@@ -169,5 +184,9 @@ defineEmits(['click']);
 
 .base-button--logout {
     height: 35px;
+}
+
+.base-button--table {
+    height: 32px;
 }
 </style>

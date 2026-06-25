@@ -6,7 +6,7 @@
         <p class="text-xs font-semibold uppercase tracking-[0.22em] text-sky-700">{{ langStore.getLabel('adminHeader.title') }}</p>
         <h2 class="text-2xl font-bold text-slate-900">{{ langStore.getLabel('adminHeader.subTitle') }}</h2>
       </div>
-      <BaseButton @click="$emit('close-admin')">
+      <BaseButton @click="$emit('close-admin')" variant="admin-general">
         {{langStore.getLabel('adminHeader.back2Login')}}
       </BaseButton>
     </div>
@@ -68,10 +68,10 @@
               <input type="checkbox" :checked="allSelected" @change="toggleSelectAll" />
               {{ langStore.getLabel('adminManage.selectAll') }}
             </label>
-            <BaseButton @click="bulkExtendCodes" :disabled="selectedCount === 0">
+            <BaseButton @click="bulkExtendCodes" :disabled="selectedCount === 0" variant="admin-general">
               {{ langStore.getLabel('adminManage.groupExtend') }} ({{ selectedCount }})
             </BaseButton>
-            <BaseButton @click="bulkDeleteCodes" :disabled="selectedCount === 0">
+            <BaseButton @click="bulkDeleteCodes" :disabled="selectedCount === 0" variant="admin-general">
               {{ langStore.getLabel('adminManage.groupDelete') }} ({{ selectedCount }})
             </BaseButton>
           </div>
