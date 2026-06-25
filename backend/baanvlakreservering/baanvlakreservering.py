@@ -150,7 +150,7 @@ Direction = {
 # The tags in the dict below are the tags where the robot has to change direction.
 # these will probably be made into JSON files
 route = {
-    "route_1": [6, ["04:8E:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+    "route_1": [6, ["04:A2:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:8E:41:6D:BC:2A:81", Direction["STRAIGHT"]],
                 ["04:89:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:A1:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:3F:78:16:23:00:01", Direction["STRAIGHT"]],
                 ["53:40:78:16:23:00:01", Direction["STRAIGHT"]], ["53:45:78:16:23:00:01", Direction["STRAIGHT"]], ["53:3E:78:16:23:00:01", Direction["STRAIGHT"]],
                 ["04:6F:41:6D:BC:2A:81", Direction["LEFT"]], ["04:77:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:75:41:6D:BC:2A:81", Direction["STRAIGHT"]],
@@ -185,11 +185,11 @@ route = {
 }
 
 Depot_exit_route = {
-    "auto_A": [["04:CA:41:6D:BC:2A:81", Direction["LEFT"]], ["53:18:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:42:7A:16:23:00:01", Direction["STRAIGHT"]], ["04:A2:41:6D:BC:2A:81", Direction["STRAIGHT"]]],
-    "auto_B": [["04:CB:41:6D:BC:2A:81", Direction["LEFT"]], ["53:23:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:38:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:42:7A:16:23:00:01", Direction["STRAIGHT"]], ["04:A2:41:6D:BC:2A:81", Direction["STRAIGHT"]]],
-    "auto_C": [["04:CC:41:6D:BC:2A:81", Direction["LEFT"]], ["04:C5:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:39:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:38:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:42:7A:16:23:00:01", Direction["STRAIGHT"]], ["04:A2:41:6D:BC:2A:81", Direction["STRAIGHT"]]],
-    "auto_D": [["04:CD:41:6D:BC:2A:81", Direction["LEFT"]], ["53:21:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:3A:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:39:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:38:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:42:7A:16:23:00:01", Direction["STRAIGHT"]], ["04:A2:41:6D:BC:2A:81", Direction["STRAIGHT"]]],
-    "auto_E": [["04:B5:71:6E:BC:2A:81", Direction["LEFT"]], ["53:22:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:3B:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:3A:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:39:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:38:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:42:7A:16:23:00:01", Direction["STRAIGHT"]], ["04:A2:41:6D:BC:2A:81", Direction["STRAIGHT"]]]
+    "auto_A": [["04:CA:41:6D:BC:2A:81", Direction["LEFT"]], ["53:18:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:42:7A:16:23:00:01", Direction["STRAIGHT"]]],
+    "auto_B": [["04:CB:41:6D:BC:2A:81", Direction["LEFT"]], ["53:23:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:38:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:42:7A:16:23:00:01", Direction["STRAIGHT"]]],
+    "auto_C": [["04:CC:41:6D:BC:2A:81", Direction["LEFT"]], ["04:C5:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:39:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:38:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:42:7A:16:23:00:01", Direction["STRAIGHT"]]],
+    "auto_D": [["04:CD:41:6D:BC:2A:81", Direction["LEFT"]], ["53:21:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:3A:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:39:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:38:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:42:7A:16:23:00:01", Direction["STRAIGHT"]]],
+    "auto_E": [["04:B5:71:6E:BC:2A:81", Direction["LEFT"]], ["53:22:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:3B:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:3A:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:39:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:38:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:42:7A:16:23:00:01", Direction["STRAIGHT"]]]
 }
 
 Depot_route = {
