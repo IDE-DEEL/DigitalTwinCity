@@ -141,10 +141,7 @@ Direction = {
 # The tags in the dict below are the tags where the robot has to change direction.
 # these will probably be made into JSON files
 route = {
-    "route_1": [["5A:A5:97:E3:0A:41:89",Direction["LEFT"]], ["5A:95:B3:DE:0A:41:89",Direction["STRAIGHT"]], ["5A:95:B3:DE:0A:41:89", "load", 3], ["5A:25:6B:E0:0A:41:89",Direction["RIGHT"]],
-                ["5A:A5:C9:E1:0A:41:89",Direction["STRAIGHT"]], ["5A:B5:6B:DD:0A:41:89",Direction["ROUNDABOUT"]],  ["5A:F5:D5:DB:0A:41:89", Direction["RIGHT_ROUND"]],
-                ["5A:65:C3:DA:0A:41:89", Direction["STRAIGHT"]]],
-    "route_2": [6,["04:CA:41:6D:BC:2A:81", Direction["LEFT"]], ["53:18:7A:16:23:00:01", Direction["STRAIGHT"]],
+    "route_1": [6,["04:CA:41:6D:BC:2A:81", Direction["LEFT"]], ["53:18:7A:16:23:00:01", Direction["STRAIGHT"]],
                 ["53:42:7A:16:23:00:01", Direction["STRAIGHT"]], ["04:A2:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:8E:41:6D:BC:2A:81", Direction["STRAIGHT"]],
                 ["04:89:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:A1:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:3F:78:16:23:00:01", Direction["STRAIGHT"]],
                 ["53:40:78:16:23:00:01", Direction["STRAIGHT"]], ["53:45:78:16:23:00:01", Direction["STRAIGHT"]], ["53:3E:78:16:23:00:01", Direction["STRAIGHT"]],
@@ -181,7 +178,13 @@ route = {
                 ["04:E3:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:29:7A:16:23:00:01", Direction["STRAIGHT"]]]
 }
 
-
+Depot_route = {
+    "auto_A": [["04:53:41:6D:BC:2A:81", Direction["LEFT"]], ["04:FD:3A:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:DC:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:DD:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:DE:41:6D:BC:2A:81", Direction["RIGHT"]], ["04:E3:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:29:7A:16:23:00:01", Direction["STRAIGHT"]]],
+    "auto_B": [["04:53:41:6D:BC:2A:81", Direction["LEFT"]], ["04:FD:3A:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:DC:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:DD:41:6D:BC:2A:81", Direction["RIGHT"]], ["04:DE:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:2A:7A:16:23:00:01", Direction["STRAIGHT"]]],
+    "auto_C": [["04:53:41:6D:BC:2A:81", Direction["LEFT"]], ["04:FD:3A:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:DC:41:6D:BC:2A:81", Direction["RIGHT"]], ["04:DD:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:2B:7A:16:23:00:01", Direction["STRAIGHT"]]],
+    "auto_D": [["04:53:41:6D:BC:2A:81", Direction["LEFT"]], ["04:FD:3A:6D:BC:2A:81", Direction["RIGHT"]], ["04:DC:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:20:7A:16:23:00:01", Direction["STRAIGHT"]]],
+    "auto_E": [["04:53:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:FD:3A:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:33:7A:16:23:00:01", Direction["STRAIGHT"]]]
+}
 
 # Reset route index per car
 index = {
@@ -388,6 +391,7 @@ def on_message(client, userdata, msg):
 
                 # Loop back to start when route completes.
                 if len(route[state.chosen_route[topic[1]]]) == index[topic[1]]:
+
                     index[topic[1]] = 1
                     if completed_houses[topic[1]] == route[state.chosen_route[topic[1]][0]]:
                         calculate_score(TRIP, WEIGHTS, topic[1])
