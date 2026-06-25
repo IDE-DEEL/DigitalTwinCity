@@ -14,9 +14,6 @@ export function getWaypointRouteByName(routeName) {
     if (!route) {
         throw new Error(`Unknown route "${routeName}".`);
     }
-    // if (routeName === "inactive") {
-    //     return []; // Skip inactive route as the car won't be driving
-    // }
 
     const allowIncompleteRoute = false;
     return buildWaypointRouteFromTilePath(route.tiles, allowIncompleteRoute);
