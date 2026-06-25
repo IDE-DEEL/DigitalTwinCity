@@ -11,7 +11,7 @@ Then import in your own script:
     print(result["total"])
 """
 
-from score_calculator import TripData, Weights
+from backend.score.scoreCalculator import TripData, Weights
 
 
 # ─────────────────────────────────────────────
