@@ -230,8 +230,12 @@ def reset():
     
     if _client is not None:
         for car_id in packets:
-            _client.publish(f"car/{car_id}/cmd/Package", 0)
-            _client.publish(f"car/{car_id}/cmd/Screen", 0)
+            if packets[car_id] > 0:
+                _client.publish(f"car/{car_id}/cmd/Package", packets[car_id])
+                _client.publish(f"car/{car_id}/cmd/Screen", 2)
+            else:
+                _client.publish(f"car/{car_id}/cmd/Package", 0)
+                _client.publish(f"car/{car_id}/cmd/Screen", 0)
 
     packets = {
         "auto_A": 0,
@@ -249,13 +253,11 @@ def reset():
         "auto_E": 1
     }
 
-    cars = {
-        "auto_A": "04:CA:41:6D:BC:2A:81",
-        "auto_B": "04:CB:41:6D:BC:2A:81",
-        "auto_C": "04:CC:41:6D:BC:2A:81",
-        "auto_D": "04:CD:41:6D:BC:2A:81",
-        "auto_E": "04:B5:71:6E:BC:2A:81"
-    }
+    cars["auto_A"] = "04:CA:41:6D:BC:2A:81"
+    cars["auto_B"] = "04:CB:41:6D:BC:2A:81"
+    cars["auto_C"] = "04:CC:41:6D:BC:2A:81"
+    cars["auto_D"] = "04:CD:41:6D:BC:2A:81"
+    cars["auto_E"] = "04:B5:71:6E:BC:2A:81"
 
     for k in houses_receaved:
         houses_receaved[k] = 0
