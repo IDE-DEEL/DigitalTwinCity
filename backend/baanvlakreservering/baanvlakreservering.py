@@ -150,8 +150,7 @@ Direction = {
 # The tags in the dict below are the tags where the robot has to change direction.
 # these will probably be made into JSON files
 route = {
-    "route_1": [6,["04:CA:41:6D:BC:2A:81", Direction["LEFT"]], ["53:18:7A:16:23:00:01", Direction["STRAIGHT"]],
-                ["53:42:7A:16:23:00:01", Direction["STRAIGHT"]], ["04:A2:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:8E:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+    "route_1": [6, ["04:A2:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:8E:41:6D:BC:2A:81", Direction["STRAIGHT"]],
                 ["04:89:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:A1:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:3F:78:16:23:00:01", Direction["STRAIGHT"]],
                 ["53:40:78:16:23:00:01", Direction["STRAIGHT"]], ["53:45:78:16:23:00:01", Direction["STRAIGHT"]], ["53:3E:78:16:23:00:01", Direction["STRAIGHT"]],
                 ["04:6F:41:6D:BC:2A:81", Direction["LEFT"]], ["04:77:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:75:41:6D:BC:2A:81", Direction["STRAIGHT"]],
@@ -182,9 +181,15 @@ route = {
                 ["53:88:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:89:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:8A:7A:16:23:00:01", Direction["STRAIGHT"]],
                 ["53:2D:75:16:23:00:01", Direction["STRAIGHT"]], ["53:2E:75:16:23:00:01", Direction["STRAIGHT"]], ["53:23:75:16:23:00:01", Direction["STRAIGHT"]],
                 ["53:24:75:16:23:00:01", Direction["STRAIGHT"]], ["04:D3:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:12:41:6D:BC:2A:81", Direction["STRAIGHT"]],
-                ["04:11:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:53:41:6D:BC:2A:81", Direction["LEFT"]], ["04:FD:3A:6D:BC:2A:81", Direction["STRAIGHT"]],
-                ["04:DC:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:DD:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:DE:41:6D:BC:2A:81", Direction["RIGHT"]],
-                ["04:E3:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:29:7A:16:23:00:01", Direction["STRAIGHT"]]]
+                ["04:11:41:6D:BC:2A:81", Direction["STRAIGHT"]]]
+}
+
+Depot_exit_route = {
+    "auto_A": [["04:CA:41:6D:BC:2A:81", Direction["LEFT"]], ["53:18:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:42:7A:16:23:00:01", Direction["STRAIGHT"]]],
+    "auto_B": [["04:CB:41:6D:BC:2A:81", Direction["LEFT"]], ["53:23:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:38:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:42:7A:16:23:00:01", Direction["STRAIGHT"]]],
+    "auto_C": [["04:CC:41:6D:BC:2A:81", Direction["LEFT"]], ["04:C5:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:39:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:38:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:42:7A:16:23:00:01", Direction["STRAIGHT"]]],
+    "auto_D": [["04:CD:41:6D:BC:2A:81", Direction["LEFT"]], ["53:21:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:3A:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:39:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:38:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:42:7A:16:23:00:01", Direction["STRAIGHT"]]],
+    "auto_E": [["04:B5:71:6E:BC:2A:81", Direction["LEFT"]], ["53:22:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:3B:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:3A:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:39:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:38:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:42:7A:16:23:00:01", Direction["STRAIGHT"]]]
 }
 
 Depot_route = {
@@ -230,8 +235,12 @@ def reset():
     
     if _client is not None:
         for car_id in packets:
-            _client.publish(f"car/{car_id}/cmd/Package", 0)
-            _client.publish(f"car/{car_id}/cmd/Screen", 0)
+            if packets[car_id] > 0:
+                _client.publish(f"car/{car_id}/cmd/Package", packets[car_id])
+                _client.publish(f"car/{car_id}/cmd/Screen", 2)
+            else:
+                _client.publish(f"car/{car_id}/cmd/Package", 0)
+                _client.publish(f"car/{car_id}/cmd/Screen", 0)
 
     packets = {
         "auto_A": 0,
@@ -249,13 +258,11 @@ def reset():
         "auto_E": 1
     }
 
-    cars = {
-        "auto_A": "04:CA:41:6D:BC:2A:81",
-        "auto_B": "04:CB:41:6D:BC:2A:81",
-        "auto_C": "04:CC:41:6D:BC:2A:81",
-        "auto_D": "04:CD:41:6D:BC:2A:81",
-        "auto_E": "04:B5:71:6E:BC:2A:81"
-    }
+    cars["auto_A"] = "04:CA:41:6D:BC:2A:81"
+    cars["auto_B"] = "04:CB:41:6D:BC:2A:81"
+    cars["auto_C"] = "04:CC:41:6D:BC:2A:81"
+    cars["auto_D"] = "04:CD:41:6D:BC:2A:81"
+    cars["auto_E"] = "04:B5:71:6E:BC:2A:81"
 
     for k in houses_receaved:
         houses_receaved[k] = 0
@@ -348,7 +355,18 @@ def on_connect(client, userdata, flags, reason_code, properties):
     else:
         print("Connection failed:", reason_code)
 
-# Called whenever a message is received on a subscribed topic.
+def get_car_route(car_id):
+    chosen = state.chosen_route.get(car_id)
+    if not chosen or chosen == "inactive" or chosen not in route:
+        return []
+    
+    base = route[chosen]
+    
+    prefix = Depot_exit_route.get(car_id, [])
+    suffix = Depot_route.get(car_id, [])
+    return [base[0]] + prefix + base[1:] + suffix
+
+# The callback for when a PUBLISH message is received from the server.
 # Processes RFID scans and sends navigation commands based on the selected route.
 def on_message(client, userdata, msg):
     rfid = msg.payload.decode().strip()
@@ -424,9 +442,10 @@ def on_message(client, userdata, msg):
                 car_stopped.remove(i)
 
         if not is_inactive_route:
+            car_route = get_car_route(topic[1])
             # Check whether the scanned RFID matches
             # the current route waypoint
-            if rfid == route[state.chosen_route[topic[1]]][index[topic[1]]][0]:
+            if car_route and rfid == car_route[index[topic[1]]][0]:
                 #
                 # # Checks if the there are packages and loads or unloads them
                 # if route[state.chosen_route[topic[1]]][index[topic[1]]][1] == "load" or route[state.chosen_route[topic[1]]][index[topic[1]]][1] == "unload":
@@ -436,14 +455,14 @@ def on_message(client, userdata, msg):
                 # Stop vehicle before changing direction
                 client.publish(f"car/{topic[1]}/cmd/Start", "False")
                 # Send next direction command
-                client.publish(f"car/{topic[1]}/cmd/Direction", route[state.chosen_route[topic[1]]][index[topic[1]]][1])
+                client.publish(f"car/{topic[1]}/cmd/Direction", car_route[index[topic[1]]][1])
                 # Resume movement
                 client.publish(f"car/{topic[1]}/cmd/Start", "True")
                 # Advance to next route step
                 index[topic[1]] += 1
 
                 # Loop back to start when route completes.
-                if len(route[state.chosen_route[topic[1]]]) == index[topic[1]]:
+                if len(car_route) == index[topic[1]]:
 
                     index[topic[1]] = 1
                     
@@ -452,7 +471,7 @@ def on_message(client, userdata, msg):
                     if needed_to_refill > 0:
                         load_packages(topic[1], needed_to_refill, 1500, "load")
 
-                    if completed_houses[topic[1]] == route[state.chosen_route[topic[1]]][0]:
+                    if completed_houses[topic[1]] == car_route[0]:
                         calculate_score(TRIP, WEIGHTS, topic[1])
 
     elif not state.start:
