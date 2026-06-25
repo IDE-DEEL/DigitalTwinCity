@@ -14,6 +14,8 @@ const langStore = useLanguageStore()
 function start() {
   if (!props.store.active) {
     props.store.sendData('activation', true)
+    props.store.sendData('car_packages', )
+    props.store.active = true
 
     if (props.store.active) {
       elapsedTime.value = 0
@@ -29,6 +31,7 @@ function start() {
 function stop() {
   if (props.store.active) {
     props.store.sendData('activation', false)
+    props.store.active = false
     clearInterval(timer.value)
   }
 }
