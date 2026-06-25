@@ -5,7 +5,7 @@ import {
     getMapTile,
     getRotatedLanesForTile,
     OPPOSITE_DIRECTION,
-} from '../logic/service/routeBuilder.js';
+} from '../logic/domain/routeBuilder.js';
 import { getWaypointPreviewFromTilePath } from '../logic/service/routeService.js';
 
 const durationInMillis = 2000;

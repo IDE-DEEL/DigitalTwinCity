@@ -1,4 +1,4 @@
-import { TILE_LANES } from '../domain/laneCoords.js';
+import { TILE_LANES } from './laneCoords.js';
 import { useMapStore } from '../../stores/mapStore.js';
 import { normalizeDegree, rotateCardinalDirection, rotatePointNormalized } from '../utils/rotation.js';
 import { convertWaypointFromLocalToGlobal } from '../utils/coordinateConverter.js';

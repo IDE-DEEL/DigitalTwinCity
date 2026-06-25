@@ -1,5 +1,5 @@
 import { ROUTES_TILES } from "../domain/routes";
-import { buildLaneSequenceFromTilePath } from "./routeBuilder";
+import { buildLaneSequenceFromTilePath } from "../domain/routeBuilder";
 
 /**
  * Determines which routes pass through the tile where a house is located.

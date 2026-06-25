@@ -1,5 +1,5 @@
 import { ROUTES_TILES } from '../domain/routes.js';
-import { buildWaypointRouteFromTilePath } from './routeBuilder.js';
+import { buildWaypointRouteFromTilePath } from '../domain/routeBuilder.js';
 
 /**
  * Retrieves a route by name and converts it to a list of waypoints.

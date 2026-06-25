@@ -1,6 +1,6 @@
 import { getWaypointRouteByName } from "./routeService";
 import { TILE_LANES, DEPOT_ROUTE_SEQUENCES } from "../domain/laneCoords";
-import { buildWaypointsFromLaneSequence } from "./routeBuilder";
+import { buildWaypointsFromLaneSequence } from "../domain/routeBuilder.js";
 import { useMapStore } from "../../stores/mapStore.js";
 import { convertWaypointFromLocalToGlobal } from "../utils/coordinateConverter.js";
 
