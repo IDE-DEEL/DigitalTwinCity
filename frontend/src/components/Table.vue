@@ -80,7 +80,7 @@ function send_route(car) {
                 </option>
               </select>
             </td>
-            <td class="button-cell"><BaseButton @click="visualizing(car)" :is-active="car.visueel" :disabled="car.route === 'inactive' && !car.visueel">{{ car.visueel ? langStore.getLabel('carTable.hideRoute') : langStore.getLabel('carTable.showRoute') }}</BaseButton></td>
+            <td class="button-cell"><BaseButton @click="visualizing(car)" :is-active="car.visueel" :disabled="car.route === 'inactive' && !car.visueel" variant="table">{{ car.visueel ? langStore.getLabel('carTable.hideRoute') : langStore.getLabel('carTable.showRoute') }}</BaseButton></td>
           </tr>
         </tbody>
       </table>
