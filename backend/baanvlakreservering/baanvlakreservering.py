@@ -190,8 +190,14 @@ def load_packages(client, car_id, packages, ms_per_package, package_action):
 def drive_command(car_id, start_or_stop):
     print("test function, if you see this that means you aren't useless")
     start_mqtt_client()
-    _client.publish(f"car/{car_id}/cmd/Start", f"{start_or_stop}")
-
+    
+    is_inactive_route = state.chosen_route.get(car_id) == "inactive" or state.chosen_route.get(car_id) not in route
+    
+    if start_or_stop in [True, "True"] and is_inactive_route:
+        # Publish False just to be safe, or don't start it
+        _client.publish(f"car/{car_id}/cmd/Start", "False")
+    else:
+        _client.publish(f"car/{car_id}/cmd/Start", f"{start_or_stop}")
 
 # ---------------- CALLBACKS ----------------
 def on_connect(client, userdata, flags, reason_code, properties):
@@ -254,11 +260,14 @@ def on_message(client, userdata, msg):
 
         # checks if the car that made the other stop, has moved from their tag and starts the stopped car in that case.
         if len(car_stopped) != 0:
+            to_remove = []
             for i in car_stopped:
                 if cars[i[1]] != i[2]:
-                    if state.chosen_route[i[0]] != "inactive":
+                    if state.chosen_route.get(i[0]) != "inactive" and state.chosen_route.get(i[0]) in route:
                         client.publish(f"car/{i[0]}/cmd/Start", "True")
-                    car_stopped.remove(i)
+                    to_remove.append(i)
+            for i in to_remove:
+                car_stopped.remove(i)
 
         if not is_inactive_route:
             # Check whether the scanned RFID matches
