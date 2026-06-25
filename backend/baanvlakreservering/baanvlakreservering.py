@@ -320,8 +320,14 @@ def on_message(client, userdata, msg):
     # Store latest RFID scan attatched to a car
     cars[topic[1]] = rfid
     # Update vehicle status information
-    car_data = [{"auto_id": topic[1], "tag_id": rfid}]
-
+    found = False
+    for cd in car_data:
+        if cd["auto_id"] == topic[1]:
+            cd["tag_id"] = rfid
+            found = True
+            break
+    if not found:
+        car_data.append({"auto_id": topic[1], "tag_id": rfid})
 
     # Notify listeners about updated RFID information
     notify_car_data_listeners()
