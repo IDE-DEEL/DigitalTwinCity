@@ -24,9 +24,6 @@ TRIP = TripData(
     co2_emission_g_per_km   = 2.0,   # float  | CO₂ emission in grams per km
                                      #         | 0 g/km → 100 pts, 300 g/km → 0 pts
 
-    wear_factor             = 2.0,   # float  | Driving behaviour wear [0.0–1.0]
-                                     #         | 0.0 = no wear, 1.0 = maximum wear
-
     # ── Economic ─────────────────────────────
     distance_km             = 2.0,   # float  | Distance travelled in km
 
