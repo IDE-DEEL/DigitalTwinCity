@@ -11,7 +11,7 @@ seconds, etc.). Weights let you tune how much each category matters
 without touching the formulas themselves.
 
 Usage from another file:
-    from score_calculator import calculate_score, TripData, Weights
+    from scoreCalculator import calculate_score, TripData, Weights
     from config import TRIP, WEIGHTS
 
     result = calculate_score(TRIP, WEIGHTS, "car_01")
