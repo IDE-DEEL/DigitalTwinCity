@@ -5,13 +5,13 @@ Fill in all variables here for the score calculation.
 Then import in your own script:
 
     from config import TRIP, WEIGHTS
-    from scoreCalculator import calculate_score
+    from score_calculator import calculate_score
 
     result = calculate_score(TRIP, WEIGHTS)
     print(result["total"])
 """
 
-from scoreCalculator import TripData, Weights
+from score_calculator import TripData, Weights
 
 
 # ─────────────────────────────────────────────
@@ -46,12 +46,15 @@ TRIP = TripData(
 
     # ── Energy ───────────────────────────────
     soc_start_pct           = 10.0,   # float  | State of Charge at start of trip [0–100]
-                                      #         | e.g. 90 = battery 90% full
+                                     #         | e.g. 90 = battery 90% full
 
-    soc_end_pct             = 8.0,    # float  | State of Charge at end of trip [0–100]
-                                      #         | e.g. 60 = battery 60% full after trip
+    soc_end_pct             = 8.0,   # float  | State of Charge at end of trip [0–100]
+                                     #         | e.g. 60 = battery 60% full after trip
 
     # ── Safety ───────────────────────────────
+    pid_crash_value         = 0.0,   # float  | PID deviation for cornering [0.0–10.0]
+                                     #         | 0 = perfect steering, 10 = completely off track
+
     is_wrong_way            = False,   # bool   | Wrong-way driving detected? True or False
 
     idle_time_sec           = 2.0,   # float  | Unnecessary idle time in seconds
@@ -59,7 +62,7 @@ TRIP = TripData(
 
     # ── Maintenance ──────────────────────────
     speed_value             = 30.0,   # float  | Abstract speed value from vehicle [0–100]
-                                      #         | 0 = slowest, 100 = fastest; higher = more wear
+                                     #         | 0 = slowest, 100 = fastest; higher = more wear
 
     pid_wear_value          = 0.0,   # float  | PID correction intensity [0.0–1.0]
                                      #         | 0.0 = stable steering, 1.0 = heavy correction
@@ -75,9 +78,9 @@ TRIP = TripData(
 WEIGHTS = Weights(
 
     environment  = 2.0,   # float  | Weight for environment score
-    economic     = 10.0,  # float  | Weight for economic score
+    economic     = 10.0,   # float  | Weight for economic score
     social       = 1.0,   # float  | Weight for social score
-    energy       = 15.0,  # float  | Weight for energy score
+    energy       = 15.0,   # float  | Weight for energy score
     safety       = 3.0,   # float  | Weight for safety score
     maintenance  = 2.0,   # float  | Weight for maintenance score
 
