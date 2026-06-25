@@ -207,6 +207,24 @@ car_data_listeners: list[Callable[[list[dict]], None]] = []
 def getTag():
     return car_data
 
+def reset():
+    packets = {
+        "auto_A": 0,
+        "auto_B": 0,
+        "auto_C": 0,
+        "auto_D": 0,
+        "auto_E": 0
+    }
+
+    index = {
+        "auto_A": 1,
+        "auto_B": 1,
+        "auto_C": 1,
+        "auto_D": 1,
+        "auto_E": 1
+    }
+
+
 # Registers a callback function that will be called
 # whenever new RFID data is received.
 def add_car_data_listener(listener: Callable[[list[dict]], None]):

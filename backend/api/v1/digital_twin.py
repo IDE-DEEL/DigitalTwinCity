@@ -7,6 +7,7 @@ from backend.baanvlakreservering.baanvlakreservering import (
     getTag,
     drive_command,
     load_packages,
+    reset_data
 )
 from backend.score.scoreCalculator import TripData, calculate_score
 from backend.score.config import  WEIGHTS, TRIP
@@ -94,6 +95,9 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 case "load_max_packages":
                     load_all_car_packages(payload):
+
+                case "reset":
+                    reset_data()
 
                 case "car_packages":
                     await manager.broadcast_update(msg_type, payload)

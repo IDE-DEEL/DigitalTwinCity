@@ -18,13 +18,19 @@ function start() {
     props.store.active = true
 
     if (props.store.active) {
-      elapsedTime.value = 0
       const startTime = Date.now() - elapsedTime.value
 
       timer.value = setInterval(() => {
         elapsedTime.value = Date.now() - startTime
       }, 10)
     }
+  }
+}
+
+function reset() {
+  if (!props.store.active) {
+      elapsedTime.value = 0
+      props.store.sendData('reset', {})
   }
 }
 
@@ -52,6 +58,9 @@ const formattedTime = computed(() => {
     <div class="timer-button-row">
       <BaseButton variant="timer" @click="start">
         {{ langStore.getLabel('controls.startButton') }}
+      </BaseButton>
+      <BaseButton variant="timer" @click="reset">
+        {{ langStore.getLabel('controls.resetButton') }}
       </BaseButton>
       <BaseButton variant="timer" @click="stop">
         {{ langStore.getLabel('controls.stopButton') }}

@@ -41,6 +41,7 @@ export const LABELS = {
         controls: {
             simulationSpeed: "Simulatie snelheid",
             startButton: "Start",
+            resetButton: "Reset",
             stopButton: "Stop",
         },
         generalStats: {
@@ -216,6 +217,7 @@ export const LABELS = {
         controls: {
             simulationSpeed: "Simulation Speed",
             startButton: "Start",
+            resetButton: "Reset",
             stopButton: "Stop",
         },
         generalStats: {
