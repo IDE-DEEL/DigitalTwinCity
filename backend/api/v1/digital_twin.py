@@ -36,6 +36,10 @@ def ensure_car_data_broadcaster():
     add_car_data_listener(broadcast_car_data)
     _car_data_listener_registered = True
 
+def load_all_car_packages(car_data):
+    for car in car_data:
+        load_packages(car.auto_id, car.pakketje, 1500, "load")
+
 @router.websocket("/ws/digital_twin")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
@@ -87,6 +91,9 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 case "car_data":
                     await manager.broadcast_update("car_data", getTag())
+
+                case "load_max_packages":
+                    load_all_car_packages(payload):
 
                 case "car_packages":
                     await manager.broadcast_update(msg_type, payload)
