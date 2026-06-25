@@ -6,7 +6,6 @@ import Table from './Table.vue'
 import { BaseButton } from './CustomComponents.js'
 import { StatisticsModal, TripScore } from './AreaComponents.js'
 import { useLanguageStore } from '../stores/index.js'
-import '../assets/Button.css'
 import '../assets/ControlPanel.css'
 
 const props = defineProps({
