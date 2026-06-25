@@ -1,4 +1,4 @@
-import { TILE_LANES } from "../domain/laneCoords";
+import { TILE_LANES } from "./laneCoords";
 import {normalizeDegree,
     rotatePointNormalized,
     rotateCardinalDirection
@@ -15,7 +15,7 @@ function getRotation(tileType, rotation){
 }
 
 /**
- * Bouwt lane layer voor de simulatie op basis van de map tiles.
+ * Builds the lane layer for the simulation based on the map tiles.
  */
 
 export function buildLane(mapTiles) {

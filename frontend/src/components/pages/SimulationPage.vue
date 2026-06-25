@@ -1,11 +1,10 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
-import { useMapStore, useSimulationParameterStore, useSimulationStateStore, useLanguageStore, useSimulationWebSocketStore } from '../../stores';
+import { useSimulationParameterStore, useSimulationStateStore, useLanguageStore, useSimulationWebSocketStore } from '../../stores';
 import { SIMULATION_SPEED_OPTIONS, MAP_COLUMNS, MAP_ROWS, MIN_SPEED, MAX_SPEED } from '../../constants/constants.js';
 import { useDigitalSimulation } from '../../composables/useDigitalSimulation.js';
 import { useCarColors } from '../../composables/useCarColors.js';
-import { buildLane } from '../../logic/service/laneBuilder.js';
-import { normalizeDegree } from '../../logic/utils/rotation.js';
+import { getLaneLayerForSimulation } from '../../logic/service/laneService.js';
 import { Slider, DropDown, RadioGroup, SimulationTable, WebSocketStatus, RoutePolyline, Car, BaseButton, BarChart } from '../CustomComponents.js';
 import { ControlPanel, SimulationDisplay, StatisticsModal, HouseLabelsOverlay, VisualizePanel, SimulationRunStats, TripScore } from '../AreaComponents.js';
 import { devTileCoordinateOverlay, devLaneDebugOverlay, devHouseDetectionZonesOverlay, devRouteBuilder, devSensorDebugOverlay } from '../../development/DevtoolComponents.js';
@@ -25,7 +24,6 @@ const isDevelopment = import.meta.env.DEV;
 */
 const paramStore = useSimulationParameterStore();
 const stateStore = useSimulationStateStore();
-const mapStore = useMapStore();
 const langStore = useLanguageStore();
 const wsStore = useSimulationWebSocketStore();
 
@@ -57,16 +55,7 @@ const MIN_PACKAGES = 1;
     =====================
 */
 // Lane data preparation for overlays
-const lanePositions = computed(() => {
-    return mapStore.mapData.map(item => ({
-        id: `${item.x}-${item.y}`,
-        type: item.type,
-        rotation: normalizeDegree(item.rotation || 0),
-        position: { x: item.x, y: item.y },
-    }));
-});
-
-const lanes = computed(() => buildLane(lanePositions.value));
+const lanes = computed(() => getLaneLayerForSimulation());
 
 // Check if all cars have the inactive route
 const allCarsHaveInactiveRoute = computed(() => {

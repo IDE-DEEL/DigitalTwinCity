@@ -2,7 +2,6 @@
 import { ref, computed, onMounted, onUnmounted, onBeforeUnmount, reactive, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { fetchMapData } from '../logic/service/mapService.js'; 
-import { buildLane } from '../logic/service/laneBuilder.js';
 import { normalizeDegree } from '../logic/utils/rotation.js';
 import { useMapStore } from '../stores/mapStore.js';
 import { MAP_COLUMNS } from '../constants/constants.js'
@@ -13,7 +12,6 @@ import '../assets/Display.css';
 
 const store = useDigitalTwinStore();
 const { show_tags, active, table_data } = storeToRefs(store);
-const mapData = ref([]); 
 const mapStore = useMapStore();
 
 const componentDefinitions = ref({}); 
@@ -62,17 +60,6 @@ const mapComponents = computed(() => {
         };
     }).filter(c => c !== null);
 });
-
-const lanePositions = computed(() => {
-    return mapStore.mapData.map(tile => ({
-        id: `${tile.x}-${tile.y}`,
-        type: tile.type,
-        rotation: normalizeDegree(tile.rotation || 0),
-        position: { x: tile.x, y: tile.y },
-    }));
-})
-
-const lanes = computed(() => buildLane(lanePositions.value));
 
 const getComponentPosition = (component) => {
     return {
