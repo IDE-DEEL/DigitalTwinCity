@@ -6,6 +6,7 @@ from backend.baanvlakreservering.baanvlakreservering import (
     add_car_data_listener,
     getTag,
     drive_command,
+    load_packages,
 )
 from backend.score.scoreCalculator import TripData, calculate_score
 from backend.score.config import  WEIGHTS, TRIP
@@ -34,6 +35,10 @@ def ensure_car_data_broadcaster():
 
     add_car_data_listener(broadcast_car_data)
     _car_data_listener_registered = True
+
+def load_all_car_packages(car_data):
+    for car in car_data:
+        load_packages(car.auto_id, car.pakketje, 1500, "load")
 
 @router.websocket("/ws/digital_twin")
 async def websocket_endpoint(websocket: WebSocket):
@@ -81,8 +86,14 @@ async def websocket_endpoint(websocket: WebSocket):
                     drive_command("auto_E", state.start)
                     await manager.broadcast_update("activation", state.start)
 
+                    if state.start == False:
+                        await manager.broadcast_update("results", calculate_score(TRIP, WEIGHTS))
+
                 case "car_data":
                     await manager.broadcast_update("car_data", getTag())
+
+                case "load_max_packages":
+                    load_all_car_packages(payload):
 
                 case "car_packages":
                     await manager.broadcast_update(msg_type, payload)
@@ -92,9 +103,6 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 case "car_energy":
                     await manager.broadcast_update(msg_type, payload)
-
-                case "results":
-                    await manager.broadcast_update(msg_type, calculate_score(TRIP, WEIGHTS))
 
     except WebSocketDisconnect:
         manager.disconnect(websocket)
