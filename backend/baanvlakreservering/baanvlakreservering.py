@@ -52,6 +52,15 @@ packets = {
     "auto_E": 0
 }
 
+# Max capacity for each car
+max_packets = {
+    "auto_A": 0,
+    "auto_B": 0,
+    "auto_C": 0,
+    "auto_D": 0,
+    "auto_E": 0
+}
+
 completed_houses = {
     "auto_A": 0,
     "auto_B": 0,
@@ -213,6 +222,17 @@ def getTag():
 def reset():
     global packets
     global index
+    global cars
+    global car_data
+    global houses_receaved
+    global completed_houses
+    global max_packets
+    
+    if _client is not None:
+        for car_id in packets:
+            _client.publish(f"car/{car_id}/cmd/Package", 0)
+            _client.publish(f"car/{car_id}/cmd/Screen", 0)
+
     packets = {
         "auto_A": 0,
         "auto_B": 0,
@@ -228,6 +248,29 @@ def reset():
         "auto_D": 1,
         "auto_E": 1
     }
+
+    cars = {
+        "auto_A": "04:CA:41:6D:BC:2A:81",
+        "auto_B": "04:CB:41:6D:BC:2A:81",
+        "auto_C": "04:CC:41:6D:BC:2A:81",
+        "auto_D": "04:CD:41:6D:BC:2A:81",
+        "auto_E": "04:B5:71:6E:BC:2A:81"
+    }
+
+    for k in houses_receaved:
+        houses_receaved[k] = 0
+
+    for k in completed_houses:
+        completed_houses[k] = 0
+
+    for k in max_packets:
+        max_packets[k] = 0
+
+    car_data.clear()
+    for k, v in cars.items():
+        car_data.append({"auto_id": k, "tag_id": v})
+
+    notify_car_data_listeners()
 
 
 # Registers a callback function that will be called
@@ -403,7 +446,13 @@ def on_message(client, userdata, msg):
                 if len(route[state.chosen_route[topic[1]]]) == index[topic[1]]:
 
                     index[topic[1]] = 1
-                    if completed_houses[topic[1]] == route[state.chosen_route[topic[1]][0]]:
+                    
+                    # Refill packages up to max capacity
+                    needed_to_refill = max_packets[topic[1]] - packets[topic[1]]
+                    if needed_to_refill > 0:
+                        load_packages(topic[1], needed_to_refill, 1500, "load")
+
+                    if completed_houses[topic[1]] == route[state.chosen_route[topic[1]]][0]:
                         calculate_score(TRIP, WEIGHTS, topic[1])
 
     elif not state.start:

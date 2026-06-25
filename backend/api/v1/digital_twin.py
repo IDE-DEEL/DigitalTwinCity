@@ -8,6 +8,7 @@ from backend.baanvlakreservering.baanvlakreservering import (
     drive_command,
     load_packages,
     reset,
+    max_packets,
 )
 from backend.score.scoreCalculator import TripData, calculate_score
 from backend.score.config import  WEIGHTS, TRIP
@@ -39,6 +40,7 @@ def ensure_car_data_broadcaster():
 
 def load_all_car_packages(car_data):
     for car in car_data:
+        max_packets[car["auto_id"]] = car["pakketje"]
         load_packages(car["auto_id"], car["pakketje"], 1500, "load")
 
 @router.websocket("/ws/digital_twin")
