@@ -44,7 +44,8 @@ class TripData:
     distance_km:             float   # Distance travelled in km
     cost_per_km:             float   # Variable cost per km (€)
     revenue_per_package:     float   # Revenue per trip (€)
-    budget_used_pct:         float   # Percentage of total budget used [0–100]
+    start_budget:            float   # Total budget available for the fleet/period (€)
+    budget_spent:            float   # Total amount spent so far from the budget (€)
 
     # ── Social ───────────────────────────────────────────────────────
     is_rush_hour:            bool    # Driving during rush hour? (True/False)
@@ -140,11 +141,17 @@ def score_economic(data: TripData) -> float:
         by zero.
 
     Budget score:
-        budget_score = clamp(100 - budget_used_pct)
+        budget_used_pct = (budget_spent / start_budget) * 100
+        budget_score     = clamp(100 - budget_used_pct)
 
-        budget_used_pct is already on a 0–100 scale, so inverting it
-        directly gives the score: using 0% of the budget → 100 pts,
-        using 100% → 0 pts.
+        The percentage used is calculated directly from start_budget
+        (the total available budget, set in config.py) and budget_spent
+        (actual euros spent so far). This means you only need to track
+        real spending in euros — the percentage is derived automatically
+        rather than requiring you to calculate it yourself beforehand.
+        Using 0% of the budget → 100 pts, using 100% (or more) → 0 pts.
+        If start_budget is 0, budget_score defaults to 0 to avoid
+        division by zero.
 
     Weighting (0.6 / 0.4):
         Profit margin is slightly more important (60%) because it
@@ -162,7 +169,16 @@ def score_economic(data: TripData) -> float:
         # No revenue means no meaningful profit ratio can be calculated.
         profit_score = 0.0
 
-    budget_score = clamp(100 - data.budget_used_pct)
+    if data.start_budget > 0:
+        # Derive the percentage used directly from euros spent vs.
+        # the configured start budget, instead of requiring the caller
+        # to pre-calculate a percentage.
+        budget_used_pct = (data.budget_spent / data.start_budget) * 100
+    else:
+        # No budget configured means no meaningful ratio can be calculated.
+        budget_used_pct = 100.0
+
+    budget_score = clamp(100 - budget_used_pct)
     return 0.6 * profit_score + 0.4 * budget_score
 
 
@@ -471,7 +487,8 @@ class VehicleState:
     co2_emission_g_per_km: float = 80.0
 
     # Budget
-    budget_used_pct:     float = 0.0
+    start_budget:        float = 0.0   # Total budget available (set from config)
+    budget_spent:        float = 0.0   # Euros spent so far
 
     # Real-time telemetry
     current_speed:       float = 0.0
@@ -714,7 +731,8 @@ def mqtt_attempt_score_calculation(vehicle_name: str):
             distance_km             = state.distance_km,             # estimate — not sent by car
             cost_per_km             = state.cost_per_km,             # estimate — not sent by car
             revenue_per_package     = state.revenue_per_package,     # estimate — not sent by car
-            budget_used_pct         = state.budget_used_pct,         # estimate — not sent by car
+            start_budget            = state.start_budget,            # from config — not sent by car
+            budget_spent            = state.budget_spent,            # estimate — not sent by car
             is_rush_hour            = state.is_rush_hour,            # estimate — not sent by car
             soc_start_pct           = state.soc_start_pct,           # real — from 'battery' topic
             soc_end_pct             = state.soc_end_pct,             # real — from 'battery' topic
