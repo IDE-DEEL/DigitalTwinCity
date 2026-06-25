@@ -19,8 +19,8 @@ defineEmits(['reconnect']);
 </script>
 
 <template>
-    <div class="websocket-status-container">
-        <div v-if="!isConnected" class="websocket-status-content">
+    <div v-if="!isConnected" class="websocket-status-container">
+        <div class="websocket-status-content">
             <div class="websocket-status-indicator"></div>
             <span class="websocket-status-text">
                 {{ langStore.getLabel('websocket.notConnected') }}
