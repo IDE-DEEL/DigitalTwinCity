@@ -11,7 +11,7 @@ seconds, etc.). Weights let you tune how much each category matters
 without touching the formulas themselves.
 
 Usage from another file:
-    from score_calculator import calculate_score, TripData, Weights
+    from scoreCalculator import calculate_score, TripData, Weights
     from config import TRIP, WEIGHTS
 
     result = calculate_score(TRIP, WEIGHTS, "car_01")
@@ -39,13 +39,13 @@ class TripData:
 
     # ── Environment ──────────────────────────────────────────────────
     co2_emission_g_per_km:   float   # CO₂ emission in grams per km
-    wear_factor:             float   # Driving behaviour wear [0–1]
 
     # ── Economic ─────────────────────────────────────────────────────
     distance_km:             float   # Distance travelled in km
     cost_per_km:             float   # Variable cost per km (€)
     revenue_per_package:     float   # Revenue per trip (€)
-    budget_used_pct:         float   # Percentage of total budget used [0–100]
+    start_budget:            float   # Total budget available for the fleet/period (€)
+    budget_spent:            float   # Total amount spent so far from the budget (€)
 
     # ── Social ───────────────────────────────────────────────────────
     is_rush_hour:            bool    # Driving during rush hour? (True/False)
@@ -109,10 +109,10 @@ def clamp(value: float, minimum: float = 0.0, maximum: float = 100.0) -> float:
 
 def score_environment(data: TripData) -> float:
     """
-    Combines CO₂ emission and physical wear into a single 0–100 score.
+    Converts CO₂ emission into a 0–100 score.
 
     CO₂ score:
-        co2_score = clamp(100 - co2_emission / 3)
+        S_env = clamp(100 - co2_emission / 3)
 
         Dividing by 3 maps the realistic CO₂ range (0–300 g/km) onto
         the 0–100 point scale. A petrol car typically emits ~150 g/km
@@ -120,21 +120,8 @@ def score_environment(data: TripData) -> float:
         300 g/km is used as the upper bound (score 0) because that
         represents very heavy, inefficient combustion — anything beyond
         that is capped at 0 by clamp().
-
-    Wear score:
-        wear_score = clamp((1 - wear_factor) * 100)
-
-        wear_factor is already normalised to [0–1] so we simply invert
-        it: 0 wear → 100 pts, maximum wear → 0 pts.
-
-    Weighting (0.7 / 0.3):
-        CO₂ emission is weighted more heavily (70%) because it is a
-        direct, measurable environmental impact. Wear contributes 30%
-        as a secondary environmental concern (tyre/brake particles).
     """
-    co2_score  = clamp(100 - data.co2_emission_g_per_km / 3)
-    wear_score = clamp((1 - data.wear_factor) * 100)
-    return 0.7 * co2_score + 0.3 * wear_score
+    return clamp(100 - data.co2_emission_g_per_km / 3)
 
 
 def score_economic(data: TripData) -> float:
@@ -154,11 +141,17 @@ def score_economic(data: TripData) -> float:
         by zero.
 
     Budget score:
-        budget_score = clamp(100 - budget_used_pct)
+        budget_used_pct = (budget_spent / start_budget) * 100
+        budget_score     = clamp(100 - budget_used_pct)
 
-        budget_used_pct is already on a 0–100 scale, so inverting it
-        directly gives the score: using 0% of the budget → 100 pts,
-        using 100% → 0 pts.
+        The percentage used is calculated directly from start_budget
+        (the total available budget, set in config.py) and budget_spent
+        (actual euros spent so far). This means you only need to track
+        real spending in euros — the percentage is derived automatically
+        rather than requiring you to calculate it yourself beforehand.
+        Using 0% of the budget → 100 pts, using 100% (or more) → 0 pts.
+        If start_budget is 0, budget_score defaults to 0 to avoid
+        division by zero.
 
     Weighting (0.6 / 0.4):
         Profit margin is slightly more important (60%) because it
@@ -176,7 +169,16 @@ def score_economic(data: TripData) -> float:
         # No revenue means no meaningful profit ratio can be calculated.
         profit_score = 0.0
 
-    budget_score = clamp(100 - data.budget_used_pct)
+    if data.start_budget > 0:
+        # Derive the percentage used directly from euros spent vs.
+        # the configured start budget, instead of requiring the caller
+        # to pre-calculate a percentage.
+        budget_used_pct = (data.budget_spent / data.start_budget) * 100
+    else:
+        # No budget configured means no meaningful ratio can be calculated.
+        budget_used_pct = 100.0
+
+    budget_score = clamp(100 - budget_used_pct)
     return 0.6 * profit_score + 0.4 * budget_score
 
 
@@ -430,7 +432,7 @@ try:
     MQTT_AVAILABLE = True
 except ImportError:
     MQTT_AVAILABLE = False
-    print("  paho-mqtt not installed. MQTT features disabled.")
+    print("⚠️  paho-mqtt not installed. MQTT features disabled.")
 
 from dataclasses import dataclass
 
@@ -481,12 +483,12 @@ class VehicleState:
     cost_per_km:         float = 0.0
     revenue_per_package: float = 0.0
 
-    # Emissions & wear (estimated)
+    # Emissions (estimated)
     co2_emission_g_per_km: float = 80.0
-    wear_factor:         float = 0.3
 
     # Budget
-    budget_used_pct:     float = 0.0
+    start_budget:        float = 0.0   # Total budget available (set from config)
+    budget_spent:        float = 0.0   # Euros spent so far
 
     # Real-time telemetry
     current_speed:       float = 0.0
@@ -514,7 +516,7 @@ vehicle_states = {}
 def mqtt_on_connect(client, userdata, flags, reason_code, properties):
     """Called when MQTT client connects to broker."""
     if reason_code == 0:
-        print(" Connected to MQTT broker")
+        print("✅ Connected to MQTT broker")
         for topic in MQTT_TOPICS:
             client.subscribe(topic, MQTT_QOS)
             print(f"   Subscribed: {topic}")
@@ -533,7 +535,7 @@ def mqtt_on_message(client, userdata, msg):
     # Parse topic: car/{vehicle_name}/data/{metric}
     parts = topic.split('/')
     if len(parts) < 4:
-        print(f"  Invalid topic format: {topic}")
+        print(f"⚠️  Invalid topic format: {topic}")
         return
 
     vehicle_name = parts[1]
@@ -558,7 +560,7 @@ def mqtt_on_message(client, userdata, msg):
         elif data_type == "pid":
             mqtt_handle_pid_error(vehicle_name, payload)
     except Exception as e:
-        print(f" Error processing {data_type} for {vehicle_name}: {e}")
+        print(f"❌ Error processing {data_type} for {vehicle_name}: {e}")
 
 
 # ─────────────────────────────────────────────
@@ -575,10 +577,10 @@ def mqtt_handle_rfid_tag(vehicle_name: str, rfid_uid: str):
 
     if state.trip_start_rfid is None:
         state.trip_start_rfid = rfid_uid
-        print(f" [{vehicle_name}] Trip started at RFID {rfid_uid}")
+        print(f"📍 [{vehicle_name}] Trip started at RFID {rfid_uid}")
     else:
         state.trip_end_rfid = rfid_uid
-        print(f" [{vehicle_name}] Trip ended at RFID {rfid_uid}")
+        print(f"📍 [{vehicle_name}] Trip ended at RFID {rfid_uid}")
         mqtt_attempt_score_calculation(vehicle_name)
 
 
@@ -591,17 +593,17 @@ def mqtt_handle_battery_soc(vehicle_name: str, payload: str):
     try:
         soc = float(payload)
     except ValueError:
-        print(f" Invalid battery value: {payload}")
+        print(f"⚠️  Invalid battery value: {payload}")
         return
 
     state = vehicle_states[vehicle_name]
 
     if state.soc_start_pct is None and soc < 100:
         state.soc_start_pct = soc
-        print(f" [{vehicle_name}] Trip start SoC: {soc}%")
+        print(f"🔋 [{vehicle_name}] Trip start SoC: {soc}%")
 
     state.soc_end_pct = soc
-    print(f" [{vehicle_name}] Current SoC: {soc}%")
+    print(f"🔋 [{vehicle_name}] Current SoC: {soc}%")
 
 
 def mqtt_handle_charging_state(vehicle_name: str, payload: str):
@@ -611,7 +613,7 @@ def mqtt_handle_charging_state(vehicle_name: str, payload: str):
 
     if is_charging != state.is_charging:
         state.is_charging = is_charging
-        status = " charging" if is_charging else " driving"
+        status = "🔌 charging" if is_charging else "🚗 driving"
         print(f"   [{vehicle_name}] {status}")
 
 
@@ -620,7 +622,7 @@ def mqtt_handle_speed(vehicle_name: str, payload: str):
     try:
         speed = float(payload)
     except ValueError:
-        print(f"  Invalid speed value: {payload}")
+        print(f"⚠️  Invalid speed value: {payload}")
         return
 
     state = vehicle_states[vehicle_name]
@@ -642,7 +644,7 @@ def mqtt_handle_lost_signal(vehicle_name: str, payload: str):
 
     if is_lost != state.is_lost:
         state.is_lost = is_lost
-        icon = " " if is_lost else "✅"
+        icon = "⚠️ " if is_lost else "✅"
         status = "signal lost" if is_lost else "signal restored"
         print(f"{icon} [{vehicle_name}] {status}")
 
@@ -672,7 +674,7 @@ def mqtt_handle_pid_error(vehicle_name: str, payload: str):
     try:
         pid_raw = float(payload)
     except ValueError:
-        print(f"  Invalid PID value: {payload}")
+        print(f"⚠️  Invalid PID value: {payload}")
         return
 
     state = vehicle_states[vehicle_name]
@@ -713,7 +715,7 @@ def mqtt_attempt_score_calculation(vehicle_name: str):
         return
 
     print(f"\n{'='*50}")
-    print(f" Calculating score for {vehicle_name}...")
+    print(f"📊 Calculating score for {vehicle_name}...")
     print(f"{'='*50}")
 
     # Build TripData from vehicle state.
@@ -726,11 +728,11 @@ def mqtt_attempt_score_calculation(vehicle_name: str):
     try:
         trip = TripData(
             co2_emission_g_per_km   = state.co2_emission_g_per_km,   # estimate — not sent by car
-            wear_factor             = state.wear_factor,             # estimate — not sent by car
             distance_km             = state.distance_km,             # estimate — not sent by car
             cost_per_km             = state.cost_per_km,             # estimate — not sent by car
             revenue_per_package     = state.revenue_per_package,     # estimate — not sent by car
-            budget_used_pct         = state.budget_used_pct,         # estimate — not sent by car
+            start_budget            = state.start_budget,            # from config — not sent by car
+            budget_spent            = state.budget_spent,            # estimate — not sent by car
             is_rush_hour            = state.is_rush_hour,            # estimate — not sent by car
             soc_start_pct           = state.soc_start_pct,           # real — from 'battery' topic
             soc_end_pct             = state.soc_end_pct,             # real — from 'battery' topic
@@ -741,14 +743,14 @@ def mqtt_attempt_score_calculation(vehicle_name: str):
             pid_wear_value          = state.pid_wear_value,          # real — derived from 'pid' topic
         )
     except Exception as e:
-        print(f" Failed to construct TripData: {e}")
+        print(f"❌ Failed to construct TripData: {e}")
         return
 
     # Import weights from config
     try:
         from config import WEIGHTS
     except ImportError:
-        print(" Could not import WEIGHTS from config.py")
+        print("❌ Could not import WEIGHTS from config.py")
         return
 
     # Calculate score
@@ -785,7 +787,7 @@ def start_mqtt_client():
         start_mqtt_client()  # Blocks forever
     """
     if not MQTT_AVAILABLE:
-        print(" paho-mqtt is not installed. Cannot start MQTT client.")
+        print("❌ paho-mqtt is not installed. Cannot start MQTT client.")
         print("   Install with: pip install paho-mqtt")
         return
 

@@ -5,7 +5,7 @@ Fill in all variables here for the score calculation.
 Then import in your own script:
 
     from config import TRIP, WEIGHTS
-    from score_calculator import calculate_score
+    from scoreCalculator import calculate_score
 
     result = calculate_score(TRIP, WEIGHTS)
     print(result["total"])
@@ -24,9 +24,6 @@ TRIP = TripData(
     co2_emission_g_per_km   = 2.0,   # float  | CO₂ emission in grams per km
                                      #         | 0 g/km → 100 pts, 300 g/km → 0 pts
 
-    wear_factor             = 2.0,   # float  | Driving behaviour wear [0.0–1.0]
-                                     #         | 0.0 = no wear, 1.0 = maximum wear
-
     # ── Economic ─────────────────────────────
     distance_km             = 2.0,   # float  | Distance travelled in km
 
@@ -36,8 +33,11 @@ TRIP = TripData(
     revenue_per_package     = 5.0,   # float  | Revenue per trip in euros
                                      #         | e.g. 8.0
 
-    budget_used_pct         = 7.0,   # float  | Percentage of total budget used [0–100]
-                                     #         | e.g. 40 = 40% of budget spent
+    start_budget             = 1000.0,   # float  | Total budget available for the fleet/period in euros
+                                         #         | e.g. 1000.0 = €1000 total budget to spend
+
+    budget_spent             = 70.0,   # float  | Amount already spent from the budget in euros
+                                       #         | e.g. 70.0 = €70 spent so far
 
     # ── Social ───────────────────────────────
     is_rush_hour            = False,   # bool   | Driving during rush hour? True or False
