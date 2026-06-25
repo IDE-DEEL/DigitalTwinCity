@@ -1,6 +1,6 @@
 import { getHousesForScenarioByValue } from "../domain/scenarios";
 import { HOUSE_INSTANCES } from "../domain/houseInstances";
-import { buildHouseCoordinates } from "./houseBuilder";
+import { buildHouseCoordinates } from "../domain/houseBuilder.js";
 import { findRoutesForHouse, findHousesForRoute } from "./houseRouteMatchingService";
 import { ROUTES_TILES } from "../domain/routes";
 import { useMapStore } from "../../stores/index.js";
