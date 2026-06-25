@@ -185,7 +185,6 @@ Depot_route = {
     "auto_D": [["04:53:41:6D:BC:2A:81", Direction["LEFT"]], ["04:FD:3A:6D:BC:2A:81", Direction["RIGHT"]], ["04:DC:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:20:7A:16:23:00:01", Direction["STRAIGHT"]]],
     "auto_E": [["04:53:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:FD:3A:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:33:7A:16:23:00:01", Direction["STRAIGHT"]]]
 }
-
 # Reset route index per car
 index = {
     "auto_A": 1,
@@ -212,6 +211,8 @@ def getTag():
 
 # to reset the values when the route needs to be reset
 def reset():
+    global packets
+    global index
     packets = {
         "auto_A": 0,
         "auto_B": 0,
