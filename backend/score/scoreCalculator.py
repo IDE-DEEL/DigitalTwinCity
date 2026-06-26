@@ -107,9 +107,10 @@ def clamp(value: float, minimum: float = 0.0, maximum: float = 100.0) -> float:
 # Subscores
 # ─────────────────────────────────────────────
 
-def score_environment(data: TripData) -> float:
+def score_environment(data: TripData, route_length_km: float | None = None) -> float:
     """
     Converts CO₂ emission into a 0–100 score.
+    Optionally applies a route-length penalty when route_length_km is provided.
 
     CO₂ score:
         S_env = clamp(100 - co2_emission / 3)
@@ -120,13 +121,37 @@ def score_environment(data: TripData) -> float:
         300 g/km is used as the upper bound (score 0) because that
         represents very heavy, inefficient combustion — anything beyond
         that is capped at 0 by clamp().
+
+    Route-length penalty (optional):
+        route_penalty = clamp((route_length_km / 50) * 40, 0, 40)
+
+        Only applied when route_length_km is provided (i.e. when a
+        car_id is passed to calculate_score). Longer routes mean more
+        total CO₂ emitted over the journey, even at the same g/km rate,
+        so they carry a stronger environmental penalty than economic or
+        maintenance. The ceiling of 40 points reflects that distance is
+        the primary driver of total emissions.
+
+            route   0 km → no deduction        (zero extra emissions)
+            route  25 km → 20-point deduction   (moderate total output)
+            route  50 km → 40-point deduction   (maximum penalty)
     """
-    return clamp(100 - data.co2_emission_g_per_km / 3)
+    base_score = clamp(100 - data.co2_emission_g_per_km / 3)
+
+    if route_length_km is not None:
+        # Scale route length to a max deduction of 40 pts over a 50 km window.
+        # Environment gets the largest cap because total CO₂ output scales
+        # directly with distance — twice the route means twice the emissions.
+        route_penalty = clamp((route_length_km / 50) * 40, 0, 40)
+        return clamp(base_score - route_penalty)
+
+    return base_score
 
 
-def score_economic(data: TripData) -> float:
+def score_economic(data: TripData, route_length_km: float | None = None) -> float:
     """
     Combines profit margin and budget usage into a single 0–100 score.
+    Optionally applies a route-length penalty when route_length_km is provided.
 
     Profit score:
         total_cost   = cost_per_km * distance_km
@@ -157,6 +182,23 @@ def score_economic(data: TripData) -> float:
         Profit margin is slightly more important (60%) because it
         directly measures the revenue efficiency of a trip. Budget
         management (40%) reflects longer-term financial health.
+
+    Route-length penalty (optional):
+        route_penalty = clamp((route_length_km / 50) * 30, 0, 30)
+
+        Only applied when route_length_km is provided (i.e. when a
+        car_id is passed to calculate_score). Longer routes reduce the
+        economic score because they increase operating costs, raise the
+        risk of delays, and consume more resources per delivery.
+
+        Dividing by 50 maps the reference range [0–50 km] onto [0–1],
+        then multiplying by 30 scales that to a maximum deduction of
+        30 points. A route of 50 km or longer always incurs the full
+        30-point deduction; anything above that is capped by clamp().
+
+            route   0 km → no deduction       (100% efficient)
+            route  25 km → 15-point deduction  (moderate impact)
+            route  50 km → 30-point deduction  (maximum penalty)
     """
     total_cost = data.cost_per_km * data.distance_km
     profit     = data.revenue_per_package - total_cost
@@ -179,7 +221,16 @@ def score_economic(data: TripData) -> float:
         budget_used_pct = 100.0
 
     budget_score = clamp(100 - budget_used_pct)
-    return 0.6 * profit_score + 0.4 * budget_score
+    base_score   = 0.6 * profit_score + 0.4 * budget_score
+
+    if route_length_km is not None:
+        # Scale route length to a max deduction of 30 pts over a 50 km window.
+        # Dividing by 50 normalises km to [0–1]; multiplying by 30
+        # maps that onto the [0–30] deduction range.
+        route_penalty = clamp((route_length_km / 50) * 30, 0, 30)
+        return clamp(base_score - route_penalty)
+
+    return base_score
 
 
 def score_social(data: TripData, weights: Weights) -> float:
@@ -204,9 +255,10 @@ def score_social(data: TripData, weights: Weights) -> float:
     return clamp(100 - penalty)
 
 
-def score_energy(data: TripData) -> float:
+def score_energy(data: TripData, route_length_km: float | None = None) -> float:
     """
     Measures how efficiently the battery was used during the trip.
+    Optionally applies a route-length penalty when route_length_km is provided.
 
     delta_soc  = soc_start - soc_end
     efficiency = 1 - (delta_soc / soc_start)
@@ -221,6 +273,21 @@ def score_energy(data: TripData) -> float:
     Multiplying by 100 converts the 0–1 efficiency ratio to the
     0–100 point scale. If soc_start is 0 (battery already empty)
     efficiency defaults to 0 to avoid division by zero.
+
+    Route-length penalty (optional):
+        route_penalty = clamp((route_length_km / 50) * 25, 0, 25)
+
+        Only applied when route_length_km is provided (i.e. when a
+        car_id is passed to calculate_score). Longer routes drain more
+        total charge from the battery regardless of per-km efficiency,
+        increasing the risk of arriving with insufficient charge and
+        reducing fleet flexibility. The ceiling is set to 25 points —
+        moderate, since the SoC delta already captures much of the
+        distance effect directly through the efficiency formula.
+
+            route   0 km → no deduction        (no extra drain expected)
+            route  25 km → 12.5-point deduction (moderate extra drain)
+            route  50 km → 25-point deduction   (maximum penalty)
     """
     delta_soc = data.soc_start_pct - data.soc_end_pct
     if data.soc_start_pct > 0:
@@ -232,7 +299,17 @@ def score_energy(data: TripData) -> float:
         # Cannot compute a meaningful ratio if the battery was empty
         # at the start of the trip.
         efficiency = 0.0
-    return clamp(efficiency * 100)
+
+    base_score = clamp(efficiency * 100)
+
+    if route_length_km is not None:
+        # Scale route length to a max deduction of 25 pts over a 50 km window.
+        # Kept lower than environment (40) since SoC delta already partly
+        # reflects how much distance was covered.
+        route_penalty = clamp((route_length_km / 50) * 25, 0, 25)
+        return clamp(base_score - route_penalty)
+
+    return base_score
 
 
 def score_safety(data: TripData) -> float:
@@ -286,9 +363,10 @@ def score_safety(data: TripData) -> float:
     return clamp(100 - deduction_pid - deduction_wrong - deduction_idle)
 
 
-def score_maintenance(data: TripData) -> float:
+def score_maintenance(data: TripData, route_length_km: float | None = None) -> float:
     """
     Estimates wear on the vehicle based on driving speed and steering control.
+    Optionally applies a route-length penalty when route_length_km is provided.
 
     Speed-based wear:
         S_speed = clamp(100 - speed_value * 0.6)
@@ -320,6 +398,21 @@ def score_maintenance(data: TripData) -> float:
         Speed and PID wear are weighted equally (50/50) because both
         directly contribute to mechanical degradation. A vehicle driving
         fast AND constantly correcting steering is in the worst condition.
+
+    Route-length penalty (optional):
+        route_penalty = clamp((route_length_km / 50) * 20, 0, 20)
+
+        Only applied when route_length_km is provided (i.e. when a
+        car_id is passed to calculate_score). Longer routes accumulate
+        more wear on tyres, brakes, and drive components regardless of
+        speed or steering style. The ceiling is the lowest of the four
+        affected categories (20 pts) because speed and PID already
+        capture the primary wear drivers; route length adds only the
+        baseline accumulation effect.
+
+            route   0 km → no deduction        (no accumulated wear)
+            route  25 km → 10-point deduction   (moderate accumulation)
+            route  50 km → 20-point deduction   (maximum penalty)
     """
     # Speed-based wear: higher speed = more engine/brake wear
     speed_score = clamp(100 - data.speed_value * 0.6)
@@ -329,14 +422,23 @@ def score_maintenance(data: TripData) -> float:
     pid_score = clamp((1 - data.pid_wear_value) * 100)
 
     # Combine: both factors matter equally for overall mechanical health
-    return 0.5 * speed_score + 0.5 * pid_score
+    base_score = 0.5 * speed_score + 0.5 * pid_score
+
+    if route_length_km is not None:
+        # Scale route length to a max deduction of 20 pts over a 50 km window.
+        # Lowest cap of the four categories — speed/PID already cover the
+        # main wear drivers; this adds the raw distance accumulation effect.
+        route_penalty = clamp((route_length_km / 50) * 20, 0, 20)
+        return clamp(base_score - route_penalty)
+
+    return base_score
 
 
 # ─────────────────────────────────────────────
 # Main formula
 # ─────────────────────────────────────────────
 
-def calculate_score(data: TripData, weights: Weights, car_id=None) -> dict:
+def calculate_score(data: TripData, weights: Weights, car_id=None, route_length_km: float | None = None) -> dict:
     """
     Combines all subscores into a single weighted total for one car.
 
@@ -357,27 +459,45 @@ def calculate_score(data: TripData, weights: Weights, car_id=None) -> dict:
     car_id field. This allows flexible usage: score a single car
     without needing to track an ID, or score multiple cars with IDs.
 
+    route_length_km is optional (default None). It is only applied when
+    car_id is also provided, and affects four categories:
+
+        environment  — max 40 pt deduction  (total CO₂ scales with distance)
+        economic     — max 30 pt deduction  (operating costs and delays)
+        energy       — max 25 pt deduction  (total charge drain over the route)
+        maintenance  — max 20 pt deduction  (accumulated component wear)
+
+    Passing route_length_km without car_id has no effect; the penalty is
+    silently skipped. See each score_*() function for its full formula.
+
     Returns a flat dict so the caller can access any value directly
     with result["total"] or result["safety"] without extra nesting.
     Scores are rounded to 2 decimal places for readability.
 
     Parameters
     ----------
-    data    : TripData   — trip measurements (from config.py)
-    weights : Weights    — category weights (from config.py)
-    car_id  : any        — (optional, default None) identifier for the car
+    data             : TripData          — trip measurements (from config.py)
+    weights          : Weights           — category weights (from config.py)
+    car_id           : any               — (optional, default None) identifier for the car
+    route_length_km  : float | None      — (optional, default None) planned route length in km;
+                                           only affects the economic score when car_id is provided
 
     Returns
     -------
     Flat dict with keys:
         [car_id (if provided)], environment, economic, social, energy, safety, maintenance, total
     """
-    environment = score_environment(data)
-    economic    = score_economic(data)
+    # Only pass route_length_km to score_economic when a car_id is present.
+    # Without a car_id the caller is doing a generic calculation where
+    # route context is not meaningful, so the penalty is skipped.
+    effective_route_length = route_length_km if car_id is not None else None
+
+    environment = score_environment(data, effective_route_length)
+    economic    = score_economic(data, effective_route_length)
     social      = score_social(data, weights)
-    energy      = score_energy(data)
+    energy      = score_energy(data, effective_route_length)
     safety      = score_safety(data)
-    maintenance = score_maintenance(data)
+    maintenance = score_maintenance(data, effective_route_length)
 
     weight_list = [
         weights.environment,
