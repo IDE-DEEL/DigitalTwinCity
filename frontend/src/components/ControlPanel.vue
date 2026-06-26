@@ -13,7 +13,7 @@ const props = defineProps({
   speed: { type: Number, default: 0 },
   scenarios: { type: Array, default: () => [] },
   chosenScenario: { type: String, default: '' },
-  score: { type: Number, default: 0 }
+  scores: { type: Array, default: () => [] }
 })
 
 const emit = defineEmits([
@@ -78,7 +78,7 @@ const showModal = ref(false)
         
         <StatisticsModal :is-open="showModal" @close="showModal = false" :title="langStore.getLabel('statsModal.twinTitle')">
           <template #concerns-statistics>
-              <TripScore/>
+              <TripScore :scores="scores"/>
           </template>
         </StatisticsModal>
       </div>

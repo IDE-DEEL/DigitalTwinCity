@@ -485,7 +485,7 @@ const getPackages = ((id) => {
       v-model:speed="store.speed"
       :scenarios="store.scenarios"
       v-model:chosenScenario="store.chosen_scenario"
-      :score="Number(store.results.total)"
+      :scores="store.results"
       @change-speed="store.sendData('speed', store.speed)"
       @change-scenario="store.sendData('scenario', store.chosen_scenario)"
     >
