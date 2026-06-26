@@ -9,6 +9,11 @@ Then import in your own script:
 
     result = calculate_score(TRIP, WEIGHTS)
     print(result["total"])
+
+    # Optionally pass route_length_km to penalise longer routes on the
+    # economic score. Only has an effect when car_id is also provided.
+    result = calculate_score(TRIP, WEIGHTS, "car_01", route_length_km=12.5)
+    print(result["total"])
 """
 
 from backend.score.scoreCalculator import TripData, Weights
