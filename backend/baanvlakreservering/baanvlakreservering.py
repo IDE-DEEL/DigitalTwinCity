@@ -123,6 +123,9 @@ houses_receaved = {
 
 car_stopped = []
 
+def retrieve_packages_per_house():
+    return houses_receaved
+
 # reading the tag file and making it a variable.
 try:
     file_path = Path(__file__).parent / "Tag_adjacency_list.json"
