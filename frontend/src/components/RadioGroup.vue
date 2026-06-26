@@ -109,4 +109,12 @@ defineProps({
     opacity: 0.5;
     cursor: not-allowed;
 }
+
+/* Focus state for visual clarity */
+.rg-item:focus-within .rg-button {
+    outline: none;
+    box-shadow:
+        0 0 0 2px #fff,
+        0 0 0 4px black;
+}
 </style>

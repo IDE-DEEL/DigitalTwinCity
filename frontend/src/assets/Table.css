@@ -88,8 +88,9 @@ tbody:nth-child(even) {
 
 .package-input:focus {
     outline: none;
-    border-color: var(--color-primary-blue);
-    background-color: var(--color-primary-gray1);
+    box-shadow:
+        0 0 0 2px #fff,
+        0 0 0 4px black;
 }
 
 .route-select {
@@ -112,7 +113,9 @@ tbody:nth-child(even) {
 
 .route-select:focus {
     outline: none;
-    border-color: var(--color-primary-blue);
+    box-shadow:
+        0 0 0 2px #fff,
+        0 0 0 4px black;
 }
 
 .inactive-route {

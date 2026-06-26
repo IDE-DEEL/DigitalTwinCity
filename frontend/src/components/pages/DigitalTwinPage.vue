@@ -395,6 +395,24 @@ const getPackages = ((id) => {
 
   return 0;
 })
+
+/* -------------------------
+   Timer button handlers
+--------------------------*/
+function handleTimerStart() {
+    store.sendData('activation', true);
+    store.sendData('load_max_packages', store.table_data);
+    store.active = true;
+}
+
+function handleTimerStop() {
+    store.sendData('activation', false);
+    store.active = false;
+}
+
+function handleTimerReset() {
+    store.sendData('reset', {});
+}
 </script>
 
 <template>
@@ -490,7 +508,15 @@ const getPackages = ((id) => {
       @change-scenario="store.sendData('scenario', store.chosen_scenario)"
     >
       <template #simulation-controls>
-        <Timer :store="store" />
+        <Timer
+            :isActive="store.active"
+            :showResetButton="true"
+            :resetOnStart="false"
+            variant="digital-twin"
+            @start="handleTimerStart"
+            @stop="handleTimerStop"
+            @reset="handleTimerReset"
+        />
       </template>
     </ControlPanel>
        

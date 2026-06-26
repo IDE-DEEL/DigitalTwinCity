@@ -13,7 +13,8 @@ defineProps({
         default: 'primary',
         validator: (value) => [
             'primary',
-            'timer',
+            'timer-simulation',
+            'timer-digital-twin',
             'statistics',
             'stats-modal',
             'x',
@@ -83,14 +84,26 @@ defineEmits(['click']);
     border: 2px outset var(--color-button-active);
 }
 
+.base-button:focus {
+    outline: none;
+    box-shadow:
+        0 0 0 2px #fff,
+        0 0 0 4px black;
+}
+
 /* Variant styles */
-.base-button--timer {
-    width: 88px;
+.base-button--timer-simulation {
+    width: 155px;
+    height: 36px;
+}
+
+.base-button--timer-digital-twin {
+    width: 100px;
     height: 36px;
 }
 
 .base-button--statistics {
-    width: 184px;
+    width: 316px;
     height: 40px;
 }
 
@@ -108,7 +121,7 @@ defineEmits(['click']);
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
-    height: 3rem;
+    height: 2rem;
 }
 
 .base-button--x:hover {

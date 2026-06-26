@@ -5,7 +5,7 @@ import { SIMULATION_SPEED_OPTIONS, MAP_COLUMNS, MAP_ROWS, MIN_SPEED, MAX_SPEED }
 import { useDigitalSimulation } from '../../composables/useDigitalSimulation.js';
 import { useCarColors } from '../../composables/useCarColors.js';
 import { getLaneLayerForSimulation } from '../../logic/service/laneService.js';
-import { Slider, DropDown, RadioGroup, SimulationTable, WebSocketStatus, RoutePolyline, Car, BaseButton, BarChart } from '../CustomComponents.js';
+import { Slider, DropDown, RadioGroup, SimulationTable, WebSocketStatus, RoutePolyline, Car, BaseButton, BarChart, Timer } from '../CustomComponents.js';
 import { ControlPanel, SimulationDisplay, StatisticsModal, HouseLabelsOverlay, VisualizePanel, SimulationRunStats, TripScore } from '../AreaComponents.js';
 import { devTileCoordinateOverlay, devLaneDebugOverlay, devHouseDetectionZonesOverlay, devRouteBuilder, devSensorDebugOverlay } from '../../development/DevtoolComponents.js';
 import '../../assets/MainContent.css';
@@ -314,10 +314,16 @@ const toggleSensorDebug = () => {
 
             <!-- Simulation speed, start and stop controls + stats modal open button -->
             <template #simulation-controls>
-                <div class="button-area">
-                    <BaseButton @click="handleSimulationStart" variant="timer" :disabled="stateStore.isSimulating || allCarsHaveInactiveRoute || !wsStore.isConnected"> {{ langStore.getLabel('controls.startButton') }} </BaseButton>
-                    <BaseButton @click="handleSimulationStop" variant="timer" :disabled="!stateStore.isSimulating"> {{ langStore.getLabel('controls.stopButton') }} </BaseButton>
-                </div>
+                <Timer
+                    :isActive="stateStore.isSimulating"
+                    :showResetButton="false"
+                    :resetOnStart="true"
+                    :startDisabled="allCarsHaveInactiveRoute || !wsStore.isConnected"
+                    :stopDisabled="!stateStore.isSimulating"
+                    variant="simulation"
+                    @start="handleSimulationStart"
+                    @stop="handleSimulationStop"
+                />
             </template>
         </ControlPanel>
 
@@ -366,11 +372,5 @@ const toggleSensorDebug = () => {
 
 #devtool-button.active {
     background: var(--color-button-active);
-}
-
-.button-area {
-    flex: 1;
-    display: flex;
-    gap: 8px;
 }
 </style>

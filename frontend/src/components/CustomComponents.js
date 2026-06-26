@@ -11,3 +11,4 @@ export { default as Car } from "./Car.vue";
 export { default as LangToggle } from "./LangToggle.vue";
 export { default as BaseButton } from "./BaseButton.vue";
 export { default as BarChart } from "./BarChart.vue";
+export { default as Timer } from "./Timer.vue";
