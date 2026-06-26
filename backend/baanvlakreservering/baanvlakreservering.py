@@ -495,11 +495,11 @@ def reset():
         "auto_E": 1
     }
 
-    cars["auto_A"] = "04:CA:41:6D:BC:2A:81"
-    cars["auto_B"] = "04:CB:41:6D:BC:2A:81"
-    cars["auto_C"] = "04:CC:41:6D:BC:2A:81"
-    cars["auto_D"] = "04:CD:41:6D:BC:2A:81"
-    cars["auto_E"] = "04:B5:71:6E:BC:2A:81"
+    cars["auto_A"] = "53:29:7A:16:23:00:01"
+    cars["auto_B"] = "53:2A:7A:16:23:00:01"
+    cars["auto_C"] = "53:2B:7A:16:23:00:01"
+    cars["auto_D"] = "53:20:7A:16:23:00:01"
+    cars["auto_E"] = "53:33:7A:16:23:00:01"
 
     for k in houses_receaved:
         houses_receaved[k] = 0
