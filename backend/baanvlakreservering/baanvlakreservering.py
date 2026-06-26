@@ -720,6 +720,7 @@ def on_message(client, userdata, msg):
                     if completed_houses[topic[1]] == car_route[0]:
                         calculate_score(TRIP, WEIGHTS, topic[1], ((len(car_route) - 1) * Routes_completed[topic[1]]))
                         Routes_completed[topic[1]] = 0
+                        client.publish(f"car/{topic[1]}/cmd/Start", "False")
 
     elif not state.start:
         # Emergency stop / manual stop mode
