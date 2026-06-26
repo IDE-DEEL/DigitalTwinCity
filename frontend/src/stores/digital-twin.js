@@ -46,6 +46,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
     speed: 50,
     sim_speed: 20,
     max_packages: 12,
+    houses: {},
     active: false,
     time: "00:00",
 
@@ -115,6 +116,9 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
 
           case 'results':
             this.results = payload
+
+          case 'houses':
+            this.houses = payload
         }
       }
 
