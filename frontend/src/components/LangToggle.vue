@@ -26,89 +26,90 @@ const toggleLanguage = () => {
 <style scoped>
 /* Example retrieved from: https://codepen.io/TorabRamin/pen/mqrBBj */
 .switch {
-  position: relative;
-  display: inline-block;
-  margin: 0 5px;
+    position: relative;
+    display: inline-block;
+    margin: 0 5px;
+    filter: drop-shadow(2px 2px 0px #0061bc);
 }
 
 .switch > span {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  font-weight: bold;
-  font-size: var(--text-xs);
-  text-transform: uppercase;
-  text-shadow: 0 1px 0 rgba(0, 0, 0, .06);
-  width: 50%;
-  text-align: center;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    font-weight: bold;
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, .06);
+    width: 50%;
+    text-align: center;
 }
 
 input.check-toggle-round-flat:checked ~ .off {
-  color: var(--color-primary-blue);
+    color: var(--color-primary-blue);
 }
 
 input.check-toggle-round-flat:checked ~ .on {
-  color: #fff;
+    color: #fff;
 }
 
 .switch > span.on {
-  left: 0;
-  padding-left: 4px;
-  color: var(--color-primary-blue);
+    left: 0;
+    padding-left: 4px;
+    color: var(--color-primary-blue);
 }
 
 .switch > span.off {
-  right: 0;
-  padding-right: 4px;
-  color: #fff;
+    right: 0;
+    padding-right: 4px;
+    color: #fff;
 }
 
 .check-toggle {
-  position: absolute;
-  margin-left: -9999px;
-  visibility: hidden;
+    position: absolute;
+    margin-left: -9999px;
+    visibility: hidden;
 }
 .check-toggle + label {
-  display: block;
-  position: relative;
-  cursor: pointer;
-  outline: none;
-  user-select: none;
+    display: block;
+    position: relative;
+    cursor: pointer;
+    outline: none;
+    user-select: none;
 }
 
 input.check-toggle-round-flat + label {
-  padding: 2px;
-  width: 97px;
-  height: 35px;
-  background-color: var(--color-primary-blue);
-  border-radius: 60px;
+    padding: 2px;
+    width: 97px;
+    height: 35px;
+    background-color: var(--color-primary-blue);
+    border-radius: 60px;
 }
 input.check-toggle-round-flat + label:before, input.check-toggle-round-flat + label:after {
-  display: block;
-  position: absolute;
-  content: "";
+    display: block;
+    position: absolute;
+    content: "";
 }
 
 input.check-toggle-round-flat + label:before {
-  top: 2px;
-  left: 2px;
-  bottom: 2px;
-  right: 2px;
-  background-color: var(--color-primary-blue);
-  border-radius: 60px;
+    top: 2px;
+    left: 2px;
+    bottom: 2px;
+    right: 2px;
+    background-color: var(--color-primary-blue);
+    border-radius: 60px;
 }
 input.check-toggle-round-flat + label:after {
-  top: 4px;
-  left: 4px;
-  bottom: 4px;
-  width: 48px;
-  background-color: #fff;
-  border-radius: 52px;
-  transition: margin 0.2s;
+    top: 4px;
+    left: 4px;
+    bottom: 4px;
+    width: 48px;
+    background-color: #fff;
+    border-radius: 52px;
+    transition: margin 0.2s;
 }
 
 input.check-toggle-round-flat:checked + label:after {
-  margin-left: 41px;
+    margin-left: 41px;
 }
 </style>

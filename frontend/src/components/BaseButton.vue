@@ -64,6 +64,7 @@ defineEmits(['click']);
     justify-content: center;
     border: 2px outset var(--color-primary-blue);
     box-sizing: border-box;
+    padding: 10px;
 }
 
 .base-button:hover {

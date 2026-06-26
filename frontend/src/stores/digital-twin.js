@@ -87,7 +87,14 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
 
           case 'car_data':
             console.log("car_data: ", payload)
-            this.car_data = payload
+            payload.forEach(newCar => {
+              const existingCar = this.car_data.find(c => c.auto_id === newCar.auto_id)
+              if (existingCar) {
+                existingCar.tag_id = newCar.tag_id
+              } else {
+                this.car_data.push(newCar)
+              }
+            })
             break
 
           case 'car_packages':

@@ -222,7 +222,7 @@ class SimulationService:
         num_agents = len(agents)
 
         # ── Sum ──────────────────────────────
-        total_distance = sum(agent.distance_travelled_km for agent in agents)
+        total_distance_km = sum(agent.distance_travelled_km for agent in agents)
         total_packages_delivered = sum(agent.packages_delivered for agent in agents)
         total_idle_time = sum(agent.time_delivering_seconds for agent in agents)
 
@@ -232,24 +232,22 @@ class SimulationService:
         avg_target_speed = self.model.car_target_speed
 
         # ── Cost/revenue over the entire run ────
-        total_budget = 500.0
-        total_cost = TRIP.cost_per_km * total_distance
+        total_cost = TRIP.cost_per_km * total_distance_km
         total_revenue = TRIP.revenue_per_package * total_packages_delivered
-        budget_used_pct = (total_cost / total_budget) * 100
         
         #  ── Emissions over the entire run ──────
-        total_emissions = TRIP.co2_emission_g_per_km * total_distance
+        total_emissions = TRIP.co2_emission_g_per_km * total_distance_km
 
         # ── Booleans: if 1 agent = true, count for the run ──
         any_wrong_way = any(agent.went_out_of_lane for agent in agents)
 
         trip = TripData(
             co2_emission_g_per_km    = total_emissions,
-            wear_factor              = TRIP.wear_factor,
-            distance_km              = total_distance,
+            distance_km              = total_distance_km,
             cost_per_km              = TRIP.cost_per_km,
             revenue_per_package      = total_revenue,
-            budget_used_pct          = min(budget_used_pct, 100),
+            start_budget             = TRIP.start_budget,
+            budget_spent             = total_cost,
             is_rush_hour             = TRIP.is_rush_hour,
             soc_start_pct            = avg_soc_start,
             soc_end_pct              = avg_soc_end,

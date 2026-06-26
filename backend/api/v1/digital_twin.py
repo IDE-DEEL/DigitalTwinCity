@@ -8,6 +8,7 @@ from backend.baanvlakreservering.baanvlakreservering import (
     drive_command,
     load_packages,
     reset,
+    max_packets,
 )
 from backend.score.scoreCalculator import TripData, calculate_score
 from backend.score.config import  WEIGHTS, TRIP
@@ -39,7 +40,8 @@ def ensure_car_data_broadcaster():
 
 def load_all_car_packages(car_data):
     for car in car_data:
-        load_packages(car.auto_id, car.pakketje, 1500, "load")
+        max_packets[car["auto_id"]] = car["pakketje"]
+        load_packages(car["auto_id"], car["pakketje"], 1500, "load")
 
 @router.websocket("/ws/digital_twin")
 async def websocket_endpoint(websocket: WebSocket):
@@ -54,59 +56,62 @@ async def websocket_endpoint(websocket: WebSocket):
             print(data)
             payload = data.get("payload")
 
-            match msg_type:
-                case "speed":
-                    await manager.broadcast_update(msg_type, payload)
+            try:
+                match msg_type:
+                    case "speed":
+                        await manager.broadcast_update(msg_type, payload)
 
-                case "route":
-                    print("Case werkt: ", payload)
-                    if payload["car_id"] in state.chosen_route:
-                        state.chosen_route[payload["car_id"]] = payload["route"]
+                    case "route":
+                        print("Case werkt: ", payload)
+                        if payload["car_id"] in state.chosen_route:
+                            state.chosen_route[payload["car_id"]] = payload["route"]
 
-                        print(type(payload))
-                        print(payload)
+                            print(type(payload))
+                            print(payload)
 
-                        await manager.broadcast_update(
-                            msg_type,
-                            {
-                                "car_id": payload["car_id"],
-                                "route": state.chosen_route[payload["car_id"]]
-                            }
-                        )
+                            await manager.broadcast_update(
+                                msg_type,
+                                {
+                                    "car_id": payload["car_id"],
+                                    "route": state.chosen_route[payload["car_id"]]
+                                }
+                            )
 
-                case "scenario":
-                    await manager.broadcast_update(msg_type, payload)
+                    case "scenario":
+                        await manager.broadcast_update(msg_type, payload)
 
-                case "activation":
-                    state.start = payload
-                    print(f"Activation state changed to: {state.start}")
-                    drive_command("auto_A", state.start)
-                    drive_command("auto_B", state.start)
-                    drive_command("auto_C", state.start)
-                    drive_command("auto_D", state.start)
-                    drive_command("auto_E", state.start)
-                    await manager.broadcast_update("activation", state.start)
+                    case "activation":
+                        state.start = payload
+                        print(f"Activation state changed to: {state.start}")
+                        drive_command("auto_A", state.start)
+                        drive_command("auto_B", state.start)
+                        drive_command("auto_C", state.start)
+                        drive_command("auto_D", state.start)
+                        drive_command("auto_E", state.start)
+                        await manager.broadcast_update("activation", state.start)
 
-                    if state.start == False:
-                        await manager.broadcast_update("results", calculate_score(TRIP, WEIGHTS))
+                        if state.start == False:
+                            await manager.broadcast_update("results", calculate_score(TRIP, WEIGHTS))
 
-                case "car_data":
-                    await manager.broadcast_update("car_data", getTag())
+                    case "car_data":
+                        await manager.broadcast_update("car_data", getTag())
 
-                case "load_max_packages":
-                    load_all_car_packages(payload)
+                    case "load_max_packages":
+                        load_all_car_packages(payload)
 
-                case "reset":
-                    reset()
+                    case "reset":
+                        reset()
 
-                case "car_packages":
-                    await manager.broadcast_update(msg_type, payload)
+                    case "car_packages":
+                        await manager.broadcast_update(msg_type, payload)
 
-                case "car_status":
-                    await manager.broadcast_update(msg_type, payload)
+                    case "car_status":
+                        await manager.broadcast_update(msg_type, payload)
 
-                case "car_energy":
-                    await manager.broadcast_update(msg_type, payload)
+                    case "car_energy":
+                        await manager.broadcast_update(msg_type, payload)
+            except Exception as e:
+                print(f"Error handling message {msg_type}: {e}")
 
     except WebSocketDisconnect:
         manager.disconnect(websocket)

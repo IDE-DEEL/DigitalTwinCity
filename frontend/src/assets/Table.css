@@ -105,6 +105,8 @@ tbody:nth-child(even) {
 }
 
 .route-select:disabled {
+    background-color: var(--color-button-disabled);
+    color: var(--color-text-white);
     cursor: not-allowed;
 }
 
