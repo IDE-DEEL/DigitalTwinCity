@@ -446,6 +446,14 @@ index = {
 }
 
 
+Routes_completed = {
+    "auto_A": 0,
+    "auto_B": 0,
+    "auto_C": 0,
+    "auto_D": 0,
+    "auto_E": 0
+}
+
 # Stores the latest vehicle RFID data
 car_data = []
 
@@ -702,6 +710,7 @@ def on_message(client, userdata, msg):
                 if len(car_route) == index[topic[1]]:
 
                     index[topic[1]] = 1
+                    Routes_completed[topic[1]] += 1
                     
                     # Refill packages up to max capacity
                     needed_to_refill = max_packets[topic[1]] - packets[topic[1]]
@@ -709,7 +718,8 @@ def on_message(client, userdata, msg):
                         load_packages(topic[1], needed_to_refill, 1500, "load")
 
                     if completed_houses[topic[1]] == car_route[0]:
-                        calculate_score(TRIP, WEIGHTS, topic[1])
+                        calculate_score(TRIP, WEIGHTS, topic[1], ((len(car_route) - 1) * Routes_completed[topic[1]]))
+                        Routes_completed[topic[1]] = 0
 
     elif not state.start:
         # Emergency stop / manual stop mode
