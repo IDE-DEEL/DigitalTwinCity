@@ -48,8 +48,8 @@ def load_all_car_packages(car_data):
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     ensure_car_data_broadcaster()
-    await manager.broadcast_update({"type": "car_data", "payload": getTag()})
-    await manager.broadcast_update({"type": "houses", "payload": retrieve_packages_per_house()})
+    await manager.broadcast_update("car_data", getTag())
+    await manager.broadcast_update("houses", retrieve_packages_per_house())
 
     try:
         while True:
