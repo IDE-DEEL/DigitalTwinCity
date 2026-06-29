@@ -124,7 +124,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
 
             scenario?.tags.forEach(tag => {
                 const update = payload.find(p => p.tag_id === tag.tag_id)
-                if (update) tag.undeliverd_packages = update.undeliverd_packages
+                if (update) tag.undeliverd_packages = update.remaining
             })
 
             break
