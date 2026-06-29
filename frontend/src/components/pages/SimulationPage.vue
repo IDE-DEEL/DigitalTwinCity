@@ -71,7 +71,6 @@ watch(
     () => stateStore.autoOpenStatsModal,
     (newValue) => {
         if (newValue.value) {
-            console.log("Auto-opening stats modal after simulation completion.");
             isStatsModalOpen.value = true;
             stateStore.resetAutoOpenStatsModal();
         }
@@ -88,7 +87,6 @@ const handleWebsocketReconnect = () => {
         return;
     }
     
-    console.log("Attempting to reconnect WebSocket...");
     reconnectWebSocket();
     
     reconnectCooldown.value = true;
@@ -99,7 +97,6 @@ const handleWebsocketReconnect = () => {
 };
 
 const handleSimulationStart = () => {
-    console.log('Requested simulation start with parameters: ', paramStore.collectParameters());
     startSimulation();
 };
 

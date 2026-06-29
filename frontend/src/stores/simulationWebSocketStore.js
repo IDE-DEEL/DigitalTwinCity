@@ -67,7 +67,6 @@ export const useSimulationWebSocketStore = defineStore("simulationWebSocket", ()
                 // 2. push events
                 switch (data.command) {
                     case "simulation_update":
-                        console.log("Received simulation update:", result);
                         onSimulationUpdate?.(result);
                         break;
 
