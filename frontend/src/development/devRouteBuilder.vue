@@ -143,7 +143,7 @@ const {
  * Prompts the user for a route name and formats the route tiles into code that can be pasted into the routes.js file.
  */
 function handleDevCopyRoute() {
-    const inputName = prompt('Enter route name (e.g., Route D):');
+    const inputName = prompt('Enter route name (e.g., medium_9). \nEnsure ui_labels.js is updated accordingly to include NL/EN labels for this route key.');
     if (!inputName) return;
 
     const label = inputName.trim();
@@ -168,7 +168,7 @@ function handleDevCopyRoute() {
         .join(',\n');
 
     const code = `${routeKey}: {
-        label: '${label}',
+        label: '${routeKey}',
         tiles: [
 ${tilesStr}
         ],

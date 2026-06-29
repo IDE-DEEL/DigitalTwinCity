@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onUnmounted } from 'vue';
+import { ref, computed, onUnmounted, watch } from 'vue';
 import { BaseButton } from './CustomComponents.js';
 import { useLanguageStore } from '../stores/index.js';
 
@@ -28,6 +28,33 @@ const elapsedTime = ref(0);
 
 onUnmounted(() => clearInterval(intervalId.value));
 
+function startTicking() {
+    if (intervalId.value) return; // prevent double activation
+    
+    const interval = 10;
+    const startTime = Date.now() - elapsedTime.value;
+    intervalId.value = setInterval(() => {
+        elapsedTime.value = Date.now() - startTime;
+    }, interval);
+}
+
+function stopTicking() {
+    clearInterval(intervalId.value);
+    intervalId.value = null;
+}
+
+watch(
+    () => props.isActive,
+    (active) => {
+        if (active) {
+            startTicking();
+        } else {
+            stopTicking();
+        }
+    },
+    { immediate: true }
+);
+
 function start() {
     if (props.isActive || props.startDisabled) return;
 
@@ -36,19 +63,11 @@ function start() {
     }
 
     emit('start');
-
-    const interval = 10;
-    const startTime = Date.now() - elapsedTime.value;
-    intervalId.value = setInterval(() => {
-        elapsedTime.value = Date.now() - startTime;
-    }, interval);
 }
 
 function stop() {
     if (!props.isActive || props.stopDisabled) return;
-
     emit('stop');
-    clearInterval(intervalId.value);
 }
 
 function reset() {
