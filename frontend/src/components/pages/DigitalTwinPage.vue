@@ -1,5 +1,6 @@
 <script setup>
 import '../../assets/MainContent.css'
+import '../../assets/DigitalTwinPage.css'
 import '../../assets/Cars.css'
 import ControlPanel from '../ControlPanel.vue'
 import BarChart from '../BarChart.vue'
@@ -21,6 +22,8 @@ onMounted(() => {
   store.fetchTagPositions()
   store.fetchDepotRoutes()
   store.fetchRoutes()
+  store.fetchHouses()
+  store.fetchHousesPerScenario()
 })
 
 /* -------------------------
@@ -397,6 +400,29 @@ const getPackages = ((id) => {
 })
 
 /* -------------------------
+   Show house packages
+--------------------------*/
+function createHousePackagesList() {
+  const scenario = store.scenario_houses.find(
+    s => s.Scenario === store.chosen_scenario
+  );
+
+  if (!scenario) return [];
+
+  return scenario.tags.map(tag => {
+    const house = store.houses.find(
+      h => h.tag_id === tag.tag_id
+    );
+
+    return {
+      tag_id: tag.tag_id,
+      pos: house.pos,
+      undeliverd_packages: tag.undeliverd_packages
+    };
+  });
+}
+
+/* -------------------------
    Timer button handlers
 --------------------------*/
 function handleTimerStart() {
@@ -411,6 +437,7 @@ function handleTimerStop() {
 }
 
 function handleTimerReset() {
+    store.fetchHousesPerScenario()
     store.sendData('reset', {});
 }
 </script>
@@ -468,6 +495,19 @@ function handleTimerReset() {
                 :stroke="car.color"
                 stroke-width="2" />
         </svg>
+
+        <!-- House labels for packages -->
+        <div
+          v-for="house in createHousePackagesList()"
+          :key="house.tag_id"
+          class="house-marker"
+          :style="{
+            left: `${house.pos.x * store.factor_x}px`,
+            top: `${house.pos.y * store.factor_y}px`
+          }"
+        >
+          {{ house.undeliverd_packages }}
+        </div>
       </template>
       
       <template #car>

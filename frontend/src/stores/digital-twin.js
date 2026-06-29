@@ -22,6 +22,8 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
     car_depot_routes: [],
     tag_positions: [],
     routes: [],
+    houses: [],
+    scenario_houses: [],
 
     scenarios: [
         "Rustig",
@@ -42,11 +44,10 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
     chosen_tag: {"tag_id": "1A", "tag_pos": {"x": 155, "y": 350}},
     show_tags: false,
     
-    chosen_scenario: '',
+    chosen_scenario: 'Rustig',
     speed: 50,
     sim_speed: 20,
     max_packages: 12,
-    houses: {},
     active: false,
     time: "00:00",
 
@@ -116,9 +117,18 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
 
           case 'results':
             this.results = payload
+            break
 
-          case 'houses':
-            this.houses = payload
+          case 'houses': 
+            const scenario = scenario_houses.find(s => s.Scenario === chosen_scenario);
+
+            scenario?.tags.forEach(tag => {
+                const update = payload.find(p => p.tag_id === tag.tag_id)
+                if (update) tag.undeliverd_packages = update.undeliverd_packages
+            })
+
+            break
+
         }
       }
 
@@ -203,6 +213,24 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
         this.routes = await response.json(); 
       } catch (error) {
         console.error('Kon de routes niet laden:', error);
+      }
+    },
+
+    async fetchHouses() {
+      try {
+        const response = await fetch('/data/houses.json');
+        this.houses = await response.json(); 
+      } catch (error) {
+        console.error('Kon de huizen niet laden:', error);
+      }
+    },
+
+    async fetchHousesPerScenario() {
+      try {
+        const response = await fetch('/data/scenarios.json');
+        this.scenario_houses = await response.json(); 
+      } catch (error) {
+        console.error('Kon de huizen per scenario niet laden:', error);
       }
     }
   }

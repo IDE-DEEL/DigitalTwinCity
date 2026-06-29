@@ -1,0 +1,19 @@
+.house-marker {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+
+  border: 2px solid black;
+  border-radius: 50%;
+  background: white;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 14px;
+  font-weight: bold;
+  color: black;
+
+  transform: translate(-50%, -50%);
+}

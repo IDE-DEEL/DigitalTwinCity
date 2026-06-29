@@ -1,0 +1,27 @@
+[
+    {
+        "Scenario": "Rustig", "tags": [
+            {"tag_id": "53:46:78:16:23:00:01", "undeliverd_packages": 1},
+            {"tag_id": "53:C8:7A:16:23:00:01", "undeliverd_packages": 3},
+            {"tag_id": "53:4D:75:16:23:00:01", "undeliverd_packages": 5},
+            {"tag_id": "53:0D:75:16:23:00:01", "undeliverd_packages": 3},
+            {"tag_id": "53:14:75:16:23:00:01", "undeliverd_packages": 3},
+            {"tag_id": "53:8E:73:16:23:00:01", "undeliverd_packages": 1},
+            {"tag_id": "53:5E:75:16:23:00:01", "undeliverd_packages": 3},
+            {"tag_id": "53:2E:78:16:23:00:01", "undeliverd_packages": 2},
+            {"tag_id": "53:76:78:16:23:00:01", "undeliverd_packages": 4},
+            {"tag_id": "53:C2:7A:16:23:00:01", "undeliverd_packages": 1},
+            {"tag_id": "53:D4:74:16:23:00:01", "undeliverd_packages": 2},
+            {"tag_id": "04:B2:41:6D:BC:2A:81", "undeliverd_packages": 1},
+            {"tag_id": "53:66:75:16:23:00:01", "undeliverd_packages": 2},
+            {"tag_id": "53:73:75:16:23:00:01", "undeliverd_packages": 1},
+            {"tag_id": "53:92:7A:16:23:00:01", "undeliverd_packages": 1}
+        ]
+    },
+    {
+        "Scenario": "Gemiddeld", "tags": []
+    },
+    {   
+        "Scenario": "Druk", "tags": []
+    }
+]
