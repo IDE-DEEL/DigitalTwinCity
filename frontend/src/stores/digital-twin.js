@@ -122,9 +122,12 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
           case 'houses': 
             const scenario = this.scenario_houses.find(s => s.Scenario === chosen_scenario);
 
+            console.log(scenario)
+
             scenario?.tags.forEach(tag => {
                 const update = payload.find(p => p.tag_id === tag.tag_id)
                 if (update) tag.undeliverd_packages = update.remaining
+                console.log(tag.undeliverd_packages)
             })
 
             break
