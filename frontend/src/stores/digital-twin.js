@@ -120,7 +120,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
             break
 
           case 'houses': 
-            const scenario = this.scenario_houses.find(s => s.Scenario === chosen_scenario);
+            const scenario = this.scenario_houses.find(s => s.Scenario === this.chosen_scenario);
 
             console.log(scenario)
 
