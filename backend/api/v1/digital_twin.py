@@ -49,7 +49,6 @@ async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     ensure_car_data_broadcaster()
     await manager.broadcast_update("car_data", getTag())
-    await manager.broadcast_update("houses", retrieve_packages_per_house())
 
     try:
         while True:
@@ -57,6 +56,7 @@ async def websocket_endpoint(websocket: WebSocket):
             msg_type = data.get("type")
             print(data)
             payload = data.get("payload")
+            await manager.broadcast_update("houses", retrieve_packages_per_house())
 
             try:
                 match msg_type:
