@@ -143,10 +143,6 @@ export function useDigitalSimulation(onSimulationEndedCallback) {
         });
 
         if (unreachableHouses.length > 0) {
-            console.info(
-                `Found ${unreachableHouses.length} unreachable house(es):`,
-                unreachableHouses.map(h => h.houseInstanceId)
-            );
             toast.info(languageStore.getToastMessage("info.UNREACHABLE_HOUSES"));
             return false;
         }
