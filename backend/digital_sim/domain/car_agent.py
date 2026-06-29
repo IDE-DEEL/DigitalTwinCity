@@ -32,6 +32,7 @@ class CarAgent(mesa.Agent):
         self._last_distance_travelled = 0.0
         self.initial_state_of_charge = 100.0
         self.state_of_charge = 100.0
+        self._packages_delivered_before_trip = 0
 
         # Delivery state
         self._reset_delivery_state()
@@ -249,6 +250,11 @@ class CarAgent(mesa.Agent):
         if self._movement_controller:
             return self._movement_controller.is_out_of_lane
         return False
+    
+    @property
+    def packages_delivered_this_trip(self):
+        """Get the number of packages delivered during the current trip."""
+        return self.packages_delivered - self._packages_delivered_before_trip
 
     @property
     def status(self):
@@ -354,6 +360,8 @@ class CarAgent(mesa.Agent):
         """Reset the movement controller to the start position so the agent
         can traverse the route again.
         """
+        self._packages_delivered_before_trip = self.packages_delivered
+
         if self._movement_controller:
             self._movement_controller.reset_for_new_trip()
 
@@ -406,8 +414,9 @@ class CarAgent(mesa.Agent):
                 self.pickup_time_remaining = PACKAGE_PICKUP_TIME_IN_SECONDS
 
         # If we finish the route and picked up new packages or still have packages in cargo, reset for another trip
-        if self._movement_controller.finished and packages_picked_up:
-            self._reset_route()
+        if self._movement_controller.finished:
+            if packages_picked_up or self.packages_in_cargo:
+                self._reset_route()
     
     def _check_for_deadlock(self) -> bool:
         """Check if the car is deadlocked.
@@ -418,7 +427,13 @@ class CarAgent(mesa.Agent):
         Returns:
             bool: True if the car is deadlocked, False otherwise.
         """
-        return len(self.packages_in_cargo) == self.max_packages and self.is_finished
+        car_deadlocked = (
+            self.is_finished
+            and self.packages_in_cargo
+            and self.packages_delivered_this_trip == 0
+        )
+
+        return car_deadlocked
 
     def _update_battery_usage(self) -> None:
         """Update the battery state-of-charge statistic based on distance travelled this step.
