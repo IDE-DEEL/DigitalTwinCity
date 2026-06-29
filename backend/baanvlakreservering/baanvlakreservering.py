@@ -390,7 +390,7 @@ route = {
                 ["04:1E:3B:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:CA:BA:00:63:00:01", Direction["STRAIGHT"]], ["04:56:41:6D:BC:2A:81", Direction["LEFT"]],
                 ["04:18:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:11:41:6D:BC:2A:81", Direction["STRAIGHT"]]],
 
-    "route_8": [2, ["04:A2:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:8E:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+    "route_8": [3, ["04:A2:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:8E:41:6D:BC:2A:81", Direction["STRAIGHT"]],
                 ["04:89:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:A1:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:3F:78:16:23:00:01", Direction["STRAIGHT"]],
                 ["53:40:78:16:23:00:01", Direction["STRAIGHT"]], ["53:45:78:16:23:00:01", Direction["STRAIGHT"]], ["53:3E:78:16:23:00:01", Direction["STRAIGHT"]],
                 ["04:6F:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:77:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:B4:71:6E:BC:2A:81", Direction["STRAIGHT"]],
@@ -442,7 +442,7 @@ route = {
                 ["53:85:75:16:23:00:01", Direction["RIGHT"]], ["04:1E:3B:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:CA:BA:00:63:00:01", Direction["STRAIGHT"]],
                 ["04:56:41:6D:BC:2A:81", Direction["LEFT"]], ["04:18:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:11:41:6D:BC:2A:81", Direction["STRAIGHT"]]],
                 
-    "route_10": [1, ["04:A2:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:8E:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+    "route_10": [2, ["04:A2:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:8E:41:6D:BC:2A:81", Direction["STRAIGHT"]],
                 ["04:89:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:A1:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:3F:78:16:23:00:01", Direction["STRAIGHT"]],
                 ["53:40:78:16:23:00:01", Direction["STRAIGHT"]], ["53:45:78:16:23:00:01", Direction["STRAIGHT"]], ["53:3E:78:16:23:00:01", Direction["STRAIGHT"]],
                 ["04:6F:41:6D:BC:2A:81", Direction["LEFT"]], ["04:77:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:75:41:6D:BC:2A:81", Direction["STRAIGHT"]],
@@ -613,7 +613,7 @@ route = {
                 ["04:1E:3B:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:CA:BA:00:63:00:01", Direction["STRAIGHT"]], ["04:56:41:6D:BC:2A:81", Direction["LEFT"]],
                 ["04:18:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:11:41:6D:BC:2A:81", Direction["STRAIGHT"]]],
                 
-    "route_15": [6, ["04:A2:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:8E:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+    "route_15": [5, ["04:A2:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:8E:41:6D:BC:2A:81", Direction["STRAIGHT"]],
                 ["04:89:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:A1:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:3F:78:16:23:00:01", Direction["STRAIGHT"]],
                 ["53:40:78:16:23:00:01", Direction["STRAIGHT"]], ["53:45:78:16:23:00:01", Direction["STRAIGHT"]], ["53:3E:78:16:23:00:01", Direction["STRAIGHT"]],
                 ["04:6F:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:77:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:B4:71:6E:BC:2A:81", Direction["STRAIGHT"]],
