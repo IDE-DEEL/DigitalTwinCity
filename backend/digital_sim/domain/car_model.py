@@ -209,8 +209,7 @@ class CarModel(mesa.Model):
             if agent.status != CarStatus.PARKED:
                 return False
 
-            # if agent.route and self._route_has_remaining_packages(agent.route):
-            if self.get_total_packages_undelivered() > 0:
+            if agent.route and self._route_has_remaining_packages(agent.route):
                 return False
 
         return True
