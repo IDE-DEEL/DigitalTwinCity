@@ -2,6 +2,7 @@ from typing import Optional
 
 import mesa
 
+from backend.digital_sim.domain import house
 from backend.digital_sim.domain.car_agent import CarAgent, CarStatus
 from backend.digital_sim.domain.route import Route
 from backend.digital_sim.domain.package import Package, PackageStatus
@@ -241,7 +242,7 @@ class CarModel(mesa.Model):
             True if any house on the route has IN_DEPOT packages, False otherwise
         """
         for house in route.houses:
-            if any(pkg.status == PackageStatus.IN_DEPOT for pkg in house.packages):
+            if any(pkg.status == PackageStatus.IN_DEPOT or pkg.status == PackageStatus.IN_TRANSIT for pkg in house.packages):
                 return True
         return False
 
