@@ -64,3 +64,15 @@ async def admin_login(request: AdminLoginRequest, response: Response):
 
     set_session_cookie(response, encoded_jwt, expire)
     return SessionResponse(session_name="Beheerder")
+
+@router.post("/logout")
+async def logout(response: Response):
+    response.delete_cookie(
+        key=settings.SESSION_COOKIE_NAME,
+        secure=settings.SESSION_COOKIE_SECURE,
+        samesite=settings.SESSION_COOKIE_SAMESITE,
+        domain=settings.session_cookie_domain,
+        path="/",
+        httponly=True,
+    )
+    return {"message": "Uitgelogd"}

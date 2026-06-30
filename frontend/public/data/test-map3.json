@@ -1,0 +1,13 @@
+[
+    {"x": 0, "y": 0, "type": "curve", "variant": "curve", "rotation": 270, "tileNumber": 1},
+    {"x": 1, "y": 0, "type": "roundabout", "variant": "roundabout", "rotation": 270, "tileNumber": 2},
+    {"x": 2, "y": 0, "type": "curve", "variant": "curve", "rotation": 0, "tileNumber": 3},
+
+    {"x": 0, "y": 1, "type": "straight", "variant": "straight", "rotation": 270, "tileNumber": 4},
+    {"x": 1, "y": 1, "type": "straight", "variant": "straight", "rotation": 270, "tileNumber": 5},
+    {"x": 2, "y": 1, "type": "straight", "variant": "straight", "rotation": 270, "tileNumber": 6},
+
+    {"x": 0, "y": 2, "type": "cross_split", "variant": "cross_split", "rotation": 270, "tileNumber": 7},
+    {"x": 1, "y": 2, "type": "t_split", "variant": "t_split", "rotation": 270, "tileNumber": 8},
+    {"x": 2, "y": 2, "type": "straight", "variant": "straight", "rotation": 270, "tileNumber": 9}
+]

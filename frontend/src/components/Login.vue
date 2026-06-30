@@ -1,23 +1,24 @@
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gray-100">
+    <LangToggle id="login-lang"></LangToggle>
     <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
       <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">
-        DEEL Digital Twin
+        {{ langStore.getLabel('login.title') }}
       </h2>
       
       <form @submit.prevent="handleLogin" class="space-y-4">
         <div>
           <label for="code" class="block text-sm font-medium text-gray-700">
-            Toegangscode
+            {{ langStore.getLabel('login.codeLabel') }}
           </label>
           <input 
             v-model="accessCode" 
             @input="formatAccessCode"
             type="text" 
             id="code" 
-            placeholder="Voer je code in (bijv. A1B2C-3D4E5)"
+            :placeholder="langStore.getLabel('login.codePlaceholder')"
             maxlength="11"
-            pattern="[A-Z0-9]{5}-[A-Z0-9]{5}"
+            pattern="[A-Z0-9]{5}-?[A-Z0-9]{5}"
             autocomplete="one-time-code"
             autocapitalize="characters"
             class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
@@ -29,13 +30,14 @@
           {{ errorMessage }}
         </div>
 
-        <button 
+        <BaseButton 
           type="submit" 
           :disabled="isLoading"
+          variant="login"
           class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
         >
-          {{ isLoading ? 'Laden...' : 'Inloggen' }}
-        </button>
+          {{ isLoading ? langStore.getLabel('login.loggingIn') : langStore.getLabel('login.loginButton') }}
+        </BaseButton>
       </form>
 
     </div>
@@ -46,22 +48,32 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { apiUrl } from '../config/api';
+import { useLanguageStore } from '../stores/index.js';
+import { LangToggle, BaseButton } from './CustomComponents.js';
 
 const emit = defineEmits(['authenticated']);
 const router = useRouter();
 const accessCode = ref('');
 const errorMessage = ref('');
 const isLoading = ref(false);
+const langStore = useLanguageStore();
+
+const normalizeAccessCodeForDisplay = (value) => {
+  const typedTrailingDash = value.endsWith('-');
+  const compact = value
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, '')
+    .slice(0, 10);
+
+  if (compact.length > 5 || (compact.length === 5 && typedTrailingDash)) {
+    return `${compact.slice(0, 5)}-${compact.slice(5)}`;
+  }
+
+  return compact;
+};
 
 const formatAccessCode = () => {
-  const alphanumericCode = accessCode.value
-    .replace(/[^a-zA-Z0-9]/g, '')
-    .toUpperCase()
-    .slice(0, 10);
-  const firstGroup = alphanumericCode.slice(0, 5);
-  const secondGroup = alphanumericCode.slice(5);
-
-  accessCode.value = secondGroup ? `${firstGroup}-${secondGroup}` : firstGroup;
+  accessCode.value = normalizeAccessCodeForDisplay(accessCode.value);
 };
 
 const handleLogin = async () => {
@@ -73,11 +85,11 @@ const handleLogin = async () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ code: accessCode.value.trim() })
+      body: JSON.stringify({ code: normalizeAccessCodeForDisplay(accessCode.value).trim() })
     });
 
     if (!response.ok) {
-      let errorMsg = "De ingevoerde toegangscode is ongeldig of verlopen.";
+      let errorMsg = langStore.getLabel('login.error');
       try {
         const errorData = await response.json();
         errorMsg = errorData.detail || errorMsg;
@@ -99,3 +111,11 @@ const handleLogin = async () => {
   }
 };
 </script>
+
+<style scoped>
+#login-lang {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+}
+</style>

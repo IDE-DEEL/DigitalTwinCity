@@ -1,0 +1,35 @@
+idf_component_register(
+    SRCS
+        "main.c"
+        "Sense.c"
+        "Motor_driver.c"
+        "PID_steering.c"
+        "Magnets.c"
+        "RFID.c"
+        "wifi.c"
+        "mqtt.c"
+        "oled.c"
+        "lvgl_ui.c"
+        # communications.c removed
+        "turning.c"
+    INCLUDE_DIRS
+        "."
+        "include"
+    REQUIRES
+        esp_lcd
+        driver
+        esp_driver_gpio
+        esp_driver_i2c
+        esp_driver_ledc
+        esp_driver_spi
+        esp_timer
+        esp_wifi
+        esp_event
+        nvs_flash
+        log
+        esp_driver_ledc
+        esp_timer
+        esp_adc
+        garag__esp-idf-pn532
+)
+

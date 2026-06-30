@@ -1,0 +1,20 @@
+.visualize-panel {
+    padding: 28px;
+    background-color: var(--color-primary-gray2);
+    flex: 0 1 21%;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.tags-wrapper {
+    flex-grow: 0; 
+}
+
+.spacer {
+    flex-grow: 1; 
+}
+
+.scores-wrapper {
+    flex-shrink: 0;
+}

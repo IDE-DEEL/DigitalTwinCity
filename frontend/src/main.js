@@ -1,15 +1,15 @@
 import { createApp } from 'vue'
+import { createPinia } from 'pinia'
 import App from '../src/App.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import DigitalTwinPage from './components/pages/DigitalTwinPage.vue'
 import SimulationPage from './components/pages/SimulationPage.vue'
-import { connect } from './store.js'
 import Login from './components/Login.vue'
 import AdminPage from './components/pages/AdminPage.vue'
 import { apiUrl } from './config/api'
 import './index.css'
-
-connect();
+import Toast from "vue-toastification";
+import "vue-toastification/dist/index.css";
 
 const page_router = createRouter({
     history: createWebHistory(),
@@ -30,8 +30,19 @@ async function verifySession() {
             credentials: 'include'
         });
 
-        return response.ok ? response.json() : null;
-    } catch {
+        if (!response.ok) {
+            return null;
+        }
+
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            console.error("Fout: Server stuurde geen JSON terug, maar:", contentType);
+            return null;
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error("Netwerkfout tijdens sessiecontrole:", error);
         return null;
     }
 }
@@ -94,7 +105,15 @@ page_router.beforeEach(async (to) => {
     return true;
 });
 
+const pinia = createPinia()
 const app = createApp(App)
 
 app.use(page_router)
+app.use(pinia)
+app.use(Toast, {
+    position: "top-right",
+    timeout: 5000,
+    closeOnClick: true,
+    pauseOnHover: true,
+});
 app.mount('#app')

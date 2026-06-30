@@ -1,108 +1,18 @@
+import threading
 import paho.mqtt.client as mqtt
 import ssl
+import sys
+import json
 import time
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "score"))
+from backend.score.scoreCalculator import TripData, calculate_score
+from backend.score.config import  WEIGHTS, TRIP
 from typing import Callable
 
 from backend.core.config import settings
+from backend.domain.states import state
 
-# start = [
-#     [[0],[1],[2],[0]],
-#     [[0],[3],[4],[0]],
-#     [[0],[5],[6],[0]],
-#     [[0],[7],[8],[0]]
-# ]
-#
-# crossroad_roundabout = [
-#     [[0],[1],[2],[0]],
-#     [[3],[4],[5],[6]],
-#     [[7],[8],[9],[10]],
-#     [[0],[11],[12],[0]]
-# ]
-#
-# t_junction_up = [
-#     [[0],[7],[8],[0]],
-#     [[4],[5],[5],[6]],
-#     [[1],[2],[2],[3]],
-#     [[0],[0],[0],[0]]
-# ]
-#
-# t_junction_right = [
-#     [[0],[1],[4],[0]],
-#     [[0],[2],[5],[7]],
-#     [[0],[2],[5],[8]],
-#     [[0],[3],[6],[0]]
-# ]
-#
-# t_junction_down = [
-#     [[0],[0],[0],[0]],
-#     [[3],[2],[5],[1]],
-#     [[6],[5],[5],[4]],
-#     [[0],[8],[7],[0]]
-# ]
-#
-# t_junction_left = [
-#     [[0],[6],[3],[0]],
-#     [[8],[5],[2],[0]],
-#     [[7],[5],[2],[0]],
-#     [[0],[4],[1],[0]]
-# ]
-#
-# straight_horizontal = [
-#     [[0],[0],[0],[0]],
-#     [[1],[2],[2],[3]],
-#     [[4],[5],[5],[6]],
-#     [[0],[0],[0],[0]]
-# ]
-#
-# straight_vertical = [
-#     [[0],[4],[1],[0]],
-#     [[0],[5],[2],[0]],
-#     [[0],[5],[2],[0]],
-#     [[0],[6],[3],[0]]
-# ]
-#
-# turn_NE = [
-#     [[0],[3],[6],[0]],
-#     [[0],[0],[5],[4]],
-#     [[0],[2],[0],[1]],
-#     [[0],[0],[0],[0]]
-# ]
-#
-# turn_ES = [
-#     [[0],[0],[0],[0]],
-#     [[0],[2],[0],[3]],
-#     [[0],[0],[5],[6]],
-#     [[0],[1],[4],[0]]
-# ]
-#
-# turn_SW = [
-#     [[0],[0],[0],[0]],
-#     [[1],[0],[2],[0]],
-#     [[4],[5],[0],[0]],
-#     [[0],[6],[3],[0]]
-# ]
-#
-# turn_WN = [
-#     [[0],[4],[1],[0]],
-#     [[6],[5],[0],[0]],
-#     [[3],[0],[2],[0]],
-#     [[0],[0],[0],[0]]
-# ]
-#
-#
-# '''
-# bereken alle commandos van te voren gebaseerd op wat de route is vanuit de front end, dan een lijst vullen met de commandos en per rfid tag het volgende commando doorsturen.
-# voor het genereren van de commandos of gewoon een variabele string die je elke keer weer in de lijst append of aan een variable +=
-# '''
-# # all zeros are for empty space to create a kind of x and y coordinates
-# # matrix has 4 rows and 5 columns.
-# # each
-# matrix = [
-#     [[turn_ES],            [t_junction_down],       [straight_horizontal],   [straight_horizontal],  [turn_SW]],
-#     [[t_junction_right],   [crossroad_roundabout],  [turn_SW],               [turn_ES],              [t_junction_left]],
-#     [[straight_vertical],  [turn_NE],               [crossroad_roundabout],  [t_junction_left],      [straight_vertical]],
-#     [[turn_NE],            [straight_horizontal],   [t_junction_up],         [t_junction_up],        [turn_WN]]
-# ]
 
 # ---------------- MQTT CONFIG ----------------
 MQTT_HOST = settings.MQTT_HOST
@@ -111,60 +21,748 @@ MQTT_PATH = settings.MQTT_PATH
 MQTT_USERNAME = settings.MQTT_USERNAME
 MQTT_PASSWORD = settings.MQTT_PASSWORD
 
+# Current topics to subscribe and publish too. This is temporary, as some of it is mainly for a template.
 SUB_TOPIC = "car/auto_B/data/LastRFID"
-PUB_TOPIC_DIR = "car/auto_X/cmd/direction"
+PUB_TOPIC_DIR = "car/auto_B/cmd/Direction"
 PUB_TOPIC_MOVE = "car/auto_B/cmd/Start"
 
-auto_1 = "auto_1"
-auto_2 = "auto_2"
+# Chosen route from the front end. Currently is a placeholder.
+# chosen_route = {
+    # "auto_A": "route_1",
+    # "auto_B": "route_1",
+    # "auto_C": "route_1",
+    # "auto_D": "route_1",
+    # "auto_E": "route_1"
+# }
+# The cars last scanned tag. This is for later use so we can check the adjacency.
+cars = {
+    "auto_A": "",
+    "auto_B": "",
+    "auto_C": "",
+    "auto_D": "",
+    "auto_E": ""
+}
 
-# this is a list of routes with the commands and tags
+# Active list of how many packages each car is carrying
+packets = {
+    "auto_A": 0,
+    "auto_B": 0,
+    "auto_C": 0,
+    "auto_D": 0,
+    "auto_E": 0
+}
 
-route_1 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
-route_2 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
-route_3 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
-route_4 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
-route_5 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
-route_6 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
-route_7 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
-route_8 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
-route_9 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
-route_10 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
-route_11 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
-route_12 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
-route_13 = [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]]
+# Max capacity for each car
+max_packets = {
+    "auto_A": 0,
+    "auto_B": 0,
+    "auto_C": 0,
+    "auto_D": 0,
+    "auto_E": 0
+}
 
+completed_houses = {
+    "auto_A": 0,
+    "auto_B": 0,
+    "auto_C": 0,
+    "auto_D": 0,
+    "auto_E": 0
+}
+
+# the amount of packages the houses want
+"""houses_requested = {
+"53:47:78:16:23:00:01" : 1,
+"53:C8:7A:16:23:00:01" : 3,
+"53:CB:7A:16:23:00:01" : 1,
+"53:D4:74:16:23:00:01" : 2,
+"53:4D:75:16:23:00:01" : 5,
+"53:2E:78:16:23:00:01" : 2,
+"53:77:78:16:23:00:01" : 4,
+"04:BA:41:6D:BC:2A:81" : 1,
+"53:92:7A:16:23:00:01" : 1,
+"53:7E:75:16:23:00:01" : 1,
+"53:65:75:16:23:00:01" : 2,
+"53:0E:75:16:23:00:01" : 3,
+"53:13:75:16:23:00:01" : 3,
+"53:5D:75:16:23:00:01" : 3
+}"""
+
+houses_requested = {
+"53:46:78:16:23:00:01": 1,
+"53:C8:7A:16:23:00:01": 3,
+"53:4D:75:16:23:00:01": 5,
+"53:0D:75:16:23:00:01": 3,
+"53:14:75:16:23:00:01": 3,
+"53:8E:73:16:23:00:01": 1,
+"53:5E:75:16:23:00:01": 3,
+"53:2E:78:16:23:00:01": 2,
+"53:76:78:16:23:00:01": 4,
+"53:C2:7A:16:23:00:01": 1,
+"53:D4:74:16:23:00:01": 2,
+"04:B2:41:6D:BC:2A:81": 1,
+"53:66:75:16:23:00:01": 2,
+"53:73:75:16:23:00:01": 1,
+"53:92:7A:16:23:00:01": 1
+}
+
+# the amount of packages the houses want
+"""houses_receaved = {
+"53:47:78:16:23:00:01" : 0,
+"53:C8:7A:16:23:00:01" : 0,
+"53:CB:7A:16:23:00:01" : 0,
+"53:D4:74:16:23:00:01" : 0,
+"53:4D:75:16:23:00:01" : 0,
+"53:2E:78:16:23:00:01" : 0,
+"53:77:78:16:23:00:01" : 0,
+"04:BA:41:6D:BC:2A:81" : 0,
+"53:92:7A:16:23:00:01" : 0,
+"53:7E:75:16:23:00:01" : 0,
+"53:65:75:16:23:00:01" : 0,
+"53:0E:75:16:23:00:01" : 0,
+"53:13:75:16:23:00:01" : 0,
+"53:5D:75:16:23:00:01" : 0
+}"""
+
+houses_receaved = {
+"53:46:78:16:23:00:01": 0,
+"53:C8:7A:16:23:00:01": 0,
+"53:4D:75:16:23:00:01": 0,
+"53:0D:75:16:23:00:01": 0,
+"53:14:75:16:23:00:01": 0,
+"53:8E:73:16:23:00:01": 0,
+"53:5E:75:16:23:00:01": 0,
+"53:2E:78:16:23:00:01": 0,
+"53:76:78:16:23:00:01": 0,
+"53:C2:7A:16:23:00:01": 0,
+"53:D4:74:16:23:00:01": 0,
+"04:B2:41:6D:BC:2A:81": 0,
+"53:66:75:16:23:00:01": 0,
+"53:73:75:16:23:00:01": 0,
+"53:92:7A:16:23:00:01": 0
+}
+
+car_stopped = []
+
+def retrieve_packages_per_house():
+    print("retrieve_packages_per_house aangeroepen")
+    
+    return [
+        {
+            "tag_id": tag,
+            "remaining": houses_requested[tag] - houses_receaved.get(tag, 0)
+        }
+        for tag in houses_requested
+    ]
+
+# reading the tag file and making it a variable.
+try:
+    file_path = Path(__file__).parent / "Tag_adjacency_list.json"
+    with open(file_path, "r", encoding="utf-8") as f:
+        Json_file = json.load(f)
+
+except FileNotFoundError:
+    print("Error: The file 'Tag_adjacency_list.json' was not found.")
+
+except json.JSONDecodeError:
+    print("Error: Failed to decode JSON from the file.")
+
+# The specific directions to send to the robot.
+Direction = {
+    "LEFT": 0,
+    "RIGHT": 1,
+    "STRAIGHT": 2,
+    "ROUNDABOUT": 3,
+    "RIGHT_ROUND": 4,
+    "HUB_LEFT": 5,
+    "HUB_RIGHT":6
+}
+
+# This is a list of routes with the commands and tags.
+# The tags in the dict below are the tags where the robot has to change direction.
+# these will probably be made into JSON files
 route = {
-    "route_1": [["left"], ["forward"], ["right"], ["right"], ["forward"], ["right"], ["right"], ["forward"]],
+    "route_1": [1, ["04:A2:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:8E:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:89:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:A1:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:3F:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:40:78:16:23:00:01", Direction["STRAIGHT"]], ["53:45:78:16:23:00:01", Direction["STRAIGHT"]], ["53:3E:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["04:6F:41:6D:BC:2A:81", Direction["LEFT"]], ["04:77:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:75:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:B3:71:6E:BC:2A:81", Direction["STRAIGHT"]], ["53:B3:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:B2:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:B0:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:BB:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:54:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:5C:75:16:23:00:01", Direction["STRAIGHT"]], ["53:53:75:16:23:00:01", Direction["STRAIGHT"]], ["04:4A:41:6D:BC:2A:81", Direction["LEFT"]],
+                ["04:19:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:D5:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:4D:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["53:67:78:16:23:00:01", Direction["STRAIGHT"]], ["53:58:78:16:23:00:01", Direction["STRAIGHT"]], ["53:57:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:66:78:16:23:00:01", Direction["STRAIGHT"]], ["53:4E:75:16:23:00:01", Direction["STRAIGHT"]], ["53:4B:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:43:75:16:23:00:01", Direction["STRAIGHT"]], ["53:9B:73:16:23:00:01", Direction["STRAIGHT"]], ["53:94:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:93:73:16:23:00:01", Direction["STRAIGHT"]], ["53:9E:73:16:23:00:01", Direction["STRAIGHT"]], ["53:FE:A5:02:63:00:01", Direction["STRAIGHT"]],
+                ["04:11:3B:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:FF:3A:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:48:96:02:63:00:01", Direction["STRAIGHT"]],
+                ["53:5C:73:16:23:00:01", Direction["STRAIGHT"]], ["53:5E:73:16:23:00:01", Direction["STRAIGHT"]], ["53:53:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:5D:73:16:23:00:01", Direction["STRAIGHT"]], ["53:4E:78:16:23:00:01", Direction["STRAIGHT"]], ["53:55:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:50:78:16:23:00:01", Direction["STRAIGHT"]], ["53:4F:78:16:23:00:01", Direction["STRAIGHT"]], ["53:43:73:16:23:00:01", Direction["LEFT"]],
+                ["53:46:73:16:23:00:01", Direction["STRAIGHT"]], ["53:45:73:16:23:00:01", Direction["STRAIGHT"]], ["53:4C:73:16:23:00:01", Direction["ROUNDABOUT"]],
+                ["04:7F:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:AB:41:6D:BC:2A:81", Direction["RIGHT_ROUND"]], ["04:4B:FD:68:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:99:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:2F:78:16:23:00:01", Direction["STRAIGHT"]], ["53:2E:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:26:78:16:23:00:01", Direction["STRAIGHT"]], ["53:25:78:16:23:00:01", Direction["RIGHT"]], ["5A:05:B3:DE:0A:41:89", Direction["STRAIGHT"]],
+                ["5A:35:6C:DD:0A:41:89", Direction["STRAIGHT"]], ["5A:35:D6:DB:0A:41:89", Direction["STRAIGHT"]], ["53:54:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:55:73:16:23:00:01", Direction["STRAIGHT"]], ["5A:F5:6B:DD:0A:41:89", Direction["RIGHT"]], ["53:64:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:6B:75:16:23:00:01", Direction["STRAIGHT"]], ["04:BC:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:B3:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:B9:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:C4:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:E4:74:16:23:00:01", Direction["LEFT"]],
+                ["53:7A:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:EC:74:16:23:00:01", Direction["STRAIGHT"]], ["53:ED:74:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:8C:75:16:23:00:01", Direction["STRAIGHT"]], ["53:83:75:16:23:00:01", Direction["STRAIGHT"]], ["53:84:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:93:75:16:23:00:01", Direction["STRAIGHT"]], ["53:F6:9C:01:63:00:01", Direction["LEFT"]], ["04:16:3B:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:18:3B:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:26:AE:01:63:00:01", Direction["STRAIGHT"]], ["53:93:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:88:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:89:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:8A:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:2D:75:16:23:00:01", Direction["STRAIGHT"]], ["53:2E:75:16:23:00:01", Direction["STRAIGHT"]], ["53:23:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:24:75:16:23:00:01", Direction["STRAIGHT"]], ["04:D3:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:12:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:11:41:6D:BC:2A:81", Direction["STRAIGHT"]]],
+
+    "route_2": [1, ["04:A2:41:6D:BC:2A:81", Direction["LEFT"]], ["04:8E:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:8F:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:7E:41:6D:BC:2A:81", Direction["RIGHT"]], ["53:28:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:02:EF:01:63:00:01", Direction["STRAIGHT"]], ["53:6B:73:16:23:00:01", Direction["STRAIGHT"]], ["53:1D:5C:17:23:00:01", Direction["STRAIGHT"]],
+                ["53:64:73:16:23:00:01", Direction["STRAIGHT"]], ["53:6E:73:16:23:00:01", Direction["STRAIGHT"]], ["53:FD:74:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:FE:74:16:23:00:01", Direction["STRAIGHT"]], ["53:F3:74:16:23:00:01", Direction["STRAIGHT"]], ["53:F4:74:16:23:00:01", Direction["RIGHT"]],
+                ["5A:A5:37:D9:0A:41:89", Direction["STRAIGHT"]], ["5A:E5:6B:DD:0A:41:89", Direction["STRAIGHT"]], ["5A:85:D6:DB:0A:41:89", Direction["LEFT"]],
+                ["5A:25:6C:DD:0A:41:89", Direction["STRAIGHT"]], ["5A:F5:C3:DA:0A:41:89", Direction["STRAIGHT"]], ["5A:95:80:A2:0C:41:89", Direction["STRAIGHT"]],
+                ["53:27:78:16:23:00:01", Direction["STRAIGHT"]], ["53:28:78:16:23:00:01", Direction["STRAIGHT"]], ["53:2D:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:30:78:16:23:00:01", Direction["ROUNDABOUT"]], ["04:98:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:A9:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:B1:41:6D:BC:2A:81", Direction["RIGHT_ROUND"]], ["04:AB:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:92:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["53:75:73:16:23:00:01", Direction["STRAIGHT"]], ["53:86:73:16:23:00:01", Direction["STRAIGHT"]], ["53:7C:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:73:73:16:23:00:01", Direction["STRAIGHT"]], ["53:F6:74:16:23:00:01", Direction["STRAIGHT"]], ["53:EB:74:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:EC:74:16:23:00:01", Direction["STRAIGHT"]], ["53:ED:74:16:23:00:01", Direction["STRAIGHT"]], ["53:8C:75:16:23:00:01", Direction["LEFT"]],
+                ["53:83:75:16:23:00:01", Direction["STRAIGHT"]], ["53:8D:75:16:23:00:01", Direction["STRAIGHT"]], ["53:95:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:8D:36:01:63:00:01", Direction["STRAIGHT"]], ["53:75:29:01:63:00:01", Direction["STRAIGHT"]], ["53:FF:DD:00:63:00:01", Direction["STRAIGHT"]],
+                ["53:96:53:02:63:00:01", Direction["STRAIGHT"]], ["53:7E:75:16:23:00:01", Direction["STRAIGHT"]], ["53:73:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:76:75:16:23:00:01", Direction["STRAIGHT"]], ["53:85:75:16:23:00:01", Direction["RIGHT"]], ["04:1E:3B:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["53:CA:BA:00:63:00:01", Direction["STRAIGHT"]], ["04:56:41:6D:BC:2A:81", Direction["RIGHT"]], ["04:18:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:11:41:6D:BC:2A:81", Direction["STRAIGHT"]]],
+
+    "route_3": [3, ["04:A2:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:8E:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:89:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:A1:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:3F:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:40:78:16:23:00:01", Direction["STRAIGHT"]], ["53:45:78:16:23:00:01", Direction["STRAIGHT"]], ["53:3E:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["04:6F:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:77:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:B4:71:6E:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:66:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:5E:41:6D:BC:2A:81", Direction["LEFT"]], ["04:43:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:3C:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:5D:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:14:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:13:75:16:23:00:01", Direction["STRAIGHT"]], ["53:1E:75:16:23:00:01", Direction["STRAIGHT"]], ["53:25:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["04:87:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:D4:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:D5:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:4D:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:67:78:16:23:00:01", Direction["LEFT"]], ["53:58:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:5E:78:16:23:00:01", Direction["STRAIGHT"]], ["53:5F:78:16:23:00:01", Direction["RIGHT"]], ["5A:65:C9:E1:0A:41:89", Direction["STRAIGHT"]],
+                ["5A:95:80:A2:0C:41:89", Direction["STRAIGHT"]], ["53:27:78:16:23:00:01", Direction["STRAIGHT"]], ["53:28:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:2D:78:16:23:00:01", Direction["STRAIGHT"]], ["53:30:78:16:23:00:01", Direction["ROUNDABOUT"]], ["04:98:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:A9:41:6D:BC:2A:81", Direction["RIGHT_ROUND"]], ["04:B1:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:86:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["53:4D:73:16:23:00:01", Direction["LEFT"]], ["53:44:73:16:23:00:01", Direction["STRAIGHT"]], ["53:3B:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:56:73:16:23:00:01", Direction["STRAIGHT"]], ["53:CA:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:C9:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:C8:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:D3:7A:16:23:00:01", Direction["STRAIGHT"]], ["5A:C5:37:D9:0A:41:89", Direction["LEFT"]],
+                ["5A:C5:C3:DA:0A:41:89", Direction["STRAIGHT"]], ["5A:05:6C:DD:0A:41:89", Direction["STRAIGHT"]], ["5A:15:6C:DD:0A:41:89", Direction["STRAIGHT"]],
+                ["53:E3:74:16:23:00:01", Direction["STRAIGHT"]], ["53:EC:74:16:23:00:01", Direction["STRAIGHT"]], ["53:70:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:EE:74:16:23:00:01", Direction["STRAIGHT"]], ["04:B2:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:BA:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:B4:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:BB:41:6D:BC:2A:81", Direction["RIGHT"]], ["53:6C:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:6D:75:16:23:00:01", Direction["STRAIGHT"]], ["53:7C:75:16:23:00:01", Direction["RIGHT"]], ["53:74:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:76:75:16:23:00:01", Direction["STRAIGHT"]], ["53:85:75:16:23:00:01", Direction["RIGHT"]], ["04:1E:3B:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["53:CA:BA:00:63:00:01", Direction["STRAIGHT"]], ["04:56:41:6D:BC:2A:81", Direction["RIGHT"]], ["04:18:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:11:41:6D:BC:2A:81", Direction["STRAIGHT"]]],
+                
+    "route_4": [3, ["04:A2:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:8E:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:89:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:A1:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:3F:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:40:78:16:23:00:01", Direction["STRAIGHT"]], ["53:45:78:16:23:00:01", Direction["STRAIGHT"]], ["53:3E:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["04:6F:41:6D:BC:2A:81", Direction["LEFT"]], ["04:77:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:75:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:B3:71:6E:BC:2A:81", Direction["STRAIGHT"]], ["53:B3:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:B2:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:B0:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:BB:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:54:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:5C:75:16:23:00:01", Direction["STRAIGHT"]], ["53:53:75:16:23:00:01", Direction["STRAIGHT"]], ["04:4A:41:6D:BC:2A:81", Direction["LEFT"]],
+                ["04:19:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:D5:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:4D:41:6D:BC:2A:81", Direction["RIGHT"]],
+                ["53:67:78:16:23:00:01", Direction["STRAIGHT"]], ["53:60:78:16:23:00:01", Direction["STRAIGHT"]], ["53:3E:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:46:75:16:23:00:01", Direction["STRAIGHT"]], ["53:3D:75:16:23:00:01", Direction["STRAIGHT"]], ["53:0D:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:0E:75:16:23:00:01", Direction["STRAIGHT"]], ["53:03:75:16:23:00:01", Direction["STRAIGHT"]], ["53:04:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:38:78:16:23:00:01", Direction["STRAIGHT"]], ["53:37:78:16:23:00:01", Direction["STRAIGHT"]], ["53:36:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:35:78:16:23:00:01", Direction["STRAIGHT"]], ["53:8B:73:16:23:00:01", Direction["STRAIGHT"]], ["53:8C:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:96:73:16:23:00:01", Direction["STRAIGHT"]], ["53:96:73:16:23:00:01", Direction["RIGHT"]], ["04:44:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:5D:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:14:75:16:23:00:01", Direction["STRAIGHT"]], ["53:13:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:1E:75:16:23:00:01", Direction["STRAIGHT"]], ["53:25:75:16:23:00:01", Direction["STRAIGHT"]], ["04:87:41:6D:BC:2A:81", Direction["LEFT"]],
+                ["04:D4:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:45:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:4B:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["53:56:75:16:23:00:01", Direction["STRAIGHT"]], ["53:5E:75:16:23:00:01", Direction["STRAIGHT"]], ["53:5D:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:55:75:16:23:00:01", Direction["STRAIGHT"]], ["53:AA:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:A0:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:A2:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:98:7A:16:23:00:01", Direction["RIGHT"]], ["04:6D:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:6E:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:7B:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:79:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:78:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:82:7A:16:23:00:01", Direction["RIGHT"]], ["04:9F:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:7E:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:28:7A:16:23:00:01", Direction["STRAIGHT"]], ["5A:25:B3:DE:0A:41:89", Direction["STRAIGHT"]],
+                ["5A:35:97:E3:0A:41:89", Direction["STRAIGHT"]], ["53:16:E5:00:63:00:01", Direction["STRAIGHT"]], ["53:7D:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:80:78:16:23:00:01", Direction["STRAIGHT"]], ["53:86:78:16:23:00:01", Direction["STRAIGHT"]], ["53:78:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["04:DB:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:BC:D8:01:63:00:01", Direction["STRAIGHT"]], ["53:0C:CC:01:63:00:01", Direction["STRAIGHT"]],
+                ["53:CA:BA:00:63:00:01", Direction["STRAIGHT"]], ["04:56:41:6D:BC:2A:81", Direction["LEFT"]], ["04:18:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:11:41:6D:BC:2A:81", Direction["STRAIGHT"]]],
+
+    "route_5": [1, ["04:A2:41:6D:BC:2A:81", Direction["LEFT"]], ["04:8E:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:8F:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:7E:41:6D:BC:2A:81", Direction["RIGHT"]], ["53:28:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:02:EF:01:63:00:01", Direction["STRAIGHT"]], ["53:6B:73:16:23:00:01", Direction["STRAIGHT"]], ["53:1D:5C:17:23:00:01", Direction["STRAIGHT"]],
+                ["53:64:73:16:23:00:01", Direction["STRAIGHT"]], ["53:6E:73:16:23:00:01", Direction["STRAIGHT"]], ["53:FD:74:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:FE:74:16:23:00:01", Direction["STRAIGHT"]], ["53:F3:74:16:23:00:01", Direction["STRAIGHT"]], ["53:F4:74:16:23:00:01", Direction["STRAIGHT"]],
+                ["5A:A5:37:D9:0A:41:89", Direction["LEFT"]], ["5A:A5:C3:DA:0A:41:89", Direction["STRAIGHT"]], ["53:55:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["5A:F5:6B:DD:0A:41:89", Direction["LEFT"]], ["53:64:75:16:23:00:01", Direction["STRAIGHT"]], ["53:6B:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["04:B3:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:B9:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:C4:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["53:E4:74:16:23:00:01", Direction["STRAIGHT"]], ["53:7A:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:EB:74:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:E5:74:16:23:00:01", Direction["RIGHT"]], ["5A:65:D6:DB:0A:41:89", Direction["STRAIGHT"]], ["5A:D5:00:00:00:00:00", Direction["STRAIGHT"]],
+                ["53:DB:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:D0:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:D1:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:D2:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:4B:73:16:23:00:01", Direction["STRAIGHT"]], ["53:45:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:44:73:16:23:00:01", Direction["STRAIGHT"]], ["53:4E:73:16:23:00:01", Direction["STRAIGHT"]], ["53:46:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:47:78:16:23:00:01", Direction["STRAIGHT"]], ["53:48:78:16:23:00:01", Direction["STRAIGHT"]], ["53:4D:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:66:73:16:23:00:01", Direction["STRAIGHT"]], ["53:5B:73:16:23:00:01", Direction["STRAIGHT"]], ["53:65:73:16:23:00:01", Direction["RIGHT"]],
+                ["53:2C:8C:02:63:00:01", Direction["STRAIGHT"]], ["53:B5:40:02:63:00:01", Direction["STRAIGHT"]], ["53:A8:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:AB:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:A1:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:9A:7A:16:23:00:01", Direction["ROUNDABOUT"]],
+                ["04:81:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:B1:41:6D:BC:2A:81", Direction["RIGHT_ROUND"]], ["04:AB:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:92:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:75:73:16:23:00:01", Direction["STRAIGHT"]], ["53:86:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:7C:73:16:23:00:01", Direction["STRAIGHT"]], ["53:73:73:16:23:00:01", Direction["STRAIGHT"]], ["53:F6:74:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:EB:74:16:23:00:01", Direction["STRAIGHT"]], ["53:EC:74:16:23:00:01", Direction["STRAIGHT"]], ["53:ED:74:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:8C:75:16:23:00:01", Direction["STRAIGHT"]], ["53:83:75:16:23:00:01", Direction["STRAIGHT"]], ["53:84:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:93:75:16:23:00:01", Direction["STRAIGHT"]], ["53:F6:9C:01:63:00:01", Direction["LEFT"]], ["04:16:3B:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:18:3B:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:26:AE:01:63:00:01", Direction["STRAIGHT"]], ["53:93:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:88:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:89:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:8A:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:2D:75:16:23:00:01", Direction["STRAIGHT"]], ["53:2E:75:16:23:00:01", Direction["STRAIGHT"]], ["53:23:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:24:75:16:23:00:01", Direction["STRAIGHT"]], ["04:D3:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:12:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:11:41:6D:BC:2A:81", Direction["STRAIGHT"]]],
+
+    "route_6": [6, ["04:A2:41:6D:BC:2A:81", Direction["LEFT"]], ["04:8E:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:8F:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:7E:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:28:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["5A:25:B3:DE:0A:41:89", Direction["STRAIGHT"]], ["5A:35:97:E3:0A:41:89", Direction["STRAIGHT"]], ["53:16:E5:00:63:00:01", Direction["STRAIGHT"]],
+                ["53:80:78:16:23:00:01", Direction["STRAIGHT"]], ["53:78:78:16:23:00:01", Direction["STRAIGHT"]], ["04:DB:41:6D:BC:2A:81", Direction["RIGHT"]],
+                ["04:1F:3B:6D:BC:2A:81", Direction["RIGHT"]], ["53:86:75:16:23:00:01", Direction["STRAIGHT"]], ["53:7B:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:6E:75:16:23:00:01", Direction["STRAIGHT"]], ["53:65:75:16:23:00:01", Direction["STRAIGHT"]], ["53:66:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:63:75:16:23:00:01", Direction["STRAIGHT"]], ["5A:45:D6:DB:0A:41:89", Direction["STRAIGHT"]], ["5A:95:37:D9:0A:41:89", Direction["STRAIGHT"]],
+                ["5A:A5:C3:DA:0A:41:89", Direction["STRAIGHT"]], ["5A:E5:6B:DD:0A:41:89", Direction["STRAIGHT"]], ["5A:85:D6:DB:0A:41:89", Direction["LEFT"]],
+                ["5A:25:6C:DD:0A:41:89", Direction["STRAIGHT"]], ["5A:F5:C3:DA:0A:41:89", Direction["STRAIGHT"]], ["5A:95:80:A2:0C:41:89", Direction["STRAIGHT"]],
+                ["53:27:78:16:23:00:01", Direction["STRAIGHT"]], ["53:28:78:16:23:00:01", Direction["STRAIGHT"]], ["53:2D:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:30:78:16:23:00:01", Direction["ROUNDABOUT"]], ["04:98:41:6D:BC:2A:81", Direction["RIGHT_ROUND"]], ["04:A9:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:97:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:99:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:A3:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:A9:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:B1:7A:16:23:00:01", Direction["RIGHT"]], ["53:9C:2A:02:63:00:01", Direction["STRAIGHT"]],
+                ["53:80:D5:00:63:00:01", Direction["STRAIGHT"]], ["53:9C:73:16:23:00:01", Direction["STRAIGHT"]], ["53:9D:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:A6:73:16:23:00:01", Direction["STRAIGHT"]], ["53:45:75:16:23:00:01", Direction["STRAIGHT"]], ["53:4D:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:4C:75:16:23:00:01", Direction["STRAIGHT"]], ["53:44:75:16:23:00:01", Direction["STRAIGHT"]], ["53:68:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:5E:78:16:23:00:01", Direction["STRAIGHT"]], ["53:5E:78:16:23:00:01", Direction["STRAIGHT"]], ["53:5D:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:6D:78:16:23:00:01", Direction["RIGHT"]], ["04:4C:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:4B:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["53:56:75:16:23:00:01", Direction["STRAIGHT"]], ["53:5E:75:16:23:00:01", Direction["STRAIGHT"]], ["53:5D:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:55:75:16:23:00:01", Direction["STRAIGHT"]], ["53:AA:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:A0:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:A2:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:98:7A:16:23:00:01", Direction["STRAIGHT"]], ["04:6D:41:6D:BC:2A:81", Direction["LEFT"]],
+                ["04:76:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:B4:71:6E:BC:2A:81", Direction["STRAIGHT"]], ["04:66:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:5E:41:6D:BC:2A:81", Direction["LEFT"]], ["04:43:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:3C:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:5D:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:14:75:16:23:00:01", Direction["STRAIGHT"]], ["53:13:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:1E:75:16:23:00:01", Direction["STRAIGHT"]], ["53:25:75:16:23:00:01", Direction["STRAIGHT"]], ["04:87:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:D4:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:D5:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:4D:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["53:67:78:16:23:00:01", Direction["LEFT"]], ["53:58:78:16:23:00:01", Direction["STRAIGHT"]], ["53:5E:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:5F:78:16:23:00:01", Direction["STRAIGHT"]], ["5A:65:C9:E1:0A:41:89", Direction["STRAIGHT"]], ["5A:F5:C3:DA:0A:41:89", Direction["STRAIGHT"]],
+                ["5A:E5:37:D9:0A:41:89", Direction["STRAIGHT"]], ["5A:35:6C:DD:0A:41:89", Direction["STRAIGHT"]], ["5A:35:D6:DB:0A:41:89", Direction["STRAIGHT"]],
+                ["53:54:73:16:23:00:01", Direction["STRAIGHT"]], ["53:55:73:16:23:00:01", Direction["STRAIGHT"]], ["5A:F5:6B:DD:0A:41:89", Direction["RIGHT"]],
+                ["53:64:75:16:23:00:01", Direction["STRAIGHT"]], ["53:6B:75:16:23:00:01", Direction["RIGHT"]], ["04:BC:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:C3:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:6F:78:16:23:00:01", Direction["STRAIGHT"]], ["53:77:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:76:78:16:23:00:01", Direction["STRAIGHT"]], ["53:6E:78:16:23:00:01", Direction["STRAIGHT"]], ["53:84:73:16:23:00:01", Direction["LEFT"]],
+                ["5A:C5:97:E3:0A:41:89", Direction["STRAIGHT"]], ["53:7C:73:16:23:00:01", Direction["STRAIGHT"]], ["53:73:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:F6:74:16:23:00:01", Direction["LEFT"]], ["53:EB:74:16:23:00:01", Direction["STRAIGHT"]], ["53:70:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:EE:74:16:23:00:01", Direction["STRAIGHT"]], ["04:B2:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:BA:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:B4:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:BB:41:6D:BC:2A:81", Direction["RIGHT"]], ["53:6C:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:6D:75:16:23:00:01", Direction["RIGHT"]], ["53:7C:75:16:23:00:01", Direction["LEFT"]], ["53:74:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:76:75:16:23:00:01", Direction["STRAIGHT"]], ["53:85:75:16:23:00:01", Direction["RIGHT"]], ["04:1E:3B:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["53:CA:BA:00:63:00:01", Direction["STRAIGHT"]], ["04:56:41:6D:BC:2A:81", Direction["LEFT"]], ["04:18:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:11:41:6D:BC:2A:81", Direction["STRAIGHT"]]],
+
+    "route_7": [4, ["04:A2:41:6D:BC:2A:81", Direction["LEFT"]], ["04:8E:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:8F:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:7E:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:28:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["5A:25:B3:DE:0A:41:89", Direction["STRAIGHT"]], ["5A:35:97:E3:0A:41:89", Direction["STRAIGHT"]], ["53:16:E5:00:63:00:01", Direction["STRAIGHT"]],
+                ["53:80:78:16:23:00:01", Direction["STRAIGHT"]], ["53:78:78:16:23:00:01", Direction["STRAIGHT"]], ["04:DB:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["53:BC:D8:01:63:00:01", Direction["STRAIGHT"]], ["53:0C:CC:01:63:00:01", Direction["STRAIGHT"]], ["53:CA:BA:00:63:00:01", Direction["LEFT"]],
+                ["04:56:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:5B:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:2C:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:2B:75:16:23:00:01", Direction["STRAIGHT"]], ["53:36:75:16:23:00:01", Direction["STRAIGHT"]], ["53:35:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:92:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:91:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:90:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:9B:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:80:69:01:63:00:01", Direction["STRAIGHT"]], ["04:17:3B:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:16:3B:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:CF:80:01:63:00:01", Direction["STRAIGHT"]], ["53:DD:74:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:D3:74:16:23:00:01", Direction["STRAIGHT"]], ["53:DC:74:16:23:00:01", Direction["STRAIGHT"]], ["53:BA:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:C3:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:C2:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:CB:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["5A:D5:37:D9:0A:41:89", Direction["STRAIGHT"]], ["5A:05:6C:DD:0A:41:89", Direction["STRAIGHT"]], ["5A:55:D6:DB:0A:41:89", Direction["STRAIGHT"]],
+                ["5A:D5:00:00:00:00:00", Direction["STRAIGHT"]], ["53:DB:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:D0:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:D1:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:D2:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:4B:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:45:73:16:23:00:01", Direction["STRAIGHT"]], ["53:44:73:16:23:00:01", Direction["STRAIGHT"]], ["53:4E:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:46:78:16:23:00:01", Direction["STRAIGHT"]], ["53:47:78:16:23:00:01", Direction["STRAIGHT"]], ["53:48:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:4D:78:16:23:00:01", Direction["STRAIGHT"]], ["53:66:73:16:23:00:01", Direction["STRAIGHT"]], ["53:5B:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:65:73:16:23:00:01", Direction["STRAIGHT"]], ["53:2C:8C:02:63:00:01", Direction["STRAIGHT"]], ["04:21:3B:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:FE:3A:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:80:D5:00:63:00:01", Direction["STRAIGHT"]], ["53:9C:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:9D:73:16:23:00:01", Direction["STRAIGHT"]], ["53:A6:73:16:23:00:01", Direction["STRAIGHT"]], ["53:45:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:4D:75:16:23:00:01", Direction["STRAIGHT"]], ["53:4C:75:16:23:00:01", Direction["STRAIGHT"]], ["53:44:75:16:23:00:01", Direction["RIGHT"]],
+                ["53:68:78:16:23:00:01", Direction["STRAIGHT"]], ["53:5F:78:16:23:00:01", Direction["STRAIGHT"]], ["5A:65:C9:E1:0A:41:89", Direction["STRAIGHT"]],
+                ["5A:F5:C3:DA:0A:41:89", Direction["STRAIGHT"]], ["5A:E5:37:D9:0A:41:89", Direction["STRAIGHT"]], ["5A:35:6C:DD:0A:41:89", Direction["STRAIGHT"]],
+                ["5A:35:D6:DB:0A:41:89", Direction["STRAIGHT"]], ["53:54:73:16:23:00:01", Direction["STRAIGHT"]], ["53:55:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["5A:F5:6B:DD:0A:41:89", Direction["STRAIGHT"]], ["53:64:75:16:23:00:01", Direction["STRAIGHT"]], ["53:76:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:5B:75:16:23:00:01", Direction["STRAIGHT"]], ["53:6D:75:16:23:00:01", Direction["STRAIGHT"]], ["53:7C:75:16:23:00:01", Direction["RIGHT"]],
+                ["53:74:75:16:23:00:01", Direction["STRAIGHT"]], ["53:76:75:16:23:00:01", Direction["STRAIGHT"]], ["53:85:75:16:23:00:01", Direction["RIGHT"]],
+                ["04:1E:3B:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:CA:BA:00:63:00:01", Direction["STRAIGHT"]], ["04:56:41:6D:BC:2A:81", Direction["LEFT"]],
+                ["04:18:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:11:41:6D:BC:2A:81", Direction["STRAIGHT"]]],
+
+    "route_8": [3, ["04:A2:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:8E:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:89:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:A1:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:3F:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:40:78:16:23:00:01", Direction["STRAIGHT"]], ["53:45:78:16:23:00:01", Direction["STRAIGHT"]], ["53:3E:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["04:6F:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:77:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:B4:71:6E:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:66:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:5E:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:43:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:3B:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:65:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:95:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:83:73:16:23:00:01", Direction["STRAIGHT"]], ["53:8E:73:16:23:00:01", Direction["STRAIGHT"]], ["53:3D:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:8B:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:80:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:81:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:0C:75:16:23:00:01", Direction["STRAIGHT"]], ["53:0B:75:16:23:00:01", Direction["STRAIGHT"]], ["53:16:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:15:75:16:23:00:01", Direction["STRAIGHT"]], ["53:34:75:16:23:00:01", Direction["STRAIGHT"]], ["53:3B:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:33:75:16:23:00:01", Direction["RIGHT"]], ["53:56:78:16:23:00:01", Direction["STRAIGHT"]], ["53:66:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:4E:75:16:23:00:01", Direction["STRAIGHT"]], ["53:4B:75:16:23:00:01", Direction["STRAIGHT"]], ["53:43:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:94:73:16:23:00:01", Direction["STRAIGHT"]], ["53:9E:73:16:23:00:01", Direction["STRAIGHT"]], ["53:FE:A5:02:63:00:01", Direction["STRAIGHT"]],
+                ["04:11:3B:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:FF:3A:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:48:96:02:63:00:01", Direction["STRAIGHT"]],
+                ["53:5E:73:16:23:00:01", Direction["STRAIGHT"]], ["53:5D:73:16:23:00:01", Direction["STRAIGHT"]], ["53:4E:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:55:78:16:23:00:01", Direction["STRAIGHT"]], ["53:50:78:16:23:00:01", Direction["STRAIGHT"]], ["53:4F:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:43:73:16:23:00:01", Direction["STRAIGHT"]], ["53:46:73:16:23:00:01", Direction["STRAIGHT"]], ["53:3B:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:56:73:16:23:00:01", Direction["STRAIGHT"]], ["53:CA:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:C9:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:C8:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:D3:7A:16:23:00:01", Direction["STRAIGHT"]], ["5A:C5:37:D9:0A:41:89", Direction["STRAIGHT"]],
+                ["5A:C5:C3:DA:0A:41:89", Direction["STRAIGHT"]], ["5A:B5:37:D9:0A:41:89", Direction["STRAIGHT"]], ["5A:E5:C3:DA:0A:41:89", Direction["STRAIGHT"]],
+                ["53:C0:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:C1:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:B8:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:B9:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:DB:74:16:23:00:01", Direction["STRAIGHT"]], ["53:D4:74:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:DE:74:16:23:00:01", Direction["STRAIGHT"]], ["53:8E:79:01:63:00:01", Direction["STRAIGHT"]], ["04:19:3B:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:18:3B:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:26:AE:01:63:00:01", Direction["STRAIGHT"]], ["53:93:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:88:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:89:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:8A:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:2D:75:16:23:00:01", Direction["STRAIGHT"]], ["53:2E:75:16:23:00:01", Direction["STRAIGHT"]], ["53:23:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:24:75:16:23:00:01", Direction["STRAIGHT"]], ["04:D3:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:12:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:11:41:6D:BC:2A:81", Direction["STRAIGHT"]]],
+
+    "route_9": [2, ["04:A2:41:6D:BC:2A:81", Direction["LEFT"]], ["04:8E:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:8F:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:7E:41:6D:BC:2A:81", Direction["RIGHT"]], ["53:28:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:02:EF:01:63:00:01", Direction["STRAIGHT"]], ["53:6B:73:16:23:00:01", Direction["STRAIGHT"]], ["53:64:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:FD:74:16:23:00:01", Direction["STRAIGHT"]], ["53:FE:74:16:23:00:01", Direction["STRAIGHT"]], ["53:F3:74:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:F4:74:16:23:00:01", Direction["STRAIGHT"]], ["5A:A5:37:D9:0A:41:89", Direction["LEFT"]], ["5A:A5:C3:DA:0A:41:89", Direction["STRAIGHT"]],
+                ["53:55:73:16:23:00:01", Direction["STRAIGHT"]], ["5A:F5:6B:DD:0A:41:89", Direction["RIGHT"]], ["53:64:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:6B:75:16:23:00:01", Direction["RIGHT"]], ["04:BC:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:C3:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["53:6F:78:16:23:00:01", Direction["STRAIGHT"]], ["53:77:78:16:23:00:01", Direction["STRAIGHT"]], ["53:76:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:6E:78:16:23:00:01", Direction["STRAIGHT"]], ["53:84:73:16:23:00:01", Direction["LEFT"]], ["5A:C5:97:E3:0A:41:89", Direction["STRAIGHT"]],
+                ["53:7C:73:16:23:00:01", Direction["STRAIGHT"]], ["53:73:73:16:23:00:01", Direction["RIGHT"]], ["53:F6:74:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:E5:74:16:23:00:01", Direction["RIGHT"]], ["5A:65:D6:DB:0A:41:89", Direction["STRAIGHT"]], ["5A:D5:00:00:00:00:00", Direction["STRAIGHT"]],
+                ["53:DB:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:D0:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:D1:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:D2:7A:16:23:00:01", Direction["RIGHT"]], ["53:4B:73:16:23:00:01", Direction["STRAIGHT"]], ["53:4C:73:16:23:00:01", Direction["ROUNDABOUT"]],
+                ["04:7F:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:AB:41:6D:BC:2A:81", Direction["RIGHT_ROUND"]], ["04:4B:FD:68:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:99:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:2F:78:16:23:00:01", Direction["STRAIGHT"]], ["53:2E:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:26:78:16:23:00:01", Direction["STRAIGHT"]], ["53:25:78:16:23:00:01", Direction["RIGHT"]], ["5A:05:B3:DE:0A:41:89", Direction["STRAIGHT"]],
+                ["5A:35:6C:DD:0A:41:89", Direction["STRAIGHT"]], ["5A:35:D6:DB:0A:41:89", Direction["STRAIGHT"]], ["53:54:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:55:73:16:23:00:01", Direction["STRAIGHT"]], ["5A:F5:6B:DD:0A:41:89", Direction["STRAIGHT"]], ["53:64:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:76:73:16:23:00:01", Direction["STRAIGHT"]], ["53:5B:75:16:23:00:01", Direction["STRAIGHT"]], ["53:6D:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:7C:75:16:23:00:01", Direction["LEFT"]], ["53:74:75:16:23:00:01", Direction["STRAIGHT"]], ["53:76:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:85:75:16:23:00:01", Direction["RIGHT"]], ["04:1E:3B:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:CA:BA:00:63:00:01", Direction["STRAIGHT"]],
+                ["04:56:41:6D:BC:2A:81", Direction["LEFT"]], ["04:18:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:11:41:6D:BC:2A:81", Direction["STRAIGHT"]]],
+                
+    "route_10": [2, ["04:A2:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:8E:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:89:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:A1:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:3F:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:40:78:16:23:00:01", Direction["STRAIGHT"]], ["53:45:78:16:23:00:01", Direction["STRAIGHT"]], ["53:3E:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["04:6F:41:6D:BC:2A:81", Direction["LEFT"]], ["04:77:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:75:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:B3:71:6E:BC:2A:81", Direction["STRAIGHT"]], ["53:B3:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:B2:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:B0:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:BB:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:54:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:5C:75:16:23:00:01", Direction["STRAIGHT"]], ["53:53:75:16:23:00:01", Direction["RIGHT"]], ["04:4A:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:88:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:30:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:26:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:1B:75:16:23:00:01", Direction["STRAIGHT"]], ["53:1C:75:16:23:00:01", Direction["STRAIGHT"]], ["04:5C:41:6D:BC:2A:81", Direction["LEFT"]],
+                ["04:42:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:3B:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:65:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["53:95:73:16:23:00:01", Direction["STRAIGHT"]], ["53:8E:73:16:23:00:01", Direction["STRAIGHT"]], ["53:3D:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:8B:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:80:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:81:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:0C:75:16:23:00:01", Direction["STRAIGHT"]], ["53:0B:75:16:23:00:01", Direction["STRAIGHT"]], ["53:16:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:15:75:16:23:00:01", Direction["STRAIGHT"]], ["53:34:75:16:23:00:01", Direction["STRAIGHT"]], ["53:3B:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:33:75:16:23:00:01", Direction["STRAIGHT"]], ["53:56:78:16:23:00:01", Direction["STRAIGHT"]], ["53:57:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:5E:78:16:23:00:01", Direction["STRAIGHT"]], ["53:5F:78:16:23:00:01", Direction["STRAIGHT"]], ["5A:65:C9:E1:0A:41:89", Direction["STRAIGHT"]],
+                ["5A:F5:C3:DA:0A:41:89", Direction["STRAIGHT"]], ["5A:E5:37:D9:0A:41:89", Direction["STRAIGHT"]], ["5A:35:6C:DD:0A:41:89", Direction["STRAIGHT"]],
+                ["5A:35:D6:DB:0A:41:89", Direction["STRAIGHT"]], ["53:54:73:16:23:00:01", Direction["STRAIGHT"]], ["53:55:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["5A:F5:6B:DD:0A:41:89", Direction["STRAIGHT"]], ["53:64:75:16:23:00:01", Direction["STRAIGHT"]], ["53:76:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:5B:75:16:23:00:01", Direction["STRAIGHT"]], ["53:6D:75:16:23:00:01", Direction["RIGHT"]], ["53:7C:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:7D:75:16:23:00:01", Direction["STRAIGHT"]], ["53:4E:72:01:63:00:01", Direction["STRAIGHT"]], ["53:FA:5A:01:63:00:01", Direction["STRAIGHT"]],
+                ["53:44:62:01:63:00:01", Direction["STRAIGHT"]], ["53:9C:35:02:63:00:01", Direction["RIGHT"]], ["53:96:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:8B:75:16:23:00:01", Direction["STRAIGHT"]], ["53:F5:74:16:23:00:01", Direction["STRAIGHT"]], ["53:70:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:7A:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:83:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:7E:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:7B:73:16:23:00:01", Direction["STRAIGHT"]], ["5A:C5:97:E3:0A:41:89", Direction["STRAIGHT"]], ["53:74:73:16:23:00:01", Direction["ROUNDABOUT"]],
+                ["04:91:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:4B:FD:68:BC:2A:81", Direction["STRAIGHT"]], ["04:A9:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:B1:41:6D:BC:2A:81", Direction["RIGHT_ROUND"]], ["04:AB:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:92:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["53:75:73:16:23:00:01", Direction["STRAIGHT"]], ["53:86:73:16:23:00:01", Direction["STRAIGHT"]], ["53:7C:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:73:73:16:23:00:01", Direction["STRAIGHT"]], ["53:F6:74:16:23:00:01", Direction["STRAIGHT"]], ["53:EB:74:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:EC:74:16:23:00:01", Direction["STRAIGHT"]], ["53:ED:74:16:23:00:01", Direction["STRAIGHT"]], ["53:8C:75:16:23:00:01", Direction["LEFT"]],
+                ["53:83:75:16:23:00:01", Direction["STRAIGHT"]], ["53:8D:75:16:23:00:01", Direction["STRAIGHT"]], ["53:95:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:8D:36:01:63:00:01", Direction["STRAIGHT"]], ["53:75:29:01:63:00:01", Direction["STRAIGHT"]], ["53:FF:DD:00:63:00:01", Direction["STRAIGHT"]],
+                ["53:96:53:02:63:00:01", Direction["STRAIGHT"]], ["53:7E:75:16:23:00:01", Direction["STRAIGHT"]], ["53:73:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:76:75:16:23:00:01", Direction["STRAIGHT"]], ["53:85:75:16:23:00:01", Direction["RIGHT"]], ["04:1E:3B:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["53:CA:BA:00:63:00:01", Direction["LEFT"]], ["04:56:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:18:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:11:41:6D:BC:2A:81", Direction["STRAIGHT"]]],
+                
+    "route_11": [4, ["04:A2:41:6D:BC:2A:81", Direction["LEFT"]], ["04:8E:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:89:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:A1:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:3F:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:40:78:16:23:00:01", Direction["STRAIGHT"]], ["53:45:78:16:23:00:01", Direction["STRAIGHT"]], ["53:3E:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["04:6F:41:6D:BC:2A:81", Direction["LEFT"]], ["04:77:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:B4:71:6E:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:66:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:5E:41:6D:BC:2A:81", Direction["LEFT"]], ["04:43:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:3C:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:5D:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:14:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:13:75:16:23:00:01", Direction["STRAIGHT"]], ["53:1E:75:16:23:00:01", Direction["STRAIGHT"]], ["53:25:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["04:87:41:6D:BC:2A:81", Direction["LEFT"]], ["04:D4:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:D5:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:4D:41:6D:BC:2A:81", Direction["RIGHT"]], ["53:67:78:16:23:00:01", Direction["LEFT"]], ["53:58:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:5E:78:16:23:00:01", Direction["STRAIGHT"]], ["53:5F:78:16:23:00:01", Direction["RIGHT"]], ["5A:65:C9:E1:0A:41:89", Direction["STRAIGHT"]],
+                ["5A:F5:C3:DA:0A:41:89", Direction["STRAIGHT"]], ["5A:E5:37:D9:0A:41:89", Direction["STRAIGHT"]], ["5A:35:6C:DD:0A:41:89", Direction["STRAIGHT"]],
+                ["5A:35:D6:DB:0A:41:89", Direction["STRAIGHT"]], ["53:54:73:16:23:00:01", Direction["STRAIGHT"]], ["53:55:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["5A:F5:6B:DD:0A:41:89", Direction["RIGHT"]], ["53:64:75:16:23:00:01", Direction["STRAIGHT"]], ["53:6B:75:16:23:00:01", Direction["RIGHT"]],
+                ["04:BC:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:C3:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:6F:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:77:78:16:23:00:01", Direction["STRAIGHT"]], ["53:76:78:16:23:00:01", Direction["STRAIGHT"]], ["53:6E:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:84:73:16:23:00:01", Direction["LEFT"]], ["5A:C5:97:E3:0A:41:89", Direction["STRAIGHT"]], ["53:74:73:16:23:00:01", Direction["ROUNDABOUT"]],
+                ["04:91:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:4B:FD:68:BC:2A:81", Direction["STRAIGHT"]], ["04:A9:41:6D:BC:2A:81", Direction["RIGHT_ROUND"]],
+                ["04:B1:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:86:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:4D:73:16:23:00:01", Direction["LEFT"]],
+                ["53:44:73:16:23:00:01", Direction["STRAIGHT"]], ["53:3B:73:16:23:00:01", Direction["STRAIGHT"]], ["53:56:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:CA:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:C9:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:C8:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:D3:7A:16:23:00:01", Direction["STRAIGHT"]], ["5A:C5:37:D9:0A:41:89", Direction["LEFT"]], ["5A:C5:C3:DA:0A:41:89", Direction["STRAIGHT"]],
+                ["5A:B5:37:D9:0A:41:89", Direction["STRAIGHT"]], ["5A:E5:C3:DA:0A:41:89", Direction["STRAIGHT"]], ["53:C0:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:C1:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:B8:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:B9:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:DB:74:16:23:00:01", Direction["STRAIGHT"]], ["53:D4:74:16:23:00:01", Direction["STRAIGHT"]], ["53:DE:74:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:8E:79:01:63:00:01", Direction["STRAIGHT"]], ["04:19:3B:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:18:3B:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["53:26:AE:01:63:00:01", Direction["STRAIGHT"]], ["53:93:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:88:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:89:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:8A:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:2D:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:2E:75:16:23:00:01", Direction["STRAIGHT"]], ["53:23:75:16:23:00:01", Direction["STRAIGHT"]], ["53:24:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["04:D3:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:12:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:11:41:6D:BC:2A:81", Direction["STRAIGHT"]]],
+
+    "route_12": [3, ["04:A2:41:6D:BC:2A:81", Direction["LEFT"]], ["04:8E:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:8F:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:7E:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:28:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["5A:25:B3:DE:0A:41:89", Direction["STRAIGHT"]], ["5A:35:97:E3:0A:41:89", Direction["STRAIGHT"]], ["53:16:E5:00:63:00:01", Direction["STRAIGHT"]],
+                ["53:80:78:16:23:00:01", Direction["STRAIGHT"]], ["53:78:78:16:23:00:01", Direction["STRAIGHT"]], ["04:DB:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["53:BC:D8:01:63:00:01", Direction["STRAIGHT"]], ["53:0C:CC:01:63:00:01", Direction["STRAIGHT"]], ["53:CA:BA:00:63:00:01", Direction["RIGHT"]],
+                ["04:56:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:5B:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:2C:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:2B:75:16:23:00:01", Direction["STRAIGHT"]], ["53:36:75:16:23:00:01", Direction["STRAIGHT"]], ["53:35:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:92:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:91:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:90:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:9B:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:80:69:01:63:00:01", Direction["STRAIGHT"]], ["04:17:3B:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:16:3B:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:CF:80:01:63:00:01", Direction["STRAIGHT"]], ["53:DD:74:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:D3:74:16:23:00:01", Direction["STRAIGHT"]], ["53:DC:74:16:23:00:01", Direction["STRAIGHT"]], ["53:BA:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:C3:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:C2:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:CB:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["5A:D5:37:D9:0A:41:89", Direction["STRAIGHT"]], ["5A:15:6C:DD:0A:41:89", Direction["RIGHT"]], ["53:E3:74:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:ED:74:16:23:00:01", Direction["STRAIGHT"]], ["53:8C:75:16:23:00:01", Direction["LEFT"]], ["53:83:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:8D:75:16:23:00:01", Direction["STRAIGHT"]], ["53:95:75:16:23:00:01", Direction["STRAIGHT"]], ["53:8D:36:01:63:00:01", Direction["STRAIGHT"]],
+                ["53:75:29:01:63:00:01", Direction["STRAIGHT"]], ["53:FF:DD:00:63:00:01", Direction["STRAIGHT"]], ["53:96:53:02:63:00:01", Direction["STRAIGHT"]],
+                ["53:7E:75:16:23:00:01", Direction["STRAIGHT"]], ["53:73:75:16:23:00:01", Direction["STRAIGHT"]], ["53:76:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:85:75:16:23:00:01", Direction["RIGHT"]], ["04:1E:3B:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:CA:BA:00:63:00:01", Direction["STRAIGHT"]],
+                ["04:56:41:6D:BC:2A:81", Direction["RIGHT"]], ["04:18:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:11:41:6D:BC:2A:81", Direction["STRAIGHT"]]],
+
+    "route_13": [6, ["04:A2:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:8E:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:89:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:A1:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:3F:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:40:78:16:23:00:01", Direction["STRAIGHT"]], ["53:45:78:16:23:00:01", Direction["STRAIGHT"]], ["53:3E:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["04:6F:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:77:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:B4:71:6E:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:66:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:5E:41:6D:BC:2A:81", Direction["LEFT"]], ["04:43:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:3C:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:5D:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:14:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:13:75:16:23:00:01", Direction["STRAIGHT"]], ["53:1E:75:16:23:00:01", Direction["STRAIGHT"]], ["53:25:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["04:87:41:6D:BC:2A:81", Direction["LEFT"]], ["04:D4:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:45:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:4B:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:56:75:16:23:00:01", Direction["STRAIGHT"]], ["53:5E:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:5D:75:16:23:00:01", Direction["STRAIGHT"]], ["53:55:75:16:23:00:01", Direction["STRAIGHT"]], ["53:AA:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:A0:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:A2:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:98:7A:16:23:00:01", Direction["RIGHT"]],
+                ["04:6D:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:6E:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:7B:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:79:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:78:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:82:7A:16:23:00:01", Direction["RIGHT"]],
+                ["04:9F:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:7E:41:6D:BC:2A:81", Direction["RIGHT"]], ["53:28:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:02:EF:01:63:00:01", Direction["STRAIGHT"]], ["53:6B:73:16:23:00:01", Direction["STRAIGHT"]], ["53:64:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:FD:74:16:23:00:01", Direction["STRAIGHT"]], ["53:FE:74:16:23:00:01", Direction["STRAIGHT"]], ["53:F3:74:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:F4:74:16:23:00:01", Direction["STRAIGHT"]], ["5A:A5:37:D9:0A:41:89", Direction["LEFT"]], ["5A:A5:C3:DA:0A:41:89", Direction["STRAIGHT"]],
+                ["53:55:73:16:23:00:01", Direction["STRAIGHT"]], ["5A:F5:6B:DD:0A:41:89", Direction["RIGHT"]], ["53:64:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:6B:75:16:23:00:01", Direction["STRAIGHT"]], ["04:B3:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:B9:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:C4:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:E4:74:16:23:00:01", Direction["LEFT"]], ["53:7A:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:EC:74:16:23:00:01", Direction["STRAIGHT"]], ["53:ED:74:16:23:00:01", Direction["STRAIGHT"]], ["53:8C:75:16:23:00:01", Direction["LEFT"]],
+                ["53:83:75:16:23:00:01", Direction["STRAIGHT"]], ["53:8D:75:16:23:00:01", Direction["STRAIGHT"]], ["53:95:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:8D:36:01:63:00:01", Direction["STRAIGHT"]], ["53:75:29:01:63:00:01", Direction["STRAIGHT"]], ["53:FF:DD:00:63:00:01", Direction["STRAIGHT"]],
+                ["53:96:53:02:63:00:01", Direction["STRAIGHT"]], ["53:7E:75:16:23:00:01", Direction["STRAIGHT"]], ["53:73:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:76:75:16:23:00:01", Direction["STRAIGHT"]], ["53:85:75:16:23:00:01", Direction["RIGHT"]], ["04:1E:3B:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["53:CA:BA:00:63:00:01", Direction["RIGHT"]], ["04:56:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:5B:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["53:2C:75:16:23:00:01", Direction["STRAIGHT"]], ["53:2B:75:16:23:00:01", Direction["STRAIGHT"]], ["53:36:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:35:75:16:23:00:01", Direction["STRAIGHT"]], ["53:92:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:91:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:90:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:9B:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:80:69:01:63:00:01", Direction["STRAIGHT"]],
+                ["04:17:3B:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:16:3B:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:CF:80:01:63:00:01", Direction["STRAIGHT"]],
+                ["53:DD:74:16:23:00:01", Direction["STRAIGHT"]], ["53:D3:74:16:23:00:01", Direction["STRAIGHT"]], ["53:DC:74:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:BA:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:C3:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:C2:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:CB:7A:16:23:00:01", Direction["RIGHT"]], ["5A:D5:37:D9:0A:41:89", Direction["STRAIGHT"]], ["5A:15:6C:DD:0A:41:89", Direction["STRAIGHT"]],
+                ["53:E3:74:16:23:00:01", Direction["STRAIGHT"]], ["53:EC:74:16:23:00:01", Direction["STRAIGHT"]], ["53:70:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:EE:74:16:23:00:01", Direction["STRAIGHT"]], ["04:B2:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:BA:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:B4:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:BB:41:6D:BC:2A:81", Direction["RIGHT"]], ["53:6C:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:6D:75:16:23:00:01", Direction["STRAIGHT"]], ["53:7C:75:16:23:00:01", Direction["LEFT"]], ["53:74:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:76:75:16:23:00:01", Direction["STRAIGHT"]], ["53:85:75:16:23:00:01", Direction["RIGHT"]], ["04:1E:3B:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["53:CA:BA:00:63:00:01", Direction["STRAIGHT"]], ["04:56:41:6D:BC:2A:81", Direction["LEFT"]], ["04:18:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:11:41:6D:BC:2A:81", Direction["STRAIGHT"]]],
+
+    "route_14": [6, ["04:A2:41:6D:BC:2A:81", Direction["LEFT"]], ["04:8E:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:8F:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:7E:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:28:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["5A:25:B3:DE:0A:41:89", Direction["STRAIGHT"]], ["5A:35:97:E3:0A:41:89", Direction["STRAIGHT"]], ["53:16:E5:00:63:00:01", Direction["STRAIGHT"]],
+                ["53:80:78:16:23:00:01", Direction["STRAIGHT"]], ["53:78:78:16:23:00:01", Direction["RIGHT"]], ["04:DB:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:1F:3B:6D:BC:2A:81", Direction["RIGHT"]], ["53:86:75:16:23:00:01", Direction["STRAIGHT"]], ["53:7B:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:6E:75:16:23:00:01", Direction["STRAIGHT"]], ["53:65:75:16:23:00:01", Direction["STRAIGHT"]], ["53:66:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:63:75:16:23:00:01", Direction["STRAIGHT"]], ["5A:45:D6:DB:0A:41:89", Direction["STRAIGHT"]], ["5A:95:37:D9:0A:41:89", Direction["STRAIGHT"]],
+                ["5A:A5:C3:DA:0A:41:89", Direction["STRAIGHT"]], ["5A:E5:6B:DD:0A:41:89", Direction["STRAIGHT"]], ["5A:85:D6:DB:0A:41:89", Direction["LEFT"]],
+                ["5A:25:6C:DD:0A:41:89", Direction["STRAIGHT"]], ["5A:F5:C3:DA:0A:41:89", Direction["STRAIGHT"]], ["5A:95:80:A2:0C:41:89", Direction["STRAIGHT"]],
+                ["53:27:78:16:23:00:01", Direction["STRAIGHT"]], ["53:28:78:16:23:00:01", Direction["STRAIGHT"]], ["53:2D:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:30:78:16:23:00:01", Direction["ROUNDABOUT"]], ["04:98:41:6D:BC:2A:81", Direction["RIGHT_ROUND"]], ["04:A9:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:97:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:99:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:A3:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:A9:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:B1:7A:16:23:00:01", Direction["RIGHT"]], ["53:9C:2A:02:63:00:01", Direction["STRAIGHT"]],
+                ["53:80:D5:00:63:00:01", Direction["STRAIGHT"]], ["53:9C:73:16:23:00:01", Direction["STRAIGHT"]], ["53:9D:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:A6:73:16:23:00:01", Direction["STRAIGHT"]], ["53:45:75:16:23:00:01", Direction["STRAIGHT"]], ["53:4D:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:4C:75:16:23:00:01", Direction["STRAIGHT"]], ["53:44:75:16:23:00:01", Direction["STRAIGHT"]], ["53:68:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:5E:78:16:23:00:01", Direction["STRAIGHT"]], ["53:5D:78:16:23:00:01", Direction["STRAIGHT"]], ["53:6D:78:16:23:00:01", Direction["RIGHT"]],
+                ["04:4C:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:4B:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:56:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:5E:75:16:23:00:01", Direction["STRAIGHT"]], ["53:5D:75:16:23:00:01", Direction["STRAIGHT"]], ["53:55:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:AA:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:A0:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:A2:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:98:7A:16:23:00:01", Direction["STRAIGHT"]], ["04:6D:41:6D:BC:2A:81", Direction["LEFT"]], ["04:76:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:B4:71:6E:BC:2A:81", Direction["STRAIGHT"]], ["04:66:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:5E:41:6D:BC:2A:81", Direction["LEFT"]],
+                ["04:43:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:3C:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:5D:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["53:14:75:16:23:00:01", Direction["STRAIGHT"]], ["53:13:75:16:23:00:01", Direction["STRAIGHT"]], ["53:1E:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:25:75:16:23:00:01", Direction["STRAIGHT"]], ["04:87:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:D4:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:D5:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:4D:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:67:78:16:23:00:01", Direction["LEFT"]],
+                ["53:58:78:16:23:00:01", Direction["STRAIGHT"]], ["53:5E:78:16:23:00:01", Direction["STRAIGHT"]], ["53:5F:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["5A:65:C9:E1:0A:41:89", Direction["STRAIGHT"]], ["5A:F5:C3:DA:0A:41:89", Direction["STRAIGHT"]], ["5A:E5:37:D9:0A:41:89", Direction["STRAIGHT"]],
+                ["5A:35:6C:DD:0A:41:89", Direction["STRAIGHT"]], ["5A:35:D6:DB:0A:41:89", Direction["STRAIGHT"]], ["53:54:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:55:73:16:23:00:01", Direction["STRAIGHT"]], ["5A:F5:6B:DD:0A:41:89", Direction["RIGHT"]], ["53:64:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:6B:75:16:23:00:01", Direction["RIGHT"]], ["04:BC:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:C3:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["53:6F:78:16:23:00:01", Direction["STRAIGHT"]], ["53:77:78:16:23:00:01", Direction["STRAIGHT"]], ["53:76:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:6E:78:16:23:00:01", Direction["RIGHT"]], ["53:84:73:16:23:00:01", Direction["STRAIGHT"]], ["53:74:73:16:23:00:01", Direction["ROUNDABOUT"]],
+                ["04:91:41:6D:BC:2A:81", Direction["RIGHT_ROUND"]], ["04:4B:FD:68:BC:2A:81", Direction["STRAIGHT"]], ["04:99:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["53:2F:78:16:23:00:01", Direction["STRAIGHT"]], ["53:2E:78:16:23:00:01", Direction["STRAIGHT"]], ["53:26:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:25:78:16:23:00:01", Direction["RIGHT"]], ["5A:05:B3:DE:0A:41:89", Direction["STRAIGHT"]], ["5A:35:6C:DD:0A:41:89", Direction["STRAIGHT"]],
+                ["5A:35:D6:DB:0A:41:89", Direction["STRAIGHT"]], ["53:54:73:16:23:00:01", Direction["STRAIGHT"]], ["53:55:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["5A:F5:6B:DD:0A:41:89", Direction["STRAIGHT"]], ["53:64:75:16:23:00:01", Direction["STRAIGHT"]], ["53:76:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:5B:75:16:23:00:01", Direction["STRAIGHT"]], ["53:6D:75:16:23:00:01", Direction["STRAIGHT"]], ["53:7C:75:16:23:00:01", Direction["LEFT"]],
+                ["53:74:75:16:23:00:01", Direction["STRAIGHT"]], ["53:76:75:16:23:00:01", Direction["STRAIGHT"]], ["53:85:75:16:23:00:01", Direction["RIGHT"]],
+                ["04:1E:3B:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:CA:BA:00:63:00:01", Direction["STRAIGHT"]], ["04:56:41:6D:BC:2A:81", Direction["LEFT"]],
+                ["04:18:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:11:41:6D:BC:2A:81", Direction["STRAIGHT"]]],
+                
+    "route_15": [5, ["04:A2:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:8E:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:89:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:A1:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:3F:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:40:78:16:23:00:01", Direction["STRAIGHT"]], ["53:45:78:16:23:00:01", Direction["STRAIGHT"]], ["53:3E:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["04:6F:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:77:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:B4:71:6E:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:66:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:5E:41:6D:BC:2A:81", Direction["LEFT"]], ["04:43:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:3C:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:5D:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:14:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:13:75:16:23:00:01", Direction["STRAIGHT"]], ["53:1E:75:16:23:00:01", Direction["STRAIGHT"]], ["53:25:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["04:87:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:D4:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:D5:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:4D:41:6D:BC:2A:81", Direction["RIGHT"]], ["53:67:78:16:23:00:01", Direction["STRAIGHT"]], ["53:60:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:3E:75:16:23:00:01", Direction["STRAIGHT"]], ["53:46:75:16:23:00:01", Direction["STRAIGHT"]], ["53:3D:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:0D:75:16:23:00:01", Direction["STRAIGHT"]], ["53:0E:75:16:23:00:01", Direction["STRAIGHT"]], ["53:03:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:04:75:16:23:00:01", Direction["STRAIGHT"]], ["53:38:78:16:23:00:01", Direction["STRAIGHT"]], ["53:37:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:36:78:16:23:00:01", Direction["STRAIGHT"]], ["53:35:78:16:23:00:01", Direction["STRAIGHT"]], ["53:8B:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:8C:73:16:23:00:01", Direction["STRAIGHT"]], ["53:96:73:16:23:00:01", Direction["RIGHT"]], ["04:44:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:5D:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:14:75:16:23:00:01", Direction["STRAIGHT"]], ["53:13:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:1E:75:16:23:00:01", Direction["STRAIGHT"]], ["53:25:75:16:23:00:01", Direction["STRAIGHT"]], ["04:87:41:6D:BC:2A:81", Direction["LEFT"]],
+                ["04:D4:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:45:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:4B:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["53:56:75:16:23:00:01", Direction["STRAIGHT"]], ["53:5E:75:16:23:00:01", Direction["STRAIGHT"]], ["53:5D:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:55:75:16:23:00:01", Direction["STRAIGHT"]], ["53:AA:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:A0:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:A2:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:98:7A:16:23:00:01", Direction["RIGHT"]], ["04:6D:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:6E:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:7B:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:79:7A:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:78:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:82:7A:16:23:00:01", Direction["RIGHT"]], ["04:9F:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:7E:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:28:7A:16:23:00:01", Direction["STRAIGHT"]], ["5A:25:B3:DE:0A:41:89", Direction["STRAIGHT"]],
+                ["5A:35:97:E3:0A:41:89", Direction["STRAIGHT"]], ["53:16:E5:00:63:00:01", Direction["STRAIGHT"]], ["53:7D:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:80:78:16:23:00:01", Direction["STRAIGHT"]], ["53:78:78:16:23:00:01", Direction["RIGHT"]], ["04:DB:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:1F:3B:6D:BC:2A:81", Direction["RIGHT"]], ["53:86:75:16:23:00:01", Direction["STRAIGHT"]], ["53:7B:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:6E:75:16:23:00:01", Direction["LEFT"]], ["53:65:75:16:23:00:01", Direction["STRAIGHT"]], ["53:76:73:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:6B:75:16:23:00:01", Direction["RIGHT"]], ["04:BC:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:C3:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["53:6F:78:16:23:00:01", Direction["STRAIGHT"]], ["53:77:78:16:23:00:01", Direction["STRAIGHT"]], ["53:76:78:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:6E:78:16:23:00:01", Direction["STRAIGHT"]], ["53:84:73:16:23:00:01", Direction["LEFT"]], ["5A:C5:97:E3:0A:41:89", Direction["STRAIGHT"]],
+                ["53:7C:73:16:23:00:01", Direction["STRAIGHT"]], ["53:73:73:16:23:00:01", Direction["STRAIGHT"]], ["53:F6:74:16:23:00:01", Direction["LEFT"]],
+                ["53:EB:74:16:23:00:01", Direction["STRAIGHT"]], ["53:70:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:EE:74:16:23:00:01", Direction["STRAIGHT"]],
+                ["04:B2:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:BA:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:B4:41:6D:BC:2A:81", Direction["STRAIGHT"]],
+                ["04:BB:41:6D:BC:2A:81", Direction["RIGHT"]], ["53:6C:75:16:23:00:01", Direction["STRAIGHT"]], ["53:6D:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:7C:75:16:23:00:01", Direction["LEFT"]], ["53:74:75:16:23:00:01", Direction["STRAIGHT"]], ["53:76:75:16:23:00:01", Direction["STRAIGHT"]],
+                ["53:85:75:16:23:00:01", Direction["RIGHT"]], ["04:1E:3B:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:CA:BA:00:63:00:01", Direction["STRAIGHT"]],
+                ["04:56:41:6D:BC:2A:81", Direction["LEFT"]], ["04:18:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:11:41:6D:BC:2A:81", Direction["STRAIGHT"]]]
 }
 
-Tags = {
-    "tag 1": ["adjacent tag", "adjacent tag", "adjacent tag"],
-    "tag 2": ["adjacent tag", "adjacent tag", "adjacent tag"],
-    "tag 3": ["adjacent tag", "adjacent tag", "adjacent tag"],
-    "tag 4": ["adjacent tag", "adjacent tag", "adjacent tag"],
-    "tag 5": ["adjacent tag", "adjacent tag", "adjacent tag"],
-    "tag 6": ["adjacent tag", "adjacent tag", "adjacent tag"],
-    "tag 7": ["adjacent tag", "adjacent tag", "adjacent tag"],
-    "tag 8": ["adjacent tag", "adjacent tag", "adjacent tag"],
-    "tag 9": ["adjacent tag", "adjacent tag", "adjacent tag"],
-    "tag 10": ["adjacent tag", "adjacent tag", "adjacent tag"],
-    "tag 11": ["adjacent tag", "adjacent tag", "adjacent tag"]
-
+Depot_exit_route = {
+    "auto_A": [["04:CA:41:6D:BC:2A:81", Direction["LEFT"]], ["53:18:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:42:7A:16:23:00:01", Direction["STRAIGHT"]]],
+    "auto_B": [["04:CB:41:6D:BC:2A:81", Direction["LEFT"]], ["53:23:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:38:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:42:7A:16:23:00:01", Direction["STRAIGHT"]]],
+    "auto_C": [["04:CC:41:6D:BC:2A:81", Direction["LEFT"]], ["04:C5:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:39:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:38:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:42:7A:16:23:00:01", Direction["STRAIGHT"]]],
+    "auto_D": [["04:CD:41:6D:BC:2A:81", Direction["LEFT"]], ["53:21:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:3A:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:39:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:38:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:42:7A:16:23:00:01", Direction["STRAIGHT"]]],
+    "auto_E": [["04:B5:71:6E:BC:2A:81", Direction["LEFT"]], ["53:22:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:3B:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:3A:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:39:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:38:7A:16:23:00:01", Direction["STRAIGHT"]], ["53:42:7A:16:23:00:01", Direction["STRAIGHT"]]]
 }
+
+Depot_route = {
+    "auto_A": [["04:53:41:6D:BC:2A:81", Direction["LEFT"]], ["04:FD:3A:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:DC:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:DD:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:DE:41:6D:BC:2A:81", Direction["RIGHT"]], ["04:E3:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:29:7A:16:23:00:01", Direction["STRAIGHT"]]],
+    "auto_B": [["04:53:41:6D:BC:2A:81", Direction["LEFT"]], ["04:FD:3A:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:DC:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:DD:41:6D:BC:2A:81", Direction["RIGHT"]], ["04:DE:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:2A:7A:16:23:00:01", Direction["STRAIGHT"]]],
+    "auto_C": [["04:53:41:6D:BC:2A:81", Direction["LEFT"]], ["04:FD:3A:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:DC:41:6D:BC:2A:81", Direction["RIGHT"]], ["04:DD:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:2B:7A:16:23:00:01", Direction["STRAIGHT"]]],
+    "auto_D": [["04:53:41:6D:BC:2A:81", Direction["LEFT"]], ["04:FD:3A:6D:BC:2A:81", Direction["RIGHT"]], ["04:DC:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:20:7A:16:23:00:01", Direction["STRAIGHT"]]],
+    "auto_E": [["04:53:41:6D:BC:2A:81", Direction["STRAIGHT"]], ["04:FD:3A:6D:BC:2A:81", Direction["STRAIGHT"]], ["53:33:7A:16:23:00:01", Direction["STRAIGHT"]]]
+}
+# Reset route index per car
+index = {
+    "auto_A": 1,
+    "auto_B": 1,
+    "auto_C": 1,
+    "auto_D": 1,
+    "auto_E": 1
+}
+
+
+Routes_completed = {
+    "auto_A": 0,
+    "auto_B": 0,
+    "auto_C": 0,
+    "auto_D": 0,
+    "auto_E": 0
+}
+
+# Stores the latest vehicle RFID data
 car_data = []
+
+# any car that has been stopped and the car it has been stopped by with the tag.
+stopped_cars = []
+
+# Registered listeners that should be notified whenever
+# new vehicle data is received
 car_data_listeners: list[Callable[[list[dict]], None]] = []
 
-
+# Returns the latest RFID data received from the vehicle.
 def getTag():
     return car_data
 
+# to reset the values when the route needs to be reset
+def reset():
+    global packets
+    global index
+    global cars
+    global car_data
+    global houses_receaved
+    global completed_houses
+    global max_packets
+    
+    if _client is not None:
+        for car_id in packets:
+            if packets[car_id] > 0:
+                _client.publish(f"car/{car_id}/cmd/Package", packets[car_id])
+                _client.publish(f"car/{car_id}/cmd/Screen", 2)
+            else:
+                _client.publish(f"car/{car_id}/cmd/Package", 0)
+                _client.publish(f"car/{car_id}/cmd/Screen", 0)
 
+    packets = {
+        "auto_A": 0,
+        "auto_B": 0,
+        "auto_C": 0,
+        "auto_D": 0,
+        "auto_E": 0
+    }
+
+    index = {
+        "auto_A": 1,
+        "auto_B": 1,
+        "auto_C": 1,
+        "auto_D": 1,
+        "auto_E": 1
+    }
+
+    cars["auto_A"] = "53:29:7A:16:23:00:01"
+    cars["auto_B"] = "53:2A:7A:16:23:00:01"
+    cars["auto_C"] = "53:2B:7A:16:23:00:01"
+    cars["auto_D"] = "53:20:7A:16:23:00:01"
+    cars["auto_E"] = "53:33:7A:16:23:00:01"
+
+    for k in houses_receaved:
+        houses_receaved[k] = 0
+
+    for k in completed_houses:
+        completed_houses[k] = 0
+
+    for k in max_packets:
+        max_packets[k] = 0
+
+    car_data.clear()
+    for k, v in cars.items():
+        car_data.append({"auto_id": k, "tag_id": v})
+
+    notify_car_data_listeners()
+
+
+# Registers a callback function that will be called
+# whenever new RFID data is received.
 def add_car_data_listener(listener: Callable[[list[dict]], None]):
     if listener not in car_data_listeners:
         car_data_listeners.append(listener)
 
-
+# Notify all registered listeners with the latest vehicle data.
 def notify_car_data_listeners():
     for listener in tuple(car_data_listeners):
         try:
@@ -173,72 +771,216 @@ def notify_car_data_listeners():
             print(f"Failed to notify car data listener: {exc}")
 
 
-start = True
+# Creating a separate thread to wait for the transfer time before resuming the car's movement
+def resume_after_wait(client, car_id, total_time):
+    time.sleep((total_time / 1000)+1)
+    client.publish(f"car/{car_id}/cmd/Screen", 0)
+    client.publish(f"car/{car_id}/cmd/Start", "True")
+
+def load_packages(car_id, packages, ms_per_package, package_action):
+    start_mqtt_client()
+    if package_action == "load":
+        action = 1
+        packets[car_id] += packages
+    elif package_action == "unload":
+        action = 2
+        packets[car_id] -= packages
+        if packets[car_id] < 0:
+            packets[car_id] = 0
+    else:
+        action = 0
+    # Stop the car before loading
+    _client.publish(f"car/{car_id}/cmd/Start", "False")
+
+    # Calculate total transfer time and publish to the car's MQTT topics
+    total_time = packages * ms_per_package
+    _client.publish(f"car/{car_id}/cmd/TransferTime", total_time)
+    _client.publish(f"car/{car_id}/cmd/Package", packages)
+    _client.publish(f"car/{car_id}/cmd/Screen", action)
+    threading.Thread(target=resume_after_wait, args=(_client, car_id, total_time), daemon=True).start()
+
+
+# Start
+def drive_command(car_id, start_or_stop):
+    print("test function, if you see this that means you aren't useless")
+    start_mqtt_client()
+    
+    is_inactive_route = state.chosen_route.get(car_id) == "inactive" or state.chosen_route.get(car_id) not in route
+    
+    if start_or_stop in [True, "True"] and is_inactive_route:
+        # Publish False just to be safe, or don't start it
+        _client.publish(f"car/{car_id}/cmd/Start", "False")
+    else:
+        _client.publish(f"car/{car_id}/cmd/Start", f"{start_or_stop}")
+
 # ---------------- CALLBACKS ----------------
 def on_connect(client, userdata, flags, reason_code, properties):
     if reason_code == 0:
-        print("✅ Connected to MQTT")
-        client.subscribe(SUB_TOPIC)
-    else:
-        print("❌ Connection failed:", reason_code)
+        print("Connected to MQTT")
+        topics = [
+            "car/auto_A/data/LastRFID",
+            "car/auto_B/data/LastRFID",
+            "car/auto_C/data/LastRFID",
+            "car/auto_D/data/LastRFID",
+            "car/auto_E/data/LastRFID",
+        ]
 
+        for topic in topics:
+            result, mid = client.subscribe(topic)
+            print(f"Subscribed to {topic}: result={result}, mid={mid}")
+    else:
+        print("Connection failed:", reason_code)
+
+def get_car_route(car_id):
+    chosen = state.chosen_route.get(car_id)
+    if not chosen or chosen == "inactive" or chosen not in route:
+        return []
+    
+    base = route[chosen]
+    
+    prefix = Depot_exit_route.get(car_id, [])
+    suffix = Depot_route.get(car_id, [])
+    return [base[0]] + prefix + base[1:] + suffix
+
+# The callback for when a PUBLISH message is received from the server.
+# Processes RFID scans and sends navigation commands based on the selected route.
 def on_message(client, userdata, msg):
     rfid = msg.payload.decode().strip()
-
     print(f"RFID received: {rfid}")
+
+    # Extract vehicle identifier from MQTT topic
+    topic = msg.topic.strip().split("/")
+
+    global index
     global car_data
-    car_data = [
-        {"auto_id": "Auto B", "tag_id": rfid},
-    ]
+
+    # Store latest RFID scan attatched to a car
+    cars[topic[1]] = rfid
+    # Update vehicle status information
+    found = False
+    for cd in car_data:
+        if cd["auto_id"] == topic[1]:
+            cd["tag_id"] = rfid
+            found = True
+            break
+    if not found:
+        car_data.append({"auto_id": topic[1], "tag_id": rfid})
+
+    # Notify listeners about updated RFID information
     notify_car_data_listeners()
+
     # ----- DECISION LOGIC -----
-    if start == True:
-        client.publish(PUB_TOPIC_MOVE, "True")
-        print("Car started...")
-    elif start == False:
-        client.publish(PUB_TOPIC_MOVE, "False")
-        print("Car stopped...")
-    # elif start == True == False:
-    #     response = ""
-    #     history_start = True
-    # elif start == True and history_start == False:
-    #     response = ""
+    if state.start:
+        is_inactive_route = state.chosen_route[topic[1]] == "inactive" or state.chosen_route[topic[1]] not in route
+        
+        if is_inactive_route:
+            client.publish(f"car/{topic[1]}/cmd/Start", "False")
+            return
 
-    # # publish response
-    # client.publish(PUB_TOPIC_DIR, response)
-    # print("Sent:", response)
+        # Ensure vehicle is moving.
+        client.publish(f"car/{topic[1]}/cmd/Start", "True")
 
-# index for the loop
-# index = 0
-#
-#     # check to make sure that cars arent on the same track position.
-#     if auto_1 == auto_2 or auto_2 == auto_1:
-#         # send stop to car
-#         time.sleep(1)  # for specific car
-#
-#     # check to see if the car is at the destination tag and sends new command.
-#     if auto_1 == route_1[index][1] or auto_2 == route_1[index][1]:
-#         if Tags[auto_1][1] == auto_2 or Tags[auto_1][2] == auto_2:
-#             time.sleep(1)
-#         client.publish(TOPIC, route_1[index][0])
-#         print("Sent:", route_1[index][0])
-#         index += 1
+        # Checks if the car is at a house and delivers up to the max amount of packages possible
+        for i in houses_requested:
+            if i == rfid:
+                needed = houses_requested[i] - houses_receaved[i]
+                if needed > 0:
+                    available = packets[topic[1]]
+                    if available > 0:
+                        amount_to_deliver = min(needed, available)
+                        
+                        houses_receaved[i] += amount_to_deliver
+                        
+                        if houses_receaved[i] == houses_requested[i]:
+                            completed_houses[topic[1]] += 1
+                            
+                        load_packages(topic[1], amount_to_deliver, 1500, "unload")
 
 
+        # stops the car if there is any other car in the adjacent tags.
+        for i in cars:
+            adjacent_tags = Json_file.get(rfid, [])
+
+            if cars[i] in adjacent_tags:
+                client.publish(f"car/{topic[1]}/cmd/Start", "False")
+                if not any(entry[0] == topic[1] for entry in car_stopped):
+                    car_stopped.append([topic[1], i, cars[i]])
+
+        # checks if the car that made the other stop, has moved from their tag and starts the stopped car in that case.
+        if len(car_stopped) != 0:
+            to_remove = []
+            for i in car_stopped:
+                if cars[i[1]] != i[2]:
+                    if state.chosen_route.get(i[0]) != "inactive" and state.chosen_route.get(i[0]) in route:
+                        client.publish(f"car/{i[0]}/cmd/Start", "True")
+                    to_remove.append(i)
+            for i in to_remove:
+                car_stopped.remove(i)
+
+        if not is_inactive_route:
+            car_route = get_car_route(topic[1])
+            # Check whether the scanned RFID matches
+            # the current route waypoint
+            if car_route and rfid == car_route[index[topic[1]]][0]:
+                #
+                # # Checks if the there are packages and loads or unloads them
+                # if route[state.chosen_route[topic[1]]][index[topic[1]]][1] == "load" or route[state.chosen_route[topic[1]]][index[topic[1]]][1] == "unload":
+                #     load_packages(client, topic[1], route[state.chosen_route[topic[1]]][index[topic[1]]][2], 500, route[state.chosen_route[topic[1]]][index[topic[1]]][1])
+
+                # else:
+                # Stop vehicle before changing direction
+                client.publish(f"car/{topic[1]}/cmd/Start", "False")
+                # Send next direction command
+                client.publish(f"car/{topic[1]}/cmd/Direction", car_route[index[topic[1]]][1])
+                # Resume movement
+                client.publish(f"car/{topic[1]}/cmd/Start", "True")
+                # Advance to next route step
+                index[topic[1]] += 1
+
+                # Loop back to start when route completes.
+                if len(car_route) == index[topic[1]]:
+
+                    index[topic[1]] = 1
+                    Routes_completed[topic[1]] += 1
+                    
+                    # Refill packages up to max capacity
+                    needed_to_refill = max_packets[topic[1]] - packets[topic[1]]
+                    if needed_to_refill > 0:
+                        load_packages(topic[1], needed_to_refill, 1500, "load")
+
+                    if completed_houses[topic[1]] == car_route[0]:
+                        calculate_score(TRIP, WEIGHTS, topic[1], ((len(car_route) - 1) * Routes_completed[topic[1]]))
+                        Routes_completed[topic[1]] = 0
+                        client.publish(f"car/{topic[1]}/cmd/Start", "False")
+
+    elif not state.start:
+        # Emergency stop / manual stop mode
+        client.publish(f"car/{topic[1]}/cmd/Start", "False")
+
+
+# Creates and configures an MQTT client using secure
+# WebSocket transport.
 def create_client():
     client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, transport="websockets")
+    # Configure authentication
     client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
+    # Configure WebSocket path
     client.ws_set_options(path=MQTT_PATH)
+    # Enable TLS encryption
     client.tls_set(cert_reqs=ssl.CERT_REQUIRED)
+    # Register MQTT callbacks
     client.on_connect = on_connect
     client.on_message = on_message
+    # Configure automatic reconnection
     client.reconnect_delay_set(min_delay=1, max_delay=60)
     return client
 
-
+# Singleton MQTT client instance
 _client = None
 
 
+#  Starts the MQTT client in a background thread.
+#  Returns the existing client if already running.
 def start_mqtt_client():
     global _client
     if _client is not None:
@@ -251,6 +993,7 @@ def start_mqtt_client():
     return _client
 
 
+# Stops the MQTT client and disconnects from the broker.
 def stop_mqtt_client():
     global _client
     if _client is None:
@@ -261,9 +1004,11 @@ def stop_mqtt_client():
     _client = None
 
 
+# Standalone execution mode.
+# Creates the MQTT client and blocks forever while
+# =listening for RFID scans.
 if __name__ == "__main__":
     client = create_client()
     client.connect(MQTT_HOST, MQTT_PORT)
     print("Waiting for RFID scans...")
     client.loop_forever()
-

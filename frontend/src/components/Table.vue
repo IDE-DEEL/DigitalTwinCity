@@ -1,73 +1,86 @@
 <script setup>
 import "../assets/Table.css"
 import { watch } from 'vue'
-import { store, send_data } from '../store.js'
+import { useDigitalTwinStore } from '../stores/digital-twin.js'
+import { useLanguageStore } from '../stores/index.js';
+import { BaseButton } from './CustomComponents.js';
 
-watch(() => {
-  send_data("car_table", store.table_data)
-})
+const store = useDigitalTwinStore()
+const langStore = useLanguageStore();
 
-function add_car(event) {
-  const new_car = {
-    "auto_id": "Auto 1", 
-    "pakketje": 0, 
-    "route": "Route 1", 
-    "visueel": false,
-  }
-  
-  for (let i=0; i < store.table_data.length; i++) {
-    if (store.table_data[i].auto_id === new_car.auto_id) {
-      new_car.auto_id = "Auto " + ((i + 1) + 1)
-    }
-  }
-  
-  store.table_data.push(new_car)
+function visualizing(car) {
+  car.visueel = !car.visueel
 }
 
-function remove_car(index) {
-  store.table_data.splice(index, 1)
+function send_packages(car) {
+  store.sendData('packages', {
+    car_id: car.auto_id,
+    packages: car.pakketje
+  })
 }
 
-function update_car(car, newValue) {
-  const id_exists = store.table_data.some(item => item.auto_id === newValue && item !== car)
-  
-  if (id_exists) {
-    alert('Dit auto_id is al bezet!')
-    return
-  }
-
-  car.auto_id = newValue
+function send_route(car) {
+  store.sendData('route', {
+    car_id: car.auto_id,
+    route: car.route
+  })
 }
 </script>
 
 <template>
-  <div>
+  <div class="table-container">
     <label class="block text-sm font-semibold mb-1">Auto's:</label>
-      <table class="table-container">
+      <table class="table-content">
         <thead>
           <tr class="title-row">
-            <th>
-              <button class="add-car" @click="add_car">
-                <img style="transform: scale(0.6, 0.6);" src="/assets/plus-sign.png" alt="Auto" />
-              </button>
-            </th>
-            <th>Auto ID</th>
-            <th>Pakketjes</th>
-            <th>Route</th>
-            <th>Visueel</th>
+            <th>{{ langStore.getLabel('carTable.status') }}</th>
+            <th>{{ langStore.getLabel('carTable.carId') }}</th>
+            <th>{{ langStore.getLabel('carTable.energy') }}</th>
+            <th>{{ langStore.getLabel('carTable.packages') }}</th>
+            <th>{{ langStore.getLabel('carTable.route') }}</th>
+            <th>{{ langStore.getLabel('carTable.routeVisibility') }}</th>
           </tr>
         </thead>
         <tbody v-for="(car, index) in store.table_data" :key="index">
           <tr>
-            <td><button class="remove-car" @click="remove_car(index)">x</button></td>
-            <td><input class="package-input" type="text" size=6 v-model="car.auto_id" @change="update_car(car, $event.target.value)"></input></td>
-            <td><input class="package-input" type="number" min=0 :max=store.max_packages v-model="car.pakketje"></input></td>
             <td>
-              <select v-model="car.route">
-                <option v-for="r in store.routes" :key="r.route" :value="r.route">{{ r.route }}</option>
+              <div class="circle" :class="{ 'is-active': car.status }"></div>
+            </td>
+            <td>
+              <div class="car-id-container">
+                <div :style="{backgroundColor: car.color}" class="car-id-color"></div>
+                <div>{{ index += 1 }}</div>
+              </div>
+            </td>
+            <td>{{ car.energie }} %</td>
+            <td>
+              <input class="package-input" 
+                     type="number" 
+                     min=0 
+                     :max=store.max_packages 
+                     v-model="car.pakketje" 
+                     :disabled="car.route === 'inactive'"
+                     @change="send_packages(car)">
+              </input>
+            </td>
+            <td>
+              <select class="route-select" 
+                      v-model="car.route" 
+                      @change="send_route(car)"
+                      :class="{ 'inactive-route': car.route === 'inactive' }"
+              >
+                <option 
+                    :class="{ 'inactive-route-option': car.route === 'inactive' }" 
+                    v-for="r in store.routes" 
+                    :key="r.route" 
+                    :value="r.route" 
+                    @change="send_route(car)"
+                >
+                    {{ langStore.getLabel(`simRoutes.${r.route}`) || r.route }}
+                </option>
               </select>
             </td>
-            <td><input type="checkbox" class="circle" v-model="car.visueel"></input></td>
+            <td class="button-cell"><BaseButton @click="visualizing(car)" :is-active="car.visueel" :disabled="car.route === 'inactive' && !car.visueel" variant="table">{{ car.visueel ? langStore.getLabel('carTable.hideRoute') : langStore.getLabel('carTable.showRoute') }}</BaseButton></td>
           </tr>
         </tbody>
       </table>

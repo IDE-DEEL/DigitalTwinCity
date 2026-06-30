@@ -15,7 +15,7 @@
   {"x": 1, "y": 2, "type": "curve", "rotation": 180, "tileNumber": 14},
   {"x": 2, "y": 2, "type": "cross_split", "rotation": 0, "tileNumber": 10},
   {"x": 3, "y": 2, "type": "t_split", "rotation": 270, "tileNumber": 6},
-  {"x": 4, "y": 2, "type": "straight", "rotation": 90, "tileNumber": 2},
+  {"x": 4, "y": 2, "type": "depot", "rotation": 0, "tileNumber": 2},
 
   {"x": 0, "y": 3, "type": "curve", "rotation": 180, "tileNumber": 17},
   {"x": 1, "y": 3, "type": "straight", "rotation": 180, "tileNumber": 13},

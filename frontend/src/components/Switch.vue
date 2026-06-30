@@ -1,26 +1,26 @@
 <script setup>
-import { ref } from 'vue'
-import '../assets/Switch.css'
+import '../assets/Switch.css';
+import { useLanguageStore, usePageStore } from '../stores/index.js';
 
-const isOn = ref(true)
+const langStore = useLanguageStore();
+const pageStore = usePageStore();
+
 </script>
 
 <template>
   <div class="switch-container">
     <router-link to="/digital_twin" 
       class="switch-button switch-button-left" 
-      :class="{ 'is-active': isOn }" 
-      @click="isOn = true"
+      :class="{ 'is-active': pageStore.isDigitalTwin }" 
     >
-      Digital Twin
+      {{ langStore.getLabel('header.switchTwin') }}
     </router-link>
     
     <router-link to="/simulation" 
       class="switch-button switch-button-right" 
-      :class="{ 'is-active': !isOn }" 
-      @click="isOn = false"
+      :class="{ 'is-active': pageStore.isSimulation }" 
     >
-      Simulatie
+      {{ langStore.getLabel('header.switchSimulation') }}
     </router-link>
   </div>
 </template>

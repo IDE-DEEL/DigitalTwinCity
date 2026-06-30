@@ -1,0 +1,82 @@
+.car-sprite {
+    position: absolute;
+    z-index: 5;
+    width: 25.5px;
+    height: 36px;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+}
+
+.car-heading {
+    width: 100%;
+    height: 100%;
+    /* transition: transform 260ms ease-out; */
+    transform-origin: center;
+}
+
+.car-body {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border: 1.5px solid #111827;
+    border-radius: 6px 6px 4.5px 4.5px;
+    box-shadow: 0 2.25px 6px rgba(0, 0, 0, 0.28);
+}
+
+.car-window {
+    position: absolute;
+    top: 6px;
+    left: 5.25px;
+    width: 12px;
+    height: 9px;
+    border-radius: 3px 3px 1.5px 1.5px;
+    background: #bfdbfe;
+    border: 0.75px solid #1f2937;
+}
+
+.car-hood {
+    position: absolute;
+    top: 18px;
+    left: 5.25px;
+    width: 12px;
+    height: 9px;
+    border-radius: 2.25px;
+    background: #374151;
+}
+
+.car-headlights {
+    position: absolute;
+    top: 1.5px;
+    left: 3.75px;
+    right: 3.75px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.car-headlights span {
+    width: 4.5px;
+    height: 3px;
+    border-radius: 0.75px;
+    background: #fde68a;
+}
+
+.cargo-counter {
+  position: absolute;
+  top: 65%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(0deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 8px;
+  font-weight: bold;
+  text-shadow: 
+    -0.75px -0.75px 0 black,
+    0.75px -0.75px 0 black,
+    -0.75px  0.75px 0 black,
+    0.75px  0.75px 0 black;
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+}

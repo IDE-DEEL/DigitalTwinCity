@@ -3,10 +3,12 @@
     --container-radius: 28px;
     width: fit-content;
     min-width: 240px;
-    height: 45%;
-    border: 1px solid #000000;
+    height: 35px;
+    border: 4px solid var(--color-primary-blue);
     border-radius: var(--container-radius);
     overflow: hidden;
+    font-size: var(--text-xl);
+    filter: drop-shadow(2px 2px 0px #0061bc);
 }
 
 .switch-button {
@@ -17,9 +19,9 @@
     text-decoration: none;
     border: none;
     cursor: pointer;
-    transition: background-color 0.3s ease;
-    background-color: transparent; 
-    color: black;
+    transition: background-color 0.3s linear, color 0.3s linear;
+    background-color: var(--color-primary-blue); 
+    color: var(--color-text-white);
     cursor: pointer;
 }
 
@@ -32,6 +34,6 @@
 }
 
 .is-active {
-    background-color: var(--color-primary-blue);
-    color: white;
+    background-color: white;
+    color: var(--color-primary-blue);
 }

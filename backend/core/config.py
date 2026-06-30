@@ -1,4 +1,8 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+BACKEND_ROOT = Path(__file__).resolve().parent.parent
 
 class Settings(BaseSettings):
     POSTGRES_USER: str
@@ -32,7 +36,7 @@ class Settings(BaseSettings):
         return self.SESSION_COOKIE_DOMAIN or None
 
     # Zorgt dat Pydantic het .env bestand leest
-    model_config = SettingsConfigDict(env_file="././.env")
+    model_config = SettingsConfigDict(env_file=str(BACKEND_ROOT / ".env"))
 
 # Maak één instantie van de instellingen aan
 settings = Settings()
