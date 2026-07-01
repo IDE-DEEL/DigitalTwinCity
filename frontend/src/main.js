@@ -76,13 +76,19 @@ function scheduleSessionExpiry(session) {
             scheduleSessionExpiry(session);
         }, MAX_TIMEOUT);
     } else {
-        sessionExpiryTimer = setTimeout(() => {
-            clearSession();
-
-            if (!['/login', '/admin'].includes(page_router.currentRoute.value.path)) {
-                page_router.push('/login');
+        const CLOCK_SKEW_BUFFER_MS = 10000;
+        const delay = timeRemaining < CLOCK_SKEW_BUFFER_MS ? CLOCK_SKEW_BUFFER_MS : timeRemaining;
+        sessionExpiryTimer = setTimeout(async () => {
+            const activeSession = await verifySession();
+            if (activeSession) {
+                scheduleSessionExpiry(activeSession);
+            } else {
+                clearSession();
+                if (!['/login', '/admin'].includes(page_router.currentRoute.value.path)) {
+                    page_router.push('/login');
+                }
             }
-        }, timeRemaining);
+        }, delay);
     }
 }
 
