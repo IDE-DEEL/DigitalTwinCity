@@ -68,13 +68,22 @@ function scheduleSessionExpiry(session) {
         clearTimeout(sessionExpiryTimer);
     }
 
-    sessionExpiryTimer = setTimeout(() => {
-        clearSession();
+    const timeRemaining = Math.max(expiryTime - Date.now(), 0);
+    const MAX_TIMEOUT = 2147483647;
 
-        if (!['/login', '/admin'].includes(page_router.currentRoute.value.path)) {
-            page_router.push('/login');
-        }
-    }, Math.max(expiryTime - Date.now(), 0));
+    if (timeRemaining > MAX_TIMEOUT) {
+        sessionExpiryTimer = setTimeout(() => {
+            scheduleSessionExpiry(session);
+        }, MAX_TIMEOUT);
+    } else {
+        sessionExpiryTimer = setTimeout(() => {
+            clearSession();
+
+            if (!['/login', '/admin'].includes(page_router.currentRoute.value.path)) {
+                page_router.push('/login');
+            }
+        }, timeRemaining);
+    }
 }
 
 function isStudentSession(session) {
