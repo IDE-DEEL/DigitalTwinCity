@@ -164,7 +164,7 @@ Alertmanager is geconfigureerd voor e-mailnotificaties via Gmail SMTP. De config
 server/monitoring/alertmanager/alertmanager.yml
 ```
 
-De huidige route groepeert alerts op `alertname` en `component` en stuurt firing en resolved meldingen naar `paco.chrispijn@student.hu.nl`. Het SMTP-wachtwoord wordt niet in de YAML gezet. Compose mount standaard dit serverbestand:
+De huidige route groepeert alerts op `alertname` en `component` en stuurt firing en resolved meldingen naar `example@example.com`. Het SMTP-wachtwoord wordt niet in de YAML gezet. Compose mount standaard dit serverbestand:
 
 ```text
 <DEPLOY_PATH>/shared/alertmanager/smtp_auth_password

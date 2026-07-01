@@ -197,7 +197,7 @@ De externe HTTP target staat hardcoded in `monitoring/prometheus/prometheus.yml`
 
 De basisalerts staan in `monitoring/prometheus/rules/availability-alerts.yml`. Prometheus laadt deze map via `rule_files` in `monitoring/prometheus/prometheus.yml`.
 
-Alertmanager is werkend ingericht voor e-mailnotificaties via Gmail SMTP. De configuratie in `monitoring/alertmanager/alertmanager.yml` gebruikt receiver `email-user`, leest het SMTP-wachtwoord uit `/etc/alertmanager/secrets/smtp_auth_password` en stuurt meldingen naar `paco.chrispijn@student.hu.nl`. `send_resolved: true` staat aan, dus herstelmeldingen worden ook verzonden.
+Alertmanager is werkend ingericht voor e-mailnotificaties via Gmail SMTP. De configuratie in `monitoring/alertmanager/alertmanager.yml` gebruikt receiver `email-user`, leest het SMTP-wachtwoord uit `/etc/alertmanager/secrets/smtp_auth_password` en stuurt meldingen naar `example@example.com`. `send_resolved: true` staat aan, dus herstelmeldingen worden ook verzonden.
 
 In `compose.monitoring.yml` heeft Alertmanager naast de interne metrics- en monitoringnetwerken ook het niet-interne netwerk `smtp_external`. Dat netwerk is nodig voor outbound SMTP-verkeer naar Gmail.
 

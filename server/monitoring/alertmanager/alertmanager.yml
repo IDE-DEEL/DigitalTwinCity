@@ -18,5 +18,5 @@ route:
 receivers:
   - name: "email-user"
     email_configs:
-      - to: "paco.chrispijn@student.hu.nl"
+      - to: "example@example.com"
         send_resolved: true
