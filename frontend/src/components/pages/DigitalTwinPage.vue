@@ -139,7 +139,7 @@ function calculateRotation(from, to) {
   const dx = to.x - from.x
   const dy = to.y - from.y
 
-  return Math.atan2(dy, dx) * (180 / Math.PI) + 90
+  return Math.atan2(dy, dx) * (180 / Math.PI)
 }
 
 function moveCars() {
