@@ -160,38 +160,60 @@ function moveCars() {
     const serverTagId = carInfo.tag_id
     const tagMapLocal = tagMap.value
 
-    const serverIndex = tags.indexOf(serverTagId)
-    let clientIndex = state.routeIndex
+    if (!serverTagId) continue
 
+    const serverIndex = tags.indexOf(serverTagId)
     if (serverIndex === -1) continue
 
+    const clientIndex = tags.indexOf(state.lastTagId)
+
+    /* -------------------------
+       INIT / RESYNC SAFETY
+    ------------------------- */
+    if (!state.lastTagId) {
+      const startPos = tagMapLocal[serverTagId]
+      if (!startPos) continue
+
+      state.x = startPos.x
+      state.y = startPos.y
+      state.lastTagId = serverTagId
+      state.routeIndex = serverIndex
+      continue
+    }
+
+    /* -------------------------
+       JUMP DETECTION (grote sprong)
+    ------------------------- */
     const diff = (serverIndex - clientIndex + tags.length) % tags.length
 
-    const fromTagId = tags[clientIndex]
+    if (diff > 1 && diff < tags.length - 1) {
+      const to = tagMapLocal[serverTagId]
+      const from = tagMapLocal[state.lastTagId]
+
+      if (!from || !to) continue
+
+      state.x = to.x
+      state.y = to.y
+
+      state.rotation = calculateRotation(from, to)
+
+      state.lastTagId = serverTagId
+      state.routeIndex = serverIndex
+
+      continue
+    }
+
+    /* -------------------------
+       SMOOTH MOVE (1 step)
+    ------------------------- */
+
+    const fromTagId = state.lastTagId
     const toTagId = serverTagId
 
     const from = tagMapLocal[fromTagId]
     const to = tagMapLocal[toTagId]
 
     if (!from || !to) continue
-
-    /* -------------------------
-      JUMP (grote mismatch)
-    -------------------------*/
-    if (diff > 1 && diff < tags.length - 1) {
-      state.x = to.x
-      state.y = to.y
-      state.rotation = calculateRotation(from, to)
-
-      state.routeIndex = serverIndex
-      state.lastTagId = serverTagId
-
-      continue
-    }
-
-    /* -------------------------
-       NORMAL MOVE
-    -------------------------*/
 
     const dx = to.x - state.x
     const dy = to.y - state.y
@@ -203,8 +225,8 @@ function moveCars() {
       state.x = to.x
       state.y = to.y
 
-      state.routeIndex = (clientIndex + 1) % tags.length
-      state.lastTagId = serverTagId
+      state.lastTagId = toTagId
+      state.routeIndex = serverIndex
 
       continue
     }
