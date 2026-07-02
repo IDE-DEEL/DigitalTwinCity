@@ -17,6 +17,26 @@ const carState = reactive({
   positions: {}
 })
 
+/* -------------------------
+   COMPUTED MAPS (REACTIVE FIX)
+--------------------------*/
+
+const tagMap = computed(() => {
+  const map = {}
+  for (const t of store.tag_positions) {
+    map[t.tag_id] = t.tag_pos
+  }
+  return map
+})
+
+const carTagMap = computed(() => {
+  const map = {}
+  for (const c of store.car_data) {
+    map[c.auto_id] = c.tag_id
+  }
+  return map
+})
+
 onMounted(() => {
   store.connect();
   store.fetchTagPositions()
@@ -24,7 +44,15 @@ onMounted(() => {
   store.fetchRoutes()
   store.fetchHouses()
   store.fetchHousesPerScenario()
+
+  initCars()
 })
+
+watch(
+  () => [store.table_data, store.tag_positions, store.car_data],
+  () => initCars(),
+  { deep: true, immediate: true }
+)
 
 /* -------------------------
    ROUTES & TAGS
@@ -68,17 +96,6 @@ function get_prefix_depot_route_tags(car_id) {
   return tags
 }
 
-const tagMap = computed(() => {
-  const map = {}
-  for (const t of store.tag_positions) {
-    map[t.tag_id] = {
-      x: t.tag_pos.x,
-      y: t.tag_pos.y
-    }
-  }
-  return map
-})
-
 function getRouteTags(car_id, route_name) {
   if (route_name === 'inactive') return []
   let route_tags = get_route_tags(route_name)
@@ -89,36 +106,30 @@ function getRouteTags(car_id, route_name) {
   return tags
 }
 
-const tagPosMap = Object.fromEntries(
-  store.tag_positions.map(t => [t.tag_id, t.tag_pos])
-);
-
-const carTagMap = Object.fromEntries(
-  store.car_data.map(c => [c.auto_id, c.tag_id])
-);
-
 function getNextTag(tags, currentIndex) {
   return tags[(currentIndex + 1) % tags.length]
 }
 
-for (const car of store.table_data) {
-  if (!carState.positions[car.auto_id] && car.status) {
+function initCars() {
+  for (const car of store.table_data) {
+    if (!car.status) continue
 
-    const tagId = carTagMap[car.auto_id];
-    const pos = tagPosMap[tagId];
+    const tagId = carTagMap.value[car.auto_id]
+    const pos = tagMap.value[tagId]
 
-    carState.positions[car.auto_id] = {
-      id: car.auto_id,
-      x: pos?.x ?? 0,
-      y: pos?.y ?? 0,
-      packages: car.pakketje,
-      routeIndex: 0,
-      initialized: false,
-      rotation: 90,
-      lastTagId: null,
-      targetTagId: null,
-      arrived: false
-    };
+    if (!pos) continue
+
+    if (!carState.positions[car.auto_id]) {
+      carState.positions[car.auto_id] = {
+        id: car.auto_id,
+        x: pos.x,
+        y: pos.y,
+        routeIndex: 0,
+        initialized: true,
+        rotation: 90,
+        lastTagId: tagId
+      }
+    }
   }
 }
 
@@ -143,93 +154,45 @@ function moveCars() {
     const tags = getRouteTags(car.auto_id, car.route)
     if (!tags.length) continue
 
-    const carInfo = store.car_data.find(
-      c => c.auto_id === car.auto_id
-    )
-    
+    const carInfo = store.car_data.find(c => c.auto_id === car.auto_id)
     if (!carInfo) continue
-    const currentTagId = carInfo.tag_id
+
+    const serverTagId = carInfo.tag_id
     const tagMapLocal = tagMap.value
 
-    /* -------------------------
-       INIT
-    ------------------------- */
-    if (!state.initialized) {
-      const startPos = tagMapLocal[currentTagId]
-      if (!startPos) continue
+    const serverIndex = tags.indexOf(serverTagId)
+    let clientIndex = state.routeIndex
 
-      state.x = startPos.x
-      state.y = startPos.y
+    if (serverIndex === -1) continue
 
-      state.routeIndex = tags.findIndex(t => t === currentTagId)
-      if (state.routeIndex < 0) state.routeIndex = 0
+    const diff = (serverIndex - clientIndex + tags.length) % tags.length
 
-      state.lastTagId = currentTagId
-      state.targetTagId = null
-      state.arrived = false
-      state.initialized = true
-      continue
-    }
+    const fromTagId = tags[clientIndex]
+    const toTagId = serverTagId
 
-    /* -------------------------
-       STOP STATE
-    ------------------------- */
-    if (state.arrived && currentTagId === state.lastTagId) {
-      continue
-    }
-
-    /* -------------------------
-       GEEN SCAN → STOP
-    ------------------------- */
-    if (!currentTagId) continue
-
-    /* -------------------------
-       TARGET SETTEN
-    ------------------------- */
-    if (!state.targetTagId) {
-      state.targetTagId = currentTagId
-    }
-
-    if (!state.targetTagId) continue
-
-    const targetIndex = tags.indexOf(state.targetTagId)
-    if (targetIndex === -1) {
-      state.targetTagId = null
-      continue
-    }
-
-    const currentIndex = state.routeIndex
-    const diff = (targetIndex - currentIndex + tags.length) % tags.length
-    const fromTagId = tags[currentIndex]
-    const toTagId = state.targetTagId
     const from = tagMapLocal[fromTagId]
     const to = tagMapLocal[toTagId]
 
-    if (!to || !from) {
-      state.targetTagId = null
-      continue
-    }
+    if (!from || !to) continue
 
     /* -------------------------
-       JUMP (meer dan 1 stap)
-    ------------------------- */
-    if (diff > 1) {
+      JUMP (grote mismatch)
+    -------------------------*/
+    if (diff > 1 && diff < tags.length - 1) {
       state.x = to.x
       state.y = to.y
-
       state.rotation = calculateRotation(from, to)
 
-      state.routeIndex = targetIndex
-      state.lastTagId = toTagId
-      state.targetTagId = null
-      state.arrived = true
+      state.routeIndex = serverIndex
+      state.lastTagId = serverTagId
 
       continue
     }
 
     /* -------------------------
-       MOVE (normaal)
-    ------------------------- */
+       NORMAL MOVE
+    -------------------------*/
+
     const dx = to.x - state.x
     const dy = to.y - state.y
     const dist = Math.sqrt(dx * dx + dy * dy)
@@ -240,10 +203,8 @@ function moveCars() {
       state.x = to.x
       state.y = to.y
 
-      state.routeIndex = targetIndex
-      state.lastTagId = toTagId
-      state.targetTagId = null
-      state.arrived = true
+      state.routeIndex = (clientIndex + 1) % tags.length
+      state.lastTagId = serverTagId
 
       continue
     }
