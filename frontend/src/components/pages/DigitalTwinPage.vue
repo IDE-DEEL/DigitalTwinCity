@@ -139,7 +139,7 @@ function calculateRotation(from, to) {
   const dx = to.x - from.x
   const dy = to.y - from.y
 
-  return Math.atan2(dy, dx) * (180 / Math.PI)
+  return Math.atan2(dy, dx) * (180 / Math.PI) + 90
 }
 
 function moveCars() {
@@ -154,67 +154,93 @@ function moveCars() {
     const tags = getRouteTags(car.auto_id, car.route)
     if (!tags.length) continue
 
-    const carInfo = store.car_data.find(c => c.auto_id === car.auto_id)
+    const carInfo = store.car_data.find(
+      c => c.auto_id === car.auto_id
+    )
+    
     if (!carInfo) continue
-
-    const serverTagId = carInfo.tag_id
+    const currentTagId = carInfo.tag_id
     const tagMapLocal = tagMap.value
 
-    if (!serverTagId) continue
-
-    const serverIndex = tags.indexOf(serverTagId)
-    if (serverIndex === -1) continue
-
-    const clientIndex = tags.indexOf(state.lastTagId)
-
     /* -------------------------
-       INIT / RESYNC SAFETY
+       INIT
     ------------------------- */
-    if (!state.lastTagId) {
-      const startPos = tagMapLocal[serverTagId]
+    if (!state.initialized) {
+      const startPos = tagMapLocal[currentTagId]
       if (!startPos) continue
 
       state.x = startPos.x
       state.y = startPos.y
-      state.lastTagId = serverTagId
-      state.routeIndex = serverIndex
+
+      state.routeIndex = tags.findIndex(t => t === currentTagId)
+      if (state.routeIndex < 0) state.routeIndex = 0
+
+      state.lastTagId = currentTagId
+      state.targetTagId = null
+      state.arrived = false
+      state.initialized = true
       continue
     }
 
     /* -------------------------
-       JUMP DETECTION (grote sprong)
+       STOP STATE
     ------------------------- */
-    const diff = (serverIndex - clientIndex + tags.length) % tags.length
+    if (state.arrived && currentTagId === state.lastTagId) {
+      continue
+    }
 
-    if (diff > 1 && diff < tags.length - 1) {
-      const to = tagMapLocal[serverTagId]
-      const from = tagMapLocal[state.lastTagId]
+    /* -------------------------
+       GEEN SCAN → STOP
+    ------------------------- */
+    if (!currentTagId) continue
 
-      if (!from || !to) continue
+    /* -------------------------
+       TARGET SETTEN
+    ------------------------- */
+    if (!state.targetTagId) {
+      state.targetTagId = currentTagId
+    }
 
+    if (!state.targetTagId) continue
+
+    const targetIndex = tags.indexOf(state.targetTagId)
+    if (targetIndex === -1) {
+      state.targetTagId = null
+      continue
+    }
+
+    const currentIndex = state.routeIndex
+    const diff = (targetIndex - currentIndex + tags.length) % tags.length
+    const fromTagId = tags[currentIndex]
+    const toTagId = state.targetTagId
+    const from = tagMapLocal[fromTagId]
+    const to = tagMapLocal[toTagId]
+
+    if (!to || !from) {
+      state.targetTagId = null
+      continue
+    }
+
+    /* -------------------------
+       JUMP (meer dan 1 stap)
+    ------------------------- */
+    if (diff > 1) {
       state.x = to.x
       state.y = to.y
 
       state.rotation = calculateRotation(from, to)
 
-      state.lastTagId = serverTagId
-      state.routeIndex = serverIndex
+      state.routeIndex = targetIndex
+      state.lastTagId = toTagId
+      state.targetTagId = null
+      state.arrived = true
 
       continue
     }
 
     /* -------------------------
-       SMOOTH MOVE (1 step)
+       MOVE (normaal)
     ------------------------- */
-
-    const fromTagId = state.lastTagId
-    const toTagId = serverTagId
-
-    const from = tagMapLocal[fromTagId]
-    const to = tagMapLocal[toTagId]
-
-    if (!from || !to) continue
-
     const dx = to.x - state.x
     const dy = to.y - state.y
     const dist = Math.sqrt(dx * dx + dy * dy)
@@ -225,8 +251,10 @@ function moveCars() {
       state.x = to.x
       state.y = to.y
 
+      state.routeIndex = targetIndex
       state.lastTagId = toTagId
-      state.routeIndex = serverIndex
+      state.targetTagId = null
+      state.arrived = true
 
       continue
     }
