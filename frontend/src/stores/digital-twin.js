@@ -100,6 +100,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
             break
 
           case 'car_packages':
+            console.log(payload)
             this.updatePackages(payload)
             break
 
@@ -120,8 +121,8 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
             break
 
           case 'houses': 
+            console.log(payload)
             const scenario = this.scenario_houses.find(s => s.Scenario === this.chosen_scenario)
-            console.log(scenario)
 
             scenario?.tags.forEach(tag => {
                 const update = payload.find(p => p.tag_id === tag.tag_id)
