@@ -398,40 +398,36 @@ const selectTag = ((tag) => {
   store.chosen_tag = tag
 })
 
-const getPackages = ((id) => {
-  for (let i = 0; i < store.table_data.length; i++) {
-    const car = store.table_data[i]
-    
-    if (car.auto_id === id) {
-      return car.pakketje
-    }
+const packageMap = computed(() => {
+  const map = {}
+  for (const car of store.table_data) {
+    map[car.auto_id] = car.pakketje
   }
-
-  return 0;
+  return map
 })
 
 /* -------------------------
    Show house packages
 --------------------------*/
-function createHousePackagesList() {
-  const scenario = store.scenario_houses.find(
-    s => s.Scenario === store.chosen_scenario
-  );
+const housePackages = computed(() => {
+    const scenario = store.scenario_houses.find(
+        s => s.Scenario === store.chosen_scenario
+    )
 
-  if (!scenario) return [];
+    if (!scenario) return []
 
-  return scenario.tags.map(tag => {
-    const house = store.houses.find(
-      h => h.tag_id === tag.tag_id
-    );
+    return scenario.tags.map(tag => {
+        const house = store.houses.find(
+            h => h.tag_id === tag.tag_id
+        )
 
-    return {
-      tag_id: tag.tag_id,
-      pos: house.pos,
-      undeliverd_packages: tag.undeliverd_packages
-    };
-  });
-}
+        return {
+            tag_id: tag.tag_id,
+            pos: house.pos,
+            undeliverd_packages: tag.undeliverd_packages
+        }
+    })
+})
 
 /* -------------------------
    Timer button handlers
@@ -509,7 +505,7 @@ function handleTimerReset() {
 
         <!-- House labels for packages -->
         <div
-          v-for="house in createHousePackagesList()"
+          v-for="house in housePackages"
           :key="house.tag_id"
           class="house-marker"
           :style="{
@@ -541,7 +537,7 @@ function handleTimerReset() {
               </div>
             </div>
             <span class="cargo-counter">
-              {{ getPackages(car.id) }}
+              {{ packageMap[car.id] }}
             </span>
           </div>
         </div>

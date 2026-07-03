@@ -121,8 +121,6 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
 
           case 'houses': 
             const scenario = this.scenario_houses.find(s => s.Scenario === this.chosen_scenario)
-            console.log(scenario.tags)
-
             console.log(scenario)
 
             scenario?.tags.forEach(tag => {

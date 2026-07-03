@@ -53,8 +53,6 @@ async def websocket_endpoint(websocket: WebSocket):
 
     try:
         while True:
-            print(retrieve_packages_per_house())
-            print(retrieve_packages_per_car())
             await manager.broadcast_update("houses", retrieve_packages_per_house())
             await manager.broadcast_update("car_packages", retrieve_packages_per_car())
             
