@@ -69,6 +69,16 @@ completed_houses = {
     "auto_E": 0
 }
 
+car_last_seen = {}
+
+cars_connected = {
+    "auto_A": False,
+    "auto_B": False,
+    "auto_C": False,
+    "auto_D": False,
+    "auto_E": False,
+}
+
 # the amount of packages the houses want
 """houses_requested = {
 "53:47:78:16:23:00:01" : 1,
@@ -159,6 +169,15 @@ def retrieve_packages_per_car():
             "remaining": packets[car]
         }
         for car in packets
+    ]
+
+def retrieve_status_per_car():
+    return [
+        {
+            "car_id": car,
+            "status": cars_connected[car]
+        }
+        for car in cars_connected
     ]
 
 # reading the tag file and making it a variable.
@@ -838,6 +857,10 @@ def on_connect(client, userdata, flags, reason_code, properties):
     else:
         print("Connection failed:", reason_code)
 
+def set_car_connected(car_id, is_connected):
+    if car_id in cars_connected:
+        cars_connected[car_id] = is_connected
+
 def get_car_route(car_id):
     chosen = state.chosen_route.get(car_id)
     if not chosen or chosen == "inactive" or chosen not in route:
@@ -860,6 +883,9 @@ def on_message(client, userdata, msg):
 
     global index
     global car_data
+
+    car_last_seen[topic[1]] = time.time()
+    cars_connected[topic[1]] = True
 
     # Store latest RFID scan attatched to a car
     cars[topic[1]] = rfid
@@ -964,6 +990,21 @@ def on_message(client, userdata, msg):
         # Emergency stop / manual stop mode
         client.publish(f"car/{topic[1]}/cmd/Start", "False")
 
+def update_car_status():
+    now = time.time()
+
+    for car_id in cars_connected:
+        last = car_last_seen.get(car_id, 0)
+
+        # 5 sec timeout
+        cars_connected[car_id] = (now - last) < 5
+
+
+def status_loop():
+    while True:
+        update_car_status()
+        notify_car_data_listeners()
+        time.sleep(1)
 
 # Creates and configures an MQTT client using secure
 # WebSocket transport.
