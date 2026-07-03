@@ -152,6 +152,8 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
       if (car && this.active) {
         car.pakketje = payload.remaining
       }
+
+      console.log(this.table_data)
     },
 
     updateRoute(payload) {
