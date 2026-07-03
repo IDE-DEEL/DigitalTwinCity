@@ -144,8 +144,6 @@ houses_receaved = {
 car_stopped = []
 
 def retrieve_packages_per_house():
-    print("retrieve_packages_per_house aangeroepen")
-    
     return [
         {
             "tag_id": tag,
@@ -155,8 +153,6 @@ def retrieve_packages_per_house():
     ]
 
 def retrieve_packages_per_car():
-    print("retrieve_packages_per_car aangeroepen")
-
     return [
         {
             "car_id": car,
