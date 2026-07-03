@@ -149,8 +149,8 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
 
     updatePackages(payload) {
       const car = this.findCar(payload.car_id)
-      if (car) {
-        car.pakketje = payload.packages
+      if (car && this.active) {
+        car.pakketje = payload.remaining
       }
     },
 

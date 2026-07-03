@@ -154,6 +154,17 @@ def retrieve_packages_per_house():
         for tag in houses_requested
     ]
 
+def retrieve_packages_per_car():
+    print("retrieve_packages_per_car aangeroepen")
+
+    return [
+        {
+            "car_id": car,
+            "remaining": packets[car]
+        }
+        for car in packets
+    ]
+
 # reading the tag file and making it a variable.
 try:
     file_path = Path(__file__).parent / "Tag_adjacency_list.json"

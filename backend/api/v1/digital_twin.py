@@ -9,7 +9,8 @@ from backend.baanvlakreservering.baanvlakreservering import (
     load_packages,
     reset,
     max_packets,
-    retrieve_packages_per_house
+    retrieve_packages_per_house,
+    retrieve_packages_per_car
 )
 from backend.score.scoreCalculator import TripData, calculate_score
 from backend.score.config import  WEIGHTS, TRIP
@@ -52,11 +53,13 @@ async def websocket_endpoint(websocket: WebSocket):
 
     try:
         while True:
+            await manager.broadcast_update("houses", retrieve_packages_per_house())
+            await manager.broadcast_update("car_packages", retrieve_packages_per_car())
+            
             data = await websocket.receive_json()
             msg_type = data.get("type")
             print(data)
             payload = data.get("payload")
-            await manager.broadcast_update("houses", retrieve_packages_per_house())
 
             try:
                 match msg_type:
