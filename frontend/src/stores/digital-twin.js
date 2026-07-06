@@ -120,7 +120,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
             this.results = payload
             break
 
-          case 'houses': 
+          case 'house_packages': 
             console.log(payload)
             const scenario = this.scenario_houses.find(s => s.Scenario === this.chosen_scenario)
 
@@ -165,9 +165,10 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
 
     updateStatus(payload) {
       const car = this.findCar(payload.car_id)
-      if (car) {
-        car.status = payload.status
-      }
+      console.log(payload)
+      //if (car) {
+        //car.status = payload.status
+      //}
     },
 
     updateEnergy(payload) {

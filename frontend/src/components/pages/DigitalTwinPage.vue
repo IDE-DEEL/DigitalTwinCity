@@ -269,6 +269,8 @@ let rafId = null
 function loop() {
   if (store.active) {
     moveCars()
+    store.sendData('car_packages', {})
+    store.sendData('house_packages', {})
   }
 
   rafId = requestAnimationFrame(loop)
