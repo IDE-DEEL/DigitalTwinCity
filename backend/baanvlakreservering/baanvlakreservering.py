@@ -1003,7 +1003,6 @@ def update_car_status():
 def status_loop():
     while True:
         update_car_status()
-        notify_car_data_listeners()
         time.sleep(1)
 
 # Creates and configures an MQTT client using secure
@@ -1038,6 +1037,10 @@ def start_mqtt_client():
     _client.connect(MQTT_HOST, MQTT_PORT)
     print("Waiting for RFID scans...")
     _client.loop_start()
+
+    #  Starts the loop to check car status.
+    threading.Thread(target=status_loop, daemon=True).start()
+
     return _client
 
 

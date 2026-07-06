@@ -54,8 +54,6 @@ async def websocket_endpoint(websocket: WebSocket):
 
     try:
         while True:
-            await manager.broadcast_update("car_status", retrieve_status_per_car())
-            
             data = await websocket.receive_json()
             msg_type = data.get("type")
             print(data)
@@ -112,6 +110,9 @@ async def websocket_endpoint(websocket: WebSocket):
 
                     case "house_packages":
                         await manager.broadcast_update("house_packages", retrieve_packages_per_house())
+
+                    case "car_status":
+                        await manager.broadcast_update("car_status", retrieve_status_per_car())
 
                     case "car_energy":
                         await manager.broadcast_update(msg_type, payload)

@@ -37,6 +37,8 @@ const carTagMap = computed(() => {
   return map
 })
 
+let intervalId = null
+
 onMounted(() => {
   store.connect();
   store.fetchTagPositions()
@@ -46,6 +48,10 @@ onMounted(() => {
   store.fetchHousesPerScenario()
 
   initCars()
+
+  intervalId = setInterval(() => {
+    store.sendData('car_status', {})
+  }, 1000)
 })
 
 watch(
@@ -286,6 +292,7 @@ watch(
 
 onBeforeUnmount(() => {
   cancelAnimationFrame(rafId)
+  clearInterval(intervalId)
 })
 
 /* -------------------------

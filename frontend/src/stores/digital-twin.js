@@ -141,17 +141,15 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
     },
 
     findCar(id) {
-      return this.table_data.find(
-        c => c.auto_id === id
-      )
+      return this.table_data.find(c => c.auto_id === id)
     },
 
     updatePackages(payload) {
-      for (let i = 0; i < this.table_data.length; i++) {
+      for (let i = 0; i < payload.length; i++) {
         const car = this.findCar(payload[i].car_id)
 
         if (car) {
-          car.pakketje = payload.remaining
+          car.pakketje = payload[i].remaining
         }
       }
     },
@@ -166,7 +164,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
     },
 
     updateStatus(payload) {
-      for (let i = 0; i < this.table_data.length; i++) {
+      for (let i = 0; i < payload.length; i++) {
         const car = this.findCar(payload[i].car_id)
 
         if (car) {
