@@ -495,7 +495,7 @@ function handleTimerReset() {
         <!-- Routes -->
         <svg class="absolute inset-0 pointer-events-none"
         width=${MAP_DIMENSION} height=${MAP_DIMENSION}
-        v-for="car in store.table_data.filter(c => (c.visueel && c.status))">
+        v-for="car in store.table_data.filter(c => (c.visueel))">
             <path
                 :d="generatePath(car.auto_id, car.route)"
                 fill="none"
