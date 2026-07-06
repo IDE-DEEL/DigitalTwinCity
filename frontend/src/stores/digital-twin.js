@@ -100,7 +100,6 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
             break
 
           case 'car_packages':
-            console.log(payload)
             this.updatePackages(payload)
             break
 
@@ -152,6 +151,8 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
       if (car) {
         car.pakketje = payload.remaining
       }
+
+      console.log(this.findCar(payload.car_id))
     },
 
     updateRoute(payload) {
@@ -164,11 +165,17 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
     },
 
     updateStatus(payload) {
-      const car = this.findCar(payload.car_id)
       console.log(payload)
-      //if (car) {
-        //car.status = payload.status
-      //}
+      
+      for (let i = 0; i < this.table_data.length; i++) {
+        const car = this.findCar(payload[i].car_id)
+
+        if (car) {
+          car.status = payload[i].status
+        }
+
+        console.log(this.findCar(payload[i].car_id))
+      }
     },
 
     updateEnergy(payload) {
