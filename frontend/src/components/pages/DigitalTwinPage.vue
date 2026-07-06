@@ -112,8 +112,6 @@ function getNextTag(tags, currentIndex) {
 
 function initCars() {
   for (const car of store.table_data) {
-    if (!car.status) continue
-
     const tagId = carTagMap.value[car.auto_id]
     const pos = tagMap.value[tagId]
 
