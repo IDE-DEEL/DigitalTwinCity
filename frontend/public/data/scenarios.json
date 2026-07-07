@@ -19,9 +19,64 @@
         ]
     },
     {
-        "Scenario": "Gemiddeld", "tags": []
+        "Scenario": "Gemiddeld", "tags": [
+            { "tag_id": "53:5E:73:16:23:00:01", "undeliverd_packages": 1 },
+            { "tag_id": "53:3C:75:16:23:00:01", "undeliverd_packages": 6 },
+            { "tag_id": "53:0D:75:16:23:00:01", "undeliverd_packages": 2 },
+            { "tag_id": "53:8E:73:16:23:00:01", "undeliverd_packages": 1 },
+            { "tag_id": "53:46:78:16:23:00:01", "undeliverd_packages": 1 },
+            { "tag_id": "53:4D:75:16:23:00:01", "undeliverd_packages": 9 },
+            { "tag_id": "53:14:75:16:23:00:01", "undeliverd_packages": 7 },
+            { "tag_id": "53:3B:73:16:23:00:01", "undeliverd_packages": 6 },
+            { "tag_id": "53:28:78:16:23:00:01", "undeliverd_packages": 3 },
+            { "tag_id": "53:2E:78:16:23:00:01", "undeliverd_packages": 2 },
+            { "tag_id": "53:5E:75:16:23:00:01", "undeliverd_packages": 14 },
+            { "tag_id": "53:B3:7A:16:23:00:01", "undeliverd_packages": 7 },
+            { "tag_id": "53:C8:7A:16:23:00:01", "undeliverd_packages": 3 },
+            { "tag_id": "53:76:78:16:23:00:01", "undeliverd_packages": 12 },
+            { "tag_id": "53:55:73:16:23:00:01", "undeliverd_packages": 2 },
+            { "tag_id": "04:B2:41:6D:BC:2A:81", "undeliverd_packages": 5 },
+            { "tag_id": "53:66:75:16:23:00:01", "undeliverd_packages": 2 },
+            { "tag_id": "53:C2:7A:16:23:00:01", "undeliverd_packages": 3 },
+            { "tag_id": "53:84:75:16:23:00:01", "undeliverd_packages": 1 },
+            { "tag_id": "53:4E:72:01:63:00:01", "undeliverd_packages": 2 },
+            { "tag_id": "53:92:7A:16:23:00:01", "undeliverd_packages": 2 },
+            { "tag_id": "53:2C:75:16:23:00:01", "undeliverd_packages": 1 }
+        ]
     },
     {   
-        "Scenario": "Druk", "tags": []
+        "Scenario": "Druk", "tags": [
+            { "tag_id": "53:5E:73:16:23:00:01", "undeliverd_packages": 4 },
+            { "tag_id": "53:94:73:16:23:00:01", "undeliverd_packages": 2 },
+            { "tag_id": "53:3C:75:16:23:00:01", "undeliverd_packages": 20 },
+            { "tag_id": "53:0D:75:16:23:00:01", "undeliverd_packages": 11 },
+            { "tag_id": "53:8E:73:16:23:00:01", "undeliverd_packages": 1 },
+            { "tag_id": "53:46:78:16:23:00:01", "undeliverd_packages": 3 },
+            { "tag_id": "53:A8:7A:16:23:00:01", "undeliverd_packages": 2 },
+            { "tag_id": "53:4D:75:16:23:00:01", "undeliverd_packages": 16 },
+            { "tag_id": "53:14:75:16:23:00:01", "undeliverd_packages": 22 },
+            { "tag_id": "53:3B:73:16:23:00:01", "undeliverd_packages": 10 },
+            { "tag_id": "53:28:78:16:23:00:01", "undeliverd_packages": 9 },
+            { "tag_id": "53:2E:78:16:23:00:01", "undeliverd_packages": 6 },
+            { "tag_id": "5A:75:D6:DB:0A:41:89", "undeliverd_packages": 15 },
+            { "tag_id": "53:5E:75:16:23:00:01", "undeliverd_packages": 10 },
+            { "tag_id": "53:B3:7A:16:23:00:01", "undeliverd_packages": 19 },
+            { "tag_id": "53:C8:7A:16:23:00:01", "undeliverd_packages": 12 },
+            { "tag_id": "53:D1:7A:16:23:00:01", "undeliverd_packages": 8 },
+            { "tag_id": "53:7C:73:16:23:00:01", "undeliverd_packages": 5 },
+            { "tag_id": "53:76:78:16:23:00:01", "undeliverd_packages": 24 },
+            { "tag_id": "53:55:73:16:23:00:01", "undeliverd_packages": 7 },
+            { "tag_id": "04:B2:41:6D:BC:2A:81", "undeliverd_packages": 5 },
+            { "tag_id": "53:66:75:16:23:00:01", "undeliverd_packages": 13 },
+            { "tag_id": "53:C2:7A:16:23:00:01", "undeliverd_packages": 1 },
+            { "tag_id": "53:84:75:16:23:00:01", "undeliverd_packages": 2 },
+            { "tag_id": "53:75:29:01:63:00:01", "undeliverd_packages": 3 },
+            { "tag_id": "53:4E:72:01:63:00:01", "undeliverd_packages": 7 },
+            { "tag_id": "53:73:75:16:23:00:01", "undeliverd_packages": 1 },
+            { "tag_id": "53:D4:74:16:23:00:01", "undeliverd_packages": 3 },
+            { "tag_id": "53:93:7A:16:23:00:01", "undeliverd_packages": 14 },
+            { "tag_id": "53:92:7A:16:23:00:01", "undeliverd_packages": 4 },
+            { "tag_id": "53:2C:75:16:23:00:01", "undeliverd_packages": 3 }
+        ]
     }
 ]
