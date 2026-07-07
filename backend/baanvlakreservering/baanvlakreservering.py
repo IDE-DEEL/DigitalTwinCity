@@ -976,8 +976,8 @@ def update_car_status():
     for car_id in cars_connected:
         last = car_last_seen.get(car_id, 0)
 
-        # 5 sec timeout
-        cars_connected[car_id] = (now - last) < 5
+        # 1 sec timeout
+        cars_connected[car_id] = (now - last) < 1
 
 
 def status_loop():
