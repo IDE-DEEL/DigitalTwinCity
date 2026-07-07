@@ -9,6 +9,7 @@ from backend.baanvlakreservering.baanvlakreservering import (
     load_packages,
     reset,
     max_packets,
+    change_scenario,
     retrieve_packages_per_house,
     retrieve_packages_per_car,
     retrieve_status_per_car
@@ -81,7 +82,7 @@ async def websocket_endpoint(websocket: WebSocket):
                             )
 
                     case "scenario":
-                        await manager.broadcast_update(msg_type, payload)
+                        change_scenario(payload)
 
                     case "activation":
                         state.start = payload

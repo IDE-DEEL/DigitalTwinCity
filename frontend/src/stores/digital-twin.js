@@ -77,10 +77,6 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
             this.speed = payload
             break
 
-          case 'scenario':
-            this.chosen_scenario = payload
-            break
-
           case 'activation':
             console.log("start: " + payload)
 
@@ -120,7 +116,6 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
             break
 
           case 'house_packages': 
-            console.log(payload)
             const scenario = this.scenario_houses.find(s => s.Scenario === this.chosen_scenario)
 
             scenario?.tags.forEach(tag => {
@@ -128,7 +123,6 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
                 if (update) tag.undeliverd_packages = update.remaining
                 console.log(tag.undeliverd_packages)
             })
-
             break
 
         }
@@ -147,7 +141,6 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
     updatePackages(payload) {
       for (let i = 0; i < payload.length; i++) {
         const car = this.findCar(payload[i].car_id)
-
         if (car) {
           car.pakketje = payload[i].remaining
         }
@@ -158,15 +151,12 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
       const car = this.findCar(payload.car_id)
       if (car) {
         car.route = payload.route
-
-        console.log(car.route)
       }
     },
 
     updateStatus(payload) {
       for (let i = 0; i < payload.length; i++) {
         const car = this.findCar(payload[i].car_id)
-
         if (car) {
           car.status = payload[i].status
         }
@@ -182,7 +172,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
 
     sendData(type, payload) {
       if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-        console.log(type + " " + payload)
+        console.log(payload)
         
         this.socket.send(
           JSON.stringify({

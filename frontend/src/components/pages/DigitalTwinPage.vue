@@ -51,7 +51,7 @@ onMounted(() => {
 
   intervalId = setInterval(() => {
     store.sendData('car_status', {})
-  }, 1000)
+  }, 500)
 })
 
 watch(
@@ -559,7 +559,7 @@ function handleTimerReset() {
       v-model:chosenScenario="store.chosen_scenario"
       :scores="store.results"
       @change-speed="store.sendData('speed', store.speed)"
-      @change-scenario="store.sendData('scenario', store.chosen_scenario)"
+      @change-scenario="store.sendData('scenario', store.scenario_houses.find(s => s.Scenario === store.chosen_scenario))"
     >
       <template #simulation-controls>
         <Timer
