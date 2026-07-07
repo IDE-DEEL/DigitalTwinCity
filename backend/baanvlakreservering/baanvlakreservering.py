@@ -983,6 +983,7 @@ def update_car_status():
 def status_loop():
     while True:
         update_car_status()
+        notify_car_data_listeners()
         time.sleep(1)
 
 # Creates and configures an MQTT client using secure
