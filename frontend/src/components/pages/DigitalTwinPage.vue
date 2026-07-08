@@ -302,6 +302,9 @@ function getStyle(car) {
   return {
     left: `${car.x * store.factor_x}px`,
     top: `${car.y * store.factor_y}px`,
+    width: `${0.255 * store.factor_x}px`,
+    height: `${0.36 * store.factor_x}px`,
+    fontSize: `${0.08 * store.factor_x}px`,
   }
 }
 
@@ -488,8 +491,8 @@ function handleTimerReset() {
               :style="{
                 left: (tag.tag_pos.x * store.factor_x) + 'px',
                 top: (tag.tag_pos.y * store.factor_y) + 'px',
-                width: '14px',
-                height: '14px',
+                width: (0.13 * store.factor_x) + 'px',
+                height: (0.13 * store.factor_x) + 'px',
                 transform: 'translate(-50%, -50%)'
               }"
               @click="selectTag(tag)"
@@ -517,7 +520,10 @@ function handleTimerReset() {
           class="house-marker"
           :style="{
             left: `${house.pos.x * store.factor_x}px`,
-            top: `${house.pos.y * store.factor_y}px`
+            top: `${house.pos.y * store.factor_y}px`,
+            width: (0.18 * store.factor_x) + 'px',
+            height: (0.18 * store.factor_x) + 'px',
+            fontSize: (0.10 * store.factor_x) + 'px',
           }"
         >
           {{ house.undeliverd_packages }}

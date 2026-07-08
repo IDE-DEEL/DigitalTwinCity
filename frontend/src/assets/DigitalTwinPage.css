@@ -15,5 +15,6 @@
   font-weight: bold;
   color: black;
 
+  line-height: 1;
   transform: translate(-50%, -50%);
 }
