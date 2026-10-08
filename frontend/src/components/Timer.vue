@@ -114,6 +114,7 @@ const formattedTime = computed(() => {
                 {{ langStore.getLabel('controls.resetButton') }}
             </BaseButton>
             <BaseButton
+                v-if="props.variant === 'simulation'"
                 :variant="`timer-${props.variant}`"
                 :disabled="!props.isActive || props.stopDisabled"
                 @click="pause"
