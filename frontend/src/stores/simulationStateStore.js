@@ -13,6 +13,7 @@ export const useSimulationStateStore = defineStore("simulationState", () => {
     const hasSimulated = ref(false);
     const simulationStats = ref(DEFAULT_SIMULATION_STATS);
     const tripScores = ref(DEFAULT_TRIP_SCORES);
+    const isPaused = ref(false);
 
     const cachedCsvData = ref(null);
     const cachedCsvStep = ref(null);
@@ -72,6 +73,7 @@ export const useSimulationStateStore = defineStore("simulationState", () => {
 
     function handleSimulationEnded() {
         isSimulating.value = false;
+        isPaused.value = false;
     }
 
     function handleConnectionLost() {

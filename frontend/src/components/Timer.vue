@@ -8,6 +8,7 @@ const props = defineProps({
     showResetButton: { type: Boolean, default: true },
     resetOnStart: { type: Boolean, default: false },
     startDisabled: { type: Boolean, default: false },
+    isPaused: { type: Boolean, default: false },
     stopDisabled: { type: Boolean, default: false },
     variant: {
         type: String,
@@ -19,7 +20,7 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits(['start', 'stop', 'reset']);
+const emit = defineEmits(['start', 'stop', 'pause', 'reset']);
 
 const langStore = useLanguageStore();
 
@@ -44,9 +45,9 @@ function stopTicking() {
 }
 
 watch(
-    () => props.isActive,
-    (active) => {
-        if (active) {
+    () => props.isActive && !props.isPaused,
+    (running) => {
+        if (running) {
             startTicking();
         } else {
             stopTicking();
@@ -63,6 +64,11 @@ function start() {
     }
 
     emit('start');
+}
+
+function pause() {
+    if (!props.isActive || props.stopDisabled) return;
+    emit('pause');
 }
 
 function stop() {
@@ -106,6 +112,13 @@ const formattedTime = computed(() => {
             </BaseButton>
             <BaseButton v-if="props.showResetButton" :variant="`timer-${props.variant}`" :disabled="props.isActive" @click="reset">
                 {{ langStore.getLabel('controls.resetButton') }}
+            </BaseButton>
+            <BaseButton
+                :variant="`timer-${props.variant}`"
+                :disabled="!props.isActive || props.stopDisabled"
+                @click="pause"
+            >
+                {{ langStore.getLabel('controls.pauseButton') }}
             </BaseButton>
             <BaseButton :variant="`timer-${props.variant}`" :disabled="!props.isActive || props.stopDisabled" @click="stop">
                 {{ langStore.getLabel('controls.stopButton') }}

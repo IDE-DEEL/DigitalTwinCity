@@ -29,6 +29,8 @@ const wsStore = useSimulationWebSocketStore();
 
 const {
     startSimulation,
+    pauseSimulation,
+    resumeSimulation,
     stopSimulation,
     reconnectWebSocket,
     exportDataAsCSV,
@@ -102,6 +104,18 @@ const handleSimulationStart = () => {
 
 const handleSimulationStop = () => {
     stopSimulation();
+};
+
+const handleSimulationPause = () => {
+    pauseSimulation();
+};
+
+const handleSimulationPauseToggle = () => {
+    if (stateStore.isPaused) {
+        resumeSimulation();
+    } else {
+        pauseSimulation();
+    }
 };
 
 const handleStatsOpen = () => {
@@ -315,11 +329,13 @@ const toggleSensorDebug = () => {
                     :isActive="stateStore.isSimulating"
                     :showResetButton="false"
                     :resetOnStart="true"
+                    :isPaused="stateStore.isPaused"
                     :startDisabled="allCarsHaveInactiveRoute || !wsStore.isConnected"
                     :stopDisabled="!stateStore.isSimulating"
                     variant="simulation"
                     @start="handleSimulationStart"
                     @stop="handleSimulationStop"
+                    @pause="handleSimulationPauseToggle"
                 />
             </template>
         </ControlPanel>

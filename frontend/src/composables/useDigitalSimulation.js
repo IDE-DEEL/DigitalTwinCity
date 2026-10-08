@@ -62,6 +62,25 @@ export function useDigitalSimulation(onSimulationEndedCallback) {
         validateHousesReachability();
     }
 
+    function pauseSimulation() {
+        if (!wsStore.isConnected || !stateStore.isSimulating) return;
+
+        wsStore.registerResponseHandler("simulation_paused", () => {
+            stateStore.isPaused = true;
+        });
+
+        wsStore.send({ command: "pause" });
+    }
+
+    function resumeSimulation() {
+        if (!wsStore.isConnected || !stateStore.isPaused) return;
+
+        wsStore.registerResponseHandler("simulation_resumed", () => {
+            stateStore.isPaused = false;
+        });
+
+        wsStore.send({ command: "resume" });
+    }
     function stopSimulation() {
         wsStore.send({command: "stop"});
         stateStore.handleSimulationEnded();
@@ -156,6 +175,8 @@ export function useDigitalSimulation(onSimulationEndedCallback) {
     return {
         startSimulation,
         stopSimulation,
+        pauseSimulation,
+        resumeSimulation,
         reconnectWebSocket,
         validateHousesReachability,
         exportDataAsCSV,
