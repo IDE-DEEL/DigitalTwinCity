@@ -118,7 +118,16 @@ const formattedTime = computed(() => {
                 :disabled="!props.isActive || props.stopDisabled"
                 @click="pause"
             >
-                {{ langStore.getLabel('controls.pauseButton') }}
+                <span aria-hidden="true">
+                    {{ props.isPaused ? '▶' : '⏸' }}
+                </span>
+                <span>
+                    {{
+                        props.isPaused
+                            ? langStore.getLabel('controls.resumeButton')
+                            : langStore.getLabel('controls.pauseButton')
+                    }}
+                </span>
             </BaseButton>
             <BaseButton :variant="`timer-${props.variant}`" :disabled="!props.isActive || props.stopDisabled" @click="stop">
                 {{ langStore.getLabel('controls.stopButton') }}
