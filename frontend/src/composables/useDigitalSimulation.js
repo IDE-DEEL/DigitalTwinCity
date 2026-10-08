@@ -1,6 +1,7 @@
 import { onMounted, onBeforeUnmount, watch } from "vue";
 import { useToast } from "vue-toastification";
 import { useLanguageStore, useSimulationStateStore, useSimulationParameterStore, useSimulationWebSocketStore } from "../stores/index.js";
+import { addWaypointsToCarRoute } from "../logic/service/carService";
 
 const CSV_EXPORT_TIMEOUT_IN_MILLIS = 120000;
 const ONE_SECOND_IN_MILLIS = 1000;
@@ -48,18 +49,39 @@ export function useDigitalSimulation(onSimulationEndedCallback) {
     // ---
     // simulation control
     // ---
-    function startSimulation() {
+    function startSimulation(demoMode = false) {
         if (!wsStore.isConnected) {
             toast.error(languageStore.getToastMessage("error.WS_CONNECTION_ERROR"));
             return;
         }
 
+        const isDemo = demoMode === true;
+        const demoRoutes = isDemo
+            ? paramStore.cars.flatMap(car =>
+                paramStore.routeOptions
+                    .filter(option => option.value && option.value !== "inactive")
+                    .map(option => {
+                        const [configuredCar] = addWaypointsToCarRoute([
+                            { ...car, routeName: option.value },
+                        ]);
+
+                        return {
+                            carId: car.id,
+                            routeName: option.value,
+                            routeWaypoints: configuredCar.routeWaypoints,
+                        };
+                    })
+            )
+            : [];
+
         stateStore.resetSimulationState();
 
-        wsStore.send({command: "start", parameters: paramStore.simulationStartPayload});
+        wsStore.send({command: "start", parameters: { ...paramStore.simulationStartPayload, demoMode: isDemo, demoRoutes}});
         stateStore.handleSimulationStarted();
 
+        if (!isDemo) {
         validateHousesReachability();
+        }
     }
 
     function stopSimulation() {
