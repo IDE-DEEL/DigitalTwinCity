@@ -24,7 +24,14 @@ class Scenario(BaseModel):
     name: str = Field(..., min_length=1, description="Name of the scenario")
     houses: list[dict] = Field(..., min_items=1, description="List of houses in the scenario")
 
+class DemoRoute(BaseModel):
+    carId: int = Field(..., ge=1, le=5)
+    routeName: str = Field(..., min_length=1)
+    routeWaypoints: list[Waypoint] = Field(..., min_items=2) 
+
 class SimulationStartPayload(BaseModel):
+    demoMode: bool = False
+    demoRoutes: list[DemoRoute] = Field(default_factory=list)
     carTargetSpeed: int = Field(..., ge=1, le=100, description="Target speed for the cars (1-100)")
     simulationSpeed: int = Field(..., ge=1, le=4, description="Simulation speed (1=1x, 2=5x, 3=10x, 4=maximum)")
     cars: list[Car] = Field(..., min_items=1, max_items=5, description="List of cars, must contain 1-5 cars")
