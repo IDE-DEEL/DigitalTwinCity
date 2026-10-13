@@ -30,6 +30,8 @@ const demoEnabled = ref(false);
 
 const {
     startSimulation,
+    pauseSimulation,
+    resumeSimulation,
     stopSimulation,
     reconnectWebSocket,
     exportDataAsCSV,
@@ -118,6 +120,18 @@ const handleSimulationStart = () => {
 const handleSimulationStop = () => {
     demoEnabled.value = false;
     stopSimulation();
+};
+
+const handleSimulationPause = () => {
+    pauseSimulation();
+};
+
+const handleSimulationPauseToggle = () => {
+    if (stateStore.isPaused) {
+        resumeSimulation();
+    } else {
+        pauseSimulation();
+    }
 };
 
 const handleStatsOpen = () => {
@@ -365,11 +379,13 @@ const toggleSensorDebug = () => {
                     :isActive="stateStore.isSimulating"
                     :showResetButton="false"
                     :resetOnStart="true"
+                    :isPaused="stateStore.isPaused"
                     :startDisabled="demoEnabled || stateStore.isSimulating || allCarsHaveInactiveRoute || !wsStore.isConnected"
                     :stopDisabled="!stateStore.isSimulating"
                     variant="simulation"
                     @start="handleSimulationStart"
                     @stop="handleSimulationStop"
+                    @pause="handleSimulationPauseToggle"
                 />
                 <BaseButton
                     variant="statistics"

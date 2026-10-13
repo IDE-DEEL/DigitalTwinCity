@@ -25,6 +25,7 @@ defineProps({
             'admin-general',
             'admin-revoke',
             'admin-codes',
+            'pause',
             'logout',
             'table',
         ].includes(value),
