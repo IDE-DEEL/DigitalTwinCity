@@ -61,12 +61,49 @@ class CarAgent(mesa.Agent):
         4. Status time tracking
         5. Battery usage tracking
         """
+                
         dt = self.model.delta_time
-        self._handle_package_pickup(dt)
-        self._handle_package_delivery(dt)
-        self._handle_movement(dt)
+
+        if getattr(self.model, "demo_mode", False):
+            if self.is_finished:
+                self._start_next_demo_route()
+
+            self._movement_controller.dt = dt
+            self._movement_controller.update()
+        else:
+            self._handle_package_pickup(dt)
+            self._handle_package_delivery(dt)
+            self._handle_movement(dt)
+
         self._update_status_tracking(dt)
         self._update_battery_usage()
+
+    def _start_next_demo_route(self):
+        routes = self.model.demo_routes[self.id]
+
+        # Choose a different route when alternatives are available.
+        alternatives = [
+            route for route in routes
+            if route["name"] != self.route.name
+        ]
+        selected = self.model.random.choice(alternatives or routes)
+
+        previous_distance = self.distance_travelled
+
+        self.route = Route(
+            name=selected["name"],
+            waypoints=selected["waypoints"],
+            houses=[],
+        )
+
+        self._movement_controller = MovementController(
+            waypoints=self.route.waypoints,
+            target_speed=self.target_speed,
+            dt=self.model.delta_time,
+        )
+
+        # Preserve accumulated distance and battery tracking.
+        self._movement_controller.distance_travelled = previous_distance
 
     def _handle_package_pickup(self, dt: float):
         """Handle package pickup logic.

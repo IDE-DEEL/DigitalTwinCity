@@ -15,6 +15,7 @@ class SimulationService:
     def __init__(self):
         self.model = None
         self.is_running = False
+        self.is_paused = False
     
     def start_simulation(self, parameters: dict):
         """
@@ -53,12 +54,34 @@ class SimulationService:
             houses_on_routes=houses_on_routes,
             map_rows=map_rows,
         )
+        self.model.demo_mode = parameters.get("demoMode", False)
+        self.model.demo_routes = {}
+
+        if self.model.demo_mode:
+            for route in parameters.get("demoRoutes", []):
+                self.model.demo_routes.setdefault(
+                    route["carId"], []
+                ).append({
+                    "name": route["routeName"],
+                    "waypoints": convert_waypoints_array_from_svg_to_math(
+                        route["routeWaypoints"], map_rows
+                    ),
+                })
+
+            for agent in self.model.agents:
+                if not self.model.demo_routes.get(agent.id):
+                    raise ValueError(
+                        f"No demo routes supplied for car {agent.id}"
+                    )
+        self.model.demo_mode = parameters.get("demoMode", False)
+        self.is_paused = False
         self.is_running = True
 
         return {
             "status": "simulation_started",
             **self.model.get_simulation_state()
         }
+
     
     def execute_step(self):
         """
@@ -71,12 +94,12 @@ class SimulationService:
         """
         if not self.is_running or not self.model:
             return {"status": "simulation_not_running"}
-        
-        # Execute one step in the simulation
+
         self.model.step()
-        
-        # Determine status of the simulation
-        if self.model.is_simulation_complete():
+
+        if getattr(self.model, "demo_mode", False):
+            status = "simulation_running"
+        elif self.model.is_simulation_complete():
             self.is_running = False
             status = "simulation_completed"
         elif self.model.is_deadlocked():
@@ -84,7 +107,7 @@ class SimulationService:
             status = "simulation_deadlocked"
         else:
             status = "simulation_running"
-        
+
         return {
             "status": status,
             **self.model.get_simulation_state(),
@@ -93,6 +116,7 @@ class SimulationService:
 
     def stop_simulation(self):
         """Stop the current simulation."""
+        self.is_paused = False
         self.is_running = False
 
         result = {

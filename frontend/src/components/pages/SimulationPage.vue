@@ -26,6 +26,7 @@ const paramStore = useSimulationParameterStore();
 const stateStore = useSimulationStateStore();
 const langStore = useLanguageStore();
 const wsStore = useSimulationWebSocketStore();
+const demoEnabled = ref(false);
 
 const {
     startSimulation,
@@ -35,9 +36,13 @@ const {
     reconnectWebSocket,
     exportDataAsCSV,
 } = useDigitalSimulation(() => {
-    isStatsModalOpen.value = true;
-});
+    const wasDemo = demoEnabled.value;
+    demoEnabled.value = false;
 
+    if (!wasDemo) {
+        isStatsModalOpen.value = true;
+    }
+});
 const { getColorForCarAndRoute } = useCarColors();
 
 /*
@@ -79,6 +84,16 @@ watch(
     }
 );
 
+watch(
+    () => wsStore.isConnected,
+    (connected) => {
+        if (!connected && demoEnabled.value) {
+            demoEnabled.value = false;
+            stateStore.handleSimulationEnded();
+        }
+    }
+);
+
 /*  
     =====================
     Button handlers
@@ -103,6 +118,7 @@ const handleSimulationStart = () => {
 };
 
 const handleSimulationStop = () => {
+    demoEnabled.value = false;
     stopSimulation();
 };
 
@@ -121,6 +137,40 @@ const handleSimulationPauseToggle = () => {
 const handleStatsOpen = () => {
     isStatsModalOpen.value = true;
 };
+
+function startDemoRun() {
+    if (
+        !demoEnabled.value ||
+        !wsStore.isConnected ||
+        stateStore.isSimulating
+    ) {
+        return;
+    }
+
+    const routes = paramStore.routeOptions
+        .map(option => option.value)
+        .filter(value => value && value !== "inactive");
+
+    if (!routes.length) return;
+
+    paramStore.cars = paramStore.cars.map(car => ({
+        ...car,
+        routeName: routes[Math.floor(Math.random() * routes.length)],
+    }));
+
+    startSimulation(true);
+}
+
+function toggleDemo() {
+    if (demoEnabled.value) {
+        demoEnabled.value = false;
+        stopSimulation();
+    } else {
+        demoEnabled.value = true;
+        isStatsModalOpen.value = false;
+        startDemoRun();
+    }
+}
 
 /*  
     =====================
@@ -330,13 +380,20 @@ const toggleSensorDebug = () => {
                     :showResetButton="false"
                     :resetOnStart="true"
                     :isPaused="stateStore.isPaused"
-                    :startDisabled="allCarsHaveInactiveRoute || !wsStore.isConnected"
+                    :startDisabled="demoEnabled || stateStore.isSimulating || allCarsHaveInactiveRoute || !wsStore.isConnected"
                     :stopDisabled="!stateStore.isSimulating"
                     variant="simulation"
                     @start="handleSimulationStart"
                     @stop="handleSimulationStop"
                     @pause="handleSimulationPauseToggle"
                 />
+                <BaseButton
+                    variant="statistics"
+                    :disabled="!wsStore.isConnected || (!demoEnabled && stateStore.isSimulating)"
+                    @click="toggleDemo"
+>
+                    {{ demoEnabled ? '■ Stop demo' : '▶ Start demo' }}
+                </BaseButton>
             </template>
         </ControlPanel>
 
