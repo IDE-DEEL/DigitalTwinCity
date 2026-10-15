@@ -23,7 +23,24 @@ from backend.digital_sim.constants import (
 
 class CarModel(mesa.Model):
 
-    def __init__(self, cars: list[dict], car_target_speed: int, scenario_name: str, houses: list[dict], map_rows: int, houses_on_routes: Optional[dict] = None, rng=None):
+    def __init__(
+        self,
+        cars: list[dict],
+        car_target_speed: int,
+        scenario_name: str,
+        houses: list[dict],
+        map_rows: int,
+        houses_on_routes: Optional[dict] = None,
+        rng=None,
+        *,
+        demo_mode: bool = False,
+        demo_routes: Optional[dict[int, list[dict]]] = None,
+    ):
+        """Create a model with explicit normal or demo configuration.
+
+        demo_routes maps car IDs to routes with mathematical coordinates.
+        Demo mode requires at least one route for every configured car.
+        """
         super().__init__(rng=rng)
 
         self.num_agents = len(cars)
@@ -34,9 +51,18 @@ class CarModel(mesa.Model):
         self.houses = {}
         self.scenario_name = scenario_name
         self.map_rows = map_rows
+        self.demo_mode = demo_mode
+        self.demo_routes = demo_routes if demo_mode and demo_routes is not None else {}
 
         routes = self._setup_cars_and_routes(cars, self.car_scaled_speed)
         self._setup_houses(houses or [], houses_on_routes or {}, routes)
+
+        if self.demo_mode:
+            for agent in self.agents:
+                if not self.demo_routes.get(agent.id):
+                    raise ValueError(
+                        f"No demo routes supplied for car {agent.id}"
+                    )
 
         self.datacollector = mesa.DataCollector(
             model_reporters={

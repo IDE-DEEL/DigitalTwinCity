@@ -45,7 +45,18 @@ class SimulationService:
         for house in houses:
             house[HOUSE_ROAD_COORDS_KEY] = convert_waypoints_array_from_svg_to_math(house.get(HOUSE_ROAD_COORDS_KEY, []), map_rows)
         
-        # Create model with configuration
+        demo_mode = parameters.get("demoMode", False)
+        demo_routes = {}
+        if demo_mode:
+            for route in parameters.get("demoRoutes", []):
+                demo_routes.setdefault(route["carId"], []).append({
+                    "name": route["routeName"],
+                    "waypoints": convert_waypoints_array_from_svg_to_math(
+                        route["routeWaypoints"], map_rows
+                    ),
+                })
+
+        # Pass the complete configuration when creating the model.
         self.model = CarModel(
             cars=cars,
             car_target_speed=car_target_speed,
@@ -53,27 +64,9 @@ class SimulationService:
             houses=houses,
             houses_on_routes=houses_on_routes,
             map_rows=map_rows,
+            demo_mode=demo_mode,
+            demo_routes=demo_routes,
         )
-        self.model.demo_mode = parameters.get("demoMode", False)
-        self.model.demo_routes = {}
-
-        if self.model.demo_mode:
-            for route in parameters.get("demoRoutes", []):
-                self.model.demo_routes.setdefault(
-                    route["carId"], []
-                ).append({
-                    "name": route["routeName"],
-                    "waypoints": convert_waypoints_array_from_svg_to_math(
-                        route["routeWaypoints"], map_rows
-                    ),
-                })
-
-            for agent in self.model.agents:
-                if not self.model.demo_routes.get(agent.id):
-                    raise ValueError(
-                        f"No demo routes supplied for car {agent.id}"
-                    )
-        self.model.demo_mode = parameters.get("demoMode", False)
         self.is_paused = False
         self.is_running = True
 
@@ -97,7 +90,7 @@ class SimulationService:
 
         self.model.step()
 
-        if getattr(self.model, "demo_mode", False):
+        if self.model.demo_mode:
             status = "simulation_running"
         elif self.model.is_simulation_complete():
             self.is_running = False
