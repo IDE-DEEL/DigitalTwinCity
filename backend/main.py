@@ -8,7 +8,7 @@ from backend.api.v1 import auth_api
 from backend.core.config import settings
 from backend.api.v1 import digital_twin
 from backend.api.v1 import car_commands_api, car_logs_api, track_segment_api
-from backend.baanvlakreservering.baanvlakreservering import start_mqtt_client, stop_mqtt_client
+from backend.vehicle_control.service import start_mqtt_client, stop_mqtt_client
 from backend.data.db.database import Base, engine
 from backend.domain import track_segment, car_commands, car_logs # noqa: F401
 from backend.digital_sim.controller.v1 import digital_sim_api

@@ -2,13 +2,13 @@ import asyncio
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from backend.api.manager import ConnectionManager
-from backend.baanvlakreservering.baanvlakreservering import (
+from backend.vehicle_control.service import (
     add_car_data_listener,
-    getTag,
+    get_car_data,
     drive_command,
     load_packages,
     reset,
-    max_packets,
+    set_capacity,
     retrieve_packages_per_house
 )
 from backend.score.scoreCalculator import TripData, calculate_score
@@ -41,14 +41,14 @@ def ensure_car_data_broadcaster():
 
 def load_all_car_packages(car_data):
     for car in car_data:
-        max_packets[car["auto_id"]] = car["pakketje"]
+        set_capacity(car["auto_id"], car["pakketje"])
         load_packages(car["auto_id"], car["pakketje"], 1500, "load")
 
 @router.websocket("/ws/digital_twin")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     ensure_car_data_broadcaster()
-    await manager.broadcast_update("car_data", getTag())
+    await manager.broadcast_update("car_data", get_car_data())
 
     try:
         while True:
@@ -96,7 +96,7 @@ async def websocket_endpoint(websocket: WebSocket):
                             await manager.broadcast_update("results", calculate_score(TRIP, WEIGHTS))
 
                     case "car_data":
-                        await manager.broadcast_update("car_data", getTag())
+                        await manager.broadcast_update("car_data", get_car_data())
 
                     case "load_max_packages":
                         load_all_car_packages(payload)

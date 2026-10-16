@@ -37,6 +37,7 @@ Daarnaast heb ik de volledige stapresultaten en CSV-uitvoer vóór en na de wijz
 | Onbereikbare afleverzone | 59 | Gelijk; deadlock |
 | Doorlopende demo | 500 | Gelijk; simulatie blijft draaien |
 
+
 Voer vanuit de projectmap met de geïnstalleerde backendafhankelijkheden uit:
 
 ```bash
