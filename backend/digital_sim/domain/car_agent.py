@@ -64,7 +64,7 @@ class CarAgent(mesa.Agent):
                 
         dt = self.model.delta_time
 
-        if getattr(self.model, "demo_mode", False):
+        if self.model.demo_mode:
             if self.is_finished:
                 self._start_next_demo_route()
 

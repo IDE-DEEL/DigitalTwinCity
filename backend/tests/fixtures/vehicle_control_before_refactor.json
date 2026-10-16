@@ -1,0 +1,64 @@
+{
+  "stopped_and_inactive": {
+    "sha256": "0e68dc8fb0f0b91b75b2855ecba30face78f594f08b1df629defe3ac67198461",
+    "commands": 15,
+    "snapshots": 6,
+    "events": 4,
+    "scores": 0,
+    "errors": []
+  },
+  "load_unload_and_reset": {
+    "sha256": "6d3f2934a6e276fd77df9e3d081d75b6ab88653ab039f91bb5af476ecb6440f5",
+    "commands": 50,
+    "snapshots": 5,
+    "events": 2,
+    "scores": 0,
+    "errors": []
+  },
+  "delivery": {
+    "sha256": "1768d31cf69a1e5255de2400f81ade89aab0fbdac95956ba025d9aefad0cc9f3",
+    "commands": 35,
+    "snapshots": 7,
+    "events": 5,
+    "scores": 0,
+    "errors": []
+  },
+  "traffic": {
+    "sha256": "34e086e8e096f990b90f0f2d0c963b7254067ac476df8f67c681014372558804",
+    "commands": 32,
+    "snapshots": 9,
+    "events": 7,
+    "scores": 0,
+    "errors": []
+  },
+  "all_routes_and_depots": {
+    "sha256": "8a772febfd1dfd25ac61563ff7c483382714d2ad8561f2d8d5841305d9378794",
+    "commands": 30149,
+    "snapshots": 7402,
+    "events": 7401,
+    "scores": 61,
+    "errors": []
+  },
+  "malformed_and_listeners": {
+    "sha256": "195b709de5f96dec96df3f7f26055266cc3279b7b0705f0c72716e6f86bfe151",
+    "commands": 2,
+    "snapshots": 5,
+    "events": 3,
+    "scores": 0,
+    "errors": [
+      [
+        "KeyError",
+        "'unregistered-car'"
+      ],
+      [
+        "IndexError",
+        "list index out of range"
+      ]
+    ]
+  },
+  "_source": {
+    "file": "backend/baanvlakreservering/baanvlakreservering.py",
+    "sha256": "58c4e1b7db1dc4c23c3984ce3cc12210a539b1fc1724dbaa7ec5793600067728",
+    "description": "Recorded from the version before splitting physical vehicle control; no broker connected."
+  }
+}
