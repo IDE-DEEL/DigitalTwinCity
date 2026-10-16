@@ -22,15 +22,15 @@ De eerdere wijzigingen aan de simulatieservice en democonfiguratie zitten ook in
 
 De gekozen routes en de algemene start/stop-instelling blijven in de bestaande `backend/domain/states.py` staan. De API en de voertuigaansturing gebruiken dezelfde instantie. De nieuwe `VehicleState` bewaart de overige gegevens van de fysieke auto's.
 
-## Oude imports
+## Oude imports en bestanden
 
-`baanvlakreservering/baanvlakreservering.py` is vervangen door een kleine doorverwijzing. De bestaande functies blijven via dat pad beschikbaar, waaronder `getTag()`, `load_packages()`, `drive_command()` en de MQTT-start/stopfuncties. Bekende toestandsvelden worden doorgestuurd naar de nieuwe instantie.
+Bij de eerste refactor bleef het oude importpad beschikbaar als doorverwijzing. Na controle van de volledige projectzip is die doorverwijzing verwijderd: de applicatie gebruikt alleen `backend.vehicle_control`.
 
-De applicatie zelf gebruikt het nieuwe pad. De doorverwijzing is geen tweede kopie van de oude besturingslogica.
+Ook het losse databasescript, de ongebruikte databasewrapper en de dubbele taggegevens uit de oude map zijn verwijderd. De verkeersregeldocumentatie is behouden in `vehicle_control/traffic_rules.md`.
 
-De losse `databasePoller.py`, `test.py`, verkeersregeldocumentatie en de oude kopie van de taggegevens zijn behouden. De actieve besturing gebruikt de taggegevens uit `vehicle_control`. Het losse databasescript wordt niet door de onderzochte applicatie aangeroepen en verwijst nog steeds naar de ontbrekende `dbConfig`. Ik heb dit niet als onderdeel van deze refactor opgelost of verwijderd.
+De controle van het oude importpad is uit de tests gehaald. De tests van de huidige service, MQTT-verbinding en WebSocketroute blijven bestaan. Zie `backend-opschoning.md` voor de volledige lijst.
 
-Los uitvoeren kan vanuit de projectmap met:
+Los uitvoeren blijft mogelijk vanuit de projectmap met:
 
 ```powershell
 python -m backend.vehicle_control
@@ -71,10 +71,10 @@ De verwachte controlesommen staan in `tests/fixtures/vehicle_control_before_refa
 
 ## Andere controles
 
-Alle 17 tests zijn geslaagd.
+Na het verwijderen van de compatibiliteitslaag slagen alle 16 overgebleven tests.
 
 - De tien bestaande tests voor de simulatierefactoren slagen.
-- De nieuwe tests controleren MQTT-configuratie, de vijf abonnementen, starten, stoppen en opnieuw starten, gescheiden toestand per instantie, capaciteit na reset en het oude importpad.
+- De nieuwe tests controleren MQTT-configuratie, de vijf abonnementen, starten, stoppen en opnieuw starten, gescheiden toestand per instantie, capaciteit na reset en gescheiden toestand per instantie.
 - De WebSockettest gebruikt de echte FastAPI-route met een opgenomen MQTT-client. Deze controleert route kiezen, capaciteit instellen, starten, stoppen, RFID-updates doorsturen, reset en opnieuw verbinden.
 - De Pythonbestanden zijn op syntax gecontroleerd.
 

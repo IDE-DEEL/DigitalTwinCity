@@ -45,17 +45,6 @@ class VehicleReplayTests(unittest.TestCase):
             self.assertEqual(adapter.state.max_packets['auto_A'], 2)
             self.assertEqual(adapter.state.packets['auto_A'], 2)
 
-    def test_legacy_imports_delegate_to_current_service(self):
-        from backend.baanvlakreservering import baanvlakreservering as legacy
-        adapter = CurrentAdapter()
-        with patch.object(service, 'control', adapter.service):
-            self.assertIs(legacy.getTag(), adapter.state.car_data)
-            self.assertIs(legacy.max_packets, adapter.state.max_packets)
-            self.assertEqual(legacy.get_car_route('auto_A'), adapter.route('auto_A'))
-            legacy.load_packages('auto_A', 2, 1500, 'load')
-            self.assertEqual(legacy.packets['auto_A'], 2)
-            legacy.reset()
-            self.assertEqual(legacy.packets['auto_A'], 0)
 
 
 class MQTTLifecycleTests(unittest.TestCase):
