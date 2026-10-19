@@ -7,6 +7,7 @@ from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from backend.core.config import settings
+from backend.core.error_logging import log_unexpected_error
 from backend.data.db.database import get_db
 from backend.data.repositories.access_codes_repo import AccessCodesRepository
 from backend.domain.access_codes import AccessCode
@@ -34,7 +35,6 @@ class AuthService:
             matched_code = None
 
         if not matched_code:
-            logger.warning("Mislukte inlogpoging met een ongeldige of verlopen code.")
             raise HTTPException(
                 status_code=401,
                 detail="De ingevoerde toegangscode is ongeldig, verlopen, of ingetrokken.",
@@ -51,7 +51,6 @@ class AuthService:
         }
 
         encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm="HS256")
-        logger.info(f"Succesvolle login met code: '{matched_code.name}'")
 
         return encoded_jwt, matched_code.name
 
@@ -60,7 +59,7 @@ class AuthService:
             return bcrypt.checkpw(raw_code.encode("utf-8"), db_code.code_hash.encode("utf-8"))
         except Exception as e:
             # Skip corrupt database hashes instead of crashing the login flow.
-            logger.error(f"Sla corrupte hash over voor ID {db_code.id}: {e}")
+            log_unexpected_error(logger, "Access code hash verification failed", e)
             return False
 
 

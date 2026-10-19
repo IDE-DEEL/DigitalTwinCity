@@ -32,7 +32,6 @@ class VehicleControlService:
 
     def on_message(self, client, userdata, msg):
         rfid = msg.payload.decode().strip()
-        print(f"RFID received: {rfid}")
         topic = msg.topic.strip().split("/")
         car_id = topic[1]
         self.state.record_scan(car_id, rfid)

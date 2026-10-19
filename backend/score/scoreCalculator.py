@@ -19,7 +19,12 @@ Usage from another file:
     # { "car_id": "car_01", "environment": 72.3, ..., "total": 73.93 }
 """
 
+import logging
 from dataclasses import dataclass
+
+from backend.core.error_logging import log_unexpected_error
+
+logger = logging.getLogger(__name__)
 
 
 # ─────────────────────────────────────────────
@@ -552,7 +557,7 @@ try:
     MQTT_AVAILABLE = True
 except ImportError:
     MQTT_AVAILABLE = False
-    print("  paho-mqtt not installed. MQTT features disabled.")
+    logger.error("MQTT dependency unavailable for scoring")
 
 from dataclasses import dataclass
 
@@ -634,14 +639,20 @@ vehicle_states = {}
 # ─────────────────────────────────────────────
 
 def mqtt_on_connect(client, userdata, flags, reason_code, properties):
-    """Called when MQTT client connects to broker."""
-    if reason_code == 0:
-        print(" Connected to MQTT broker")
+    """Subscribe to telemetry without printing successful connections."""
+    if reason_code != 0:
+        logger.error("Scoring MQTT broker rejected the connection")
+        return
+    try:
+        failures = 0
         for topic in MQTT_TOPICS:
-            client.subscribe(topic, MQTT_QOS)
-            print(f"   Subscribed: {topic}")
-    else:
-        print(f"❌ Connection failed: reason_code {reason_code}")
+            result, mid = client.subscribe(topic, MQTT_QOS)
+            if result != mqtt.MQTT_ERR_SUCCESS:
+                failures += 1
+        if failures:
+            logger.error("Scoring MQTT subscription requests failed (%d of %d)", failures, len(MQTT_TOPICS))
+    except Exception as error:
+        log_unexpected_error(logger, "Scoring MQTT subscription setup failed", error)
 
 
 def mqtt_on_message(client, userdata, msg):
@@ -650,12 +661,16 @@ def mqtt_on_message(client, userdata, msg):
     Parses topic to extract vehicle name and data type, then routes to handler.
     """
     topic = msg.topic
-    payload = msg.payload.decode("utf-8").strip()
+    try:
+        payload = msg.payload.decode("utf-8").strip()
+    except UnicodeError:
+        logger.warning("Scoring MQTT payload is not valid UTF-8")
+        return
 
     # Parse topic: car/{vehicle_name}/data/{metric}
     parts = topic.split('/')
     if len(parts) < 4:
-        print(f"  Invalid topic format: {topic}")
+        logger.warning("Scoring MQTT topic format is invalid")
         return
 
     vehicle_name = parts[1]
@@ -680,7 +695,7 @@ def mqtt_on_message(client, userdata, msg):
         elif data_type == "pid":
             mqtt_handle_pid_error(vehicle_name, payload)
     except Exception as e:
-        print(f" Error processing {data_type} for {vehicle_name}: {e}")
+        log_unexpected_error(logger, "Scoring MQTT message handling failed", e)
 
 
 # ─────────────────────────────────────────────
@@ -697,10 +712,8 @@ def mqtt_handle_rfid_tag(vehicle_name: str, rfid_uid: str):
 
     if state.trip_start_rfid is None:
         state.trip_start_rfid = rfid_uid
-        print(f" [{vehicle_name}] Trip started at RFID {rfid_uid}")
     else:
         state.trip_end_rfid = rfid_uid
-        print(f" [{vehicle_name}] Trip ended at RFID {rfid_uid}")
         mqtt_attempt_score_calculation(vehicle_name)
 
 
@@ -713,17 +726,15 @@ def mqtt_handle_battery_soc(vehicle_name: str, payload: str):
     try:
         soc = float(payload)
     except ValueError:
-        print(f"️  Invalid battery value: {payload}")
+        logger.warning("MQTT battery value is invalid")
         return
 
     state = vehicle_states[vehicle_name]
 
     if state.soc_start_pct is None and soc < 100:
         state.soc_start_pct = soc
-        print(f" [{vehicle_name}] Trip start SoC: {soc}%")
 
     state.soc_end_pct = soc
-    print(f" [{vehicle_name}] Current SoC: {soc}%")
 
 
 def mqtt_handle_charging_state(vehicle_name: str, payload: str):
@@ -733,8 +744,6 @@ def mqtt_handle_charging_state(vehicle_name: str, payload: str):
 
     if is_charging != state.is_charging:
         state.is_charging = is_charging
-        status = " charging" if is_charging else " driving"
-        print(f"   [{vehicle_name}] {status}")
 
 
 def mqtt_handle_speed(vehicle_name: str, payload: str):
@@ -742,7 +751,7 @@ def mqtt_handle_speed(vehicle_name: str, payload: str):
     try:
         speed = float(payload)
     except ValueError:
-        print(f"⚠️  Invalid speed value: {payload}")
+        logger.warning("MQTT speed value is invalid")
         return
 
     state = vehicle_states[vehicle_name]
@@ -764,9 +773,8 @@ def mqtt_handle_lost_signal(vehicle_name: str, payload: str):
 
     if is_lost != state.is_lost:
         state.is_lost = is_lost
-        icon = " X" if is_lost else "ok"
-        status = "signal lost" if is_lost else "signal restored"
-        print(f"{icon} [{vehicle_name}] {status}")
+        if is_lost:
+            logger.warning("Vehicle reported signal loss")
 
 
 def mqtt_handle_pid_error(vehicle_name: str, payload: str):
@@ -794,7 +802,7 @@ def mqtt_handle_pid_error(vehicle_name: str, payload: str):
     try:
         pid_raw = float(payload)
     except ValueError:
-        print(f" Invalid PID value: {payload}")
+        logger.warning("MQTT PID value is invalid")
         return
 
     state = vehicle_states[vehicle_name]
@@ -831,12 +839,8 @@ def mqtt_attempt_score_calculation(vehicle_name: str):
         missing.append("trip_start_rfid")
 
     if missing:
-        print(f"⏳ [{vehicle_name}] Waiting for: {', '.join(missing)}")
         return
 
-    print(f"\n{'='*50}")
-    print(f" Calculating score for {vehicle_name}...")
-    print(f"{'='*50}")
 
     # Build TripData from vehicle state.
     #
@@ -863,28 +867,19 @@ def mqtt_attempt_score_calculation(vehicle_name: str):
             pid_wear_value          = state.pid_wear_value,          # real — derived from 'pid' topic
         )
     except Exception as e:
-        print(f" Failed to construct TripData: {e}")
+        log_unexpected_error(logger, "Scoring trip data construction failed", e)
         return
 
     # Import weights from config
     try:
         from config import WEIGHTS
-    except ImportError:
-        print(" Could not import WEIGHTS from config.py")
+    except ImportError as error:
+        log_unexpected_error(logger, "Scoring weights could not be loaded", error)
         return
 
     # Calculate score
-    result = calculate_score(trip, WEIGHTS, vehicle_name)
+    calculate_score(trip, WEIGHTS, vehicle_name)
 
-    # Display results
-    print(f"Total score:    {result['total']} / 100")
-    print(f"  Environment:  {result['environment']}")
-    print(f"  Economic:     {result['economic']}")
-    print(f"  Social:       {result['social']}")
-    print(f"  Energy:       {result['energy']}")
-    print(f"  Safety:       {result['safety']}")
-    print(f"  Maintenance:  {result['maintenance']}")
-    print(f"{'='*50}\n")
 
     # Reset trip state for next trip
     state.trip_start_rfid = None
@@ -907,16 +902,13 @@ def start_mqtt_client():
         start_mqtt_client()  # Blocks forever
     """
     if not MQTT_AVAILABLE:
-        print(" paho-mqtt is not installed. Cannot start MQTT client.")
-        print("   Install with: pip install paho-mqtt")
+        logger.error("Scoring MQTT client cannot start: dependency unavailable")
         return
 
     client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
     client.on_connect = mqtt_on_connect
     client.on_message = mqtt_on_message
 
-    print(f"Connecting to MQTT broker: {MQTT_BROKER}:{MQTT_PORT}")
     client.connect(MQTT_BROKER, MQTT_PORT, keepalive=60)
 
-    print("Listening for vehicle telemetry...\n")
     client.loop_forever()

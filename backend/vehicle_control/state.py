@@ -1,6 +1,11 @@
 """Mutable state shared by the physical vehicle control components."""
 
+import logging
 from dataclasses import dataclass, field
+
+from backend.core.error_logging import log_unexpected_error
+
+logger = logging.getLogger(__name__)
 
 CAR_IDS = ("auto_A", "auto_B", "auto_C", "auto_D", "auto_E")
 INITIAL_TAGS = dict(zip(CAR_IDS, (
@@ -62,7 +67,7 @@ class VehicleState:
             try:
                 listener(self.car_data)
             except Exception as exc:
-                print(f"Failed to notify car data listener: {exc}")
+                log_unexpected_error(logger, "Vehicle data listener failed", exc)
 
     def reset(self, client):
         # Keep the existing reset commands and state transitions.

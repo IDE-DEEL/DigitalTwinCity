@@ -1,3 +1,8 @@
+import logging
+
+from backend.core.error_logging import log_unexpected_error
+from backend.core.error_handling import add_error_handling
+
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
@@ -14,11 +19,16 @@ from backend.domain import track_segment, car_commands, car_logs # noqa: F401
 from backend.digital_sim.controller.v1 import digital_sim_api
 
 
+logger = logging.getLogger(__name__)
+
 app = FastAPI(title="DEEL - Digital Twin",
               version="0.1.0",
               docs_url="/docs",
               redoc_url="/redoc",
 )
+
+add_error_handling(app)
+
 
 @app.on_event("startup")
 def startup_event():
@@ -27,12 +37,15 @@ def startup_event():
     try:
         start_mqtt_client()
     except Exception as exc:
-        print(f"MQTT startup failed: {exc}")
+        log_unexpected_error(logger, "MQTT startup failed", exc)
 
 
 @app.on_event("shutdown")
 def shutdown_event():
-    stop_mqtt_client()
+    try:
+        stop_mqtt_client()
+    except Exception as exc:
+        log_unexpected_error(logger, "MQTT shutdown failed", exc)
 
 
 @app.get("/api/v1/health", tags=["Health"])

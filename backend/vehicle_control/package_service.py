@@ -1,13 +1,21 @@
 """Package bookkeeping and loading commands for physical vehicles."""
 
+import logging
 import threading
 import time
 
+from backend.core.error_logging import log_unexpected_error
+
+logger = logging.getLogger(__name__)
+
 
 def resume_after_wait(client, car_id, total_time):
-    time.sleep((total_time / 1000) + 1)
-    client.publish(f"car/{car_id}/cmd/Screen", 0)
-    client.publish(f"car/{car_id}/cmd/Start", "True")
+    try:
+        time.sleep((total_time / 1000) + 1)
+        client.publish(f"car/{car_id}/cmd/Screen", 0)
+        client.publish(f"car/{car_id}/cmd/Start", "True")
+    except Exception as error:
+        log_unexpected_error(logger, "Delayed vehicle resume failed", error)
 
 
 def schedule_resume(client, car_id, total_time):
@@ -54,7 +62,6 @@ class PackageService:
                         self.load_packages(car_id, amount, 1500, "unload")
 
     def retrieve_packages_per_house(self):
-        print("retrieve_packages_per_house aangeroepen")
         return [
             {"tag_id": tag,
              "remaining": self.state.houses_requested[tag] - self.state.houses_receaved.get(tag, 0)}
