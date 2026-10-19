@@ -40,21 +40,26 @@ class VehicleWebSocketTests(unittest.TestCase):
                 self.assertEqual(adapter.state.max_packets['auto_A'], 3)
                 self.assertEqual(adapter.state.packets['auto_A'], 3)
 
+                before_activation = len(adapter.client.commands)
                 ws.send_json({'type': 'activation', 'payload': True})
                 self.assertEqual(ws.receive_json()['type'], 'houses')
                 self.assertEqual(ws.receive_json(), {'type': 'activation', 'payload': True})
                 self.assertTrue(adapter.session.start)
-                self.assertIn(['car/auto_E/cmd/Start', 'True'], adapter.client.commands)
+                self.assertEqual(adapter.client.commands[before_activation:], [
+                    [f'car/auto_{car}/cmd/Start', 'True'] for car in 'ABCDE'])
 
                 adapter.scan('auto_A', 'rfid-from-mqtt')
                 update = ws.receive_json()
                 self.assertEqual(update, {'type': 'car_data', 'payload': [
                     {'auto_id': 'auto_A', 'tag_id': 'rfid-from-mqtt'}]})
 
+                before_stop = len(adapter.client.commands)
                 ws.send_json({'type': 'activation', 'payload': False})
                 self.assertEqual(ws.receive_json()['type'], 'houses')
                 self.assertEqual(ws.receive_json(), {'type': 'activation', 'payload': False})
                 self.assertEqual(ws.receive_json(), {'type': 'results', 'payload': {'total': 42}})
+                self.assertEqual(adapter.client.commands[before_stop:], [
+                    [f'car/auto_{car}/cmd/Start', 'False'] for car in 'ABCDE'])
 
                 ws.send_json({'type': 'reset', 'payload': None})
                 self.assertEqual(ws.receive_json()['type'], 'houses')
@@ -69,6 +74,42 @@ class VehicleWebSocketTests(unittest.TestCase):
                 adapter.scan('auto_B', 'after-reconnect')
                 self.assertEqual(ws.receive_json()['type'], 'car_data')
                 self.assertEqual(len(adapter.state.car_data_listeners), 1)
+
+    def test_forwarded_updates_reach_all_clients_with_original_payload(self):
+        adapter = CurrentAdapter()
+        manager = ConnectionManager()
+        app = FastAPI()
+        app.include_router(digital_twin.router, prefix='/api/v1')
+        with (patch.object(service, 'control', adapter.service),
+              patch.object(digital_twin, 'manager', manager),
+              patch.object(digital_twin, '_car_data_listener_registered', False),
+              TestClient(app) as client):
+            with client.websocket_connect('/api/v1/ws/digital_twin') as first:
+                self.assertEqual(first.receive_json()['type'], 'car_data')
+                with client.websocket_connect('/api/v1/ws/digital_twin') as second:
+                    self.assertEqual(first.receive_json()['type'], 'car_data')
+                    self.assertEqual(second.receive_json()['type'], 'car_data')
+                    for kind, payload in (
+                        ('speed', 3),
+                        ('scenario', {'name': 'test', 'houses': []}),
+                        ('car_packages', [{'auto_id': 'auto_A', 'pakketje': 2}]),
+                        ('car_status', {'auto_A': 'driving'}),
+                        ('car_energy', {'auto_A': 75.5}),
+                    ):
+                        with self.subTest(kind=kind):
+                            message = {'type': kind, 'payload': payload}
+                            first.send_json(message)
+                            for socket in (first, second):
+                                self.assertEqual(socket.receive_json()['type'], 'houses')
+                                self.assertEqual(socket.receive_json(), message)
+
+                    # A following update proves unknown commands are not forwarded.
+                    first.send_json({'type': 'unknown', 'payload': {'ignored': True}})
+                    first.send_json({'type': 'speed', 'payload': 1})
+                    for socket in (first, second):
+                        self.assertEqual(socket.receive_json()['type'], 'houses')
+                        self.assertEqual(socket.receive_json()['type'], 'houses')
+                        self.assertEqual(socket.receive_json(), {'type': 'speed', 'payload': 1})
 
 
 if __name__ == '__main__':
