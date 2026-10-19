@@ -101,4 +101,4 @@ Deze punten zijn in dit document vastgelegd als voorstellen voor backlog-items; 
 
 ## Status
 
-De scheiding voor RFID-logverwerking is geïmplementeerd en automatisch gecontroleerd. De documentatie is Nederlands en de codecomments zijn Engels. Lokaal testen, committen en peerreview staan nog open.
+De RFID-logverwerking is lokaal via Docker en Swagger gecontroleerd. Na het toevoegen van een log voor `test_car` is de log opgeslagen en de autopositie bijgewerkt naar `test_segment`. Beide gegevens zijn via de GET-endpoints opgehaald en in pgAdmin gecontroleerd.
