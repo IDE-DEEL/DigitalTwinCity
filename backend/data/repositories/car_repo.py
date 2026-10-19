@@ -27,9 +27,12 @@ class CarRepository:
         self.db.refresh(car)
         return car
 
-    def update(self, car: CarCommands) -> CarCommands:
-        self.db.commit()
-        self.db.refresh(car)
+    def update(self, car: CarCommands, *, commit: bool = True) -> CarCommands:
+        if commit:
+            self.db.commit()
+            self.db.refresh(car)
+        else:
+            self.db.flush()
         return car
 
     def delete(self, car: CarCommands) -> None:
