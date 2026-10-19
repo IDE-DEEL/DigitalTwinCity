@@ -13,9 +13,10 @@ from backend.vehicle_control.service import (
     set_capacity,
     retrieve_packages_per_house
 )
-from backend.score.scoreCalculator import TripData, calculate_score
+from backend.score.scoreCalculator import calculate_score
 from backend.score.config import  WEIGHTS, TRIP
 from backend.domain.states import state
+from backend.vehicle_control.state import CAR_IDS
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +84,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
             try:
                 match msg_type:
-                    case "speed":
+                    case "speed" | "scenario" | "car_packages" | "car_status" | "car_energy":
                         await manager.broadcast_update(msg_type, payload)
 
                     case "route":
@@ -98,16 +99,10 @@ async def websocket_endpoint(websocket: WebSocket):
                                 }
                             )
 
-                    case "scenario":
-                        await manager.broadcast_update(msg_type, payload)
-
                     case "activation":
                         state.start = payload
-                        drive_command("auto_A", state.start)
-                        drive_command("auto_B", state.start)
-                        drive_command("auto_C", state.start)
-                        drive_command("auto_D", state.start)
-                        drive_command("auto_E", state.start)
+                        for car_id in CAR_IDS:
+                            drive_command(car_id, state.start)
                         await manager.broadcast_update("activation", state.start)
 
                         if state.start == False:
@@ -122,14 +117,6 @@ async def websocket_endpoint(websocket: WebSocket):
                     case "reset":
                         reset()
 
-                    case "car_packages":
-                        await manager.broadcast_update(msg_type, payload)
-
-                    case "car_status":
-                        await manager.broadcast_update(msg_type, payload)
-
-                    case "car_energy":
-                        await manager.broadcast_update(msg_type, payload)
             except Exception as e:
                 log_unexpected_error(logger, "Digital twin command handling failed", e)
                 await _send_command_error(websocket)
