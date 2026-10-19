@@ -636,10 +636,8 @@ vehicle_states = {}
 def mqtt_on_connect(client, userdata, flags, reason_code, properties):
     """Called when MQTT client connects to broker."""
     if reason_code == 0:
-        print(" Connected to MQTT broker")
         for topic in MQTT_TOPICS:
             client.subscribe(topic, MQTT_QOS)
-            print(f"   Subscribed: {topic}")
     else:
         print(f"❌ Connection failed: reason_code {reason_code}")
 
@@ -697,10 +695,8 @@ def mqtt_handle_rfid_tag(vehicle_name: str, rfid_uid: str):
 
     if state.trip_start_rfid is None:
         state.trip_start_rfid = rfid_uid
-        print(f" [{vehicle_name}] Trip started at RFID {rfid_uid}")
     else:
         state.trip_end_rfid = rfid_uid
-        print(f" [{vehicle_name}] Trip ended at RFID {rfid_uid}")
         mqtt_attempt_score_calculation(vehicle_name)
 
 
@@ -720,10 +716,8 @@ def mqtt_handle_battery_soc(vehicle_name: str, payload: str):
 
     if state.soc_start_pct is None and soc < 100:
         state.soc_start_pct = soc
-        print(f" [{vehicle_name}] Trip start SoC: {soc}%")
 
     state.soc_end_pct = soc
-    print(f" [{vehicle_name}] Current SoC: {soc}%")
 
 
 def mqtt_handle_charging_state(vehicle_name: str, payload: str):
@@ -733,8 +727,6 @@ def mqtt_handle_charging_state(vehicle_name: str, payload: str):
 
     if is_charging != state.is_charging:
         state.is_charging = is_charging
-        status = " charging" if is_charging else " driving"
-        print(f"   [{vehicle_name}] {status}")
 
 
 def mqtt_handle_speed(vehicle_name: str, payload: str):
@@ -766,7 +758,8 @@ def mqtt_handle_lost_signal(vehicle_name: str, payload: str):
         state.is_lost = is_lost
         icon = " X" if is_lost else "ok"
         status = "signal lost" if is_lost else "signal restored"
-        print(f"{icon} [{vehicle_name}] {status}")
+        if is_lost:
+            print(f"{icon} [{vehicle_name}] {status}")
 
 
 def mqtt_handle_pid_error(vehicle_name: str, payload: str):
@@ -831,12 +824,8 @@ def mqtt_attempt_score_calculation(vehicle_name: str):
         missing.append("trip_start_rfid")
 
     if missing:
-        print(f"⏳ [{vehicle_name}] Waiting for: {', '.join(missing)}")
         return
 
-    print(f"\n{'='*50}")
-    print(f" Calculating score for {vehicle_name}...")
-    print(f"{'='*50}")
 
     # Build TripData from vehicle state.
     #
@@ -874,17 +863,8 @@ def mqtt_attempt_score_calculation(vehicle_name: str):
         return
 
     # Calculate score
-    result = calculate_score(trip, WEIGHTS, vehicle_name)
+    calculate_score(trip, WEIGHTS, vehicle_name)
 
-    # Display results
-    print(f"Total score:    {result['total']} / 100")
-    print(f"  Environment:  {result['environment']}")
-    print(f"  Economic:     {result['economic']}")
-    print(f"  Social:       {result['social']}")
-    print(f"  Energy:       {result['energy']}")
-    print(f"  Safety:       {result['safety']}")
-    print(f"  Maintenance:  {result['maintenance']}")
-    print(f"{'='*50}\n")
 
     # Reset trip state for next trip
     state.trip_start_rfid = None
@@ -915,8 +895,6 @@ def start_mqtt_client():
     client.on_connect = mqtt_on_connect
     client.on_message = mqtt_on_message
 
-    print(f"Connecting to MQTT broker: {MQTT_BROKER}:{MQTT_PORT}")
     client.connect(MQTT_BROKER, MQTT_PORT, keepalive=60)
 
-    print("Listening for vehicle telemetry...\n")
     client.loop_forever()

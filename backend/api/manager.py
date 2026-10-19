@@ -9,7 +9,6 @@ class ConnectionManager:
         self.active_connections.append(websocket)
 
     def disconnect(self, websocket: WebSocket):
-        print("Client disconnected")
         self.active_connections.remove(websocket)
 
     async def broadcast_update(self, update_type: str, data: any):

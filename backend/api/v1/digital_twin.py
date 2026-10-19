@@ -54,7 +54,6 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             data = await websocket.receive_json()
             msg_type = data.get("type")
-            print(data)
             payload = data.get("payload")
             await manager.broadcast_update("houses", retrieve_packages_per_house())
 
@@ -64,12 +63,9 @@ async def websocket_endpoint(websocket: WebSocket):
                         await manager.broadcast_update(msg_type, payload)
 
                     case "route":
-                        print("Case werkt: ", payload)
                         if payload["car_id"] in state.chosen_route:
                             state.chosen_route[payload["car_id"]] = payload["route"]
 
-                            print(type(payload))
-                            print(payload)
 
                             await manager.broadcast_update(
                                 msg_type,
@@ -84,7 +80,6 @@ async def websocket_endpoint(websocket: WebSocket):
 
                     case "activation":
                         state.start = payload
-                        print(f"Activation state changed to: {state.start}")
                         drive_command("auto_A", state.start)
                         drive_command("auto_B", state.start)
                         drive_command("auto_C", state.start)

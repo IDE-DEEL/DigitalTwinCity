@@ -54,7 +54,6 @@ class PackageService:
                         self.load_packages(car_id, amount, 1500, "unload")
 
     def retrieve_packages_per_house(self):
-        print("retrieve_packages_per_house aangeroepen")
         return [
             {"tag_id": tag,
              "remaining": self.state.houses_requested[tag] - self.state.houses_receaved.get(tag, 0)}

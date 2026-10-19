@@ -1,6 +1,5 @@
 import secrets
 import string
-import logging
 from datetime import datetime
 from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -12,7 +11,6 @@ from backend.domain.access_codes import AccessCode
 from backend.schemas.access_codes import AccessCodeCreate
 from backend.services.access_code_lookup import build_access_code_lookup_hash
 
-logger = logging.getLogger(__name__)
 
 ACCESS_CODE_ALPHABET = string.ascii_uppercase + string.digits
 ACCESS_CODE_GROUP_LENGTH = 5
@@ -47,7 +45,6 @@ class AccessCodesService:
         )
         saved_code = self.repo.add(new_code)
         
-        logger.info(f"Nieuwe toegangscode aangemaakt: '{saved_code.name}' (ID: {saved_code.id})")
         saved_code.raw_code = raw_code 
         return saved_code
 
@@ -58,7 +55,6 @@ class AccessCodesService:
         
         code.is_revoked = True
         updated_code = self.repo.update(code)
-        logger.info(f"Toegangscode ingetrokken: '{updated_code.name}' (ID: {updated_code.id})")
         return updated_code
 
     def extend_code(self, code_id: int, new_expiry: datetime):
@@ -68,7 +64,6 @@ class AccessCodesService:
         
         code.expires_at = new_expiry
         updated_code = self.repo.update(code)
-        logger.info(f"Toegangscode verlengd: '{updated_code.name}' (ID: {updated_code.id}) tot {new_expiry}")
         return updated_code
 
     def delete_code(self, code_id: int):
@@ -76,9 +71,7 @@ class AccessCodesService:
         if not code:
             raise HTTPException(status_code=404, detail="Toegangscode niet gevonden")
 
-        code_name = code.name
         self.repo.delete(code)
-        logger.info(f"Toegangscode verwijderd: '{code_name}' (ID: {code_id})")
 
 def get_access_codes_service(db: Session = Depends(get_db)) -> AccessCodesService:
     repo = AccessCodesRepository(db)

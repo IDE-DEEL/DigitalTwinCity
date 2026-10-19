@@ -29,11 +29,9 @@ class MQTTClient:
     @staticmethod
     def on_connect(client, userdata, flags, reason_code, properties):
         if reason_code == 0:
-            print("Connected to MQTT")
             for car_id in CAR_IDS:
                 topic = f"car/{car_id}/data/LastRFID"
                 result, mid = client.subscribe(topic)
-                print(f"Subscribed to {topic}: result={result}, mid={mid}")
         else:
             print("Connection failed:", reason_code)
 
@@ -45,7 +43,6 @@ class MQTTClient:
             from backend.core.config import settings
         self.client = self.create()
         self.client.connect(settings.MQTT_HOST, settings.MQTT_PORT)
-        print("Waiting for RFID scans...")
         self.client.loop_start()
         return self.client
 

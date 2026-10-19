@@ -32,11 +32,9 @@ def get_simulation_statistics(model) -> dict | None:
         }
     """
     if not model:
-        print("[SimulationService] get_current_stats: No model available")
         return None
 
     if not hasattr(model, 'agents') or not model.agents:
-        print("[SimulationService] get_current_stats: No agents in model")
         return None
 
     stats = {

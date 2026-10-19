@@ -23,7 +23,6 @@ async def get_status():
 @router.websocket("/ws/simulation")
 async def websocket_simulation_endpoint(websocket: WebSocket):
     await websocket.accept()
-    print("[digital_sim_api] Client connected")
 
     simulation_service = SimulationService()
     simulation_service.is_paused = False
@@ -202,7 +201,7 @@ async def websocket_simulation_endpoint(websocket: WebSocket):
                         })
 
     except WebSocketDisconnect:
-        print("[digital_sim_api] Client disconnected")
+        pass
 
     except Exception as e:
         print(f"[digital_sim_api] Error: {e}")
@@ -307,7 +306,6 @@ async def _run_simulation_loop(
                 await asyncio.sleep(update_interval)
 
     except asyncio.CancelledError:
-        print("[digital_sim_api] Simulation loop cancelled")
         raise
 
     except Exception as e:

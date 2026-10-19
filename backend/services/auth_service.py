@@ -51,7 +51,6 @@ class AuthService:
         }
 
         encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm="HS256")
-        logger.info(f"Succesvolle login met code: '{matched_code.name}'")
 
         return encoded_jwt, matched_code.name
 
