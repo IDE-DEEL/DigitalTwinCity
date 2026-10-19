@@ -29,10 +29,13 @@ class CarLogsRepository:
             .all()
         )
 
-    def add(self, log: CarLogs) -> CarLogs:
+    def add(self, log: CarLogs, *, commit: bool = True) -> CarLogs:
         self.db.add(log)
-        self.db.commit()
-        self.db.refresh(log)
+        if commit:
+            self.db.commit()
+            self.db.refresh(log)
+        else:
+            self.db.flush()
         return log
 
     def delete(self, log: CarLogs) -> None:

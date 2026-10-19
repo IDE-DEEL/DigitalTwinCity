@@ -13,4 +13,5 @@ def get_car_logs_service(db: Session = Depends(get_db)) -> CarLogsService:
         car_repo=CarRepository(db),
         logs_repo=CarLogsRepository(db),
         segment_repo=TrackSegmentRepository(db),
+        transaction=db.begin,
     )
