@@ -7,7 +7,6 @@ from backend.digital_sim.domain.car_agent import CarAgent, CarStatus
 from backend.digital_sim.domain.route import Route
 from backend.digital_sim.domain.package import Package, PackageStatus
 from backend.digital_sim.domain.house import House
-from backend.digital_sim.utils.coordinate_util import convert_position_math_to_svg
 from backend.digital_sim.constants import (
     AGENT_DISTANCE_TRAVELLED_KM_KEY, CAR_ROUTE_NAME_KEY, CAR_ROUTE_WAYPOINTS_KEY, CAR_MAX_PACKAGES_KEY,
     HOUSE_PACKAGE_COUNT_KEY, HOUSE_ID_KEY, HOUSE_ROAD_COORDS_KEY,

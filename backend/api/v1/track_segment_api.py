@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
 from backend.data.db.database import get_db
 from backend.data.repositories.track_segment_repo import TrackSegmentRepository
 from backend.domain.track_segment import TrackSegment
