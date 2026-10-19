@@ -1,3 +1,7 @@
+import logging
+
+from backend.core.error_logging import log_unexpected_error
+
 from backend.digital_sim.domain.car_model import CarModel
 from backend.digital_sim.constants import (
     CAR_ROUTE_WAYPOINTS_KEY, CARS_KEY, CAR_TARGET_SPEED_KEY, SCENARIO_KEY, 
@@ -9,6 +13,13 @@ from backend.digital_sim.utils.coordinate_util import convert_waypoints_array_fr
 from backend.digital_sim.service.simulation_statistics import get_simulation_statistics
 from backend.digital_sim.service.simulation_scoring import calculate_simulation_scores
 import gc
+
+
+logger = logging.getLogger(__name__)
+
+
+class SimulationExportError(Exception):
+    pass
 
 
 class SimulationService:
@@ -163,8 +174,8 @@ class SimulationService:
             # Convert to CSV string
             return merged_data.to_csv()
         except Exception as e:
-            print(f"Error exporting data to CSV: {e}")
-            return None
+            log_unexpected_error(logger, "Simulation CSV export failed", e)
+            raise SimulationExportError("Simulation export failed") from None
     
     def dispose(self):
         """Destroy all simulation data."""

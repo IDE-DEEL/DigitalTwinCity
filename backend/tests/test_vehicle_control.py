@@ -23,7 +23,12 @@ class VehicleReplayTests(unittest.TestCase):
         for scenario in SCENARIOS:
             with self.subTest(scenario=scenario):
                 with contextlib.redirect_stdout(io.StringIO()):
-                    actual = replay(CurrentAdapter, scenario)
+                    if scenario == "malformed_and_listeners":
+                        with self.assertLogs("backend.vehicle_control.state", level="ERROR") as logs:
+                            actual = replay(CurrentAdapter, scenario)
+                        self.assertEqual(len(logs.records), 3)
+                    else:
+                        actual = replay(CurrentAdapter, scenario)
                 self.assertEqual(actual, self.expected[scenario])
 
     def test_new_instances_do_not_share_vehicle_state(self):
@@ -68,7 +73,7 @@ class MQTTLifecycleTests(unittest.TestCase):
             first.reconnect_delay_set.assert_called_once_with(min_delay=1, max_delay=60)
             first.connect.assert_called_once_with('test-host', 443)
             first.loop_start.assert_called_once_with()
-            self.assertEqual(first.on_message, transport.on_message)
+            self.assertEqual(first.on_message, transport._handle_message)
             transport.stop()
             transport.stop()
             first.loop_stop.assert_called_once_with()
@@ -86,7 +91,9 @@ class MQTTLifecycleTests(unittest.TestCase):
         self.assertEqual([call.args[0] for call in client.subscribe.call_args_list],
                          [f'car/{car_id}/data/LastRFID' for car_id in CAR_IDS])
         client.reset_mock()
-        transport.on_connect(client, None, None, 1, None)
+        with self.assertLogs("backend.vehicle_control.mqtt_client", level="ERROR") as logs:
+            transport.on_connect(client, None, None, 1, None)
+        self.assertEqual(len(logs.records), 1)
         client.subscribe.assert_not_called()
 
 

@@ -1,7 +1,9 @@
 import asyncio
+import logging
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from backend.api.manager import ConnectionManager
+from backend.core.error_logging import log_unexpected_error
 from backend.vehicle_control.service import (
     add_car_data_listener,
     get_car_data,
@@ -14,6 +16,8 @@ from backend.vehicle_control.service import (
 from backend.score.scoreCalculator import TripData, calculate_score
 from backend.score.config import  WEIGHTS, TRIP
 from backend.domain.states import state
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 manager = ConnectionManager()
@@ -31,13 +35,34 @@ def ensure_car_data_broadcaster():
         if loop.is_closed():
             return
 
-        asyncio.run_coroutine_threadsafe(
-            manager.broadcast_update("car_data", car_data),
-            loop,
+        future = asyncio.run_coroutine_threadsafe(
+            manager.broadcast_update("car_data", car_data), loop,
         )
+        future.add_done_callback(_check_broadcast_result)
 
     add_car_data_listener(broadcast_car_data)
     _car_data_listener_registered = True
+
+def _check_broadcast_result(future):
+    if future.cancelled():
+        return
+    try:
+        future.result()
+    except Exception as error:
+        log_unexpected_error(logger, "Scheduled vehicle broadcast failed", error)
+
+
+async def _send_command_error(websocket):
+    try:
+        await websocket.send_json({
+            "type": "error", "payload": {
+                "type": "command_error", "message": "Digital twin command could not be processed",
+            },
+        })
+    except Exception:
+        # The original failure is already logged; the connection may be closed.
+        pass
+
 
 def load_all_car_packages(car_data):
     for car in car_data:
@@ -47,10 +72,9 @@ def load_all_car_packages(car_data):
 @router.websocket("/ws/digital_twin")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
-    ensure_car_data_broadcaster()
-    await manager.broadcast_update("car_data", get_car_data())
-
     try:
+        ensure_car_data_broadcaster()
+        await manager.broadcast_update("car_data", get_car_data())
         while True:
             data = await websocket.receive_json()
             msg_type = data.get("type")
@@ -65,7 +89,6 @@ async def websocket_endpoint(websocket: WebSocket):
                     case "route":
                         if payload["car_id"] in state.chosen_route:
                             state.chosen_route[payload["car_id"]] = payload["route"]
-
 
                             await manager.broadcast_update(
                                 msg_type,
@@ -108,7 +131,13 @@ async def websocket_endpoint(websocket: WebSocket):
                     case "car_energy":
                         await manager.broadcast_update(msg_type, payload)
             except Exception as e:
-                print(f"Error handling message {msg_type}: {e}")
+                log_unexpected_error(logger, "Digital twin command handling failed", e)
+                await _send_command_error(websocket)
 
     except WebSocketDisconnect:
+        pass
+    except Exception as error:
+        log_unexpected_error(logger, "Digital twin connection handling failed", error)
+        await _send_command_error(websocket)
+    finally:
         manager.disconnect(websocket)

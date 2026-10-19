@@ -1,9 +1,13 @@
 import asyncio
+import json
+import logging
+
+from backend.core.error_logging import log_unexpected_error
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from pydantic import ValidationError
 
-from backend.digital_sim.service.simulation_service import SimulationService
+from backend.digital_sim.service.simulation_service import SimulationService, SimulationExportError
 from backend.digital_sim.constants import UPDATES_PER_SECOND
 from backend.digital_sim.utils.sim_speed_util import get_steps_multiplier
 from backend.digital_sim.controller.v1.simulation_validator import (
@@ -11,6 +15,8 @@ from backend.digital_sim.controller.v1.simulation_validator import (
     SetSpeedPayload,
 )
 
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/digital-sim")
 
@@ -31,15 +37,24 @@ async def websocket_simulation_endpoint(websocket: WebSocket):
 
     try:
         while True:
-            data = await websocket.receive_json()
+            try:
+                data = await websocket.receive_json()
+            except json.JSONDecodeError:
+                await websocket.send_json({"command": "error", "result": {"type": "validation_error"}})
+                continue
+            if not isinstance(data, dict):
+                await websocket.send_json({"command": "error", "result": {"type": "validation_error"}})
+                continue
             command = data.get("command")
 
             match command:
                 case "start":
                     try:
-                        parameters = SimulationStartPayload(
-                            **data.get("parameters", {})
-                        )
+                        raw_parameters = data.get("parameters", {})
+                        if not isinstance(raw_parameters, dict):
+                            await websocket.send_json({"command": "error", "result": {"type": "validation_error"}})
+                            continue
+                        parameters = SimulationStartPayload(**raw_parameters)
                         params_dict = parameters.model_dump()
 
                         # Stop any previous loop before creating a new model.
@@ -71,10 +86,7 @@ async def websocket_simulation_endpoint(websocket: WebSocket):
                             )
                         )
 
-                    except ValidationError as e:
-                        print(
-                            f"[digital_sim_api] Validation error in start: {e}"
-                        )
+                    except ValidationError:
                         await websocket.send_json({
                             "command": "error",
                             "result": {
@@ -141,9 +153,11 @@ async def websocket_simulation_endpoint(websocket: WebSocket):
 
                 case "set_speed":
                     try:
-                        speed_payload = SetSpeedPayload(
-                            **data.get("parameters", {})
-                        )
+                        raw_parameters = data.get("parameters", {})
+                        if not isinstance(raw_parameters, dict):
+                            await websocket.send_json({"command": "error", "result": {"type": "validation_error"}})
+                            continue
+                        speed_payload = SetSpeedPayload(**raw_parameters)
                         simulation_speed = speed_payload.simulationSpeed
                         simulation_config["steps_multiplier"] = (
                             get_steps_multiplier(simulation_speed)
@@ -157,10 +171,7 @@ async def websocket_simulation_endpoint(websocket: WebSocket):
                             ),
                         })
 
-                    except ValidationError as e:
-                        print(
-                            f"[digital_sim_api] Validation error in set_speed: {e}"
-                        )
+                    except ValidationError:
                         await websocket.send_json({
                             "command": "error",
                             "result": {
@@ -185,7 +196,14 @@ async def websocket_simulation_endpoint(websocket: WebSocket):
                         })
 
                 case "export_data":
-                    csv_data = simulation_service.export_data_as_csv()
+                    try:
+                        csv_data = simulation_service.export_data_as_csv()
+                    except SimulationExportError:
+                        await websocket.send_json({
+                            "command": "export_data", "status": "error",
+                            "message": "Simulation data could not be exported",
+                        })
+                        continue
 
                     if csv_data is None:
                         await websocket.send_json({
@@ -202,38 +220,35 @@ async def websocket_simulation_endpoint(websocket: WebSocket):
 
     except WebSocketDisconnect:
         pass
-
-    except Exception as e:
-        print(f"[digital_sim_api] Error: {e}")
-
-        simulation_service.stop_simulation()
-
-        if simulation_task and not simulation_task.done():
-            simulation_task.cancel()
-            try:
-                await simulation_task
-            except asyncio.CancelledError:
-                pass
-
-        try:
-            await websocket.send_json({
-                "error": str(e),
-            })
-        except Exception:
-            pass
-
+    except Exception as error:
+        log_unexpected_error(logger, "Simulation command handling failed", error)
+        _halt_simulation(simulation_service)
+        await _send_error(websocket, "internal_error", "Simulation command could not be processed")
     finally:
-        simulation_service.stop_simulation()
-        simulation_service.is_paused = False
-
+        # Cleanup must not repeat the statistics calculation which may have failed.
+        _halt_simulation(simulation_service)
         if simulation_task and not simulation_task.done():
             simulation_task.cancel()
             try:
                 await simulation_task
             except asyncio.CancelledError:
                 pass
-
         simulation_service.dispose()
+
+
+def _halt_simulation(service):
+    service.is_running = False
+    service.is_paused = False
+
+
+async def _send_error(websocket, error_type, message):
+    try:
+        await websocket.send_json({
+            "command": "error", "result": {"type": error_type, "message": message},
+        })
+    except Exception:
+        # Best effort only; a failed error response is part of the same incident.
+        pass
 
 
 async def _run_simulation_loop(
@@ -295,11 +310,12 @@ async def _run_simulation_loop(
                             "result": step_result,
                         })
 
-                except Exception as e:
-                    print(
-                        f"[digital_sim_api] Error sending simulation update: {e}"
-                    )
-                    simulation_service.stop_simulation()
+                except WebSocketDisconnect:
+                    _halt_simulation(simulation_service)
+                    break
+                except Exception as error:
+                    log_unexpected_error(logger, "Simulation update could not be sent", error)
+                    _halt_simulation(simulation_service)
                     break
 
             if simulation_service.is_running:
@@ -308,6 +324,7 @@ async def _run_simulation_loop(
     except asyncio.CancelledError:
         raise
 
-    except Exception as e:
-        print(f"[digital_sim_api] Error in simulation loop: {e}")
-        simulation_service.stop_simulation()
+    except Exception as error:
+        log_unexpected_error(logger, "Simulation step failed", error)
+        _halt_simulation(simulation_service)
+        await _send_error(websocket, "simulation_error", "Simulation stopped because a step failed")
