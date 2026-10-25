@@ -559,7 +559,6 @@ except ImportError:
     MQTT_AVAILABLE = False
     logger.error("MQTT dependency unavailable for scoring")
 
-from dataclasses import dataclass
 
 
 # ─────────────────────────────────────────────
