@@ -139,6 +139,42 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H -p "$DEPLOY_PORT" "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
 
+      - name: Diagnose SSH authentication
+        shell: bash
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || '22' }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          echo "=== Runner information ==="
+          echo "Runner: $RUNNER_NAME"
+          echo "User: $(whoami)"
+          echo "Home: $HOME"
+
+          echo "=== Validate SSH private key ==="
+          if ! ssh-keygen -y -P "" \
+            -f "$HOME/.ssh/deploy_key" > /dev/null; then
+            echo "::error::SSH private key is invalid"
+            exit 1
+          fi
+
+          echo "SSH private key is valid"
+
+          echo "=== SSH public key fingerprint ==="
+          ssh-keygen -y -P "" \
+            -f "$HOME/.ssh/deploy_key" | ssh-keygen -lf -
+
+          echo "=== Test SSH connection ==="
+          ssh -v \
+            -i "$HOME/.ssh/deploy_key" \
+            -p "$DEPLOY_PORT" \
+            -o IdentitiesOnly=yes \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=accept-new \
+            -o ConnectTimeout=10 \
+            "$DEPLOY_USER@$DEPLOY_HOST" \
+            "echo SSH_AUTHENTICATION_SUCCESS"
+
       - name: Execute remote deploy
         env:
           APP_ENV_FILE: "../../shared/.env"
