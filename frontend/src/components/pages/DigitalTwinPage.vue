@@ -103,14 +103,21 @@ function getNextTag(tags, currentIndex) {
 
 for (const car of store.table_data) {
   if (!carState.positions[car.auto_id] && car.status) {
-
     const tagId = carTagMap[car.auto_id];
     const pos = tagPosMap[tagId];
 
+    if (
+      !pos ||
+      !Number.isFinite(pos.x) ||
+      !Number.isFinite(pos.y)
+    ) {
+      continue;
+    }
+
     carState.positions[car.auto_id] = {
       id: car.auto_id,
-      x: pos?.x ?? 0,
-      y: pos?.y ?? 0,
+      x: pos.x,
+      y: pos.y,
       packages: car.pakketje,
       routeIndex: 0,
       initialized: false,
