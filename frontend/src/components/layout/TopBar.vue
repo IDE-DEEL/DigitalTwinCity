@@ -32,7 +32,7 @@ const handleLogout = async () => {
 <template>
   <header>
     <div class="title-container">
-      <img src="../../public/assets/hu-logo.png" alt="HU Logo" width="60" height="60">
+      <img src="/assets/hu-logo.png" alt="HU Logo" width="60" height="60">
       <h1>{{ langStore.getLabel('header.title') }}</h1>
     </div>
     <div class="button-container">

@@ -5,7 +5,7 @@ import { SIMULATION_SPEED_OPTIONS, MAP_COLUMNS, MAP_ROWS, MIN_SPEED, MAX_SPEED }
 import { useDigitalSimulation } from '../../composables/useDigitalSimulation.js';
 import { useCarColors } from '../../composables/useCarColors.js';
 import { getLaneLayerForSimulation } from '../../logic/service/laneService.js';
-import { Slider, DropDown, RadioGroup, SimulationTable, WebSocketStatus, RoutePolyline, Car, BaseButton, BarChart, Timer } from '../CustomComponents.js';
+import { Slider, DropDown, RadioGroup, SimulationTable, WebSocketStatus, RoutePolyline, Car, BaseButton, BarChart, SimulationControls } from "../CustomComponents.js";
 import { ControlPanel, SimulationDisplay, StatisticsModal, HouseLabelsOverlay, VisualizePanel, SimulationRunStats, TripScore } from '../AreaComponents.js';
 import { devTileCoordinateOverlay, devLaneDebugOverlay, devHouseDetectionZonesOverlay, devRouteBuilder, devSensorDebugOverlay } from '../../development/DevtoolComponents.js';
 import '../../assets/MainContent.css';
@@ -375,7 +375,7 @@ const toggleSensorDebug = () => {
 
             <!-- Simulation speed, start and stop controls + stats modal open button -->
             <template #simulation-controls>
-                <Timer
+                <SimulationControls
                     :isActive="stateStore.isSimulating"
                     :showResetButton="false"
                     :resetOnStart="true"

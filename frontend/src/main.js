@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import App from './src/App.vue'
+import App from './App.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import DigitalTwinPage from './components/pages/DigitalTwinPage.vue'
 import SimulationPage from './components/pages/SimulationPage.vue'
