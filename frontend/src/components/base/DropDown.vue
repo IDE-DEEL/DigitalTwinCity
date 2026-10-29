@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue';
-import { useLanguageStore, usePageStore } from '../stores/index.js';
+import { useLanguageStore, usePageStore } from '../../stores/index.js';
 
 const langStore = useLanguageStore();
 const pageStore = usePageStore();

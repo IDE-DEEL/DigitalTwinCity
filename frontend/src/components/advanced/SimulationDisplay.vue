@@ -1,14 +1,14 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, onBeforeUnmount, reactive, watch } from 'vue';
 import { storeToRefs } from 'pinia';
-import { fetchMapData } from '../logic/service/mapService.js'; 
-import { normalizeDegree } from '../logic/utils/rotation.js';
-import { useMapStore } from '../stores/mapStore.js';
-import { MAP_COLUMNS } from '../constants/constants.js'
+import { fetchMapData } from '../../logic/service/mapService.js'; 
+import { normalizeDegree } from '../../logic/utils/rotation.js';
+import { useMapStore } from '../../stores/mapStore.js';
+import { MAP_COLUMNS } from '../../constants/constants.js'
 const MAP_DIMENSION = MAP_COLUMNS;
-import { initRfidMapper } from '../logic/service/rfidTagMapper.js';
-import { useDigitalTwinStore } from '../stores/digital-twin.js'
-import '../assets/Display.css';
+import { initRfidMapper } from '../../logic/service/rfidTagMapper.js';
+import { useDigitalTwinStore } from '../../stores/digital-twin.js'
+import '../../assets/Display.css';
 
 const store = useDigitalTwinStore();
 const { show_tags, active, table_data } = storeToRefs(store);

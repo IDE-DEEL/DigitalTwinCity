@@ -1,8 +1,8 @@
 <script setup>
-import { useCarColors } from '../composables/useCarColors.js';
-import "../assets/Table.css";
-import { useLanguageStore } from '../stores/index.js';
-import { BaseButton } from './CustomComponents.js';
+import { useCarColors } from '../../composables/useCarColors.js';
+import "../../assets/Table.css";
+import { useLanguageStore } from '../../stores/index.js';
+import { BaseButton } from '../CustomComponents.js';
 
 const langStore = useLanguageStore();
 

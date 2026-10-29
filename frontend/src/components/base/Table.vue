@@ -1,9 +1,9 @@
 <script setup>
-import "../assets/Table.css"
+import "../../assets/Table.css"
 import { watch } from 'vue'
-import { useDigitalTwinStore } from '../stores/digital-twin.js'
-import { useLanguageStore } from '../stores/index.js';
-import { BaseButton } from './CustomComponents.js';
+import { useDigitalTwinStore } from '../../stores/digital-twin.js'
+import { useLanguageStore } from '../../stores/index.js';
+import { BaseButton } from '../CustomComponents.js';
 
 const store = useDigitalTwinStore()
 const langStore = useLanguageStore();

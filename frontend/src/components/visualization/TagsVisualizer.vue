@@ -1,8 +1,8 @@
 <script setup>
-import '../assets/TagsVisualizer.css';
-import { useDigitalTwinStore } from '../stores/digital-twin.js'
-import { useLanguageStore } from '../stores/index.js';
-import { BaseButton } from './CustomComponents.js';
+import '../../assets/TagsVisualizer.css';
+import { useDigitalTwinStore } from '../../stores/digital-twin.js'
+import { useLanguageStore } from '../../stores/index.js';
+import { BaseButton } from '../CustomComponents.js';
 
 const store = useDigitalTwinStore();
 const langStore = useLanguageStore();

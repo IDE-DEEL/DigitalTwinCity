@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, onBeforeUnmount } from 'vue';
-import { useLanguageStore } from '../stores/index.js';
-import { BaseButton } from './CustomComponents.js';
+import { useLanguageStore } from '../../stores/index.js';
+import { BaseButton } from '../CustomComponents.js';
 
 const langStore = useLanguageStore();
 

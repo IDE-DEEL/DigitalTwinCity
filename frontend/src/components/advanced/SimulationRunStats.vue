@@ -1,9 +1,9 @@
 <script setup>
 import { ref } from 'vue';
-import { useCarColors } from '../composables/useCarColors';
-import { useLanguageStore, useSimulationStateStore } from '../stores/index.js';
-import { getCurrentTimestamp } from '../logic/utils/timestamp.js';
-import { BaseButton } from './CustomComponents.js';
+import { useCarColors } from '../../composables/useCarColors';
+import { useLanguageStore, useSimulationStateStore } from '../../stores/index.js';
+import { getCurrentTimestamp } from '../../logic/utils/timestamp.js';
+import { BaseButton } from '../CustomComponents.js';
 
 const langStore = useLanguageStore();
 const simulationStore = useSimulationStateStore();

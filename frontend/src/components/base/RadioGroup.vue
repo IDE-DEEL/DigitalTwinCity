@@ -1,5 +1,5 @@
 <script setup>
-import { useLanguageStore } from '../stores/index.js';
+import { useLanguageStore } from '../../stores/index.js';
 
 const langStore = useLanguageStore();
 

@@ -1,12 +1,12 @@
 <script setup>
 import { ref } from 'vue'
-import Slider from './Slider.vue'
-import DropDown from './DropDown.vue'
-import Table from './Table.vue'
-import { BaseButton } from './CustomComponents.js'
-import { StatisticsModal, TripScore } from './AreaComponents.js'
-import { useLanguageStore } from '../stores/index.js'
-import '../assets/ControlPanel.css'
+import Slider from '../base/Slider.vue'
+import DropDown from '../base/DropDown.vue'
+import Table from '../base/Table.vue'
+import { BaseButton } from '../CustomComponents.js'
+import { StatisticsModal, TripScore } from '../AreaComponents.js'
+import { useLanguageStore } from '../../stores/index.js'
+import '../../assets/ControlPanel.css'
 
 const props = defineProps({
   speed: { type: Number, default: 0 },

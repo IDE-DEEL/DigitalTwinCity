@@ -1,5 +1,5 @@
 <script setup>
-import '../assets/VisualizePanel.css'
+import '../../assets/VisualizePanel.css'
 </script>
 
 <template>

@@ -1,5 +1,5 @@
 <script setup>
-import "../assets/NumberInput.css"
+import "../../assets/NumberInput.css"
 
 const model = defineModel({ type: String, default: "" });
 

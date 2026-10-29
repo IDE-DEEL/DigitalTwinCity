@@ -47,9 +47,9 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { apiUrl } from '../config/api';
-import { useLanguageStore } from '../stores/index.js';
-import { LangToggle, BaseButton } from './CustomComponents.js';
+import { apiUrl } from '../../config/api';
+import { useLanguageStore } from '../../stores/index.js';
+import { LangToggle, BaseButton } from '../CustomComponents.js';
 
 const emit = defineEmits(['authenticated']);
 const router = useRouter();

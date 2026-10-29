@@ -1,5 +1,5 @@
 <script setup>
-import '../assets/Slider.css'
+import '../../assets/Slider.css'
 
 const model = defineModel({
   type: Number,

@@ -1,6 +1,6 @@
 <script setup>
-import '../assets/Switch.css';
-import { useLanguageStore, usePageStore } from '../stores/index.js';
+import '../../assets/Switch.css';
+import { useLanguageStore, usePageStore } from '../../stores/index.js';
 
 const langStore = useLanguageStore();
 const pageStore = usePageStore();

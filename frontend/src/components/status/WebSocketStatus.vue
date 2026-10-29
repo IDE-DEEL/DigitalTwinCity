@@ -1,6 +1,6 @@
 <script setup>
-import { useLanguageStore } from '../stores/index.js';
-import { BaseButton } from './CustomComponents.js';
+import { useLanguageStore } from '../../stores/index.js';
+import { BaseButton } from '../CustomComponents.js';
 
 const langStore = useLanguageStore();
 

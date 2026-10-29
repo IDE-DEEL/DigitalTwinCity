@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch } from 'vue';
-import { useSimulationStateStore } from '../stores/index';
+import { useSimulationStateStore } from '../../stores/index';
 
 const props = defineProps({
     houses: {

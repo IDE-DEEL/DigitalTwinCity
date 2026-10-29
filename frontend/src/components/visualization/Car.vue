@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue';
-import { usePageStore } from '../stores/index';
-import '../assets/Display.css';
+import { usePageStore } from '../../stores/index';
+import '../../assets/Display.css';
 
 const pageStore = usePageStore();
 const previousHeading = ref({});

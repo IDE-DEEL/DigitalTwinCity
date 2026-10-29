@@ -1,11 +1,11 @@
 <script setup>
-import Switch from './Switch.vue'
-import '../assets/TopBar.css'
+import Switch from '../base/Switch.vue'
+import '../../assets/TopBar.css'
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { apiUrl } from '../config/api';
-import { useLanguageStore } from '../stores/index.js';
-import { LangToggle, BaseButton } from './CustomComponents.js';
+import { apiUrl } from '../../config/api';
+import { useLanguageStore } from '../../stores/index.js';
+import { LangToggle, BaseButton } from '../CustomComponents.js';
 
 const router = useRouter();
 const isLoggingOut = ref(false);
