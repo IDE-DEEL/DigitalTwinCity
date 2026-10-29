@@ -2,14 +2,14 @@
 import '../../assets/MainContent.css'
 import '../../assets/DigitalTwinPage.css'
 import '../../assets/Cars.css'
-import ControlPanel from '../ControlPanel.vue'
-import BarChart from '../BarChart.vue'
-import SimulationDisplay from '../SimulationDisplay.vue'
-import Timer from '../Timer.vue'
-import VisualizePanel from '../VisualizePanel.vue'
+import ControlPanel from '../advanced/ControlPanel.vue'
+import BarChart from '../visualization/BarChart.vue'
+import SimulationDisplay from '../advanced/SimulationDisplay.vue'
+import SimulationControls from '../advanced/SimulationControls.vue'
+import VisualizePanel from '../advanced/VisualizePanel.vue'
 import { onMounted, ref, reactive, computed, watch, onBeforeUnmount } from 'vue'
 import { useDigitalTwinStore } from '../../stores/digital-twin.js'
-import TagsVisualizer from '../TagsVisualizer.vue'
+import TagsVisualizer from '../visualization/TagsVisualizer.vue'
 
 const store = useDigitalTwinStore()
 
@@ -548,7 +548,7 @@ function handleTimerReset() {
       @change-scenario="store.sendData('scenario', store.chosen_scenario)"
     >
       <template #simulation-controls>
-        <Timer
+        <SimulationControls
             :isActive="store.active"
             :showResetButton="true"
             :resetOnStart="false"
