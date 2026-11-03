@@ -89,44 +89,43 @@ function getRouteTags(car_id, route_name) {
   return tags
 }
 
-const tagPosMap = Object.fromEntries(
-  store.tag_positions.map(t => [t.tag_id, t.tag_pos])
-);
+// Initialize default depot cars once tag positions have finished loading.
+// Keep the original car and package data from the store.
+watch(
+  [() => store.tag_positions, () => store.car_data, () => store.table_data],
+  () => {
+    const tagPosMap = Object.fromEntries(
+      store.tag_positions.map(t => [t.tag_id, t.tag_pos])
+    );
+    const carTagMap = Object.fromEntries(
+      store.car_data.map(c => [c.auto_id, c.tag_id])
+    );
 
-const carTagMap = Object.fromEntries(
-  store.car_data.map(c => [c.auto_id, c.tag_id])
+    for (const car of store.table_data) {
+      if (carState.positions[car.auto_id] || !car.status) continue;
+
+      const pos = tagPosMap[carTagMap[car.auto_id]];
+      if (!pos || !Number.isFinite(pos.x) || !Number.isFinite(pos.y)) continue;
+
+      carState.positions[car.auto_id] = {
+        id: car.auto_id,
+        x: pos.x,
+        y: pos.y,
+        packages: car.pakketje,
+        routeIndex: 0,
+        initialized: false,
+        rotation: 90,
+        lastTagId: null,
+        targetTagId: null,
+        arrived: false
+      };
+    }
+  },
+  { immediate: true }
 );
 
 function getNextTag(tags, currentIndex) {
   return tags[(currentIndex + 1) % tags.length]
-}
-
-for (const car of store.table_data) {
-  if (!carState.positions[car.auto_id] && car.status) {
-    const tagId = carTagMap[car.auto_id];
-    const pos = tagPosMap[tagId];
-
-    if (
-      !pos ||
-      !Number.isFinite(pos.x) ||
-      !Number.isFinite(pos.y)
-    ) {
-      continue;
-    }
-
-    carState.positions[car.auto_id] = {
-      id: car.auto_id,
-      x: pos.x,
-      y: pos.y,
-      packages: car.pakketje,
-      routeIndex: 0,
-      initialized: false,
-      rotation: 90,
-      lastTagId: null,
-      targetTagId: null,
-      arrived: false
-    };
-  }
 }
 
 function calculateRotation(from, to) {
