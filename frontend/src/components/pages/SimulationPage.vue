@@ -1,11 +1,11 @@
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed } from 'vue';
 import { useSimulationParameterStore, useSimulationStateStore, useLanguageStore, useSimulationWebSocketStore } from '../../stores';
 import { SIMULATION_SPEED_OPTIONS, MAP_COLUMNS, MAP_ROWS, MIN_SPEED, MAX_SPEED } from '../../constants/constants.js';
-import { useDigitalSimulation } from '../../composables/useDigitalSimulation.js';
+import { useSimulationPageControls } from '../../composables/useSimulationPageControls.js';
 import { useCarColors } from '../../composables/useCarColors.js';
 import { getLaneLayerForSimulation } from '../../logic/service/laneService.js';
-import { Slider, DropDown, RadioGroup, SimulationTable, WebSocketStatus, RoutePolyline, Car, BaseButton, BarChart, Timer } from '../CustomComponents.js';
+import { Slider, DropDown, RadioGroup, SimulationTable, WebSocketStatus, RoutePolyline, Car, BaseButton, BarChart, SimulationControls } from "../CustomComponents.js";
 import { ControlPanel, SimulationDisplay, StatisticsModal, HouseLabelsOverlay, VisualizePanel, SimulationRunStats, TripScore } from '../AreaComponents.js';
 import { devTileCoordinateOverlay, devLaneDebugOverlay, devHouseDetectionZonesOverlay, devRouteBuilder, devSensorDebugOverlay } from '../../development/DevtoolComponents.js';
 import '../../assets/MainContent.css';
@@ -26,151 +26,17 @@ const paramStore = useSimulationParameterStore();
 const stateStore = useSimulationStateStore();
 const langStore = useLanguageStore();
 const wsStore = useSimulationWebSocketStore();
-const demoEnabled = ref(false);
-
 const {
-    startSimulation,
-    pauseSimulation,
-    resumeSimulation,
-    stopSimulation,
-    reconnectWebSocket,
+    demoEnabled, reconnectCooldown, isStatsModalOpen,
+    allCarsHaveInactiveRoute, handleWebsocketReconnect,
+    handleSimulationStart, handleSimulationStop,
+    handleSimulationPauseToggle, handleStatsOpen, toggleDemo,
     exportDataAsCSV,
-} = useDigitalSimulation(() => {
-    const wasDemo = demoEnabled.value;
-    demoEnabled.value = false;
-
-    if (!wasDemo) {
-        isStatsModalOpen.value = true;
-    }
-});
+} = useSimulationPageControls({ paramStore, stateStore, wsStore });
 const { getColorForCarAndRoute } = useCarColors();
-
-/*
-    =====================
-    Refs and constants
-    =====================
-*/
-const reconnectCooldown = ref(false);
-const isStatsModalOpen = ref(false);
-
 const MAX_PACKAGES = 25;
 const MIN_PACKAGES = 1;
-
-/*
-    =====================
-    Computed properties
-    =====================
-*/
-// Lane data preparation for overlays
 const lanes = computed(() => getLaneLayerForSimulation());
-
-// Check if all cars have the inactive route
-const allCarsHaveInactiveRoute = computed(() => {
-    return paramStore.cars.every(car => car.routeName === 'inactive');
-});
-
-/*
-    =====================
-    Watchers
-    =====================
-*/
-watch(
-    () => stateStore.autoOpenStatsModal,
-    (newValue) => {
-        if (newValue.value) {
-            isStatsModalOpen.value = true;
-            stateStore.resetAutoOpenStatsModal();
-        }
-    }
-);
-
-watch(
-    () => wsStore.isConnected,
-    (connected) => {
-        if (!connected && demoEnabled.value) {
-            demoEnabled.value = false;
-            stateStore.handleSimulationEnded();
-        }
-    }
-);
-
-/*  
-    =====================
-    Button handlers
-    =====================
-*/
-const handleWebsocketReconnect = () => {
-    if (reconnectCooldown.value) {
-        return;
-    }
-    
-    reconnectWebSocket();
-    
-    reconnectCooldown.value = true;
-    const timeInMillis = 5000;
-    setTimeout(() => {
-        reconnectCooldown.value = false;
-    }, timeInMillis);
-};
-
-const handleSimulationStart = () => {
-    startSimulation();
-};
-
-const handleSimulationStop = () => {
-    demoEnabled.value = false;
-    stopSimulation();
-};
-
-const handleSimulationPause = () => {
-    pauseSimulation();
-};
-
-const handleSimulationPauseToggle = () => {
-    if (stateStore.isPaused) {
-        resumeSimulation();
-    } else {
-        pauseSimulation();
-    }
-};
-
-const handleStatsOpen = () => {
-    isStatsModalOpen.value = true;
-};
-
-function startDemoRun() {
-    if (
-        !demoEnabled.value ||
-        !wsStore.isConnected ||
-        stateStore.isSimulating
-    ) {
-        return;
-    }
-
-    const routes = paramStore.routeOptions
-        .map(option => option.value)
-        .filter(value => value && value !== "inactive");
-
-    if (!routes.length) return;
-
-    paramStore.cars = paramStore.cars.map(car => ({
-        ...car,
-        routeName: routes[Math.floor(Math.random() * routes.length)],
-    }));
-
-    startSimulation(true);
-}
-
-function toggleDemo() {
-    if (demoEnabled.value) {
-        demoEnabled.value = false;
-        stopSimulation();
-    } else {
-        demoEnabled.value = true;
-        isStatsModalOpen.value = false;
-        startDemoRun();
-    }
-}
 
 /*  
     =====================
@@ -375,7 +241,7 @@ const toggleSensorDebug = () => {
 
             <!-- Simulation speed, start and stop controls + stats modal open button -->
             <template #simulation-controls>
-                <Timer
+                <SimulationControls
                     :isActive="stateStore.isSimulating"
                     :showResetButton="false"
                     :resetOnStart="true"

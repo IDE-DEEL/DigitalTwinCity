@@ -8,7 +8,7 @@
 
 <script setup>
 import { useRouter } from 'vue-router';
-import AdminPanel from '../AdminPanel.vue';
+import AdminPanel from '../advanced/AdminPanel.vue';
 
 const router = useRouter();
 
