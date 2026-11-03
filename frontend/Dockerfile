@@ -13,6 +13,8 @@ RUN chmod +x node_modules/.bin/* && npm run build
 
 FROM nginx:stable-alpine
 
+RUN apk update && apk upgrade --no-cache
+
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/frontend/dist /usr/share/nginx/html
 COPY docker-entrypoint.sh /docker-entrypoint.d/40-env-config.sh
