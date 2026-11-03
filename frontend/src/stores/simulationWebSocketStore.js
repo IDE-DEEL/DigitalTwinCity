@@ -67,18 +67,18 @@ export const useSimulationWebSocketStore = defineStore("simulationWebSocket", ()
                 // 2. push events
                 switch (data.command) {
                     case "simulation_update":
-                        onSimulationUpdate?.(result);
-                        break;
-
                     case "simulation_ended":
-                        onSimulationUpdate?.(result);
-                        onSimulationEnded?.();
-                        break;
-                    
                     case "simulation_deadlocked":
+                        // I process the latest simulation state for all three events.
                         onSimulationUpdate?.(result);
-                        onSimulationEnded?.();
-                        toast.info(languageStore.getToastMessage("info.SIMULATION_DEADLOCKED"));
+
+                        if (data.command !== "simulation_update") {
+                            onSimulationEnded?.();
+                        }
+
+                        if (data.command === "simulation_deadlocked") {
+                            toast.info(languageStore.getToastMessage("info.SIMULATION_DEADLOCKED"));
+                        }
                         break;
 
                     case "error":
