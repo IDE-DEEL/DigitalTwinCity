@@ -25,7 +25,6 @@ watch(
         id: car.auto_id,
         x: pos.x,
         y: pos.y,
-        packages: car.pakketje,
         routeIndex: 0,
         initialized: false,
         rotation: 90,
