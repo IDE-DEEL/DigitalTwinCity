@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/30</span>
+                <span class='fraction'>1/1</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/1</span>
+                <span class='fraction'>0/0</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/1</span>
+                <span class='fraction'>0/0</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/30</span>
+                <span class='fraction'>1/1</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -93,66 +93,66 @@
 <a name='L28'></a><a href='#L28'>28</a>
 <a name='L29'></a><a href='#L29'>29</a>
 <a name='L30'></a><a href='#L30'>30</a>
-<a name='L31'></a><a href='#L31'>31</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >&lt;template&gt;</span></span></span>
-<span class="cstat-no" title="statement not covered" >    &lt;div  class="mx-auto mt-10 max-w-xl rounded-2xl border border-slate-200 bg-slate-50 p-6 shadow-sm"&gt;</span>
-<span class="cstat-no" title="statement not covered" >      &lt;h3 class="text-xl font-bold text-slate-900"&gt;{{ langStore.getLabel('adminLogin.loginTitle') }}&lt;/h3&gt;</span>
-<span class="cstat-no" title="statement not covered" >      &lt;form @submit.prevent="emit('login')" class="space-y-4"&gt;</span>
-<span class="cstat-no" title="statement not covered" >        &lt;div&gt;</span>
-<span class="cstat-no" title="statement not covered" >          &lt;label class="block text-sm font-medium text-slate-700"&gt;{{ langStore.getLabel('adminLogin.usernameLabel') }}&lt;/label&gt;</span>
-<span class="cstat-no" title="statement not covered" >          &lt;input v-model="adminUser" type="text" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" /&gt;</span>
-<span class="cstat-no" title="statement not covered" >        &lt;/div&gt;</span>
-<span class="cstat-no" title="statement not covered" >        &lt;div&gt;</span>
-<span class="cstat-no" title="statement not covered" >          &lt;label class="block text-sm font-medium text-slate-700"&gt;{{ langStore.getLabel('adminLogin.passwordLabel') }}&lt;/label&gt;</span>
-<span class="cstat-no" title="statement not covered" >          &lt;input v-model="adminPass" type="password" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" /&gt;</span>
-<span class="cstat-no" title="statement not covered" >        &lt;/div&gt;</span>
-<span class="cstat-no" title="statement not covered" >        &lt;BaseButton type="submit" variant="login"&gt;</span>
-<span class="cstat-no" title="statement not covered" >          {{ langStore.getLabel('adminLogin.loginButton') }}</span>
-<span class="cstat-no" title="statement not covered" >        &lt;/BaseButton&gt;</span>
-<span class="cstat-no" title="statement not covered" >      &lt;/form&gt;</span>
-<span class="cstat-no" title="statement not covered" >      &lt;p v-if="authError" class="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"&gt;{{ authError }}&lt;/p&gt;</span>
-<span class="cstat-no" title="statement not covered" >    &lt;/div&gt;</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >&lt;/template&gt;</span>
-<span class="cstat-no" title="statement not covered" >&lt;script setup&gt;</span>
-<span class="cstat-no" title="statement not covered" >import { computed } from 'vue';</span>
-<span class="cstat-no" title="statement not covered" >import { useLanguageStore } from '../../stores/index.js';</span>
-<span class="cstat-no" title="statement not covered" >import { BaseButton } from '../CustomComponents.js';</span>
-<span class="cstat-no" title="statement not covered" >const props = defineProps({ username: String, password: String, authError: String });</span>
-<span class="cstat-no" title="statement not covered" >const emit = defineEmits(['update:username', 'update:password', 'login']);</span>
-<span class="cstat-no" title="statement not covered" >const adminUser = computed({ get: () =&gt; props.username, set: value =&gt; emit('update:username', value) });</span>
-<span class="cstat-no" title="statement not covered" >const adminPass = computed({ get: () =&gt; props.password, set: value =&gt; emit('update:password', value) });</span>
-<span class="cstat-no" title="statement not covered" >const langStore = useLanguageStore();</span>
-<span class="cstat-no" title="statement not covered" >&lt;/script&gt;</span>
+<a name='L31'></a><a href='#L31'>31</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">&lt;template&gt;
+    &lt;div  class="mx-auto mt-10 max-w-xl rounded-2xl border border-slate-200 bg-slate-50 p-6 shadow-sm"&gt;
+      &lt;h3 class="text-xl font-bold text-slate-900"&gt;{{ langStore.getLabel('adminLogin.loginTitle') }}&lt;/h3&gt;
+      &lt;form @submit.prevent="emit('login')" class="space-y-4"&gt;
+        &lt;div&gt;
+          &lt;label class="block text-sm font-medium text-slate-700"&gt;{{ langStore.getLabel('adminLogin.usernameLabel') }}&lt;/label&gt;
+          &lt;input v-model="adminUser" type="text" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" /&gt;
+        &lt;/div&gt;
+        &lt;div&gt;
+          &lt;label class="block text-sm font-medium text-slate-700"&gt;{{ langStore.getLabel('adminLogin.passwordLabel') }}&lt;/label&gt;
+          &lt;input v-model="adminPass" type="password" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100" /&gt;
+        &lt;/div&gt;
+        &lt;BaseButton type="submit" variant="login"&gt;
+          {{ langStore.getLabel('adminLogin.loginButton') }}
+        &lt;/BaseButton&gt;
+      &lt;/form&gt;
+      &lt;p v-if="authError" class="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"&gt;{{ authError }}&lt;/p&gt;
+    &lt;/div&gt;
+&nbsp;
+&lt;/template&gt;
+&lt;script setup&gt;
+import { computed } from 'vue';
+import { useLanguageStore } from '../../stores/index.js';
+import { BaseButton } from '../CustomComponents.js';
+const props = defineProps({ username: String, password: String, authError: String });
+const emit = defineEmits(['update:username', 'update:password', 'login']);
+const adminUser = computed({ get: () =&gt; props.username, set: value =&gt; emit('update:username', value) });
+const adminPass = computed({ get: () =&gt; props.password, set: value =&gt; emit('update:password', value) });
+const langStore = useLanguageStore();
+&lt;/script&gt;
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -160,7 +160,7 @@
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-11-05T11:59:54.008Z
+                at 2026-11-05T12:11:32.782Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

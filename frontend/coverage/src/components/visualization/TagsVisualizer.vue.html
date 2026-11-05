@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/34</span>
+                <span class='fraction'>1/1</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/1</span>
+                <span class='fraction'>0/0</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/1</span>
+                <span class='fraction'>0/0</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/34</span>
+                <span class='fraction'>1/1</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -96,80 +96,80 @@
 <a name='L31'></a><a href='#L31'>31</a>
 <a name='L32'></a><a href='#L32'>32</a>
 <a name='L33'></a><a href='#L33'>33</a>
-<a name='L34'></a><a href='#L34'>34</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >&lt;script setup&gt;</span></span></span>
-<span class="cstat-no" title="statement not covered" >import '../../assets/TagsVisualizer.css';</span>
-<span class="cstat-no" title="statement not covered" >import { useDigitalTwinStore } from '../../stores/digital-twin.js'</span>
-<span class="cstat-no" title="statement not covered" >import { useLanguageStore } from '../../stores/index.js';</span>
-<span class="cstat-no" title="statement not covered" >import { BaseButton } from '../CustomComponents.js';</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >const store = useDigitalTwinStore();</span>
-<span class="cstat-no" title="statement not covered" >const langStore = useLanguageStore();</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >function show_tags() {</span>
-<span class="cstat-no" title="statement not covered" >    store.show_tags = !store.show_tags</span>
-<span class="cstat-no" title="statement not covered" >}</span>
-<span class="cstat-no" title="statement not covered" >&lt;/script&gt;</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >&lt;template&gt;</span>
-<span class="cstat-no" title="statement not covered" >    &lt;div class="tags"&gt;</span>
-<span class="cstat-no" title="statement not covered" >        &lt;h2 class="title"&gt;{{ langStore.getLabel('rfidTags.title') }}:&lt;/h2&gt;</span>
-<span class="cstat-no" title="statement not covered" >        &lt;BaseButton variant="tags" @click="show_tags()"&gt;{{ store.show_tags ? langStore.getLabel('rfidTags.hideTags') : langStore.getLabel('rfidTags.showTags') }}&lt;/BaseButton&gt;</span>
-<span class="cstat-no" title="statement not covered" >    &lt;/div&gt;</span>
-<span class="cstat-no" title="statement not covered" >    &lt;div class="tags-container"&gt;</span>
-<span class="cstat-no" title="statement not covered" >        &lt;table class="vertical-table"&gt;</span>
-<span class="cstat-no" title="statement not covered" >            &lt;tbody&gt;</span>
-<span class="cstat-no" title="statement not covered" >                &lt;tr&gt;</span>
-<span class="cstat-no" title="statement not covered" >                    &lt;th&gt;{{ langStore.getLabel('rfidTags.id') }}&lt;/th&gt;</span>
-<span class="cstat-no" title="statement not covered" >                    &lt;td&gt;{{ store.chosen_tag.tag_id }}&lt;/td&gt;</span>
-<span class="cstat-no" title="statement not covered" >                &lt;/tr&gt;</span>
-<span class="cstat-no" title="statement not covered" >                &lt;tr&gt;</span>
-<span class="cstat-no" title="statement not covered" >                    &lt;th&gt;{{ langStore.getLabel('rfidTags.positions') }}&lt;/th&gt;</span>
-<span class="cstat-no" title="statement not covered" >                    &lt;td&gt;X: {{ store.chosen_tag.tag_pos.x }}, Y: {{ store.chosen_tag.tag_pos.y }}&lt;/td&gt;</span>
-<span class="cstat-no" title="statement not covered" >                &lt;/tr&gt;</span>
-<span class="cstat-no" title="statement not covered" >            &lt;/tbody&gt;</span>
-<span class="cstat-no" title="statement not covered" >        &lt;/table&gt;</span>
-<span class="cstat-no" title="statement not covered" >    &lt;/div&gt;</span>
-<span class="cstat-no" title="statement not covered" >&lt;/template&gt;</span></pre></td></tr></table></pre>
+<a name='L34'></a><a href='#L34'>34</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">&lt;script setup&gt;
+import '../../assets/TagsVisualizer.css';
+import { useDigitalTwinStore } from '../../stores/digital-twin.js'
+import { useLanguageStore } from '../../stores/index.js';
+import { BaseButton } from '../CustomComponents.js';
+&nbsp;
+const store = useDigitalTwinStore();
+const langStore = useLanguageStore();
+&nbsp;
+function show_tags() {
+    store.show_tags = !store.show_tags
+}
+&lt;/script&gt;
+&nbsp;
+&lt;template&gt;
+    &lt;div class="tags"&gt;
+        &lt;h2 class="title"&gt;{{ langStore.getLabel('rfidTags.title') }}:&lt;/h2&gt;
+        &lt;BaseButton variant="tags" @click="show_tags()"&gt;{{ store.show_tags ? langStore.getLabel('rfidTags.hideTags') : langStore.getLabel('rfidTags.showTags') }}&lt;/BaseButton&gt;
+    &lt;/div&gt;
+    &lt;div class="tags-container"&gt;
+        &lt;table class="vertical-table"&gt;
+            &lt;tbody&gt;
+                &lt;tr&gt;
+                    &lt;th&gt;{{ langStore.getLabel('rfidTags.id') }}&lt;/th&gt;
+                    &lt;td&gt;{{ store.chosen_tag.tag_id }}&lt;/td&gt;
+                &lt;/tr&gt;
+                &lt;tr&gt;
+                    &lt;th&gt;{{ langStore.getLabel('rfidTags.positions') }}&lt;/th&gt;
+                    &lt;td&gt;X: {{ store.chosen_tag.tag_pos.x }}, Y: {{ store.chosen_tag.tag_pos.y }}&lt;/td&gt;
+                &lt;/tr&gt;
+            &lt;/tbody&gt;
+        &lt;/table&gt;
+    &lt;/div&gt;
+&lt;/template&gt;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-11-05T11:59:54.008Z
+                at 2026-11-05T12:11:32.782Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
