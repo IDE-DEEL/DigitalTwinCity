@@ -121,14 +121,20 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
               console.warn('Invalid car data payload:', payload)
               break
             }
-            payload.filter(car => car && typeof car.auto_id === 'string').forEach(newCar => {
-              const existingCar = this.car_data.find(c => c.auto_id === newCar.auto_id)
-              if (existingCar) {
-                existingCar.tag_id = newCar.tag_id
-              } else {
-                this.car_data.push(newCar)
-              }
-            })
+            payload
+              .filter(car =>
+                car &&
+                typeof car.auto_id === 'string' && car.auto_id.length > 0 &&
+                typeof car.tag_id === 'string' && car.tag_id.length > 0
+              )
+              .forEach(newCar => {
+                const existingCar = this.car_data.find(c => c.auto_id === newCar.auto_id)
+                if (existingCar) {
+                  existingCar.tag_id = newCar.tag_id
+                } else {
+                  this.car_data.push({ auto_id: newCar.auto_id, tag_id: newCar.tag_id })
+                }
+              })
             break
 
           case 'car_packages':
@@ -256,6 +262,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
         this.tag_positions = await response.json(); 
       } catch (error) {
         console.error('Kon de tag posities niet laden:', error);
+        useToast().error('Tagposities konden niet worden geladen.');
       }
     },
 
@@ -266,6 +273,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
         this.car_depot_routes = await response.json(); 
       } catch (error) {
         console.error('Kon de depot routes niet laden:', error);
+        useToast().error('Depotroutes konden niet worden geladen.');
       }
     },
 
@@ -276,6 +284,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
         this.routes = await response.json(); 
       } catch (error) {
         console.error('Kon de routes niet laden:', error);
+        useToast().error('Routes konden niet worden geladen.');
       }
     },
 
@@ -286,6 +295,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
         this.houses = await response.json(); 
       } catch (error) {
         console.error('Kon de huizen niet laden:', error);
+        useToast().error('Huizengegevens konden niet worden geladen.');
       }
     },
 
