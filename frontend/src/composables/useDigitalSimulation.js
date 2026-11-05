@@ -74,34 +74,48 @@ export function useDigitalSimulation(onSimulationEndedCallback) {
             )
             : [];
 
+        const sent = wsStore.send({command: "start", parameters: { ...paramStore.simulationStartPayload, demoMode: isDemo, demoRoutes}});
+        if (!sent) {
+            toast.error("De simulatie kon niet worden gestart. Controleer de verbinding.");
+            return false;
+        }
         stateStore.resetSimulationState();
-
-        wsStore.send({command: "start", parameters: { ...paramStore.simulationStartPayload, demoMode: isDemo, demoRoutes}});
         stateStore.handleSimulationStarted();
 
         if (!isDemo) {
-        validateHousesReachability();
+            validateHousesReachability();
         }
+        return true;
     }
 
     function pauseSimulation() {
-        if (!wsStore.isConnected || !stateStore.isSimulating) return;
+        if (!wsStore.isConnected || !stateStore.isSimulating) {
+            toast.error("Pauzeren is niet mogelijk zonder actieve simulatieverbinding.");
+            return;
+        }
 
         wsStore.registerResponseHandler("simulation_paused", () => {
             stateStore.isPaused = true;
         });
 
-        wsStore.send({ command: "pause" });
+        if (!wsStore.send({ command: "pause" })) {
+            toast.error("Het pauzecommando kon niet worden verstuurd.");
+        }
     }
 
     function resumeSimulation() {
-        if (!wsStore.isConnected || !stateStore.isPaused) return;
+        if (!wsStore.isConnected || !stateStore.isPaused) {
+            toast.error("Hervatten is niet mogelijk zonder gepauzeerde simulatieverbinding.");
+            return;
+        }
 
         wsStore.registerResponseHandler("simulation_resumed", () => {
             stateStore.isPaused = false;
         });
 
-        wsStore.send({ command: "resume" });
+        if (!wsStore.send({ command: "resume" })) {
+            toast.error("Het hervatcommando kon niet worden verstuurd.");
+        }
     }
     function stopSimulation() {
         wsStore.send({command: "stop"});

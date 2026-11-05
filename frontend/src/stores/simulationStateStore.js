@@ -59,6 +59,7 @@ export const useSimulationStateStore = defineStore("simulationState", () => {
         agentState.value = [];
         houseState.value = [];
         isSimulating.value = false;
+        isPaused.value = false;
         currentStep.value = DEFAULT_STEPS;
         simulationStats.value = DEFAULT_SIMULATION_STATS;
         tripScores.value = DEFAULT_TRIP_SCORES;
@@ -120,6 +121,7 @@ export const useSimulationStateStore = defineStore("simulationState", () => {
         houseState,
         currentStep,
         isSimulating,
+        isPaused,
         hasSimulated,
         simulationStats,
         tripScores,

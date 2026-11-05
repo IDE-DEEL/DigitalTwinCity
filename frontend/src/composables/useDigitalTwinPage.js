@@ -14,14 +14,16 @@ export function useDigitalTwinPage(store) {
    Timer button handlers
 --------------------------*/
 function handleTimerStart() {
-    store.sendData('activation', true);
-    store.sendData('load_max_packages', store.table_data);
-    store.active = true;
+    if (store.sendData('activation', true)) {
+        store.sendData('load_max_packages', store.table_data);
+        store.active = true;
+    }
 }
 
 function handleTimerStop() {
-    store.sendData('activation', false);
-    store.active = false;
+    if (store.sendData('activation', false)) {
+        store.active = false;
+    }
 }
 
 function handleTimerReset() {
