@@ -1,11 +1,22 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import { nextTick } from 'vue';
 import { useSimulationStateStore } from '../simulationStateStore';
 import { useSimulationParameterStore } from '../simulationParameterStore';
 import { useSimulationWebSocketStore } from '../simulationWebSocketStore';
 
-beforeEach(() => setActivePinia(createPinia()));
+beforeEach(() => {
+  // Provide browser APIs required by the language store in the Node test environment.
+  const storage = new Map();
+  vi.stubGlobal('localStorage', {
+    getItem: vi.fn((key) => storage.get(key) ?? null),
+    setItem: vi.fn((key, value) => storage.set(key, String(value))),
+    removeItem: vi.fn((key) => storage.delete(key)),
+    clear: vi.fn(() => storage.clear()),
+  });
+  vi.stubGlobal('document', { documentElement: { lang: 'nl' } });
+  setActivePinia(createPinia());
+});
 
 describe('simulation state regression tests', () => {
   it('starts a simulation and records that it has run', () => {
