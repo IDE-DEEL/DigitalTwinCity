@@ -1,4 +1,3 @@
-import { MapComponent } from './mapComponent.js';
 import { normalizeDegree } from '../utils/rotation.js';
 
 export class MapCell {
