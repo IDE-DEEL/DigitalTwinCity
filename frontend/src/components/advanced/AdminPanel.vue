@@ -158,7 +158,7 @@ onMounted(async () => {
 });
 
 const createCode = async () => {
-  actionError.value = \'\';
+  actionError.value = '';
   try {
     const expiry = new Date(newCode.value.expires_at).toISOString();
     const result = await apiCall('/', {
@@ -176,7 +176,7 @@ const createCode = async () => {
 };
 
 const revokeCode = async (id) => {
-  actionError.value = \'\';
+  actionError.value = '';
   if (!confirm("Weet je zeker dat je deze code wilt intrekken?")) return;
   try {
     const updatedCode = await apiCall(`/${id}/revoke`, { method: 'PUT' });
@@ -188,7 +188,7 @@ const revokeCode = async (id) => {
 };
 
 const extendCode = async (id, currentExpiresAt) => {
-  actionError.value = \'\';
+  actionError.value = '';
   const suggestedValue = toDateTimeLocalValue(currentExpiresAt);
   const input = prompt("Nieuwe vervaldatum (YYYY-MM-DDTHH:mm)", suggestedValue);
   if (!input) return;
@@ -212,7 +212,7 @@ const extendCode = async (id, currentExpiresAt) => {
 };
 
 const deleteCode = async (id, name) => {
-  actionError.value = \'\';
+  actionError.value = '';
   if (!confirm(`Weet je zeker dat je code '${name}' permanent wilt verwijderen uit het overzicht en de geschiedenis?`)) return;
 
   try {
@@ -225,7 +225,7 @@ const deleteCode = async (id, name) => {
 };
 
 const bulkExtendCodes = async () => {
-  actionError.value = \'\';
+  actionError.value = '';
   if (!selectedCodeIds.value.length) {
     showActionError("Selecteer eerst minimaal een code.");
     return;
@@ -264,7 +264,7 @@ const bulkExtendCodes = async () => {
 };
 
 const bulkDeleteCodes = async () => {
-  actionError.value = \'\';
+  actionError.value = '';
   if (!selectedCodeIds.value.length) {
     showActionError("Selecteer eerst minimaal een code.");
     return;
