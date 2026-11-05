@@ -12,6 +12,9 @@ export async function fetchMapData() {
             fetch('/data/map-components.json'),
             fetch('/data/rfid.json')
         ]);
+        if (!mapRes.ok || !compRes.ok || !rfidRes.ok) {
+            throw new Error("Map data laden mislukt");
+        }
 
         const mapData = await mapRes.json();
         const defsArray = await compRes.json();

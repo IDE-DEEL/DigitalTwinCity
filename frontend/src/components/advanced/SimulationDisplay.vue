@@ -13,6 +13,7 @@ import '../../assets/Display.css';
 const store = useDigitalTwinStore();
 const { show_tags, active, table_data } = storeToRefs(store);
 const mapStore = useMapStore();
+const mapError = ref(false);
 
 const componentDefinitions = ref({}); 
 const isLoading = ref(true);
@@ -68,20 +69,26 @@ const getComponentPosition = (component) => {
     };
 };
 
-onMounted(async () => {
+async function loadMap() {
+    isLoading.value = true;
+    mapError.value = false;
+
     try {
-        const data = await fetchMapData(); 
+        const data = await fetchMapData();
+
         mapStore.setMapData(data.mapData);
         componentDefinitions.value = data.componentDefinitions;
-        
-        // Initialize the RFID mapper with loaded data
+
         initRfidMapper(data.mapData, data.rfidData);
     } catch (error) {
         console.error("Fout bij het laden:", error);
+        mapError.value = true;
     } finally {
         isLoading.value = false;
     }
-});
+}
+
+onMounted(loadMap);
 
 // Custom directive named 'v-resize' to update factors when resizing browser
 const vResize = {
@@ -109,42 +116,62 @@ const updateFactor = (event) => {
 }
 </script>
 
+
 <template>
   <div class="display-container">
     <div>
-        <!-- Map Container -->
-        <div class="relative" :style="containerStyle">
-            <!-- Map grid -->
-            <div class="map-grid" :style="gridStyle"> 
-                <div
-                    v-for="component in mapComponents"
-                    :key="component.key"
-                    class="component-cell"
-                    :style="getComponentPosition(component)">
+      <!-- Map Container -->
+      <div class="relative" :style="containerStyle">
 
-                    <img 
-                    :src="component.imagePath"
-                    :alt="component.label"
-                    class="w-full h-full object-contain"
-                    :style="{ transform:`rotate(${component.rotation}deg)`}"
-                    v-resize="updateFactor"
-                    />
-                </div>
-                <!-- Map grid overlays -->
-                <slot name="map-grid-overlays"></slot>
+        <!-- Loading state -->
+        <div v-if="isLoading" class="map-error">
+          <p>Kaart laden...</p>
+        </div>
+
+        <!-- Error state -->
+        <div v-else-if="mapError" class="map-error">
+          <h3>De kaart kon niet worden geladen</h3>
+          <p>Controleer de verbinding en probeer het opnieuw.</p>
+          <button type="button" @click="loadMap">
+            Opnieuw proberen
+          </button>
+        </div>
+
+        <!-- Map -->
+        <template v-else>
+          <div class="map-grid" :style="gridStyle">
+            <div
+              v-for="component in mapComponents"
+              :key="component.key"
+              class="component-cell"
+              :style="getComponentPosition(component)"
+            >
+              <img
+                :src="component.imagePath"
+                :alt="component.label"
+                class="w-full h-full object-contain"
+                :style="{ transform: `rotate(${component.rotation}deg)` }"
+                v-resize="updateFactor"
+              />
             </div>
 
-            <slot name="tags"></slot>
+            <!-- Map grid overlays -->
+            <slot name="map-grid-overlays"></slot>
+          </div>
 
-            <!-- SVG overlays -->
-            <slot name="svg-overlays"></slot>
+          <slot name="tags"></slot>
 
-            <!-- Simulation route builder -->
-            <slot name="route-builder"></slot>
+          <!-- SVG overlays -->
+          <slot name="svg-overlays"></slot>
 
-            <!-- Auto -->
-             <slot name="car"></slot>
-        </div>
-    </div> 
+          <!-- Simulation route builder -->
+          <slot name="route-builder"></slot>
+
+          <!-- Auto -->
+          <slot name="car"></slot>
+        </template>
+
+      </div>
+    </div>
   </div>
 </template>
