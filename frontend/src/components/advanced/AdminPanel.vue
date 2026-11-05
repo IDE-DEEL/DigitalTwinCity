@@ -20,6 +20,7 @@
           {{ codesLoadError }}
           <BaseButton @click="loadCodes" variant="admin-general">Opnieuw proberen</BaseButton>
         </div>
+        <div v-if="actionError" role="alert" class="mb-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{{ actionError }}</div>
         <AdminCodeTable :codes="codes" :selected-code-ids="selectedCodeIds" :all-selected="allSelected" :selected-count="selectedCount" @toggle-select-all="toggleSelectAll" @toggle-code="toggleCode" @bulk-extend="bulkExtendCodes" @bulk-delete="bulkDeleteCodes" @revoke="revokeCode" @extend="extendCode" @delete="deleteCode" />
       </div>
     </div>
@@ -40,6 +41,10 @@ const isAuthenticated = ref(false);
 const adminUser = ref('');
 const adminPass = ref('');
 const authError = ref('');
+const actionError = ref('');
+
+// I display admin action errors in the page instead of blocking browser alerts.
+const showActionError = (message) => { actionError.value = message; };
 const codes = ref([]);
 const generatedRawCode = ref('');
 const selectedCodeIds = ref([]);
@@ -152,6 +157,7 @@ onMounted(async () => {
 });
 
 const createCode = async () => {
+  actionError.value = \'\';
   try {
     const expiry = new Date(newCode.value.expires_at).toISOString();
     const result = await apiCall('/', {
@@ -164,29 +170,31 @@ const createCode = async () => {
     newCode.value.name = '';
     newCode.value.expires_at = '';
   } catch (error) {
-    alert("Fout bij het aanmaken.");
+    showActionError("Fout bij het aanmaken.");
   }
 };
 
 const revokeCode = async (id) => {
+  actionError.value = \'\';
   if (!confirm("Weet je zeker dat je deze code wilt intrekken?")) return;
   try {
     const updatedCode = await apiCall(`/${id}/revoke`, { method: 'PUT' });
     const index = codes.value.findIndex(c => c.id === id);
     if (index !== -1) codes.value[index] = updatedCode;
   } catch (error) {
-    alert("Fout bij intrekken.");
+    showActionError("Fout bij intrekken.");
   }
 };
 
 const extendCode = async (id, currentExpiresAt) => {
+  actionError.value = \'\';
   const suggestedValue = toDateTimeLocalValue(currentExpiresAt);
   const input = prompt("Nieuwe vervaldatum (YYYY-MM-DDTHH:mm)", suggestedValue);
   if (!input) return;
 
   const parsedDate = new Date(input);
   if (Number.isNaN(parsedDate.getTime())) {
-    alert("Ongeldige datum ingevoerd.");
+    showActionError("Ongeldige datum ingevoerd.");
     return;
   }
 
@@ -198,11 +206,12 @@ const extendCode = async (id, currentExpiresAt) => {
     const index = codes.value.findIndex(c => c.id === id);
     if (index !== -1) codes.value[index] = updatedCode;
   } catch (error) {
-    alert("Fout bij verlengen.");
+    showActionError("Fout bij verlengen.");
   }
 };
 
 const deleteCode = async (id, name) => {
+  actionError.value = \'\';
   if (!confirm(`Weet je zeker dat je code '${name}' permanent wilt verwijderen uit het overzicht en de geschiedenis?`)) return;
 
   try {
@@ -210,13 +219,14 @@ const deleteCode = async (id, name) => {
     codes.value = codes.value.filter(c => c.id !== id);
     selectedCodeIds.value = selectedCodeIds.value.filter(codeId => codeId !== id);
   } catch (error) {
-    alert("Fout bij verwijderen.");
+    showActionError("Fout bij verwijderen.");
   }
 };
 
 const bulkExtendCodes = async () => {
+  actionError.value = \'\';
   if (!selectedCodeIds.value.length) {
-    alert("Selecteer eerst minimaal een code.");
+    showActionError("Selecteer eerst minimaal een code.");
     return;
   }
 
@@ -225,7 +235,7 @@ const bulkExtendCodes = async () => {
 
   const parsedDate = new Date(input);
   if (Number.isNaN(parsedDate.getTime())) {
-    alert("Ongeldige datum ingevoerd.");
+    showActionError("Ongeldige datum ingevoerd.");
     return;
   }
 
@@ -248,13 +258,14 @@ const bulkExtendCodes = async () => {
       if (index !== -1) codes.value[index] = updatedCode;
     });
   } catch (error) {
-    alert("Fout bij bulk verlengen.");
+    showActionError("Fout bij bulk verlengen.");
   }
 };
 
 const bulkDeleteCodes = async () => {
+  actionError.value = \'\';
   if (!selectedCodeIds.value.length) {
-    alert("Selecteer eerst minimaal een code.");
+    showActionError("Selecteer eerst minimaal een code.");
     return;
   }
 
@@ -269,7 +280,7 @@ const bulkDeleteCodes = async () => {
     codes.value = codes.value.filter(code => !idsSet.has(code.id));
     selectedCodeIds.value = [];
   } catch (error) {
-    alert("Fout bij bulk verwijderen.");
+    showActionError("Fout bij bulk verwijderen.");
   }
 };
 </script>
