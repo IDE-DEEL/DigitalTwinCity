@@ -69,15 +69,29 @@ describe('useDigitalTwinCars additional regression cases', () => {
         expect(carState.positions.car1).toBeUndefined();
     });
 
+
     it('initializes a newly active car after store data changes', async () => {
         const { store, carState } = setup({
-            table_data: [{ auto_id: 'car1', status: false, route: 'route1' }]
+            table_data: [
+                { auto_id: 'car1', status: false, route: 'route1' }
+            ]
         });
+
         expect(carState.positions.car1).toBeUndefined();
-        store.table_data[0].status = true;
+
+        store.table_data = [
+            { auto_id: 'car1', status: true, route: 'route1' }
+        ];
+
         await nextTick();
-        expect(carState.positions.car1).toMatchObject({ x: 0, y: 0, initialized: false });
+
+        expect(carState.positions.car1).toMatchObject({
+            x: 0,
+            y: 0,
+            initialized: false
+        });
     });
+
 
     it('does not move an inactive car', async () => {
         const { store, carState } = setup();
