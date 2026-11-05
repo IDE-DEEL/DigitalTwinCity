@@ -119,6 +119,10 @@ export const useSimulationWebSocketStore = defineStore("simulationWebSocket", ()
                         }
                         break;
 
+                    case "simulation_started":
+                    case "speed_updated":
+                        break;
+
                     case "error":
                         if (result?.type === "validation_error") {
                             toast.error(
