@@ -12,6 +12,8 @@ export const useSimulationWebSocketStore = defineStore("simulationWebSocket", ()
     const isConnecting = ref(false);
 
     let websocket = null;
+    let intentionalDisconnect = false;
+    let connectionErrorShown = false;
 
     const responseHandlers = {};
     let onSimulationUpdate = null;
@@ -30,6 +32,8 @@ export const useSimulationWebSocketStore = defineStore("simulationWebSocket", ()
         onSimulationEnded = endedCallback;
 
         isConnecting.value = true;
+        intentionalDisconnect = false;
+        connectionErrorShown = false;
 
         try {
             websocket = new WebSocket(WS_URL);
@@ -40,9 +44,14 @@ export const useSimulationWebSocketStore = defineStore("simulationWebSocket", ()
             };
 
             websocket.onclose = () => {
+                const shouldNotify = !intentionalDisconnect && !connectionErrorShown;
                 isConnected.value = false;
                 isConnecting.value = false;
                 websocket = null;
+                if (shouldNotify) {
+                    connectionErrorShown = true;
+                    toast.error(languageStore.getToastMessage("error.WS_CONNECTION_ERROR"));
+                }
             };
 
             websocket.onerror = () => {
@@ -50,11 +59,24 @@ export const useSimulationWebSocketStore = defineStore("simulationWebSocket", ()
                 isConnecting.value = false;
                 websocket = null;
 
-                toast.error(languageStore.getToastMessage("error.WS_CONNECTION_ERROR"));
+                if (!intentionalDisconnect && !connectionErrorShown) {
+                    connectionErrorShown = true;
+                    toast.error(languageStore.getToastMessage("error.WS_CONNECTION_ERROR"));
+                }
             };
 
             websocket.onmessage = (event) => {
-                const data = JSON.parse(event.data);
+                let data;
+                try {
+                    data = JSON.parse(event.data);
+                } catch {
+                    toast.error("Er is een ongeldig bericht ontvangen van de simulatie.");
+                    return;
+                }
+                if (!data || typeof data !== "object" || typeof data.command !== "string") {
+                    toast.error("Er is een ongeldig bericht ontvangen van de simulatie.");
+                    return;
+                }
                 const result = data.result;
 
                 // 1. response handler (request/response)
@@ -91,6 +113,7 @@ export const useSimulationWebSocketStore = defineStore("simulationWebSocket", ()
                 }
             };
         } catch (e) {
+            toast.error(languageStore.getToastMessage("error.WS_CONNECTION_ERROR"));
             isConnecting.value = false;
             websocket = null;
 
@@ -102,6 +125,7 @@ export const useSimulationWebSocketStore = defineStore("simulationWebSocket", ()
     // Disconnect
     // ---
     function disconnect() {
+        intentionalDisconnect = true;
         if (websocket) {
             websocket.close();
             websocket = null;
