@@ -122,6 +122,8 @@ export const useSimulationWebSocketStore = defineStore("simulationWebSocket", ()
                     case "simulation_started":
                     case "speed_updated":
                         break;
+                    case "simulation_stopped":
+                        break;
 
                     case "error":
                         if (result?.type === "validation_error") {
