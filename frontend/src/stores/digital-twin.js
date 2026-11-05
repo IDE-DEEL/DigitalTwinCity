@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { wsUrl } from '../config/api'
+import { useToast } from 'vue-toastification'
 
 export const useDigitalTwinStore = defineStore('digitalTwin', {
   state: () => ({
@@ -54,34 +55,61 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
     factor_x: 0,
     factor_y: 0,
 
-    socket: null
+    socket: null,
+    connectionStatus: 'disconnected'
   }),
 
   actions: {
     connect() {
       if (this.socket) return
 
-      this.socket = new WebSocket(
-        wsUrl('/api/v1/ws/digital_twin')
-      )
+      const toast = useToast()
+      this.connectionStatus = 'connecting'
+      let socket
+      try {
+        socket = new WebSocket(wsUrl('/api/v1/ws/digital_twin'))
+      } catch (error) {
+        this.connectionStatus = 'disconnected'
+        console.error('Digital Twin connection failed:', error)
+        toast.error('Kan geen verbinding maken met de Digital Twin.')
+        return
+      }
+      this.socket = socket
+      let connectionErrorShown = false
 
       this.socket.onopen = () => {
+        this.connectionStatus = 'connected'
         console.log('WebSocket connected')
       }
 
       this.socket.onmessage = (event) => {
-        const { type, payload } = JSON.parse(event.data)
+        if (this.socket !== socket) return
+        let message
+        try {
+          message = JSON.parse(event.data)
+        } catch (error) {
+          console.warn('Invalid Digital Twin message:', error)
+          return
+        }
+        if (!message || Array.isArray(message) || typeof message.type !== 'string') {
+          console.warn('Unexpected Digital Twin message:', message)
+          return
+        }
+        const { type, payload } = message
 
         switch (type) {
           case 'speed':
+            if (typeof payload !== 'number' || !Number.isFinite(payload)) break
             this.speed = payload
             break
 
           case 'scenario':
+            if (typeof payload !== 'string') break
             this.chosen_scenario = payload
             break
 
           case 'activation':
+            if (typeof payload !== 'boolean') break
             console.log("start: " + payload)
 
             this.active = payload
@@ -89,7 +117,11 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
 
           case 'car_data':
             console.log("car_data: ", payload)
-            payload.forEach(newCar => {
+            if (!Array.isArray(payload)) {
+              console.warn('Invalid car data payload:', payload)
+              break
+            }
+            payload.filter(car => car && typeof car.auto_id === 'string').forEach(newCar => {
               const existingCar = this.car_data.find(c => c.auto_id === newCar.auto_id)
               if (existingCar) {
                 existingCar.tag_id = newCar.tag_id
@@ -116,6 +148,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
             break
 
           case 'results':
+            if (!payload || typeof payload !== 'object' || Array.isArray(payload)) break
             this.results = payload
             break
 
@@ -124,8 +157,9 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
 
             console.log(scenario)
 
-            scenario?.tags.forEach(tag => {
-                const update = payload.find(p => p.tag_id === tag.tag_id)
+            if (!Array.isArray(payload) || !Array.isArray(scenario?.tags)) break
+            scenario.tags.forEach(tag => {
+                const update = payload.find(p => p && p.tag_id === tag.tag_id)
                 if (update) tag.undeliverd_packages = update.remaining
                 console.log(tag.undeliverd_packages)
             })
@@ -135,9 +169,24 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
         }
       }
 
+      this.socket.onerror = () => {
+        if (this.socket !== socket) return
+        this.connectionStatus = 'disconnected'
+        if (!connectionErrorShown) {
+          connectionErrorShown = true
+          toast.error('Er is een probleem met de Digital Twin-verbinding.')
+        }
+      }
+
       this.socket.onclose = () => {
+        if (this.socket !== socket) return
+        this.connectionStatus = 'disconnected'
         console.log('WebSocket disconnected')
         this.socket = null
+        if (!connectionErrorShown) {
+          connectionErrorShown = true
+          toast.error('De verbinding met de Digital Twin is verbroken.')
+        }
       }
     },
 
@@ -148,6 +197,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
     },
 
     updatePackages(payload) {
+      if (!payload || typeof payload.car_id !== 'string' || !Number.isFinite(payload.packages)) return
       const car = this.findCar(payload.car_id)
       if (car) {
         car.pakketje = payload.packages
@@ -155,6 +205,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
     },
 
     updateRoute(payload) {
+      if (!payload || typeof payload.car_id !== 'string' || typeof payload.route !== 'string') return
       const car = this.findCar(payload.car_id)
       if (car) {
         car.route = payload.route
@@ -164,6 +215,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
     },
 
     updateStatus(payload) {
+      if (!payload || typeof payload.car_id !== 'string' || typeof payload.status !== 'boolean') return
       const car = this.findCar(payload.car_id)
       if (car) {
         car.status = payload.status
@@ -171,6 +223,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
     },
 
     updateEnergy(payload) {
+      if (!payload || typeof payload.car_id !== 'string' || !Number.isFinite(payload.energy)) return
       const car = this.findCar(payload.car_id)
       if (car) {
         car.energie = payload.energy
@@ -181,20 +234,25 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
       if (this.socket && this.socket.readyState === WebSocket.OPEN) {
         console.log(type + " " + payload)
         
-        this.socket.send(
-          JSON.stringify({
-            type,
-            payload,
-          })
-        )
+        try {
+          this.socket.send(JSON.stringify({ type, payload }))
+          return true
+        } catch (error) {
+          console.error('Digital Twin command failed:', error)
+          useToast().error('Het commando kon niet worden verstuurd.')
+          return false
+        }
       } else {
-        console.error('Socket is not open')
+        console.warn('Digital Twin command not sent: socket is not open')
+        useToast().error('Geen verbinding met de Digital Twin. Probeer het later opnieuw.')
+        return false
       }
     },
 
     async fetchTagPositions() {
       try {
         const response = await fetch('/data/test-map4-tags.json');
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         this.tag_positions = await response.json(); 
       } catch (error) {
         console.error('Kon de tag posities niet laden:', error);
@@ -204,6 +262,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
     async fetchDepotRoutes() {
       try {
         const response = await fetch('/data/depot-routes.json');
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         this.car_depot_routes = await response.json(); 
       } catch (error) {
         console.error('Kon de depot routes niet laden:', error);
@@ -213,6 +272,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
     async fetchRoutes() {
       try {
         const response = await fetch('/data/routes.json');
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         this.routes = await response.json(); 
       } catch (error) {
         console.error('Kon de routes niet laden:', error);
@@ -222,6 +282,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
     async fetchHouses() {
       try {
         const response = await fetch('/data/houses.json');
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         this.houses = await response.json(); 
       } catch (error) {
         console.error('Kon de huizen niet laden:', error);
@@ -231,9 +292,15 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
     async fetchHousesPerScenario() {
       try {
         const response = await fetch('/data/scenarios.json');
-        this.scenario_houses = await response.json(); 
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const scenarios = await response.json();
+        if (!Array.isArray(scenarios) || !scenarios.every(item => item && typeof item.Scenario === 'string' && Array.isArray(item.tags))) {
+          throw new Error('Invalid scenarios format');
+        }
+        this.scenario_houses = scenarios; 
       } catch (error) {
         console.error('Kon de huizen per scenario niet laden:', error);
+        useToast().error('Scenario’s konden niet worden geladen. Probeer de pagina opnieuw te laden.');
       }
     }
   }

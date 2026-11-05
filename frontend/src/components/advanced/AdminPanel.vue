@@ -80,6 +80,7 @@ const apiCall = async (endpoint, options = {}) => {
   
   if (response.status === 401 || response.status === 403) {
       isAuthenticated.value = false;
+      authError.value = "Je sessie is verlopen. Log opnieuw in.";
       throw new Error("Sessie verlopen, log opnieuw in.");
   }
   if (!response.ok) throw new Error('API Error');
