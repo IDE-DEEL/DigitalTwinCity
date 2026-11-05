@@ -14,7 +14,14 @@
     <AdminLogin v-if="!isAuthenticated" v-model:username="adminUser" v-model:password="adminPass" :auth-error="authError" @login="verifyAdmin" />
     <div v-else class="grid grid-cols-1 gap-6 lg:grid-cols-3">
       <AdminCodeForm v-model:code-name="newCode.name" v-model:expires="newCode.expires_at" :generated-raw-code="generatedRawCode" @create="createCode" />
-      <AdminCodeTable :codes="codes" :selected-code-ids="selectedCodeIds" :all-selected="allSelected" :selected-count="selectedCount" @toggle-select-all="toggleSelectAll" @toggle-code="toggleCode" @bulk-extend="bulkExtendCodes" @bulk-delete="bulkDeleteCodes" @revoke="revokeCode" @extend="extendCode" @delete="deleteCode" />
+      <div class="col-span-2" aria-live="polite">
+        <p v-if="isLoadingCodes" role="status" class="mb-3 text-sm text-slate-600">Toegangscodes worden geladen...</p>
+        <div v-if="codesLoadError" role="alert" class="mb-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {{ codesLoadError }}
+          <BaseButton @click="loadCodes" variant="admin-general">Opnieuw proberen</BaseButton>
+        </div>
+        <AdminCodeTable :codes="codes" :selected-code-ids="selectedCodeIds" :all-selected="allSelected" :selected-count="selectedCount" @toggle-select-all="toggleSelectAll" @toggle-code="toggleCode" @bulk-extend="bulkExtendCodes" @bulk-delete="bulkDeleteCodes" @revoke="revokeCode" @extend="extendCode" @delete="deleteCode" />
+      </div>
     </div>
   </div>
 </template>
@@ -27,6 +34,7 @@ import { LangToggle, BaseButton } from '../CustomComponents.js';
 import AdminLogin from '../admin/AdminLogin.vue';
 import AdminCodeForm from '../admin/AdminCodeForm.vue';
 import AdminCodeTable from '../admin/AdminCodeTable.vue';
+import { useAccessCodeLoader } from '../../composables/useAccessCodeLoader.js';
 
 const isAuthenticated = ref(false);
 const adminUser = ref('');
@@ -38,6 +46,16 @@ const selectedCodeIds = ref([]);
 const langStore = useLanguageStore();
 
 const newCode = ref({ name: '', expires_at: '' });
+
+const { isLoading: isLoadingCodes, error: codesLoadError, load: fetchCodes } = useAccessCodeLoader();
+const loadCodes = async () => {
+  const result = await fetchCodes(() => apiCall('/'));
+  if (result !== null) {
+    codes.value = result;
+    selectedCodeIds.value = [];
+  }
+  return result;
+};
 
 const selectedCount = computed(() => selectedCodeIds.value.length);
 const allSelected = computed(() => {
@@ -108,8 +126,7 @@ const verifyAdmin = async () => {
     await response.json();
     isAuthenticated.value = true;
     
-    codes.value = await apiCall('/');
-    selectedCodeIds.value = [];
+    await loadCodes();
   } catch (error) {
     authError.value = error.message;
   }
@@ -127,9 +144,10 @@ onMounted(async () => {
     if (session.role !== 'admin') return;
 
     isAuthenticated.value = true;
-    codes.value = await apiCall('/');
+    await loadCodes();
   } catch {
     isAuthenticated.value = false;
+    authError.value = 'De verbinding kon niet worden gecontroleerd. Probeer opnieuw in te loggen.';
   }
 });
 
