@@ -62,9 +62,13 @@ describe('houseRouteMatchingService - route and house matching', () => {
     expect(findHousesForRoute('north', houses)).toEqual(['A', 'B']);
   });
 
-  it('avoids duplicates when a route visits a house twice', () => {
-    const houses = [house('B', 2, 2, 'west', 'east'), house('A', 1, 2, 'west', 'east')];
-    expect(findHousesForRoute('loop', houses)).toEqual(['B', 'A']);
+  it('returns repeated houses when a route visits them more than once', () => {
+    const houses = [
+      house('B', 2, 2, 'west', 'east'),
+      house('A', 1, 2, 'west', 'east'),
+    ];
+
+    expect(findHousesForRoute('loop', houses)).toEqual(['B', 'A', 'B']);
   });
 
   it('ignores houses with a different lane on the same tile', () => {
