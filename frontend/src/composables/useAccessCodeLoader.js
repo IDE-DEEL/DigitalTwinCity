@@ -7,16 +7,23 @@ export function useAccessCodeLoader() {
   const load = async (request) => {
     isLoading.value = true;
     error.value = '';
+
+    let result = null;
+
     try {
-      return await request();
+      result = await request();
     } catch (caught) {
-      error.value = caught?.message === 'Sessie verlopen, log opnieuw in.'
+      const sessionExpired =
+        caught instanceof Error &&
+        caught.message === 'Sessie verlopen, log opnieuw in.';
+
+      error.value = sessionExpired
         ? 'Je sessie is verlopen. Log opnieuw in.'
         : 'Toegangscodes konden niet worden geladen. Probeer het opnieuw.';
-      return null;
-    } finally {
-      isLoading.value = false;
     }
+
+    isLoading.value = false;
+    return result;
   };
 
   return { isLoading, error, load };
