@@ -1,4 +1,5 @@
 import { normalizeDegree } from '../utils/rotation.js';
+import { MapCell } from '../domain/MapCell.js';
 
 /**
  * Laadt de kaartdata en componentdefinities van de server.
