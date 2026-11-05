@@ -36,6 +36,20 @@ describe('useAccessCodeLoader', () => {
     expect(state.error.value).toBe('Je sessie is verlopen. Log opnieuw in.');
   });
 
+  it('handles errors without a message property', async () => {
+  const state = useAccessCodeLoader();
+
+  const result = await state.load(() =>
+    Promise.reject({ code: 'UNKNOWN_ERROR' })
+  );
+
+  expect(result).toBeNull();
+  expect(state.error.value).toBe(
+    'Toegangscodes konden niet worden geladen. Probeer het opnieuw.'
+  );
+  expect(state.isLoading.value).toBe(false);
+  });
+
   it('clears the previous error when retrying', async () => {
     const state = useAccessCodeLoader();
     await state.load(() => Promise.reject(new Error('API Error')));
