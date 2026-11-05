@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">62.5% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>20/32</span>
+                <span class='fraction'>32/32</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/0</span>
+                <span class='fraction'>4/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/2</span>
+                <span class='fraction'>2/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">62.5% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>20/32</span>
+                <span class='fraction'>32/32</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line medium'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -106,15 +106,15 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -124,9 +124,9 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { ROUTES_TILES } from '../domain/routes.js';
 import { buildWaypointRouteFromTilePath } from '../domain/routeBuilder.js';
 &nbsp;
@@ -137,16 +137,16 @@ import { buildWaypointRouteFromTilePath } from '../domain/routeBuilder.js';
  * @returns {Array&lt;Object&gt;} An array of waypoint objects, each with x and y properties, representing the full route.
  * @throws {Error} If the route name is unknown.
  */
-export <span class="fstat-no" title="function not covered" >function getWaypointRouteByName(routeName) {</span>
-<span class="cstat-no" title="statement not covered" >    const route = ROUTES_TILES[routeName];</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >    if (!route) {</span>
-<span class="cstat-no" title="statement not covered" >        throw new Error(`Unknown route "${routeName}".`);</span>
-<span class="cstat-no" title="statement not covered" >    }</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >    const allowIncompleteRoute = false;</span>
-<span class="cstat-no" title="statement not covered" >    return buildWaypointRouteFromTilePath(route.tiles, allowIncompleteRoute);</span>
-<span class="cstat-no" title="statement not covered" >}</span>
+export function getWaypointRouteByName(routeName) {
+    const route = ROUTES_TILES[routeName];
+&nbsp;
+    if (!route) {
+        throw new Error(`Unknown route "${routeName}".`);
+    }
+&nbsp;
+    const allowIncompleteRoute = false;
+    return buildWaypointRouteFromTilePath(route.tiles, allowIncompleteRoute);
+}
 &nbsp;
 /**
  * Build waypoint preview for use in the route builder.
@@ -155,10 +155,10 @@ export <span class="fstat-no" title="function not covered" >function getWaypoint
  * @param {Array&lt;Object&gt;} tilePath - Array of tile objects representing the route, each with x and y properties.
  * @returns {Array&lt;Object&gt;} An array of waypoint objects, each with x and y properties, representing the route preview.
  */
-export <span class="fstat-no" title="function not covered" >function getWaypointPreviewFromTilePath(tilePath) {</span>
-<span class="cstat-no" title="statement not covered" >    const allowIncompleteRoute = true;</span>
-<span class="cstat-no" title="statement not covered" >    return buildWaypointRouteFromTilePath(tilePath, allowIncompleteRoute);</span>
-<span class="cstat-no" title="statement not covered" >}</span>
+export function getWaypointPreviewFromTilePath(tilePath) {
+    const allowIncompleteRoute = true;
+    return buildWaypointRouteFromTilePath(tilePath, allowIncompleteRoute);
+}
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -166,7 +166,7 @@ export <span class="fstat-no" title="function not covered" >function getWaypoint
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-11-05T12:11:32.782Z
+                at 2026-11-05T14:39:42.423Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
