@@ -37,12 +37,12 @@
               <td class="px-4 py-3 text-slate-700">{{ new Date(code.expires_at).toLocaleString() }}</td>
               <td class="px-4 py-3">
                 <span v-if="code.is_revoked" class="rounded-full bg-red-100 px-2 py-1 text-xs text-red-700">{{ langStore.getLabel('adminManage.codeRevoked') }}</span>
-                <span v-else-if="new Date(code.expires_at) < new Date()" class="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-700">{{ langStore.getLabel('adminManage.codeExpired') }}</span>
+                <span v-else-if="isExpired(code)" class="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-700">{{ langStore.getLabel('adminManage.codeExpired') }}</span>
                 <span v-else class="rounded-full bg-emerald-100 px-2 py-1 text-xs text-emerald-700">{{ langStore.getLabel('adminManage.codeActive') }}</span>
               </td>
               <td class="px-4 py-3">
                 <div class="flex flex-wrap items-center gap-3">
-                  <BaseButton v-if="!code.is_revoked && new Date(code.expires_at) > new Date()" @click="emit('revoke', code.id)" variant="admin-revoke">
+                  <BaseButton v-if="!code.is_revoked && isActive(code)" @click="emit('revoke', code.id)" variant="admin-revoke">
                     {{ langStore.getLabel('adminManage.codeRevoke') }}
                   </BaseButton>
                   <BaseButton @click="emit('extend', code.id, code.expires_at)" variant="admin-codes">
@@ -71,4 +71,8 @@ defineProps({
 });
 const emit = defineEmits(['toggle-select-all', 'toggle-code', 'bulk-extend', 'bulk-delete', 'revoke', 'extend', 'delete']);
 const langStore = useLanguageStore();
+
+const getExpiryTime = (code) => new Date(code.expires_at).getTime();
+const isExpired = (code) => getExpiryTime(code) < Date.now();
+const isActive = (code) => getExpiryTime(code) > Date.now();
 </script>
