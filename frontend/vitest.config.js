@@ -5,7 +5,12 @@ export default defineConfig({
     environment: 'node',
     coverage: {
       provider: 'v8',
-      include: ['src/composables/useAccessCodeLoader.js'],
+      include: ['src/**/*.{js,vue}'],
+      exclude: [
+        'src/**/*.test.js',
+        'src/**/*.spec.js',
+        'src/main.js',
+      ],
       thresholds: { statements: 95, branches: 95, functions: 95, lines: 95 },
     },
   },
