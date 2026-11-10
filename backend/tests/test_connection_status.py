@@ -36,3 +36,19 @@ def test_explicit_disconnect():
     assert tracker.disconnected("auto_A") == ConnectionStatus.WAITING
     tracker.heartbeat("auto_A")
     assert tracker.disconnected("auto_A") == ConnectionStatus.DISCONNECTED
+
+
+def test_listeners_receive_only_changes():
+    now = [0.0]
+    tracker = VehicleConnectionTracker(timeout_seconds=15, clock=lambda: now[0])
+    events = []
+    tracker.add_listener(events.append)
+    tracker.heartbeat("auto_A")
+    tracker.heartbeat("auto_A")
+    now[0] = 16.0
+    tracker.check_timeouts()
+    tracker.check_timeouts()
+    assert events == [
+        {"car_id": "auto_A", "status": "connected"},
+        {"car_id": "auto_A", "status": "disconnected"},
+    ]
