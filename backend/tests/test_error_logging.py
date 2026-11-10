@@ -15,7 +15,7 @@ from backend.api.manager import ConnectionManager
 from backend.digital_sim.controller.v1 import digital_sim_api
 from backend.digital_sim.service.simulation_service import SimulationService, SimulationExportError
 from backend.tests.test_demo_configuration import start_parameters
-from backend.tests.test_simulation_pause_resume import TestSocket
+from backend.tests.test_simulation_pause_resume import FakeSocket
 from backend.vehicle_control.mqtt_client import MQTTClient
 from backend.vehicle_control.state import VehicleState
 
@@ -265,7 +265,7 @@ class AsyncErrorLoggingTests(unittest.IsolatedAsyncioTestCase):
     async def test_step_failure_stops_loop_and_sends_safe_error_once(self):
         service = SimulationService()
         service.start_simulation(start_parameters(demo=True))
-        socket = TestSocket()
+        socket = FakeSocket()
         with patch.object(service, "execute_step", side_effect=RuntimeError("simulation-secret")), \
                 patch.object(service, "stop_simulation", side_effect=RuntimeError("statistics-secret")), \
                 self.assertLogs("backend.digital_sim.controller.v1.digital_sim_api", level="ERROR") as logs:
@@ -298,7 +298,7 @@ class AsyncErrorLoggingTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(service.is_running)
 
     async def test_invalid_start_is_reported_without_logging_input(self):
-        socket = TestSocket()
+        socket = FakeSocket()
         await socket.commands.put({"command": "start", "parameters": {"carTargetSpeed": "secret-input"}})
         await socket.commands.put(None)
         with self.assertNoLogs("backend.digital_sim.controller.v1.digital_sim_api", level="WARNING"):
@@ -308,7 +308,7 @@ class AsyncErrorLoggingTests(unittest.IsolatedAsyncioTestCase):
         self.assertNotIn("secret-input", str(response))
 
     async def test_invalid_parameter_container_is_a_validation_error(self):
-        socket = TestSocket()
+        socket = FakeSocket()
         await socket.commands.put({"command": "start", "parameters": ["secret"]})
         await socket.commands.put(None)
         with self.assertNoLogs("backend.digital_sim.controller.v1.digital_sim_api", level="WARNING"):
@@ -317,7 +317,7 @@ class AsyncErrorLoggingTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(response["result"], {"type": "validation_error"})
 
     async def test_export_error_is_mapped_without_duplicate_logging(self):
-        socket = TestSocket()
+        socket = FakeSocket()
         service = SimulationService()
         await socket.commands.put({"command": "export_data"})
         await socket.commands.put(None)
