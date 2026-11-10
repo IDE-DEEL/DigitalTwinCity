@@ -29,3 +29,21 @@ dist-ssr
 *.env
 __pycache__/
 **/.venv/
+
+# Frontend - Vitest coverage
+frontend/coverage/
+frontend/.vitest/
+frontend/test-results/
+frontend/playwright-report/
+
+# Frontend - Build output
+frontend/dist/
+
+# Frontend - Dependencies
+frontend/node_modules/
+
+# Backend - Pytest coverage
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
