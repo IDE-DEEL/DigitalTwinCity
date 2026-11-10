@@ -38,10 +38,8 @@ class VehicleControlService:
         if len(topic) not in (3, 4) or topic[0] != "car":
             return
         car_id = topic[1]
-        if car_id not in CAR_IDS:
-            return
         if len(topic) == 3 and topic[2] == "heartbeat":
-            if msg.payload.decode(errors="replace").strip().lower() == "online":
+            if car_id in CAR_IDS and msg.payload.decode(errors="replace").strip().lower() == "online":
                 self.connections.heartbeat(car_id)
             return
         if len(topic) != 4 or topic[2:] != ["data", "LastRFID"]:

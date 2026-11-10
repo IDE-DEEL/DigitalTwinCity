@@ -143,10 +143,10 @@ class ErrorLoggingTests(unittest.TestCase):
 
     def test_failed_mqtt_subscription_is_logged_without_topic(self):
         client = MagicMock()
-        client.subscribe.side_effect = [(1, 1)] + [(0, 1)] * 4
+        client.subscribe.side_effect = [(1, 1)] + [(0, 1)] * 5
         with self.assertLogs("backend.vehicle_control.mqtt_client", level="ERROR") as logs:
             MQTTClient.on_connect(client, None, None, 0, None)
-        self.assertEqual(client.subscribe.call_count, 5)
+        self.assertEqual(client.subscribe.call_count, 6)
         self.assertEqual(len(logs.records), 1)
         self.assertNotIn("car/", self.formatted(logs.records))
 
@@ -175,9 +175,9 @@ class ErrorLoggingTests(unittest.TestCase):
         client.subscribe.return_value = (1, 1)
         with self.assertLogs("backend.vehicle_control.mqtt_client", level="ERROR") as logs:
             MQTTClient.on_connect(client, None, None, 0, None)
-        self.assertEqual(client.subscribe.call_count, 5)
+        self.assertEqual(client.subscribe.call_count, 6)
         self.assertEqual(len(logs.records), 1)
-        self.assertIn("5 of 5", logs.records[0].getMessage())
+        self.assertIn("MQTT subscription requests failed (6)", logs.records[0].getMessage())
 
     def test_websocket_can_restart_after_background_step_failure(self):
         service = SimulationService()
