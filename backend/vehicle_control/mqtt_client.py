@@ -48,8 +48,11 @@ class MQTTClient:
                 result, mid = client.subscribe(topic)
                 if result != mqtt.MQTT_ERR_SUCCESS:
                     failures += 1
+            result, _ = client.subscribe("car/+/heartbeat", qos=1)
+            if result != mqtt.MQTT_ERR_SUCCESS:
+                failures += 1
             if failures:
-                logger.error("MQTT RFID subscription requests failed (%d of %d)", failures, len(CAR_IDS))
+                logger.error("MQTT subscription requests failed (%d)", failures)
         except Exception as error:
             log_unexpected_error(logger, "MQTT RFID subscription setup failed", error)
 

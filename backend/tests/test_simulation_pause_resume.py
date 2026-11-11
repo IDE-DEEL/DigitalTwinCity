@@ -26,7 +26,7 @@ class ControlledClock:
         return await asyncio.wait_for(self.waits.get(), timeout=2)
 
 
-class TestSocket:
+class FakeSocket:
     """Exercise the endpoint with queued commands and recorded responses."""
 
     def __init__(self):
@@ -56,7 +56,7 @@ class SimulationPauseResumeTests(unittest.IsolatedAsyncioTestCase):
     async def check_pause_resume(self, demo):
         service = SimulationService()
         clock = ControlledClock()
-        socket = TestSocket()
+        socket = FakeSocket()
         # Replace only this module's timing API, not asyncio globally.
         controlled_asyncio = SimpleNamespace(
             sleep=clock.sleep,

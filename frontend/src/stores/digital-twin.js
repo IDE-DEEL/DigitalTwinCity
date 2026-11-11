@@ -5,11 +5,11 @@ import { useToast } from 'vue-toastification'
 export const useDigitalTwinStore = defineStore('digitalTwin', {
   state: () => ({
     table_data: [
-        {"status": true, "color": "#0000FF", "auto_id": "auto_A", "energie": 100, "pakketje": 0, "route": "route_1", "visueel": true},
-        {"status": true, "color": "#FF0000", "auto_id": "auto_B", "energie": 100, "pakketje": 0, "route": "route_1", "visueel": false},
-        {"status": true, "color": "#008000", "auto_id": "auto_C", "energie": 100, "pakketje": 0, "route": "route_1", "visueel": false},
-        {"status": true, "color": "#FFFF00", "auto_id": "auto_D", "energie": 100, "pakketje": 0, "route": "route_1", "visueel": false},
-        {"status": true, "color": "#800080", "auto_id": "auto_E", "energie": 100, "pakketje": 0, "route": "route_1", "visueel": false}
+        {"status": true, "connectionStatus": "waiting", "color": "#0000FF", "auto_id": "auto_A", "energie": 100, "pakketje": 0, "route": "route_1", "visueel": true},
+        {"status": true, "connectionStatus": "waiting", "color": "#FF0000", "auto_id": "auto_B", "energie": 100, "pakketje": 0, "route": "route_1", "visueel": false},
+        {"status": true, "connectionStatus": "waiting", "color": "#008000", "auto_id": "auto_C", "energie": 100, "pakketje": 0, "route": "route_1", "visueel": false},
+        {"status": true, "connectionStatus": "waiting", "color": "#FFFF00", "auto_id": "auto_D", "energie": 100, "pakketje": 0, "route": "route_1", "visueel": false},
+        {"status": true, "connectionStatus": "waiting", "color": "#800080", "auto_id": "auto_E", "energie": 100, "pakketje": 0, "route": "route_1", "visueel": false}
     ],
 
     car_data: [
@@ -141,6 +141,24 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
             this.updatePackages(payload)
             break
 
+          case 'car_connection_snapshot':
+            if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
+              this.table_data.forEach(car => {
+                if (['waiting', 'connected', 'disconnected'].includes(payload[car.auto_id])) {
+                  car.connectionStatus = payload[car.auto_id]
+                }
+              })
+            }
+            break
+
+          case 'car_connection_status':
+            if (payload && typeof payload.car_id === 'string' &&
+                ['waiting', 'connected', 'disconnected'].includes(payload.status)) {
+              const car = this.findCar(payload.car_id)
+              if (car) car.connectionStatus = payload.status
+            }
+            break
+
           case 'car_status':
             this.updateStatus(payload)
             break
@@ -187,6 +205,7 @@ export const useDigitalTwinStore = defineStore('digitalTwin', {
       this.socket.onclose = () => {
         if (this.socket !== socket) return
         this.connectionStatus = 'disconnected'
+        this.table_data.forEach(car => { car.connectionStatus = 'disconnected' })
         console.log('WebSocket disconnected')
         this.socket = null
         if (!connectionErrorShown) {

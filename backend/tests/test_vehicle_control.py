@@ -89,7 +89,7 @@ class MQTTLifecycleTests(unittest.TestCase):
         with contextlib.redirect_stdout(io.StringIO()):
             transport.on_connect(client, None, None, 0, None)
         self.assertEqual([call.args[0] for call in client.subscribe.call_args_list],
-                         [f'car/{car_id}/data/LastRFID' for car_id in CAR_IDS])
+                         [f'car/{car_id}/data/LastRFID' for car_id in CAR_IDS] + ['car/+/heartbeat'])
         client.reset_mock()
         with self.assertLogs("backend.vehicle_control.mqtt_client", level="ERROR") as logs:
             transport.on_connect(client, None, None, 1, None)

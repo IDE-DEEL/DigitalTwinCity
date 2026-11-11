@@ -4,6 +4,8 @@ from backend.domain.states import state as session_state
 from backend.score.scoreCalculator import calculate_score
 from backend.score.config import WEIGHTS, TRIP
 from backend.vehicle_control.mqtt_client import MQTTClient
+from backend.vehicle_control.connection_status import VehicleConnectionTracker
+from backend.vehicle_control.state import CAR_IDS
 from backend.vehicle_control.package_service import PackageService, schedule_resume
 from backend.vehicle_control.routes import get_car_route, route
 from backend.vehicle_control.state import VehicleState
@@ -14,6 +16,7 @@ class VehicleControlService:
     def __init__(self, state=None, session=None, transport=None, adjacency=None,
                  schedule=schedule_resume, score=calculate_score):
         self.state = state if state is not None else VehicleState()
+        self.connections = VehicleConnectionTracker()
         self.session = session if session is not None else session_state
         self.transport = transport if transport is not None else MQTTClient(self.on_message)
         self.packages = PackageService(self.state, self.transport.start, schedule)
@@ -31,9 +34,17 @@ class VehicleControlService:
             client.publish(f"car/{car_id}/cmd/Start", f"{start_or_stop}")
 
     def on_message(self, client, userdata, msg):
-        rfid = msg.payload.decode().strip()
         topic = msg.topic.strip().split("/")
+        if len(topic) not in (3, 4) or topic[0] != "car":
+            return
         car_id = topic[1]
+        if len(topic) == 3 and topic[2] == "heartbeat":
+            if car_id in CAR_IDS and msg.payload.decode(errors="replace").strip().lower() == "online":
+                self.connections.heartbeat(car_id)
+            return
+        if len(topic) != 4 or topic[2:] != ["data", "LastRFID"]:
+            return
+        rfid = msg.payload.decode().strip()
         self.state.record_scan(car_id, rfid)
         if self.session.start:
             chosen = self.session.chosen_route[car_id]
@@ -85,6 +96,18 @@ def stop_mqtt_client():
 
 def add_car_data_listener(listener):
     control.state.add_listener(listener)
+
+
+def add_car_connection_listener(listener):
+    control.connections.add_listener(listener)
+
+
+def get_car_connection_statuses():
+    return control.connections.snapshot()
+
+
+def check_car_connection_timeouts():
+    control.connections.check_timeouts()
 
 
 def get_car_data():

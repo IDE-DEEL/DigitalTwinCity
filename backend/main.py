@@ -1,4 +1,5 @@
 import logging
+import asyncio
 
 from backend.core.error_logging import log_unexpected_error
 from backend.core.error_handling import add_error_handling
@@ -13,7 +14,7 @@ from backend.api.v1 import auth_api
 from backend.core.config import settings
 from backend.api.v1 import digital_twin
 from backend.api.v1 import car_commands_api, car_logs_api, track_segment_api
-from backend.vehicle_control.service import start_mqtt_client, stop_mqtt_client
+from backend.vehicle_control.service import start_mqtt_client, stop_mqtt_client, check_car_connection_timeouts
 from backend.data.db.database import Base, engine
 from backend.domain import track_segment, car_commands, car_logs # noqa: F401
 from backend.digital_sim.controller.v1 import digital_sim_api
@@ -38,6 +39,28 @@ def startup_event():
         start_mqtt_client()
     except Exception as exc:
         log_unexpected_error(logger, "MQTT startup failed", exc)
+
+
+async def _monitor_connections():
+    while True:
+        check_car_connection_timeouts()
+        await asyncio.sleep(1)
+
+
+@app.on_event("startup")
+async def start_connection_monitor():
+    app.state.connection_monitor = asyncio.create_task(_monitor_connections())
+
+
+@app.on_event("shutdown")
+async def stop_connection_monitor():
+    task = getattr(app.state, "connection_monitor", None)
+    if task is not None:
+        task.cancel()
+        try:
+            await task
+        except asyncio.CancelledError:
+            pass
 
 
 @app.on_event("shutdown")

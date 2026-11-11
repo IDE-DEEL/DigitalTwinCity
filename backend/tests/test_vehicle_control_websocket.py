@@ -20,10 +20,12 @@ class VehicleWebSocketTests(unittest.TestCase):
               patch.object(digital_twin, 'state', adapter.session),
               patch.object(digital_twin, 'manager', manager),
               patch.object(digital_twin, '_car_data_listener_registered', False),
+              patch.object(digital_twin, '_connection_listener_registered', False),
               patch.object(digital_twin, 'calculate_score', return_value={'total': 42}),
               TestClient(app) as client):
             with client.websocket_connect('/api/v1/ws/digital_twin') as ws:
                 self.assertEqual(ws.receive_json(), {'type': 'car_data', 'payload': []})
+                self.assertEqual(ws.receive_json()['type'], 'car_connection_snapshot')
                 ws.send_json({'type': 'route', 'payload': {'car_id': 'auto_A', 'route': 'route_2'}})
                 self.assertEqual(ws.receive_json()['type'], 'houses')
                 self.assertEqual(ws.receive_json(), {'type': 'route', 'payload': {
@@ -71,6 +73,7 @@ class VehicleWebSocketTests(unittest.TestCase):
 
             with client.websocket_connect('/api/v1/ws/digital_twin') as ws:
                 self.assertEqual(len(ws.receive_json()['payload']), 5)
+                self.assertEqual(ws.receive_json()['type'], 'car_connection_snapshot')
                 adapter.scan('auto_B', 'after-reconnect')
                 self.assertEqual(ws.receive_json()['type'], 'car_data')
                 self.assertEqual(len(adapter.state.car_data_listeners), 1)
@@ -83,12 +86,15 @@ class VehicleWebSocketTests(unittest.TestCase):
         with (patch.object(service, 'control', adapter.service),
               patch.object(digital_twin, 'manager', manager),
               patch.object(digital_twin, '_car_data_listener_registered', False),
+              patch.object(digital_twin, '_connection_listener_registered', False),
               TestClient(app) as client):
             with client.websocket_connect('/api/v1/ws/digital_twin') as first:
                 self.assertEqual(first.receive_json()['type'], 'car_data')
+                self.assertEqual(first.receive_json()['type'], 'car_connection_snapshot')
                 with client.websocket_connect('/api/v1/ws/digital_twin') as second:
                     self.assertEqual(first.receive_json()['type'], 'car_data')
                     self.assertEqual(second.receive_json()['type'], 'car_data')
+                    self.assertEqual(second.receive_json()['type'], 'car_connection_snapshot')
                     for kind, payload in (
                         ('speed', 3),
                         ('scenario', {'name': 'test', 'houses': []}),

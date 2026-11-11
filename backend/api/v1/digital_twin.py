@@ -6,6 +6,8 @@ from backend.api.manager import ConnectionManager
 from backend.core.error_logging import log_unexpected_error
 from backend.vehicle_control.service import (
     add_car_data_listener,
+    add_car_connection_listener,
+    get_car_connection_statuses,
     get_car_data,
     drive_command,
     load_packages,
@@ -23,6 +25,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 manager = ConnectionManager()
 _car_data_listener_registered = False
+_connection_listener_registered = False
 
 
 def ensure_car_data_broadcaster():
@@ -43,6 +46,23 @@ def ensure_car_data_broadcaster():
 
     add_car_data_listener(broadcast_car_data)
     _car_data_listener_registered = True
+
+def ensure_connection_broadcaster():
+    global _connection_listener_registered
+    if _connection_listener_registered:
+        return
+    loop = asyncio.get_running_loop()
+
+    def broadcast_connection(payload):
+        if loop.is_closed():
+            return
+        future = asyncio.run_coroutine_threadsafe(
+            manager.broadcast_update("car_connection_status", payload), loop)
+        future.add_done_callback(_check_broadcast_result)
+
+    add_car_connection_listener(broadcast_connection)
+    _connection_listener_registered = True
+
 
 def _check_broadcast_result(future):
     if future.cancelled():
@@ -75,7 +95,10 @@ async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
         ensure_car_data_broadcaster()
+        ensure_connection_broadcaster()
         await manager.broadcast_update("car_data", get_car_data())
+        await websocket.send_json({"type": "car_connection_snapshot",
+                                   "payload": get_car_connection_statuses()})
         while True:
             data = await websocket.receive_json()
             msg_type = data.get("type")

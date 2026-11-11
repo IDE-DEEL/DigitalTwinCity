@@ -44,7 +44,7 @@ function send_route(car) {
         <tbody v-for="(car, index) in store.table_data" :key="index">
           <tr>
             <td>
-              <div class="circle" :class="{ 'is-active': car.status }"></div>
+              <div class="circle" :class="{ 'is-active': car.connectionStatus === 'connected' }"></div>
             </td>
             <td>
               <div class="car-id-container">
