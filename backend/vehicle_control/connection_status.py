@@ -16,7 +16,7 @@ class ConnectionStatus(StrEnum):
 
 
 def configured_timeout() -> float:
-    value = float(os.getenv("VEHICLE_HEARTBEAT_TIMEOUT_SECONDS", "15"))
+    value = float(os.getenv("VEHICLE_CONNECTION_TIMEOUT_SECONDS", "150"))
     if value <= 0:
         raise ValueError("VEHICLE_HEARTBEAT_TIMEOUT_SECONDS must be positive")
     return value

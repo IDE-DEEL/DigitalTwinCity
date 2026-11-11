@@ -48,7 +48,7 @@ class MQTTClient:
                 result, mid = client.subscribe(topic)
                 if result != mqtt.MQTT_ERR_SUCCESS:
                     failures += 1
-            result, _ = client.subscribe("car/+/heartbeat", qos=1)
+            result, _ = client.subscribe("car/+/data/battery", qos=1)
             if result != mqtt.MQTT_ERR_SUCCESS:
                 failures += 1
             if failures:
