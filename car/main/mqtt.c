@@ -7,6 +7,8 @@
 #include "esp_crt_bundle.h"
 #include "oled.h"    
 #include "motor_driver.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
 #include "mqtt.h"
 
@@ -17,6 +19,10 @@ static const char *TAG = "mqtt";
 /* -------------------------------------------------------------------------- */
 
 static esp_mqtt_client_handle_t mqtt_client;
+
+static volatile bool mqtt_connected = false;
+
+#define HEARTBEAT_INTERVAL_MS 5000
 
 /* -------------------------------------------------------------------------- */
 /* State                                                                   */
@@ -253,6 +259,15 @@ static void mqtt_event_handler(void *arg,
         snprintf(topic, sizeof(topic), "%scmd/#", topic_base);
 
         esp_mqtt_client_subscribe(mqtt_client, topic, 1);
+
+        mqtt_connected = true;
+        break;
+    }
+
+    case MQTT_EVENT_DISCONNECTED:
+    {
+        ESP_LOGW(TAG, "MQTT disconnected");
+        mqtt_connected = false;
         break;
     }
 
@@ -313,9 +328,39 @@ void mqtt_app_start(void)
 
 void mqtt_task(void *arg)
 {
+    TickType_t last_heartbeat = 0;
+    bool was_connected = false;
+
     while (1)
     {
-        publish_dirty();
+        if (mqtt_connected)
+        {
+            TickType_t now = xTaskGetTickCount();
+
+            if (!was_connected ||
+                (now - last_heartbeat) >= pdMS_TO_TICKS(HEARTBEAT_INTERVAL_MS))
+            {
+                char topic[128];
+
+                snprintf(topic, sizeof(topic),
+                         "%sheartbeat", topic_base);
+
+                mqtt_pub(topic, "online");
+
+                last_heartbeat = now;
+            }
+
+            was_connected = true;
+        }
+        else
+        {
+            was_connected = false;
+        }
+
+        if (mqtt_connected)
+        {
+            publish_dirty();
+        }
         vTaskDelay(pdMS_TO_TICKS(20));
     }
 }
