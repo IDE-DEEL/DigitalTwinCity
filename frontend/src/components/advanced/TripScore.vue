@@ -2,6 +2,7 @@
 import { useLanguageStore } from '../../stores/index.js';
 import { getCurrentTimestamp } from '../../logic/utils/timestamp.js';
 import { BaseButton } from '../CustomComponents.js';
+import { Leaf, Euro, UserRoundGroup, Zap, TrafficCone, Wrench} from '@lucide/vue';
 
 const langStore = useLanguageStore();
 
@@ -56,42 +57,42 @@ const handleDownloadCSV = () => {
                 <div class="modal-body">
                     <div class="concern-row" id="surroundings">
                         <div class="concern-label">
-                            <img src="/assets/results/Omgeving.svg" alt="" class="concern-icon" />
+                            <Leaf :size="20" :stroke-width="2" class="concern-icon" />
                             <span>{{ langStore.getLabel('tripStats.surroundings') }}</span>
                         </div>
                         <span class="concern-value">{{ Number(props.scores.environment).toFixed(1) }}</span>
                     </div>
                     <div class="concern-row" id="economy">
                         <div class="concern-label">
-                            <img src="/assets/results/Economie.svg" alt="" class="concern-icon" />
+                            <Euro :size="20" :stroke-width="2" class="concern-icon" />
                             <span>{{ langStore.getLabel('tripStats.economy') }}</span>
                         </div>
                         <span class="concern-value">{{ Number(props.scores.economic).toFixed(1) }}</span>
                     </div>
                     <div class="concern-row" id="social">
                         <div class="concern-label">
-                            <img src="/assets/results/Sociaal.svg" alt="" class="concern-icon" />
+                            <UserRoundGroup :size="20" :stroke-width="2" class="concern-icon" />
                             <span>{{ langStore.getLabel('tripStats.social') }}</span>
                         </div>
                         <span class="concern-value">{{ Number(props.scores.social).toFixed(1) }}</span>
                     </div>
                     <div class="concern-row" id="energy">
                         <div class="concern-label">
-                            <img src="/assets/results/Energie.svg" alt="" class="concern-icon" />
+                            <Zap :size="20" :stroke-width="2" class="concern-icon" />
                             <span>{{ langStore.getLabel('tripStats.energy') }}</span>
                         </div>
                         <span class="concern-value">{{ Number(props.scores.energy).toFixed(1) }}</span>
                     </div>
                     <div class="concern-row" id="safety">
                         <div class="concern-label">
-                            <img src="/assets/results/Veiligheid.svg" alt="" class="concern-icon" />
+                            <TrafficCone :size="20" :stroke-width="2" class="concern-icon" />
                             <span>{{ langStore.getLabel('tripStats.safety') }}</span>
                         </div>
                         <span class="concern-value">{{ Number(props.scores.safety).toFixed(1) }}</span>
                     </div>
                     <div class="concern-row" id="maintenance">
                         <div class="concern-label">
-                            <img src="/assets/results/Onderhoudbaarheid.svg" alt="" class="concern-icon" />
+                            <Wrench :size="20" :stroke-width="2" class="concern-icon" />
                             <span>{{ langStore.getLabel('tripStats.maintenance') }}</span>
                         </div>
                         <span class="concern-value">{{ Number(props.scores.maintenance).toFixed(1) }}</span>
