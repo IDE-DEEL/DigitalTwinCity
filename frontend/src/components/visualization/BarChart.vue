@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { Bar } from 'vue-chartjs'
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js'
 import { useLanguageStore } from '../../stores/index.js';
+import { Leaf, Euro, UserRoundGroup, Zap, TrafficCone, Wrench} from '@lucide/vue';
 
 const langStore = useLanguageStore();
 
@@ -24,12 +25,12 @@ const props = defineProps({
 });
 
 const categories = [
-    { key: 'environment', labelKey: 'tripStats.surroundings', icon: 'Omgeving', color: 'rgba(26, 220, 0, 0.5)' },
-    { key: 'economic', labelKey: 'tripStats.economy', icon: 'Economie', color: 'rgba(222, 211, 0, 0.5)' },
-    { key: 'social', labelKey: 'tripStats.social', icon: 'Sociaal', color: 'rgba(64, 0, 255, 0.5)' },
-    { key: 'energy', labelKey: 'tripStats.energy', icon: 'Energie', color: 'rgba(0, 116, 255, 0.5)' },
-    { key: 'safety', labelKey: 'tripStats.safety', icon: 'Veiligheid', color: 'rgba(255, 0, 0, 0.5)' },
-    { key: 'maintenance', labelKey: 'tripStats.maintenance', icon: 'Onderhoudbaarheid', color: 'rgba(255, 115, 0, 0.5)' }
+    { key: 'environment', labelKey: 'tripStats.surroundings', icon: Leaf, color: 'rgba(26, 220, 0, 0.5)' },
+    { key: 'economic', labelKey: 'tripStats.economy', icon: Euro, color: 'rgba(222, 211, 0, 0.5)' },
+    { key: 'social', labelKey: 'tripStats.social', icon: UserRoundGroup, color: 'rgba(64, 0, 255, 0.5)' },
+    { key: 'energy', labelKey: 'tripStats.energy', icon: Zap, color: 'rgba(0, 116, 255, 0.5)' },
+    { key: 'safety', labelKey: 'tripStats.safety', icon: TrafficCone, color: 'rgba(255, 0, 0, 0.5)' },
+    { key: 'maintenance', labelKey: 'tripStats.maintenance', icon: Wrench, color: 'rgba(255, 115, 0, 0.5)' }
 ];
 
 const labels = computed(() => 
@@ -99,17 +100,28 @@ const chartOptions = {
 </script>
 
 <template>
-    <p class="visual-label">{{ langStore.getLabel('barChart.title') }}: </p>
+    <p class="visual-label">
+        {{ langStore.getLabel('barChart.title') }}:
+    </p>
+
     <div class="chart-container">
         <div class="icon-column">
-            <div v-for="(category, index) in categories" :key="category.key" class="icon-row">
-                <img 
-                :src="icons[index]" 
-                :alt="langStore.getLabel(category.labelKey)" 
-                class="concern-icon" 
+            <div
+                v-for="category in categories"
+                :key="category.key"
+                class="icon-row"
+            >
+                <component
+                    :is="category.icon"
+                    :size="28"
+                    :stroke-width="2"
+                    class="concern-icon"
+                    :aria-label="langStore.getLabel(category.labelKey)"
+                    role="img"
                 />
             </div>
         </div>
+
         <div class="chart-wrapper">
             <Bar :data="chartData" :options="chartOptions" />
         </div>
