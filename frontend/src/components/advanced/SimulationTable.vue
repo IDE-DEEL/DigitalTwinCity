@@ -3,6 +3,7 @@ import { useCarColors } from '../../composables/useCarColors.js';
 import "../../assets/Table.css";
 import { useLanguageStore } from '../../stores/index.js';
 import { BaseButton } from '../CustomComponents.js';
+import { Eye, EyeOff } from '@lucide/vue';
 
 const langStore = useLanguageStore();
 
@@ -126,13 +127,20 @@ const getStateOfCharge = (carId) => {
               </select>
             </td>
             <td class="button-cell">
-                <BaseButton 
+                <BaseButton
                     :disabled="car.routeName === 'inactive' && !car.routeVisibility"
                     :isActive="car.routeVisibility"
+                    :aria-label="car.routeVisibility
+                        ? langStore.getLabel('carTable.hideRoute')
+                        : langStore.getLabel('carTable.showRoute')"
+                    :title="car.routeVisibility
+                        ? langStore.getLabel('carTable.hideRoute')
+                        : langStore.getLabel('carTable.showRoute')"
                     @click="emit('toggle-route-visibility', car.id)"
                     variant="table"
                 >
-                    {{ car.routeVisibility ? langStore.getLabel('carTable.hideRoute') : langStore.getLabel('carTable.showRoute') }}
+                    <Eye v-if="car.routeVisibility" :size="18" />
+                    <EyeOff v-else :size="18" />
                 </BaseButton>
             </td>
           </tr>
